@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIND24 — Bienestar & Evaluación Corporativa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F8FAFC; --primary:#1E293B; --accent:#34D399; --accent-light:#ECFDF5; --accent-dark:#059669;
+  --purple:#7C3AED; --purple-light:#F5F3FF; --purple-mid:#EDE9FE; --purple-dark:#5B21B6; --purple-deep:#4C1D95;
+  --violet:#8B5CF6; --violet-light:#A78BFA;
+  --slate-100:#F1F5F9; --slate-200:#E2E8F0; --slate-300:#CBD5E1; --slate-400:#94A3B8; --slate-500:#64748B; --slate-600:#475569; --slate-700:#334155;
+  --white:#FFFFFF;
+  --d1:#060411; --d2:#0C071E; --d3:#110A28; --d4:#160C32; --d5:#1A0E3A;
+  --care-gradient:linear-gradient(135deg,#34D399 0%,#059669 100%);
+  --assess-gradient:linear-gradient(135deg,#7C3AED 0%,#4C1D95 100%);
+  --purple-gradient:linear-gradient(135deg,#8B5CF6 0%,#7C3AED 50%,#5B21B6 100%);
+  --shadow-xl:0 32px 64px rgba(0,0,0,.10);
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:24px; --r-2xl:32px;
+  --tr:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  --tr-fast:all 0.15s cubic-bezier(0.4,0,0.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);line-height:1.6;overflow-x:hidden;}
+.hidden{display:none!important;}
+.fade-in{animation:fadeIn .5s ease forwards;}
+.slide-up{animation:slideUp .5s cubic-bezier(0.4,0,0.2,1) forwards;}
+.scale-in{animation:scaleIn .4s cubic-bezier(0.34,1.56,0.64,1) forwards;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.12);opacity:1}}
+@keyframes pulse-purple{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.5)}50%{box-shadow:0 0 0 16px rgba(124,58,237,0)}}
+@keyframes shimmer{0%{background-position:-400% 0}100%{background-position:400% 0}}
+@keyframes scan-line{0%{transform:translateY(-100vh);opacity:0}10%{opacity:1}90%{opacity:.6}100%{transform:translateY(200vh);opacity:0}}
+@keyframes orb-drift-1{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(40px,-60px) scale(1.1)}50%{transform:translate(-20px,-30px) scale(.95)}75%{transform:translate(60px,20px) scale(1.05)}}
+@keyframes orb-drift-2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-50px,40px) scale(1.08)}66%{transform:translate(30px,-50px) scale(.92)}}
+@keyframes grid-pulse{0%,100%{opacity:.25}50%{opacity:.55}}
+@keyframes ring-expand{0%{transform:scale(.8);opacity:0}50%{opacity:1}100%{transform:scale(2);opacity:0}}
+@keyframes title-reveal{from{opacity:0;transform:translateY(30px);filter:blur(8px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes card-glow{0%,100%{box-shadow:0 0 0 1px rgba(139,92,246,.2)}50%{box-shadow:0 0 0 1px rgba(139,92,246,.5),0 8px 32px rgba(124,58,237,.2)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--d2)}::-webkit-scrollbar-thumb{background:rgba(124,58,237,.5);border-radius:3px}
+
+/* ══════ LANDING ══════ */
+#view-landing{display:block;background:var(--d1);}
+.dark-section{position:relative;overflow:hidden;}
+.dark-section-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);background-size:56px 56px;animation:grid-pulse 5s ease-in-out infinite;pointer-events:none;}
+.dark-section-glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;}
+.section-sep{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.25),rgba(167,139,250,.4),rgba(139,92,246,.25),transparent);}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,4,17,.8);backdrop-filter:blur(24px);border-bottom:1px solid rgba(124,58,237,.18);transition:var(--tr);}
+.nav.light-nav{background:rgba(248,250,252,.92);border-bottom:1px solid rgba(226,232,240,.7);}
+.nav.scrolled{box-shadow:0 4px 32px rgba(124,58,237,.15);}
+.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;}
+.nav-logo-icon{width:36px;height:36px;background:var(--assess-gradient);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(124,58,237,.4);}
+.nav-logo-icon::after{content:'';position:absolute;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.8);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.nav-logo-icon::before{content:'';position:absolute;width:6px;height:6px;background:var(--white);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;}
+.nav-logo-text{font-size:18px;font-weight:800;color:var(--white);letter-spacing:-.5px;}
+.nav-logo-text span{color:var(--violet-light);}
+.nav.light-nav .nav-logo-text{color:var(--primary);}
+.nav.light-nav .nav-logo-text span{color:var(--purple);}
+.nav-center{display:flex;align-items:center;gap:2px;}
+.nav-link{padding:8px 14px;font-size:14px;font-weight:500;color:rgba(255,255,255,.55);border-radius:var(--r-sm);transition:var(--tr-fast);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;}
+.nav-link:hover{color:var(--white);background:rgba(255,255,255,.06);}
+.nav.light-nav .nav-link{color:var(--slate-600);}
+.nav.light-nav .nav-link:hover{color:var(--primary);background:var(--slate-100);}
+.nav-actions{display:flex;align-items:center;gap:10px;}
+.btn-nav-empresa{padding:8px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,.8);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;}
+.btn-nav-empresa:hover{background:rgba(255,255,255,.12);color:var(--white);}
+.nav.light-nav .btn-nav-empresa{color:var(--primary);background:var(--white);border-color:var(--slate-200);}
+.nav.light-nav .btn-nav-empresa:hover{border-color:var(--purple);}
+.btn-nav-empleado{padding:8px 18px;font-size:14px;font-weight:600;color:var(--white);background:var(--assess-gradient);border:none;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 4px 14px rgba(124,58,237,.35);}
+.btn-nav-empleado:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(124,58,237,.45);}
+
+/* HERO */
+.hero{min-height:100vh;padding:140px 24px 90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 45%,var(--d3) 100%);}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.08) 1px,transparent 1px);background-size:56px 56px;animation:grid-pulse 4s ease-in-out infinite;}
+.hero-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.6),rgba(167,139,250,.8),rgba(139,92,246,.6),transparent);animation:scan-line 8s ease-in-out infinite;animation-delay:1s;}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;}
+.hero-orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(109,40,217,.5) 0%,transparent 70%);top:-150px;right:-100px;animation:orb-drift-1 18s ease-in-out infinite;}
+.hero-orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.35) 0%,transparent 70%);bottom:-100px;left:-80px;animation:orb-drift-2 22s ease-in-out infinite;}
+.hero-orb-3{width:350px;height:350px;background:radial-gradient(circle,rgba(167,139,250,.2) 0%,transparent 70%);top:30%;left:35%;animation:orb-drift-1 14s ease-in-out infinite reverse;}
+.hero-ring{position:absolute;border:1px solid rgba(139,92,246,.13);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.hero-ring-1{width:500px;height:500px;animation:ring-expand 8s ease-in-out infinite;}
+.hero-ring-2{width:700px;height:700px;animation:ring-expand 8s ease-in-out infinite;animation-delay:2.5s;}
+.hero-ring-3{width:900px;height:900px;animation:ring-expand 8s ease-in-out infinite;animation-delay:5s;}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;}
+.hero-content{position:relative;z-index:1;max-width:880px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;background:rgba(124,58,237,.18);border:1px solid rgba(139,92,246,.4);border-radius:100px;font-size:13px;font-weight:600;color:var(--violet-light);margin-bottom:32px;animation:slideUp .7s ease forwards;backdrop-filter:blur(10px);}
+.hero-badge-dot{width:7px;height:7px;background:var(--violet-light);border-radius:50%;animation:pulse-purple 2.5s infinite;}
+.hero-title{font-size:clamp(40px,6.5vw,84px);font-weight:900;line-height:1.05;letter-spacing:-2.5px;color:var(--white);margin-bottom:28px;animation:title-reveal .8s .15s ease both;}
+.hero-title .highlight-purple{background:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 40%,#8B5CF6 70%,#7C3AED 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-title .highlight-soft{color:rgba(255,255,255,.65);-webkit-text-fill-color:rgba(255,255,255,.65);}
+.hero-subtitle{font-size:clamp(16px,2vw,20px);color:rgba(255,255,255,.48);max-width:560px;margin:0 auto 52px;font-weight:400;line-height:1.75;animation:title-reveal .8s .3s ease both;}
+.hero-actions{display:flex;align-items:center;justify-content:center;animation:title-reveal .8s .45s ease both;}
+.btn-hero-main{display:inline-flex;align-items:center;gap:10px;padding:18px 52px;font-size:17px;font-weight:700;color:var(--white);background:var(--purple-gradient);border:none;border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(124,58,237,.5),0 0 0 1px rgba(139,92,246,.3);position:relative;overflow:hidden;animation:pulse-purple 4s infinite;}
+.btn-hero-main::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);background-size:200% 100%;animation:shimmer 3s infinite;}
+.btn-hero-main:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(124,58,237,.65);}
+.btn-hero-main svg,.btn-hero-main span{position:relative;z-index:1;}
+.hero-scroll-indicator{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeIn 1s 1.2s ease both;}
+.hero-scroll-indicator span{font-size:10px;color:rgba(255,255,255,.22);font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(139,92,246,.6),transparent);animation:float 2.5s ease-in-out infinite;}
+
+/* SECTIONS */
+.dark-section-inner{position:relative;z-index:1;padding:100px 24px;}
+.section-header{text-align:center;max-width:600px;margin:0 auto 60px;}
+.section-tag{display:inline-block;padding:5px 16px;background:rgba(167,139,250,.12);border:1px solid rgba(139,92,246,.2);border-radius:100px;font-size:12px;font-weight:700;color:var(--violet-light);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+.section-title{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1.5px;line-height:1.12;color:var(--white);margin-bottom:16px;}
+.section-subtitle{font-size:17px;color:rgba(255,255,255,.4);line-height:1.7;font-weight:400;}
+
+/* SERVICES */
+.services-section{background:linear-gradient(180deg,var(--d3) 0%,var(--d4) 100%);}
+.services-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;margin:0 auto;}
+.service-card{border-radius:var(--r-2xl);padding:48px 44px;position:relative;overflow:hidden;cursor:pointer;transition:var(--tr);border:1px solid rgba(139,92,246,.2);background:rgba(255,255,255,.03);backdrop-filter:blur(8px);}
+.service-card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(124,58,237,.25);border-color:rgba(139,92,246,.45);background:rgba(139,92,246,.06);}
+.service-card-label{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:24px;background:rgba(167,139,250,.12);color:var(--violet-light);border:1px solid rgba(139,92,246,.2);}
+.service-card-icon{width:64px;height:64px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;margin-bottom:28px;font-size:28px;background:rgba(124,58,237,.15);box-shadow:0 8px 24px rgba(124,58,237,.15);border:1px solid rgba(139,92,246,.2);}
+.service-card-title{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px;color:var(--white);}
+.service-card-desc{font-size:15px;line-height:1.7;margin-bottom:32px;color:rgba(255,255,255,.5);}
+.service-card-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:36px;}
+.service-card-features li{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:rgba(255,255,255,.55);}
+.feature-check{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;background:rgba(139,92,246,.15);color:var(--violet-light);}
+.service-card-cta{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--r-sm);font-size:14px;font-weight:700;background:rgba(255,255,255,.07);color:var(--white);border:1px solid rgba(255,255,255,.12);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;}
+.service-card-cta:hover{background:var(--assess-gradient);border-color:transparent;transform:translateY(-1px);}
+.service-card-bg-icon{position:absolute;right:-20px;bottom:-20px;font-size:120px;opacity:.04;pointer-events:none;line-height:1;}
+
+/* METRICS */
+.metrics-section{background:linear-gradient(180deg,var(--d4) 0%,var(--d5) 100%);}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:900px;margin:0 auto;}
+.metric-card{border-radius:var(--r-xl);padding:32px 24px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,.2);transition:var(--tr);position:relative;overflow:hidden;}
+.metric-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,.1) 0%,transparent 70%);pointer-events:none;}
+.metric-card:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.45);box-shadow:0 12px 40px rgba(124,58,237,.2);}
+.metric-value{font-size:38px;font-weight:900;letter-spacing:-1px;line-height:1;margin-bottom:8px;}
+.metric-value.v1{color:#C4B5FD;}.metric-value.v2{color:#A78BFA;}.metric-value.v3{color:#8B5CF6;}.metric-value.v4{color:#7C3AED;text-shadow:0 0 20px rgba(124,58,237,.5);}
+.metric-label{font-size:13px;color:rgba(255,255,255,.4);font-weight:500;}
+
+/* HOW */
+.how-section{background:linear-gradient(180deg,var(--d5) 0%,var(--d3) 100%);}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;max-width:1000px;margin:0 auto;}
+.how-card{background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,.18);border-radius:var(--r-xl);padding:36px 28px;transition:var(--tr);}
+.how-card:hover{background:rgba(124,58,237,.08);border-color:rgba(139,92,246,.4);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,58,237,.2);}
+.how-number{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--violet-light);margin-bottom:20px;display:block;}
+.how-card-icon{width:52px;height:52px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;background:rgba(124,58,237,.15);border:1px solid rgba(139,92,246,.25);}
+.how-card-title{font-size:18px;font-weight:700;color:var(--white);margin-bottom:10px;letter-spacing:-.3px;}
+.how-card-desc{font-size:14px;color:rgba(255,255,255,.42);line-height:1.65;}
+
+/* CTA */
+.apply-cta-section{background:linear-gradient(180deg,var(--d3) 0%,var(--d2) 100%);padding:100px 24px;text-align:center;}
+.apply-cta-box{max-width:700px;margin:0 auto;background:linear-gradient(135deg,var(--d3) 0%,var(--d4) 100%);border-radius:var(--r-2xl);padding:64px 56px;position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(139,92,246,.25),0 32px 80px rgba(124,58,237,.25);}
+.apply-cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(124,58,237,.3) 0%,transparent 55%),radial-gradient(ellipse at 15% 80%,rgba(91,33,182,.25) 0%,transparent 50%);pointer-events:none;}
+.apply-cta-box::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.06) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.apply-cta-tag{display:inline-block;padding:6px 16px;background:rgba(167,139,250,.15);border:1px solid rgba(139,92,246,.35);border-radius:100px;font-size:12px;font-weight:700;color:var(--violet-light);letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;position:relative;z-index:1;}
+.apply-cta-title{font-size:clamp(26px,4vw,42px);font-weight:800;color:var(--white);letter-spacing:-1px;margin-bottom:16px;position:relative;z-index:1;line-height:1.15;}
+.apply-cta-subtitle{font-size:16px;color:rgba(255,255,255,.42);margin-bottom:40px;position:relative;z-index:1;line-height:1.65;}
+.btn-apply-main{display:inline-flex;align-items:center;gap:10px;padding:18px 44px;font-size:17px;font-weight:700;color:var(--white);background:var(--purple-gradient);border:none;border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(124,58,237,.55);position:relative;z-index:1;overflow:hidden;animation:pulse-purple 4s infinite;}
+.btn-apply-main::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);background-size:200% 100%;animation:shimmer 2.5s infinite;}
+.btn-apply-main:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(124,58,237,.7);}
+
+/* FOOTER */
+.footer{background:var(--d1);color:rgba(255,255,255,.35);padding:60px 24px 40px;border-top:1px solid rgba(139,92,246,.15);}
+.footer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px;}
+.footer-brand p{font-size:14px;line-height:1.65;color:rgba(255,255,255,.28);margin-top:12px;}
+.footer-col-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.footer-links li a{font-size:14px;color:rgba(255,255,255,.28);text-decoration:none;transition:var(--tr-fast);cursor:pointer;}
+.footer-links li a:hover{color:var(--violet-light);}
+.footer-bottom{max-width:1100px;margin:0 auto;padding-top:28px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.18);}
+.footer-chips{display:flex;gap:8px;}
+.footer-chip{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;}
+.footer-chip-care{background:rgba(167,139,250,.12);color:var(--violet-light);border:1px solid rgba(139,92,246,.2);}
+.footer-chip-assess{background:rgba(124,58,237,.15);color:#C4B5FD;border:1px solid rgba(124,58,237,.25);}
+
+/* ══════ MODALS ══════ */
+.modal-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,17,.85);backdrop-filter:blur(18px);animation:fadeIn .2s ease forwards;}
+.modal-card{background:var(--white);border-radius:var(--r-2xl);padding:48px;width:100%;max-width:520px;box-shadow:var(--shadow-xl),0 0 60px rgba(124,58,237,.15);animation:scaleIn .3s ease forwards;position:relative;}
+.modal-close{position:absolute;top:20px;right:20px;width:36px;height:36px;border:none;background:var(--slate-100);border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--slate-500);transition:var(--tr-fast);}
+.modal-close:hover{background:var(--purple-light);color:var(--purple);}
+.modal-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.modal-logo-icon{width:36px;height:36px;background:var(--assess-gradient);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 14px rgba(124,58,237,.35);}
+.modal-logo-icon::after{content:'';position:absolute;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.8);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.modal-logo-icon::before{content:'';position:absolute;width:6px;height:6px;background:white;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;}
+.modal-logo-text{font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.5px;}
+.modal-logo-text span{color:var(--purple);}
+.modal-title{font-size:24px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:8px;}
+.modal-subtitle{font-size:14px;color:var(--slate-500);margin-bottom:32px;line-height:1.6;}
+.modal-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px;}
+.modal-badge-purple{background:var(--purple-light);color:var(--purple-dark);}
+.modal-badge-green{background:var(--accent-light);color:var(--accent-dark);}
+.empresa-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.empresa-option{padding:28px 20px 22px;border:1.5px solid var(--slate-200);border-radius:var(--r-xl);cursor:pointer;transition:var(--tr-fast);text-align:center;background:var(--bg);display:flex;flex-direction:column;align-items:center;}
+.empresa-option:hover{border-color:var(--purple);background:var(--purple-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.12);}
+.empresa-option-icon{width:52px;height:52px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;background:var(--purple-light);border:1px solid rgba(124,58,237,.15);transition:var(--tr-fast);}
+.empresa-option:hover .empresa-option-icon{background:var(--assess-gradient);}
+.empresa-option-title{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:5px;}
+.empresa-option-desc{font-size:12px;color:var(--slate-500);line-height:1.5;}
+.access-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.access-option{padding:24px 20px;border:1.5px solid var(--slate-200);border-radius:var(--r-lg);cursor:pointer;transition:var(--tr-fast);text-align:center;background:var(--bg);}
+.access-option:hover{border-color:var(--purple);background:var(--purple-light);transform:translateY(-2px);}
+.access-option-icon{font-size:28px;margin-bottom:10px;display:block;}
+.access-option-title{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:4px;}
+.access-option-desc{font-size:12px;color:var(--slate-500);line-height:1.5;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;}
+.form-input{width:100%;padding:12px 16px;font-size:14px;font-family:'Inter',sans-serif;color:var(--primary);background:var(--bg);border:1.5px solid var(--slate-200);border-radius:var(--r-sm);transition:var(--tr-fast);outline:none;}
+.form-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.form-input::placeholder{color:var(--slate-400);}
+.form-submit{width:100%;padding:14px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;border:none;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);margin-top:8px;}
+.form-submit-purple{background:var(--assess-gradient);color:var(--white);box-shadow:0 4px 14px rgba(124,58,237,.3);}
+.form-submit-purple:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,58,237,.45);}
+.form-submit-green{background:var(--care-gradient);color:var(--white);box-shadow:0 4px 14px rgba(52,211,153,.3);}
+.form-submit-green:hover{transform:translateY(-1px);}
+.form-back{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--slate-500);background:none;border:none;cursor:pointer;margin-bottom:24px;font-family:'Inter',sans-serif;transition:var(--tr-fast);}
+.form-back:hover{color:var(--purple);}
+
+/* ══════ DASHBOARDS ══════ */
+.app-shell{display:flex;height:100vh;overflow:hidden;background:var(--bg);}
+.sidebar{width:248px;flex-shrink:0;display:flex;flex-direction:column;background:var(--white);border-right:1px solid var(--slate-200);padding:24px 0;position:relative;z-index:100;}
+.sidebar-logo{padding:0 20px 24px;border-bottom:1px solid var(--slate-100);margin-bottom:12px;}
+.sidebar-logo .s-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:32px;height:32px;background:var(--assess-gradient);border-radius:8px;position:relative;box-shadow:0 4px 12px rgba(124,58,237,.25);}
+.sidebar-logo-icon::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.8);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.sidebar-logo-icon::before{content:'';position:absolute;width:5px;height:5px;background:white;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;}
+.sidebar-logo-text{font-size:16px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
+.sidebar-logo-text span{color:var(--purple);}
+.sidebar-badge-service{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:8px;}
+.sbs-care{background:var(--accent-light);color:var(--accent-dark);}
+.sbs-assess{background:var(--purple-light);color:var(--purple-dark);}
+.sidebar-nav{flex:1;padding:4px 12px;}
+.sidebar-section-label{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:1.5px;padding:12px 8px 6px;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;color:var(--slate-600);font-size:14px;font-weight:500;}
+.sidebar-item:hover{background:var(--purple-light);color:var(--purple-dark);}
+.sidebar-item.active{background:var(--purple-light);color:var(--purple-dark);font-weight:600;}
+.sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
+.si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--slate-100);transition:var(--tr-fast);}
+.sidebar-item:hover .si-icon{background:rgba(124,58,237,.12);}
+.si-badge{margin-left:auto;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700;background:var(--purple-light);color:var(--purple-dark);}
+.sidebar-footer{padding:12px;border-top:1px solid var(--slate-100);margin-top:4px;}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);}
+.sidebar-user:hover{background:var(--purple-light);}
+.s-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--white);flex-shrink:0;}
+.av-green{background:var(--care-gradient);}
+.av-purple{background:var(--assess-gradient);}
+.av-blue{background:linear-gradient(135deg,#60A5FA 0%,#2563EB 100%);}
+.sidebar-user-info{flex:1;min-width:0;}
+.sidebar-user-name{font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-user-role{font-size:11px;color:var(--slate-500);}
+.main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar{background:var(--white);border-bottom:1px solid var(--slate-200);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--primary);}
+.topbar-subtitle{font-size:12px;color:var(--slate-500);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.tb-btn{width:36px;height:36px;border-radius:var(--r-sm);border:1.5px solid var(--slate-200);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--slate-600);transition:var(--tr-fast);position:relative;}
+.tb-btn:hover{background:var(--purple-light);color:var(--purple);border-color:rgba(124,58,237,.2);}
+.tb-notif::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--purple);border:2px solid var(--white);}
+.page-content{padding:28px;flex:1;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--white);border:1px solid var(--slate-200);border-radius:var(--r-lg);padding:22px 20px;transition:var(--tr);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.1);border-color:rgba(124,58,237,.15);}
+.stat-card-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.stat-icon{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.si-g{background:var(--accent-light);}.si-p{background:var(--purple-light);}.si-b{background:#EFF6FF;}.si-a{background:#FFFBEB;}
+.stat-trend{font-size:12px;font-weight:600;padding:3px 8px;border-radius:100px;}
+.trend-up{background:var(--purple-light);color:var(--purple-dark);}
+.trend-dn{background:#FEF2F2;color:#DC2626;}
+.stat-value{font-size:28px;font-weight:900;letter-spacing:-.5px;color:var(--primary);line-height:1;margin-bottom:5px;}
+.stat-label{font-size:13px;color:var(--slate-500);font-weight:500;}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px;}
+.dash-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px;}
+.card{background:var(--white);border:1px solid var(--slate-200);border-radius:var(--r-lg);overflow:hidden;}
+.card-header{padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;color:var(--primary);letter-spacing:-.2px;}
+.card-subtitle{font-size:12px;color:var(--slate-500);margin-top:2px;}
+.card-action{font-size:13px;font-weight:600;color:var(--purple);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;}
+.card-body{padding:0 22px 22px;}
+.act-list{display:flex;flex-direction:column;gap:2px;}
+.act-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--r-sm);transition:var(--tr-fast);cursor:pointer;}
+.act-item:hover{background:var(--purple-light);}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.d-g{background:var(--accent);}.d-p{background:var(--purple);}.d-b{background:#60A5FA;}.d-a{background:#F59E0B;}
+.act-info{flex:1;min-width:0;}
+.act-title{font-size:13px;font-weight:600;color:var(--primary);}
+.act-sub{font-size:12px;color:var(--slate-500);margin-top:1px;}
+.act-time{font-size:11px;color:var(--slate-400);font-weight:500;flex-shrink:0;}
+.ses-item{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--slate-100);border-radius:var(--r-md);margin-bottom:10px;transition:var(--tr-fast);cursor:pointer;background:var(--bg);}
+.ses-item:hover{border-color:var(--purple);background:var(--purple-light);}
+.ses-time{text-align:center;min-width:48px;}
+.ses-hour{font-size:16px;font-weight:800;color:var(--primary);line-height:1;}
+.ses-period{font-size:10px;font-weight:600;color:var(--slate-400);text-transform:uppercase;}
+.ses-div{width:1px;height:32px;background:var(--slate-200);}
+.ses-info{flex:1;}
+.ses-name{font-size:14px;font-weight:700;color:var(--primary);}
+.ses-detail{font-size:12px;color:var(--slate-500);margin-top:2px;}
+.ses-badge{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.sb-conf{background:var(--purple-light);color:var(--purple-dark);}
+.sb-pend{background:#FFFBEB;color:#B45309;}
+.sb-done{background:var(--slate-100);color:var(--slate-500);}
+.ppl-list{display:flex;flex-direction:column;gap:2px;}
+.ppl-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);}
+.ppl-row:hover{background:var(--purple-light);}
+.p-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--white);flex-shrink:0;}
+.p-info{flex:1;min-width:0;}
+.p-name{font-size:13px;font-weight:600;color:var(--primary);}
+.p-role{font-size:11px;color:var(--slate-500);}
+.p-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px;}
+.pb-active{background:var(--purple-light);color:var(--purple-dark);}
+.pb-review{background:#FEF3C7;color:#D97706;}
+.pb-new{background:#EFF6FF;color:#2563EB;}
+.pb-done{background:var(--slate-100);color:var(--slate-500);}
+.prog-item{margin-bottom:14px;}
+.prog-label{display:flex;justify-content:space-between;margin-bottom:6px;}
+.prog-name{font-size:13px;font-weight:600;color:var(--primary);}
+.prog-pct{font-size:13px;font-weight:700;color:var(--purple);}
+.prog-track{height:6px;background:var(--slate-100);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+.pf-g{background:var(--care-gradient);}.pf-p{background:var(--assess-gradient);}
+.cal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.cal-month{font-size:14px;font-weight:700;color:var(--primary);}
+.cal-nav{display:flex;gap:4px;}
+.cal-nav-btn{width:26px;height:26px;border:1px solid var(--slate-200);border-radius:6px;background:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{background:var(--purple-light);}
+.cal-days-hd{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
+.cal-dl{text-align:center;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;padding:4px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--slate-600);border-radius:6px;cursor:pointer;transition:var(--tr-fast);position:relative;}
+.cal-day:hover{background:var(--purple-light);color:var(--purple);}
+.cal-day.today{background:var(--assess-gradient);color:var(--white);font-weight:700;}
+.cal-day.has-ev::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--purple);}
+.cal-day.other-m{color:var(--slate-300);}
+.wellness-card{background:linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%);border:1px solid rgba(52,211,153,.2);border-radius:var(--r-xl);padding:28px;position:relative;overflow:hidden;}
+.wellness-card::before{content:'';position:absolute;right:-30px;top:-30px;width:150px;height:150px;background:radial-gradient(circle,rgba(52,211,153,.2) 0%,transparent 70%);border-radius:50%;}
+.w-greeting{font-size:13px;font-weight:600;color:#065F46;margin-bottom:6px;}
+.w-name{font-size:22px;font-weight:800;color:#064E3B;letter-spacing:-.3px;margin-bottom:16px;}
+.w-row{display:flex;align-items:center;gap:20px;}
+.w-circle{width:70px;height:70px;border-radius:50%;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(52,211,153,.2);flex-shrink:0;}
+.w-score-num{font-size:22px;font-weight:900;color:var(--accent-dark);line-height:1;}
+.w-score-lbl{font-size:9px;font-weight:700;color:var(--slate-500);text-transform:uppercase;}
+.w-info{flex:1;}
+.w-info-title{font-size:14px;font-weight:700;color:#065F46;margin-bottom:4px;}
+.w-info-desc{font-size:12px;color:#047857;line-height:1.5;}
+.next-ses-card{background:var(--primary);border-radius:var(--r-xl);padding:24px;color:var(--white);position:relative;overflow:hidden;}
+.next-ses-card::before{content:'';position:absolute;right:-40px;bottom:-40px;width:160px;height:160px;border-radius:50%;background:rgba(124,58,237,.2);}
+.ns-label{font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.ns-type{font-size:18px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px;}
+.ns-time{font-size:13px;color:var(--slate-400);margin-bottom:18px;}
+.ns-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--assess-gradient);color:var(--white);font-size:13px;font-weight:700;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);position:relative;z-index:1;box-shadow:0 4px 14px rgba(124,58,237,.3);}
+.ns-btn:hover{transform:translateY(-1px);}
+.eval-prog-card{background:var(--purple-light);border:1px solid rgba(124,58,237,.15);border-radius:var(--r-xl);padding:24px;}
+.ep-label{font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.ep-title{font-size:16px;font-weight:800;color:var(--purple-dark);margin-bottom:16px;letter-spacing:-.2px;}
+.ep-track{height:10px;background:rgba(124,58,237,.15);border-radius:5px;margin-bottom:8px;overflow:hidden;}
+.ep-fill{height:100%;background:var(--assess-gradient);border-radius:5px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
+.ep-info{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--purple-dark);}
+.back-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--slate-500);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);border-radius:var(--r-sm);}
+.back-btn:hover{color:var(--purple);background:var(--purple-light);}
+
+/* CREAR EVAL */
+.create-input{width:100%;padding:12px 16px;font-size:14px;font-family:'Inter',sans-serif;color:var(--primary);background:var(--bg);border:1.5px solid var(--slate-200);border-radius:var(--r-sm);transition:var(--tr-fast);outline:none;}
+.create-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.create-input::placeholder{color:var(--slate-400);}
+.code-box{background:linear-gradient(135deg,var(--d2),var(--d3));border:1px solid rgba(139,92,246,.3);border-radius:var(--r-lg);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.code-val{font-family:'Courier New',monospace;font-size:22px;font-weight:800;color:var(--violet-light);letter-spacing:3px;}
+.code-btn{padding:8px 16px;font-size:12px;font-weight:700;color:var(--white);background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.35);border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);white-space:nowrap;}
+.code-btn:hover{background:var(--assess-gradient);border-color:transparent;}
+.mod-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid rgba(124,58,237,.2);border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);background:var(--purple-light);margin-bottom:10px;}
+.mod-toggle.selected{border-color:var(--purple);background:var(--purple-mid);}
+.mod-toggle:hover{border-color:var(--purple);}
+.mod-left{display:flex;align-items:center;gap:12px;}
+.mod-icon{width:36px;height:36px;border-radius:8px;background:var(--assess-gradient);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.mod-name{font-size:14px;font-weight:700;color:var(--primary);}
+.mod-desc{font-size:12px;color:var(--slate-500);margin-top:1px;}
+.mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--white);background:var(--assess-gradient);flex-shrink:0;}
+.mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
+
+/* ══════ EVALUACIÓN SIMULATOR ══════ */
+#view-evaluacion{min-height:100vh;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 50%,var(--d3) 100%);display:flex;flex-direction:column;position:relative;overflow-x:hidden;}
+#view-evaluacion::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.06) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;animation:grid-pulse 5s ease-in-out infinite;}
+.eval-topbar{position:sticky;top:0;z-index:100;background:rgba(6,4,17,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(124,58,237,.2);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.eval-logo{display:flex;align-items:center;gap:8px;}
+.eval-logo-icon{width:32px;height:32px;background:var(--assess-gradient);border-radius:8px;position:relative;box-shadow:0 4px 12px rgba(124,58,237,.4);flex-shrink:0;}
+.eval-logo-icon::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.8);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.eval-logo-icon::before{content:'';position:absolute;width:5px;height:5px;background:white;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;}
+.eval-logo-name{font-size:14px;font-weight:700;color:var(--white);}
+.eval-logo-name span{color:var(--violet-light);}
+.eval-tb-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.eval-section-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;background:rgba(124,58,237,.2);border:1px solid rgba(139,92,246,.3);border-radius:100px;font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1px;}
+.eval-prog-wrap{width:100%;max-width:300px;}
+.eval-prog-lbl{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:rgba(255,255,255,.35);margin-bottom:4px;}
+.eval-prog-bg{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.eval-prog-fill{height:100%;background:var(--purple-gradient);border-radius:2px;transition:width .4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px rgba(139,92,246,.6);}
+.eval-timer-box{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-md);}
+.eval-timer-display{font-size:18px;font-weight:800;color:var(--white);letter-spacing:1px;font-variant-numeric:tabular-nums;}
+.eval-timer-display.warn{color:#FCD34D;}
+.eval-timer-display.danger{color:#F87171;animation:pulse-purple 1s infinite;}
+.eval-timer-label{font-size:10px;color:rgba(255,255,255,.35);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.eval-screen{display:none;flex:1;align-items:center;justify-content:center;padding:40px 24px;position:relative;z-index:1;}
+.eval-screen.active{display:flex;}
+/* Intro */
+.eval-intro-card{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.25);border-radius:var(--r-2xl);padding:56px 52px;max-width:680px;width:100%;text-align:center;backdrop-filter:blur(12px);box-shadow:0 32px 80px rgba(0,0,0,.4),0 0 0 1px rgba(139,92,246,.15);position:relative;overflow:hidden;}
+.eval-intro-card::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(124,58,237,.2) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.eval-intro-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(124,58,237,.15);border:1px solid rgba(139,92,246,.35);border-radius:100px;font-size:12px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:28px;}
+.eval-intro-title{font-size:clamp(24px,4vw,36px);font-weight:900;color:var(--white);letter-spacing:-1px;line-height:1.15;margin-bottom:14px;}
+.eval-intro-subtitle{font-size:15px;color:rgba(255,255,255,.45);margin-bottom:36px;line-height:1.65;}
+.eval-intro-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
+.eval-meta-item{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15);border-radius:var(--r-md);padding:16px 12px;text-align:center;}
+.eval-meta-icon{font-size:22px;margin-bottom:6px;display:block;}
+.eval-meta-value{font-size:18px;font-weight:800;color:var(--violet-light);line-height:1;margin-bottom:3px;}
+.eval-meta-label{font-size:11px;color:rgba(255,255,255,.35);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.eval-instructions{background:rgba(124,58,237,.08);border:1px solid rgba(139,92,246,.15);border-radius:var(--r-md);padding:16px 20px;text-align:left;margin-bottom:32px;}
+.eval-instructions li{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;padding-left:16px;position:relative;line-height:1.5;list-style:none;}
+.eval-instructions li::before{content:'•';position:absolute;left:0;color:var(--violet-light);}
+.eval-instructions li:last-child{margin-bottom:0;}
+.btn-start{display:inline-flex;align-items:center;gap:10px;padding:16px 48px;font-size:16px;font-weight:700;color:var(--white);background:var(--purple-gradient);border:none;border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(124,58,237,.5);position:relative;overflow:hidden;animation:pulse-purple 4s infinite;}
+.btn-start::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);background-size:200% 100%;animation:shimmer 3s infinite;}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,58,237,.65);}
+/* Section screen */
+.eval-sec-screen{background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,.2);border-radius:var(--r-2xl);padding:48px 44px;max-width:560px;width:100%;text-align:center;backdrop-filter:blur(12px);}
+.eval-sec-num{font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;display:block;}
+.eval-sec-title{font-size:28px;font-weight:800;color:var(--white);letter-spacing:-.5px;margin-bottom:12px;}
+.eval-sec-desc{font-size:14px;color:rgba(255,255,255,.45);margin-bottom:32px;line-height:1.65;}
+.btn-continue{display:inline-flex;align-items:center;gap:8px;padding:13px 36px;font-size:15px;font-weight:700;color:var(--white);background:var(--assess-gradient);border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 20px rgba(124,58,237,.4);transition:var(--tr-fast);}
+.btn-continue:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,58,237,.55);}
+/* Question */
+.eval-q-wrap{width:100%;max-width:780px;display:flex;flex-direction:column;gap:28px;}
+.eval-q-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.eval-q-num{font-size:12px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1.5px;}
+.eval-q-type{font-size:11px;font-weight:600;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;padding:3px 10px;}
+.eval-q-card{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.2);border-radius:var(--r-xl);padding:40px 44px;backdrop-filter:blur(12px);box-shadow:0 16px 48px rgba(0,0,0,.3);position:relative;overflow:hidden;animation:slideUp .35s ease both;}
+.eval-q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--purple-gradient);}
+.eval-q-text{font-size:clamp(16px,2.2vw,20px);font-weight:700;color:var(--white);line-height:1.55;letter-spacing:-.2px;margin-bottom:32px;}
+.eval-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.eval-opt{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);text-align:left;position:relative;overflow:hidden;}
+.eval-opt:hover{background:rgba(124,58,237,.12);border-color:rgba(139,92,246,.45);transform:translateY(-1px);}
+.eval-opt.selected{background:rgba(124,58,237,.2);border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+.eval-opt.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--purple-gradient);}
+.eval-opt-letter{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);flex-shrink:0;border:1.5px solid rgba(255,255,255,.1);transition:var(--tr-fast);}
+.eval-opt.selected .eval-opt-letter{background:var(--assess-gradient);color:var(--white);border-color:transparent;box-shadow:0 4px 12px rgba(124,58,237,.4);}
+.eval-opt-text{font-size:14px;font-weight:500;color:rgba(255,255,255,.65);line-height:1.5;transition:var(--tr-fast);}
+.eval-opt.selected .eval-opt-text{color:var(--white);font-weight:600;}
+.eval-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.btn-prev{display:flex;align-items:center;gap:8px;padding:12px 24px;font-size:14px;font-weight:600;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);}
+.btn-prev:hover{color:var(--white);background:rgba(255,255,255,.1);}
+.btn-prev:disabled{opacity:.3;cursor:not-allowed;}
+.btn-next{display:flex;align-items:center;gap:8px;padding:12px 28px;font-size:14px;font-weight:700;color:var(--white);background:var(--assess-gradient);border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 4px 16px rgba(124,58,237,.4);transition:var(--tr-fast);}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,58,237,.55);}
+.btn-next:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.q-note{font-size:12px;color:rgba(255,255,255,.3);text-align:center;font-style:italic;}
+/* Results */
+.eval-result-wrap{width:100%;max-width:820px;display:flex;flex-direction:column;gap:24px;padding-bottom:60px;}
+.eval-result-hd{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.25);border-radius:var(--r-2xl);padding:48px;text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(12px);}
+.eval-result-hd::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:280px;height:280px;background:radial-gradient(circle,rgba(124,58,237,.25) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.result-badge{display:inline-block;padding:6px 18px;border-radius:100px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
+.rb-apro{background:rgba(52,211,153,.15);color:#6EE7B7;border:1px solid rgba(52,211,153,.3);}
+.rb-res{background:rgba(251,191,36,.12);color:#FCD34D;border:1px solid rgba(251,191,36,.25);}
+.rb-rep{background:rgba(248,113,113,.12);color:#FCA5A5;border:1px solid rgba(248,113,113,.25);}
+.result-score{font-size:clamp(56px,10vw,96px);font-weight:900;background:var(--purple-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px;letter-spacing:-3px;}
+.result-verdict{font-size:22px;font-weight:800;color:var(--white);margin-bottom:8px;letter-spacing:-.5px;}
+.result-desc{font-size:14px;color:rgba(255,255,255,.45);max-width:480px;margin:0 auto;line-height:1.65;}
+.eval-comp-box{background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,.2);border-radius:var(--r-xl);padding:32px 36px;backdrop-filter:blur(12px);}
+.eval-comp-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;letter-spacing:-.3px;}
+.comp-item{margin-bottom:18px;}
+.comp-item:last-child{margin-bottom:0;}
+.comp-lbl{display:flex;justify-content:space-between;margin-bottom:7px;}
+.comp-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.75);}
+.comp-score{font-size:13px;font-weight:800;color:var(--violet-light);}
+.comp-track{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.comp-fill{height:100%;border-radius:4px;background:var(--purple-gradient);transition:width 1.2s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px rgba(139,92,246,.4);}
+.eval-flags{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r-lg);padding:20px 24px;display:flex;align-items:flex-start;gap:14px;}
+.flags-icon{font-size:20px;flex-shrink:0;}
+.flags-text{font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;}
+.flags-text strong{color:#FCD34D;display:block;margin-bottom:4px;}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-r-primary{padding:14px 32px;font-size:15px;font-weight:700;color:var(--white);background:var(--purple-gradient);border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 20px rgba(124,58,237,.4);transition:var(--tr-fast);}
+.btn-r-primary:hover{transform:translateY(-2px);}
+.btn-r-secondary{padding:14px 28px;font-size:15px;font-weight:600;color:rgba(255,255,255,.6);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);}
+.btn-r-secondary:hover{color:var(--white);background:rgba(255,255,255,.1);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-center{display:none;}
+  .services-grid,.how-grid{grid-template-columns:1fr;}
+  .metrics-grid{grid-template-columns:1fr 1fr;}
+  .footer-inner{grid-template-columns:1fr 1fr;}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center;}
+  .hero{padding-top:100px;}
+  .sidebar{width:60px;}
+  .sidebar-logo,.sidebar-section-label,.sidebar-item span:not(.si-icon),.si-badge,.sidebar-user-info{display:none;}
+  .sidebar-item{justify-content:center;padding:10px;}
+  .si-icon{margin:0;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .dash-grid,.dash-grid-3{grid-template-columns:1fr;}
+  .modal-card{padding:32px 24px;}
+  .empresa-split,.access-split{grid-template-columns:1fr;}
+  .apply-cta-box{padding:40px 28px;}
+  .eval-topbar{padding:0 16px;height:56px;}
+  .eval-tb-center{display:none;}
+  .eval-q-card{padding:28px 24px;}
+  .eval-options{grid-template-columns:1fr;}
+  .eval-intro-card{padding:36px 28px;}
+  .eval-intro-meta{grid-template-columns:1fr 1fr;}
+  .eval-result-hd{padding:32px 28px;}
+  .eval-comp-box{padding:24px;}
+}
+@media(max-width:480px){
+  .metrics-grid,.stats-grid{grid-template-columns:1fr 1fr;}
+  .hero-actions{flex-direction:column;align-items:stretch;}
+  .btn-hero-main{text-align:center;justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ LANDING ════════════════════ -->
+<div id="view-landing">
+  <nav class="nav" id="mainNav">
+    <a class="nav-logo" onclick="showView('landing')">
+      <div class="nav-logo-icon"></div>
+      <span class="nav-logo-text">MIND<span>24</span></span>
+    </a>
+    <div class="nav-center">
+      <button class="nav-link" onclick="document.getElementById('servicios').scrollIntoView({behavior:'smooth'})">Servicios</button>
+      <button class="nav-link" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">Cómo funciona</button>
+      <button class="nav-link">Empresas</button>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-nav-empresa" onclick="openModal('modal-empresa')">Soy Empresa</button>
+      <button class="btn-nav-empleado" onclick="openModal('modal-empleado')">Soy Empleado</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg">
+      <canvas id="heroCanvas"></canvas>
+      <div class="hero-grid"></div>
+      <div class="hero-scan"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+      <div class="hero-ring hero-ring-1"></div>
+      <div class="hero-ring hero-ring-2"></div>
+      <div class="hero-ring hero-ring-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge"><div class="hero-badge-dot"></div>Plataforma SaaS de Bienestar Corporativo</div>
+      <h1 class="hero-title">Psicometría e inteligencia<br><span class="highlight-purple">humana</span> para<br><span class="highlight-soft">equipos que crecen</span></h1>
+      <p class="hero-subtitle">MIND24 unifica el bienestar psicológico de tus empleados con evaluaciones psicométricas de precisión. Dos módulos, una sola plataforma enterprise.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-main" onclick="openModal('modal-evaluacion')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Aplicar Evaluación</span>
+        </button>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator"><span>Scroll</span><div class="scroll-line"></div></div>
+  </section>
+
+  <div class="section-sep"></div>
+
+  <section id="servicios" class="dark-section services-section">
+    <div class="dark-section-grid"></div>
+    <div class="dark-section-glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.18) 0%,transparent 70%);top:-100px;right:-100px;"></div>
+    <div class="dark-section-inner">
+      <div class="section-header">
+        <span class="section-tag">Dos servicios · Una plataforma</span>
+        <h2 class="section-title">Diseñado para cada<br>necesidad corporativa</h2>
+        <p class="section-subtitle">Dos módulos con identidad propia, listos para HR, líderes y colaboradores.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card" onclick="openModal('modal-empleado')">
+          <div class="service-card-label"><span>✦</span> Mind24 Care</div>
+          <div class="service-card-icon">🧘</div>
+          <h3 class="service-card-title">Bienestar & Terapia</h3>
+          <p class="service-card-desc">Conecta a tus empleados con psicólogos certificados. Seguimiento continuo, sesiones privadas y soporte emocional dentro del entorno corporativo.</p>
+          <ul class="service-card-features">
+            <li><span class="feature-check">✓</span> Sesiones individuales con psicólogo</li>
+            <li><span class="feature-check">✓</span> Seguimiento de bienestar continuo</li>
+            <li><span class="feature-check">✓</span> Agenda inteligente y recordatorios</li>
+            <li><span class="feature-check">✓</span> Dashboard privado para empleados</li>
+          </ul>
+          <button class="service-card-cta">Conocer más →</button>
+          <div class="service-card-bg-icon">🧠</div>
+        </div>
+        <div class="service-card" onclick="openModal('modal-evaluacion')">
+          <div class="service-card-label"><span>◈</span> Mind24 Assess</div>
+          <div class="service-card-icon">📊</div>
+          <h3 class="service-card-title">Psicometrías & Evaluaciones</h3>
+          <p class="service-card-desc">Aplica pruebas psicométricas a candidatos y colaboradores. Obtén reportes detallados, análisis por competencias y datos para decisiones inteligentes.</p>
+          <ul class="service-card-features">
+            <li><span class="feature-check">✓</span> Batería de evaluaciones certificadas</li>
+            <li><span class="feature-check">✓</span> Reportes automáticos y exportables</li>
+            <li><span class="feature-check">✓</span> Panel corporativo para HR</li>
+            <li><span class="feature-check">✓</span> Candidatos externos o empleados</li>
+          </ul>
+          <button class="service-card-cta">Aplicar evaluación →</button>
+          <div class="service-card-bg-icon">📈</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-sep"></div>
+
+  <section class="dark-section metrics-section">
+    <div class="dark-section-grid"></div>
+    <div class="dark-section-inner" style="padding-top:80px;padding-bottom:80px;">
+      <div class="section-header" style="margin-bottom:40px;">
+        <span class="section-tag">Impacto real</span>
+        <h2 class="section-title">Números que hablan</h2>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value v1">+12k</div><div class="metric-label">Empleados activos</div></div>
+        <div class="metric-card"><div class="metric-value v2">98%</div><div class="metric-label">Satisfacción reportada</div></div>
+        <div class="metric-card"><div class="metric-value v3">340+</div><div class="metric-label">Empresas registradas</div></div>
+        <div class="metric-card"><div class="metric-value v4">60k+</div><div class="metric-label">Evaluaciones aplicadas</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-sep"></div>
+
+  <section id="como-funciona" class="dark-section how-section">
+    <div class="dark-section-grid"></div>
+    <div class="dark-section-inner">
+      <div class="section-header">
+        <span class="section-tag">Proceso simple</span>
+        <h2 class="section-title">¿Cómo funciona MIND24?</h2>
+        <p class="section-subtitle">Tres pasos para activar bienestar y evaluaciones en tu empresa.</p>
+      </div>
+      <div class="how-grid">
+        <div class="how-card"><span class="how-number">01 — Registro</span><div class="how-card-icon">🏢</div><h3 class="how-card-title">Tu empresa se registra</h3><p class="how-card-desc">HR activa la plataforma, configura módulos y gestiona accesos de empleados y candidatos.</p></div>
+        <div class="how-card"><span class="how-number">02 — Activación</span><div class="how-card-icon">⚡</div><h3 class="how-card-title">Empleados y candidatos acceden</h3><p class="how-card-desc">Cada persona recibe acceso personalizado: bienestar para empleados, evaluaciones para candidatos.</p></div>
+        <div class="how-card"><span class="how-number">03 — Resultados</span><div class="how-card-icon">📈</div><h3 class="how-card-title">HR obtiene insights reales</h3><p class="how-card-desc">Reportes automáticos, métricas de bienestar y resultados de evaluaciones para decisiones estratégicas.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-sep"></div>
+
+  <section class="dark-section apply-cta-section">
+    <div class="dark-section-grid"></div>
+    <div class="apply-cta-box" style="position:relative;z-index:1;">
+      <div class="apply-cta-tag">◈ Mind24 Assess</div>
+      <h2 class="apply-cta-title">¿Tienes un código de evaluación?</h2>
+      <p class="apply-cta-subtitle">Accede directamente para contestar tu prueba. Simple, confidencial y sin distracciones.</p>
+      <button class="btn-apply-main" onclick="openModal('modal-evaluacion')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="position:relative;z-index:1;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="position:relative;z-index:1;">Aplicar Evaluación Ahora</span>
+      </button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:4px;"><div class="nav-logo-icon"></div><span class="nav-logo-text">MIND<span>24</span></span></div>
+        <p>Plataforma SaaS de bienestar corporativo y evaluaciones psicométricas para empresas modernas.</p>
+        <div class="footer-chips" style="margin-top:16px;"><span class="footer-chip footer-chip-care">Care</span><span class="footer-chip footer-chip-assess">Assess</span></div>
+      </div>
+      <div><div class="footer-col-title">Plataforma</div><ul class="footer-links"><li><a>Mind24 Care</a></li><li><a>Mind24 Assess</a></li><li><a>Integraciones</a></li><li><a>Seguridad</a></li></ul></div>
+      <div><div class="footer-col-title">Empresa</div><ul class="footer-links"><li><a>Nosotros</a></li><li><a>Blog</a></li><li><a>Casos de éxito</a></li><li><a>Contacto</a></li></ul></div>
+      <div><div class="footer-col-title">Accesos</div><ul class="footer-links"><li><a onclick="openModal('modal-empresa')">Soy Empresa</a></li><li><a onclick="openModal('modal-empleado')">Soy Empleado</a></li><li><a onclick="openModal('modal-evaluacion')">Aplicar Evaluación</a></li><li><a onclick="openModal('modal-login-superadmin')">Administrador general</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2024 MIND24. Todos los derechos reservados.</span><span>Hecho con ♥ para el bienestar corporativo</span></div>
+  </footer>
+</div>
+
+<!-- ════════════════════ MODALS ════════════════════ -->
+<div id="modal-empresa" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-empresa')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-empresa')">✕</button>
+    <div id="emp-s0">
+      <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+      <div class="modal-badge modal-badge-purple">🏢 Acceso Empresarial</div>
+      <h2 class="modal-title">¿Qué deseas hacer?</h2>
+      <p class="modal-subtitle">Selecciona la acción que quieres realizar en la plataforma MIND24.</p>
+      <div class="empresa-split">
+        <div class="empresa-option" onclick="showStep('emp-s-crear','emp-s0')"><div class="empresa-option-icon">📋</div><div class="empresa-option-title">Crear Evaluación</div><div class="empresa-option-desc">Registra un candidato y genera su código de evaluación</div></div>
+        <div class="empresa-option" onclick="showStep('emp-s1','emp-s0')"><div class="empresa-option-icon">📊</div><div class="empresa-option-title">Panel Corporativo</div><div class="empresa-option-desc">Accede al dashboard general de gestión y métricas</div></div>
+      </div>
+    </div>
+    <div id="emp-s-crear" class="hidden">
+      <button class="form-back" onclick="showStep('emp-s0','emp-s-crear')">← Regresar</button>
+      <div class="modal-badge modal-badge-purple">◈ Crear Evaluación</div>
+      <h2 class="modal-title">Acceso al módulo</h2>
+      <p class="modal-subtitle">Ingresa tus credenciales para crear y gestionar evaluaciones psicométricas.</p>
+      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-crear-email" class="form-input" placeholder="admin@empresa.com" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-emp-crear-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+      <button type="button" class="form-submit form-submit-purple" onclick="loginEmpresaCrearEval(event)">Entrar al Módulo →</button>
+      <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:14px;">Acceso restringido a usuarios autorizados por HR.</p>
+    </div>
+    <div id="emp-s1" class="hidden">
+      <button class="form-back" onclick="showStep('emp-s0','emp-s1')">← Regresar</button>
+      <div class="modal-badge modal-badge-purple">Panel Corporativo</div>
+      <h2 class="modal-title">Selecciona tu rol</h2>
+      <p class="modal-subtitle">¿Con qué perfil vas a ingresar al panel corporativo?</p>
+      <div class="access-split">
+        <div class="access-option" onclick="showStep('emp-s2','emp-s1')"><span class="access-option-icon">👤</span><div class="access-option-title">Admin Empresa</div><div class="access-option-desc">Panel corporativo, métricas y gestión de HR</div></div>
+        <div class="access-option" onclick="showStep('emp-s3','emp-s1')"><span class="access-option-icon">🧠</span><div class="access-option-title">Psicólogo</div><div class="access-option-desc">Agenda, pacientes y reportes clínicos</div></div>
+      </div>
+    </div>
+    <div id="emp-s2" class="hidden">
+      <button class="form-back" onclick="showStep('emp-s1','emp-s2')">← Regresar</button>
+      <div class="modal-badge modal-badge-purple">Admin Empresa</div>
+      <h2 class="modal-title">Panel Corporativo</h2>
+      <p class="modal-subtitle">Ingresa con tu cuenta empresarial de MIND24.</p>
+      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-email" class="form-input" placeholder="admin@demo.mind24.local" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-emp-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+      <button type="button" class="form-submit form-submit-purple" onclick="loginEmpresaAdmin(event)">Ingresar al Panel →</button>
+    </div>
+    <div id="emp-s3" class="hidden">
+      <button class="form-back" onclick="showStep('emp-s1','emp-s3')">← Regresar</button>
+      <div class="modal-badge modal-badge-purple">Psicólogo / Clínico</div>
+      <h2 class="modal-title">Portal Psicólogo</h2>
+      <p class="modal-subtitle">Accede a tu agenda, pacientes y reportes.</p>
+      <div class="form-group"><label class="form-label">Correo institucional</label><input type="email" class="form-input" placeholder="psicologo@empresa.com"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
+      <button type="button" class="form-submit form-submit-purple" onclick="alert('Módulo Care / terapias congelado en esta versión.');">Ingresar al Portal →</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-empleado" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-empleado')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-empleado')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-green">🌿 Mind24 Care</div>
+    <h2 class="modal-title">Tu espacio de bienestar</h2>
+    <p class="modal-subtitle">Un lugar seguro para cuidar tu salud mental. Ingresa con tu cuenta de empleado.</p>
+    <div class="form-group"><label class="form-label">Correo de trabajo</label><input type="email" class="form-input" placeholder="tu@empresa.com"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
+    <button type="button" class="form-submit form-submit-green" onclick="alert('Módulo empleado / Care congelado. Para evaluaciones usa «Aplicar Evaluación» o cuenta candidato.');">Entrar a Mi Espacio →</button>
+    <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:16px;">Tus datos son 100% confidenciales y privados.</p>
+  </div>
+</div>
+
+<div id="modal-evaluacion" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-evaluacion')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-evaluacion')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">◈ Mind24 Assess</div>
+    <h2 class="modal-title">Aplicar Evaluación</h2>
+    <p class="modal-subtitle">Ingresa tu código de acceso proporcionado por la empresa para comenzar.</p>
+    <div class="form-group"><label class="form-label">Código de evaluación</label><input type="text" id="eval-codigo" class="form-input" placeholder="Ej. EVAL-2024-XXXX" style="font-weight:600;letter-spacing:2px;text-transform:uppercase;"></div>
+    <div class="form-group"><label class="form-label">Tu nombre completo</label><input type="text" id="eval-nombre" class="form-input" placeholder="Nombre Apellido"></div>
+    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com"></div>
+    <button class="form-submit form-submit-purple" onclick="iniciarEvaluacion()">Comenzar Evaluación →</button>
+    <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:16px;">Asegúrate de tener 40–60 minutos sin interrupciones.</p>
+    <p style="font-size:12px;color:var(--slate-500);text-align:center;margin-top:12px;"><a href="#" onclick="event.preventDefault();closeModal('modal-evaluacion');openModal('modal-login-candidato');" style="color:var(--purple);font-weight:600;">Ya tengo cuenta MIND24 →</a></p>
+  </div>
+</div>
+
+<div id="modal-login-candidato" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-candidato')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-login-candidato')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">Candidato</div>
+    <h2 class="modal-title">Acceso a evaluaciones</h2>
+    <p class="modal-subtitle">Ingresa con el correo y contraseña que te proporcionó la empresa.</p>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-cand-email" class="form-input" placeholder="candidato@demo.mind24.local" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-cand-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="loginCandidato(event)">Ingresar →</button>
+    <p id="login-cand-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+  </div>
+</div>
+
+<div id="modal-login-superadmin" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-superadmin')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-login-superadmin')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">Administrador general</div>
+    <h2 class="modal-title">Acceso exclusivo plataforma</h2>
+    <p class="modal-subtitle">Solo el correo autorizado puede registrar empresas y créditos.</p>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-su-email" class="form-input" placeholder="e.gonzalez@talento24.com" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-su-pass" class="form-input" autocomplete="current-password"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="loginSuperAdmin(event)">Ingresar →</button>
+    <p id="login-su-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+  </div>
+</div>
+
+<!-- ════════════════════ DASH ADMIN ════════════════════ -->
+<div id="view-dash-admin" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-care">● Care + Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Principal</div>
+      <button class="sidebar-item active"><span class="si-icon">📊</span><span>Resumen</span></button>
+      <button class="sidebar-item"><span class="si-icon">👥</span><span>Empleados</span><span class="si-badge">48</span></button>
+      <button class="sidebar-item"><span class="si-icon">📋</span><span>Evaluaciones</span><span class="si-badge">12</span></button>
+      <button class="sidebar-item"><span class="si-icon">🗓</span><span>Agenda</span></button>
+      <div class="sidebar-section-label">Análisis</div>
+      <button class="sidebar-item"><span class="si-icon">📈</span><span>Reportes</span></button>
+      <button class="sidebar-item"><span class="si-icon">❤️</span><span>Bienestar</span></button>
+      <div class="sidebar-section-label">Empresa</div>
+      <button class="sidebar-item"><span class="si-icon">⚙️</span><span>Configuración</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-green" id="dash-admin-av">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-admin-name">Admin HR</div><div class="sidebar-user-role" id="dash-admin-role">Empresa</div></div></div>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Panel Corporativo</div><div class="topbar-subtitle">Miércoles, 15 de Mayo 2024</div></div>
+      <div class="topbar-right"><button class="tb-btn">🔍</button><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-green" style="width:36px;height:36px;font-size:13px;">AM</div></div>
+    </div>
+    <div class="page-content">
+      <div style="margin-bottom:24px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:4px;">Buenos días, Ana ☀️</h2><p style="font-size:14px;color:var(--slate-500);">Aquí está el resumen de actividad de tu empresa esta semana.</p></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-g">👥</div><span class="stat-trend trend-up">↑ +4%</span></div><div class="stat-value">48</div><div class="stat-label">Empleados activos</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-p">📋</div><span class="stat-trend trend-up">↑ +12%</span></div><div class="stat-value">12</div><div class="stat-label">Evaluaciones este mes</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-b">🧘</div><span class="stat-trend trend-up">↑ +8%</span></div><div class="stat-value">87%</div><div class="stat-label">Índice bienestar</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-a">🗓</div><span class="stat-trend trend-dn">↓ -2%</span></div><div class="stat-value">6</div><div class="stat-label">Sesiones pendientes</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Actividad Reciente</div><div class="card-subtitle">Últimos movimientos</div></div><button class="card-action">Ver todo</button></div>
+          <div class="card-body">
+            <div class="act-list">
+              <div class="act-item"><div class="act-dot d-p"></div><div class="act-info"><div class="act-title">Carlos R. completó evaluación DISC</div><div class="act-sub">Mind24 Assess · Perfil D-Alto</div></div><span class="act-time">hace 2h</span></div>
+              <div class="act-item"><div class="act-dot d-p"></div><div class="act-info"><div class="act-title">Sesión de seguimiento — Laura G.</div><div class="act-sub">Mind24 Care · Psic. Rodríguez</div></div><span class="act-time">hace 3h</span></div>
+              <div class="act-item"><div class="act-dot d-b"></div><div class="act-info"><div class="act-title">4 nuevos candidatos registrados</div><div class="act-sub">Proceso: Ventas Q2</div></div><span class="act-time">hace 5h</span></div>
+              <div class="act-item"><div class="act-dot d-a"></div><div class="act-info"><div class="act-title">Reporte mensual generado</div><div class="act-sub">Bienestar corporativo · Mayo 2024</div></div><span class="act-time">Ayer</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Agenda Mayo</div></div>
+            <div class="card-body">
+              <div class="mini-cal">
+                <div class="cal-hd"><span class="cal-month">Mayo 2024</span><div class="cal-nav"><button class="cal-nav-btn">‹</button><button class="cal-nav-btn">›</button></div></div>
+                <div class="cal-days-hd"><div class="cal-dl">L</div><div class="cal-dl">M</div><div class="cal-dl">X</div><div class="cal-dl">J</div><div class="cal-dl">V</div><div class="cal-dl">S</div><div class="cal-dl">D</div></div>
+                <div class="cal-grid">
+                  <div class="cal-day other-m">29</div><div class="cal-day other-m">30</div><div class="cal-day">1</div><div class="cal-day has-ev">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+                  <div class="cal-day">6</div><div class="cal-day has-ev">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day has-ev">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+                  <div class="cal-day">13</div><div class="cal-day has-ev">14</div><div class="cal-day today">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+                  <div class="cal-day has-ev">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day has-ev">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Evaluaciones en curso</div></div>
+            <div class="card-body">
+              <div class="prog-item"><div class="prog-label"><span class="prog-name">DISC Conductual</span><span class="prog-pct">8/10</span></div><div class="prog-track"><div class="prog-fill pf-p" style="width:80%"></div></div></div>
+              <div class="prog-item"><div class="prog-label"><span class="prog-name">Test Cleaver</span><span class="prog-pct">5/8</span></div><div class="prog-track"><div class="prog-fill pf-p" style="width:62%"></div></div></div>
+              <div class="prog-item"><div class="prog-label"><span class="prog-name">Honestidad</span><span class="prog-pct">12/12</span></div><div class="prog-track"><div class="prog-fill pf-p" style="width:100%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dash-grid-3">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Empleados</div><div class="card-subtitle">Actividad de bienestar</div></div><button class="card-action">Ver todos</button></div>
+          <div class="card-body">
+            <div class="ppl-list">
+              <div class="ppl-row"><div class="p-av" style="background:var(--care-gradient);">LG</div><div class="p-info"><div class="p-name">Laura García</div><div class="p-role">Marketing · 4 sesiones</div></div><span class="p-badge pb-active">Activo</span></div>
+              <div class="ppl-row"><div class="p-av" style="background:linear-gradient(135deg,#60A5FA,#2563EB);">CR</div><div class="p-info"><div class="p-name">Carlos Ruiz</div><div class="p-role">Ventas · 2 sesiones</div></div><span class="p-badge pb-review">Revisión</span></div>
+              <div class="ppl-row"><div class="p-av" style="background:var(--assess-gradient);">MP</div><div class="p-info"><div class="p-name">María Pérez</div><div class="p-role">Finanzas · 6 sesiones</div></div><span class="p-badge pb-active">Activo</span></div>
+              <div class="ppl-row"><div class="p-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">JL</div><div class="p-info"><div class="p-name">José López</div><div class="p-role">TI · Sin sesiones</div></div><span class="p-badge pb-new">Nuevo</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Candidatos</div><div class="card-subtitle">Evaluaciones activas</div></div><button class="card-action" onclick="showView('dash-crear-eval')">+ Nuevo</button></div>
+          <div class="card-body">
+            <div class="ppl-list">
+              <div class="ppl-row"><div class="p-av" style="background:var(--assess-gradient);">AR</div><div class="p-info"><div class="p-name">Ana Ramos</div><div class="p-role">Gerente Ventas · Honestidad</div></div><span class="p-badge pb-new">Pendiente</span></div>
+              <div class="ppl-row"><div class="p-av" style="background:linear-gradient(135deg,#A78BFA,#7C3AED);">DM</div><div class="p-info"><div class="p-name">Diego Mora</div><div class="p-role">Dev Senior · DISC</div></div><span class="p-badge pb-review">En curso</span></div>
+              <div class="ppl-row"><div class="p-av" style="background:linear-gradient(135deg,#34D399,#059669);">SC</div><div class="p-info"><div class="p-name">Sofía Castro</div><div class="p-role">Analista · Zavic</div></div><span class="p-badge pb-done">Completo</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Índice de Bienestar</div><div class="card-subtitle">Últimas 7 semanas</div></div></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:12px;">
+              <div style="flex:1;border-radius:4px 4px 0 0;height:60%;background:var(--assess-gradient);opacity:.35;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:70%;background:var(--assess-gradient);opacity:.5;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:55%;background:var(--assess-gradient);opacity:.6;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:80%;background:var(--assess-gradient);opacity:.7;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:75%;background:var(--assess-gradient);opacity:.8;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:90%;background:var(--assess-gradient);opacity:.9;"></div>
+              <div style="flex:1;border-radius:4px 4px 0 0;height:87%;background:var(--assess-gradient);"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--slate-400);font-weight:600;margin-bottom:16px;"><span>S1</span><span>S2</span><span>S3</span><span>S4</span><span>S5</span><span>S6</span><span>S7</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="background:var(--purple-light);border-radius:var(--r-sm);padding:10px 12px;"><div style="font-size:20px;font-weight:900;color:var(--purple);">87%</div><div style="font-size:11px;color:var(--purple-dark);font-weight:600;">Bienestar general</div></div>
+              <div style="background:var(--purple-mid);border-radius:var(--r-sm);padding:10px 12px;"><div style="font-size:20px;font-weight:900;color:var(--purple);">4.2</div><div style="font-size:11px;color:var(--purple-dark);font-weight:600;">Satisfacción media</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH PSICÓLOGO ════════════════════ -->
+<div id="view-dash-psicologo" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-care">Mind24 Care</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Mi Panel</div>
+      <button class="sidebar-item active"><span class="si-icon">🏠</span><span>Inicio</span></button>
+      <button class="sidebar-item"><span class="si-icon">🗓</span><span>Mi Agenda</span><span class="si-badge">3 hoy</span></button>
+      <button class="sidebar-item"><span class="si-icon">👤</span><span>Pacientes</span><span class="si-badge">18</span></button>
+      <div class="sidebar-section-label">Clínico</div>
+      <button class="sidebar-item"><span class="si-icon">📝</span><span>Notas Clínicas</span></button>
+      <button class="sidebar-item"><span class="si-icon">📄</span><span>Reportes</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-purple">DS</div><div class="sidebar-user-info"><div class="sidebar-user-name">Dra. Soto</div><div class="sidebar-user-role">Psicóloga Clínica</div></div></div>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Portal Psicólogo</div><div class="topbar-subtitle">3 sesiones programadas para hoy</div></div>
+      <div class="topbar-right"><button class="tb-btn">🔍</button><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-purple" style="width:36px;height:36px;font-size:13px;">DS</div></div>
+    </div>
+    <div class="page-content">
+      <div style="margin-bottom:24px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:4px;">Buenas tardes, Dra. Soto 🌿</h2><p style="font-size:14px;color:var(--slate-500);">Tienes 3 sesiones hoy y 2 reportes pendientes de revisión.</p></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-p">🗓</div></div><div class="stat-value">3</div><div class="stat-label">Sesiones hoy</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-p">👥</div></div><div class="stat-value">18</div><div class="stat-label">Pacientes asignados</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-b">📝</div></div><div class="stat-value">2</div><div class="stat-label">Reportes pendientes</div></div>
+        <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-a">⭐</div></div><div class="stat-value">4.9</div><div class="stat-label">Valoración media</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Agenda del Día</div><div class="card-subtitle">Miércoles 15 de Mayo · 3 sesiones</div></div><button class="card-action">Nueva sesión</button></div>
+          <div class="card-body">
+            <div class="ses-item"><div class="ses-time"><div class="ses-hour">10</div><div class="ses-period">AM</div></div><div class="ses-div"></div><div class="ses-info"><div class="ses-name">Laura García</div><div class="ses-detail">Sesión #4 · Ansiedad laboral · 50 min</div></div><span class="ses-badge sb-conf">Confirmada</span></div>
+            <div class="ses-item"><div class="ses-time"><div class="ses-hour">12</div><div class="ses-period">PM</div></div><div class="ses-div"></div><div class="ses-info"><div class="ses-name">Carlos Ruiz</div><div class="ses-detail">Sesión #2 · Estrés · 50 min</div></div><span class="ses-badge sb-pend">Pendiente</span></div>
+            <div class="ses-item"><div class="ses-time"><div class="ses-hour">4</div><div class="ses-period">PM</div></div><div class="ses-div"></div><div class="ses-info"><div class="ses-name">María Pérez</div><div class="ses-detail">Sesión #6 · Seguimiento · 50 min</div></div><span class="ses-badge sb-conf">Confirmada</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Mis Pacientes</div><button class="card-action">Ver todos</button></div>
+            <div class="card-body">
+              <div class="ppl-list">
+                <div class="ppl-row"><div class="p-av" style="background:var(--care-gradient);">LG</div><div class="p-info"><div class="p-name">Laura García</div><div class="p-role">Sesión 4/8 · Avanzando</div></div><span class="p-badge pb-active">●</span></div>
+                <div class="ppl-row"><div class="p-av" style="background:linear-gradient(135deg,#60A5FA,#2563EB);">CR</div><div class="p-info"><div class="p-name">Carlos Ruiz</div><div class="p-role">Sesión 2/8 · Inicio</div></div><span class="p-badge pb-review">●</span></div>
+                <div class="ppl-row"><div class="p-av" style="background:var(--assess-gradient);">MP</div><div class="p-info"><div class="p-name">María Pérez</div><div class="p-role">Sesión 6/8 · Cierre</div></div><span class="p-badge pb-active">●</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Reportes</div><button class="card-action">Crear</button></div>
+            <div class="card-body">
+              <div class="act-item" style="border:1px solid var(--slate-100);border-radius:var(--r-sm);padding:12px;"><div class="act-dot d-a"></div><div class="act-info"><div class="act-title">Reporte mensual — L. García</div><div class="act-sub">Pendiente revisión final</div></div></div>
+              <div class="act-item" style="border:1px solid var(--slate-100);border-radius:var(--r-sm);padding:12px;margin-top:8px;"><div class="act-dot d-p"></div><div class="act-info"><div class="act-title">Reporte de alta — S. Torres</div><div class="act-sub">Enviado a HR el 10 may</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH EMPLEADO ════════════════════ -->
+<div id="view-dash-empleado" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-care">Mind24 Care</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Mi Espacio</div>
+      <button class="sidebar-item active"><span class="si-icon">🏠</span><span>Inicio</span></button>
+      <button class="sidebar-item"><span class="si-icon">🗓</span><span>Mis Sesiones</span></button>
+      <button class="sidebar-item"><span class="si-icon">📊</span><span>Mi Progreso</span></button>
+      <button class="sidebar-item"><span class="si-icon">📋</span><span>Evaluaciones</span><span class="si-badge">1</span></button>
+      <div class="sidebar-section-label">Soporte</div>
+      <button class="sidebar-item"><span class="si-icon">💬</span><span>Chat de Apoyo</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-blue">LG</div><div class="sidebar-user-info"><div class="sidebar-user-name">Laura García</div><div class="sidebar-user-role">Empleada · Marketing</div></div></div>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content" style="background:linear-gradient(180deg,#F8FAFC 0%,#ECFDF5 100%);">
+    <div class="topbar" style="background:rgba(255,255,255,.9);backdrop-filter:blur(12px);">
+      <div><div class="topbar-title">Mi Bienestar</div><div class="topbar-subtitle">Tu espacio personal y confidencial</div></div>
+      <div class="topbar-right"><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-blue" style="width:36px;height:36px;font-size:13px;">LG</div></div>
+    </div>
+    <div class="page-content">
+      <div class="wellness-card" style="margin-bottom:24px;">
+        <div class="w-greeting">Hola de nuevo 🌿</div>
+        <div class="w-name">Laura García</div>
+        <div class="w-row">
+          <div class="w-circle"><div class="w-score-num">87</div><div class="w-score-lbl">Bienestar</div></div>
+          <div class="w-info"><div class="w-info-title">Tu índice de bienestar va muy bien</div><div class="w-info-desc">Has completado 4 sesiones este mes. Sigue así, estás haciendo un gran trabajo cuidando tu salud mental.</div></div>
+        </div>
+      </div>
+      <div class="dash-grid" style="margin-bottom:20px;">
+        <div class="next-ses-card">
+          <div class="ns-label">Próxima Sesión</div>
+          <div class="ns-type">Sesión con Dra. Soto</div>
+          <div class="ns-time">📅 Miércoles 15 · 4:00 PM · 50 min</div>
+          <button class="ns-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.361a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unirme a la sesión</button>
+        </div>
+        <div class="eval-prog-card">
+          <div class="ep-label">Evaluación Pendiente</div>
+          <div class="ep-title">Batería de Honestidad</div>
+          <div class="ep-track"><div class="ep-fill" style="width:0%"></div></div>
+          <div class="ep-info"><span>0% completado</span><span>~45 min</span></div>
+          <button onclick="openModal('modal-evaluacion')" style="margin-top:14px;padding:10px 20px;background:var(--assess-gradient);color:white;font-size:13px;font-weight:700;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;">Comenzar ahora →</button>
+        </div>
+      </div>
+      <div class="dash-grid-3">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Mi Progreso</div><div class="card-subtitle">Plan de 8 sesiones</div></div></div>
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:20px;"><div style="font-size:40px;font-weight:900;color:var(--accent-dark);line-height:1;letter-spacing:-1px;">4/8</div><div style="font-size:12px;color:var(--slate-500);margin-top:4px;font-weight:500;">Sesiones completadas</div></div>
+            <div class="prog-item"><div class="prog-label"><span class="prog-name">Bienestar emocional</span><span class="prog-pct" style="color:var(--accent-dark)">78%</span></div><div class="prog-track"><div class="prog-fill pf-g" style="width:78%"></div></div></div>
+            <div class="prog-item"><div class="prog-label"><span class="prog-name">Manejo del estrés</span><span class="prog-pct" style="color:var(--accent-dark)">65%</span></div><div class="prog-track"><div class="prog-fill pf-g" style="width:65%"></div></div></div>
+            <div class="prog-item"><div class="prog-label"><span class="prog-name">Habilidades sociales</span><span class="prog-pct" style="color:var(--accent-dark)">82%</span></div><div class="prog-track"><div class="prog-fill pf-g" style="width:82%"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Actividad Reciente</div></div>
+          <div class="card-body">
+            <div class="act-list">
+              <div class="act-item"><div class="act-dot d-g"></div><div class="act-info"><div class="act-title">Sesión #4 completada</div><div class="act-sub">Ansiedad laboral · 50 min</div></div><span class="act-time">Lun</span></div>
+              <div class="act-item"><div class="act-dot d-b"></div><div class="act-info"><div class="act-title">Recurso leído: Mindfulness</div><div class="act-sub">Biblioteca de bienestar</div></div><span class="act-time">Mar</span></div>
+              <div class="act-item"><div class="act-dot d-p"></div><div class="act-info"><div class="act-title">Evaluación Honestidad asignada</div><div class="act-sub">Por HR · Pendiente</div></div><span class="act-time">Vier</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Mi Agenda</div></div>
+            <div class="card-body">
+              <div class="mini-cal">
+                <div class="cal-hd"><span class="cal-month">Mayo 2024</span><div class="cal-nav"><button class="cal-nav-btn">‹</button><button class="cal-nav-btn">›</button></div></div>
+                <div class="cal-days-hd"><div class="cal-dl">L</div><div class="cal-dl">M</div><div class="cal-dl">X</div><div class="cal-dl">J</div><div class="cal-dl">V</div><div class="cal-dl">S</div><div class="cal-dl">D</div></div>
+                <div class="cal-grid">
+                  <div class="cal-day other-m">29</div><div class="cal-day other-m">30</div><div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+                  <div class="cal-day has-ev">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+                  <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day today">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+                  <div class="cal-day has-ev">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--primary);border-radius:var(--r-lg);padding:20px;color:white;position:relative;overflow:hidden;">
+            <div style="font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Apoyo 24/7</div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3;">¿Necesitas hablar ahora?</div>
+            <div style="font-size:12px;color:var(--slate-400);margin-bottom:14px;">Chat de apoyo disponible en todo momento.</div>
+            <button style="padding:8px 16px;background:var(--assess-gradient);color:white;font-size:12px;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;">💬 Iniciar chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH CREAR EVALUACIÓN ════════════════════ -->
+<div id="view-dash-crear-eval" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button class="sidebar-item active"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button class="sidebar-item"><span class="si-icon">📋</span><span>Mis Evaluaciones</span><span class="si-badge">7</span></button>
+      <button class="sidebar-item"><span class="si-icon">👥</span><span>Candidatos</span></button>
+      <div class="sidebar-section-label">Reportes</div>
+      <button class="sidebar-item"><span class="si-icon">📊</span><span>Resultados</span></button>
+      <div class="sidebar-section-label">Cuenta</div>
+      <button class="sidebar-item" onclick="showView('dash-admin')"><span class="si-icon">📈</span><span>Panel General</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar"><div><div class="topbar-title">Crear Evaluación</div><div class="topbar-subtitle">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><button class="tb-btn">🔍</button><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-green" style="width:36px;height:36px;font-size:13px;">AM</div></div></div>
+    <div class="page-content">
+      <div style="margin-bottom:28px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Nueva Evaluación Psicométrica</h2><p style="font-size:14px;color:var(--slate-500);">Completa los datos del candidato. Se generará un código único automáticamente.</p></div>
+      <div class="dash-grid" style="align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Datos del Candidato</div><div class="card-subtitle">Información personal requerida</div></div><div style="width:36px;height:36px;background:var(--purple-light);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div></div>
+            <div class="card-body">
+              <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Nombre completo <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" placeholder="Ej. Juan Carlos Pérez López" id="inp-nombre"></div>
+              <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">CURP <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" placeholder="Ej. PELJ850101HDFRZN09" id="inp-curp" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;" maxlength="18"></div>
+              <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Correo electrónico <span style="color:var(--purple);">*</span></label><input type="email" class="create-input" placeholder="candidato@correo.com" id="inp-email"></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Puesto al que aplica</label><input type="text" class="create-input" placeholder="Ej. Analista de Ventas Sr." id="inp-puesto"></div>
+            </div>
+          </div>
+          <div class="card" style="border-color:rgba(124,58,237,.2);">
+            <div class="card-header"><div><div class="card-title">Código de Evaluación</div><div class="card-subtitle">Generado automáticamente</div></div></div>
+            <div class="card-body">
+              <div class="code-box"><div><div style="font-size:11px;font-weight:700;color:rgba(167,139,250,.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Código único</div><div class="code-val" id="eval-code-display">EVAL-2024-—</div></div><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;"><button class="code-btn" onclick="genCode()">⟳ Generar</button><button class="code-btn" onclick="copyCode()" style="background:rgba(167,139,250,.1);">⎘ Copiar</button></div></div>
+              <p style="font-size:12px;color:var(--slate-400);margin-top:12px;line-height:1.6;">Este código se enviará automáticamente al correo del candidato al registrar.</p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Módulos de Evaluación</div><div class="card-subtitle">3 seleccionados por defecto</div></div><div style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;" id="mod-counter">3/6 activos</div></div>
+            <div class="card-body">
+              <div class="mod-toggle selected" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">🤝</div><div><div class="mod-name">Honestidad</div><div class="mod-desc">Ética, integridad y valores laborales</div></div></div><div class="mod-check">✓</div></div>
+              <div class="mod-toggle selected" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">⚡</div><div><div class="mod-name">Habilidades</div><div class="mod-desc">Competencias blandas y sociales</div></div></div><div class="mod-check">✓</div></div>
+              <div class="mod-toggle selected" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">📚</div><div><div class="mod-name">Conocimientos</div><div class="mod-desc">Aptitud técnica y cognitiva general</div></div></div><div class="mod-check">✓</div></div>
+              <div class="mod-toggle" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon" style="background:var(--slate-200);">🎯</div><div><div class="mod-name">Perfil DISC</div><div class="mod-desc">Estilos de comportamiento conductual</div></div></div><div class="mod-check"></div></div>
+              <div class="mod-toggle" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon" style="background:var(--slate-200);">🧠</div><div><div class="mod-name">Inteligencia Emocional</div><div class="mod-desc">Autoconciencia y gestión emocional</div></div></div><div class="mod-check"></div></div>
+              <div class="mod-toggle" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon" style="background:var(--slate-200);">🏆</div><div><div class="mod-name">Liderazgo</div><div class="mod-desc">Capacidad de influencia y dirección</div></div></div><div class="mod-check"></div></div>
+            </div>
+          </div>
+          <div style="background:var(--primary);border-radius:var(--r-xl);padding:28px;position:relative;overflow:hidden;">
+            <div style="position:absolute;right:-30px;top:-30px;width:150px;height:150px;background:radial-gradient(circle,rgba(124,58,237,.3) 0%,transparent 70%);border-radius:50%;"></div>
+            <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.06) 1px,transparent 1px);background-size:32px 32px;border-radius:var(--r-xl);"></div>
+            <div style="position:relative;z-index:1;">
+              <div style="font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Resumen</div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Módulos activos</span><span style="font-size:13px;font-weight:700;color:var(--violet-light);" id="resumen-modulos">3 módulos</span></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Tiempo estimado</span><span style="font-size:13px;font-weight:700;color:var(--violet-light);" id="resumen-tiempo">~45 minutos</span></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:24px;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Envío automático</span><span style="font-size:13px;font-weight:700;color:#6EE7B7;">✓ Al correo del candidato</span></div>
+              <button onclick="registrarEval()" style="width:100%;padding:14px;background:var(--purple-gradient);color:white;font-size:15px;font-weight:700;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 24px rgba(124,58,237,.4);transition:all .15s ease;" id="btn-registrar">✓ Registrar y Enviar Evaluación</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ ACCESO DENEGADO ════════════════════ -->
+<div id="view-access-denied" class="app-shell hidden">
+  <main class="main-content" style="max-width:560px;margin:0 auto;padding:48px 24px;">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:40px 28px;">
+        <div style="font-size:48px;margin-bottom:16px;">⛔</div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--primary);margin-bottom:12px;">Acceso no disponible</h1>
+        <p id="access-denied-msg" style="font-size:15px;color:var(--slate-600);line-height:1.65;margin-bottom:28px;">Tu cuenta no puede acceder a este panel.</p>
+        <button type="button" class="form-submit form-submit-purple" onclick="showView('landing')">Volver al inicio</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH SUPERADMIN ════════════════════ -->
+<div id="view-dash-superadmin" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">● Admin general</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Plataforma</div>
+      <button type="button" class="sidebar-item active"><span class="si-icon">🏢</span><span>Empresas y créditos</span></button>
+      <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-evals').scrollIntoView({behavior:'smooth'})"><span class="si-icon">📊</span><span>Evaluaciones globales</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-purple">SA</div><div class="sidebar-user-info"><div class="sidebar-user-name">Superadmin</div><div class="sidebar-user-role" id="su-email-display">—</div></div></div>
+      <button type="button" class="back-btn" onclick="superadminLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+      <button type="button" class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Administrador general</div><div class="topbar-subtitle">Alta de empresas, créditos y visibilidad global</div></div>
+      <div class="topbar-right"><button type="button" class="tb-btn" onclick="refreshSuperadminDashboard()" title="Actualizar">↻</button></div>
+    </div>
+    <div class="page-content">
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-value" id="su-stat-orgs">—</div><div class="stat-label">Empresas registradas</div></div>
+        <div class="stat-card"><div class="stat-value" id="su-stat-ev">—</div><div class="stat-label">Evaluaciones enviadas (total)</div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Registrar nueva empresa</div><div class="card-subtitle">Se crea el acceso del admin de empresa y contraseña aleatoria</div></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Nombre empresa</label><input type="text" id="su-org-name" class="form-input" placeholder="Ej. Talento24"></div>
+            <div><label class="form-label">Slug (opcional)</label><input type="text" id="su-org-slug" class="form-input" placeholder="talento24"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Correo admin empresa</label><input type="email" id="su-admin-email" class="form-input" placeholder="hr@empresa.com"></div>
+            <div><label class="form-label">Nombre admin</label><input type="text" id="su-admin-name" class="form-input" placeholder="Nombre completo"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+            <div><label class="form-label">Créditos iniciales (tokens)</label><input type="number" id="su-org-credits" class="form-input" value="100" min="0"></div>
+            <div style="display:flex;align-items:flex-end;"><button type="button" class="form-submit form-submit-purple" style="width:100%;" onclick="superadminCreateOrg(event)">Crear empresa</button></div>
+          </div>
+          <p id="su-create-result" style="font-size:13px;color:var(--slate-600);display:none;"></p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Empresas</div><div class="card-subtitle">Créditos, bloqueo y eliminación</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Nombre</th><th style="padding:8px;">Slug</th><th style="padding:8px;">Portal</th><th style="padding:8px;">Créditos</th><th style="padding:8px;">Acciones</th></tr></thead><tbody id="su-org-tbody"></tbody></table></div>
+      </div>
+      <div class="card" id="su-scroll-evals">
+        <div class="card-header"><div><div class="card-title">Evaluaciones aplicadas (todas)</div><div class="card-subtitle">Cualquier empresa y candidato</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Fecha</th><th style="padding:8px;">Empresa</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Prueba</th><th style="padding:8px;">Resultado</th></tr></thead><tbody id="su-eval-tbody"></tbody></table></div>
+      </div>
+      <p id="su-dash-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH CANDIDATO (MVP API) ════════════════════ -->
+<div id="view-dash-candidato" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">● Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button class="sidebar-item active"><span class="si-icon">📋</span><span>Mis pruebas</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-purple" id="dash-cand-av">CD</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-cand-name">Candidato</div><div class="sidebar-user-role">Evaluaciones asignadas</div></div></div>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Mis evaluaciones</div><div class="topbar-subtitle">Inicia una prueba asignada por tu empresa</div></div>
+      <div class="topbar-right"><div class="s-avatar av-purple" id="dash-cand-av2" style="width:36px;height:36px;font-size:13px;">CD</div></div>
+    </div>
+    <div class="page-content">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Pruebas asignadas</div><div class="card-subtitle">Completa cada una en una sola sesión</div></div><button type="button" class="card-action" onclick="refreshCandidatoAssignments()">↻ Actualizar</button></div>
+        <div class="card-body"><div id="cand-assignments-list" class="ppl-list"><p style="font-size:14px;color:var(--slate-500);">Cargando…</p></div></div>
+      </div>
+      <p id="cand-assign-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ EVALUACIÓN SIMULATOR ════════════════════ -->
+<div id="view-evaluacion" class="hidden">
+  <div class="eval-topbar">
+    <div class="eval-logo"><div class="eval-logo-icon"></div><div class="eval-logo-name">MIND<span>24</span></div></div>
+    <div class="eval-tb-center">
+      <div class="eval-section-tag" id="evalSecTag">📊 Batería de Honestidad</div>
+      <div class="eval-prog-wrap">
+        <div class="eval-prog-lbl"><span id="evalProgLbl">Pregunta 1 de 50</span><span id="evalProgPct">0%</span></div>
+        <div class="eval-prog-bg"><div class="eval-prog-fill" id="evalProgFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="eval-timer-box">
+      <span style="font-size:16px;">⏱</span>
+      <div><div class="eval-timer-display" id="evalTimer">45:00</div><div class="eval-timer-label">Tiempo restante</div></div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="eval-screen active" id="scr-intro">
+    <div class="eval-intro-card">
+      <div class="eval-intro-badge">◈ Mind24 Assess</div>
+      <h1 class="eval-intro-title" id="eval-intro-title">Batería de<br>Honestidad y Confianza</h1>
+      <p class="eval-intro-subtitle" id="introSub">Esta evaluación mide tus valores, ética y comportamiento en situaciones laborales y personales reales.</p>
+      <div class="eval-intro-meta">
+        <div class="eval-meta-item"><span class="eval-meta-icon">📝</span><div class="eval-meta-value" id="eval-meta-questions">50</div><div class="eval-meta-label">Preguntas</div></div>
+        <div class="eval-meta-item"><span class="eval-meta-icon">⏱</span><div class="eval-meta-value" id="eval-meta-minutes">45</div><div class="eval-meta-label">Tiempo límite (min)</div></div>
+        <div class="eval-meta-item"><span class="eval-meta-icon">🔒</span><div class="eval-meta-value">100%</div><div class="eval-meta-label">Confidencial</div></div>
+      </div>
+      <div class="eval-instructions"><ul>
+        <li>Lee cada situación con cuidado y elige la respuesta que mejor refleje tu comportamiento real.</li>
+        <li>No hay respuestas correctas o incorrectas — responde con total honestidad.</li>
+        <li>Evita interrupciones. El tiempo corre desde que inicies.</li>
+        <li>Responde todas las preguntas antes de enviar.</li>
+        <li>Los resultados son confidenciales y solo visibles para el equipo de HR.</li>
+      </ul></div>
+      <button class="btn-start" onclick="startEval()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg><span>Iniciar Evaluación</span></button>
+    </div>
+  </div>
+
+  <!-- SECTION TRANSITION -->
+  <div class="eval-screen" id="scr-section">
+    <div class="eval-sec-screen">
+      <span class="eval-sec-num" id="secNum">Sección 1 de 3</span>
+      <h2 class="eval-sec-title" id="secTitle">Verificación de Atención</h2>
+      <p class="eval-sec-desc" id="secDesc">Responde estas preguntas con atención.</p>
+      <button class="btn-continue" onclick="enterSection()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="eval-screen" id="scr-question">
+    <div class="eval-q-wrap">
+      <div class="eval-q-hd"><span class="eval-q-num" id="qNum">Pregunta 1</span><span class="eval-q-type" id="qType">Verificación</span></div>
+      <div class="eval-q-card">
+        <p class="eval-q-text" id="qText"></p>
+        <div class="eval-options" id="qOptions"></div>
+      </div>
+      <div class="eval-nav">
+        <button class="btn-prev" id="btnPrev" onclick="prevQ()">← Anterior</button>
+        <span class="q-note" id="qNote">Selecciona una opción para continuar</span>
+        <button class="btn-next" id="btnNext" onclick="nextQ()" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="eval-screen" id="scr-results">
+    <div class="eval-result-wrap">
+      <div class="eval-result-hd">
+        <div class="result-badge" id="resBadge">Calculando...</div>
+        <div class="result-score" id="resScore">--</div>
+        <div class="result-verdict" id="resVerdict">Procesando resultados</div>
+        <p class="result-desc" id="resDesc"></p>
+      </div>
+      <div class="eval-comp-box">
+        <div class="eval-comp-title">📈 Desglose por Competencia</div>
+        <div id="compBars"></div>
+      </div>
+      <div class="eval-flags hidden" id="flagsBox">
+        <span class="flags-icon">⚠️</span>
+        <div class="flags-text"><strong>Observaciones del Sistema</strong><span id="flagsText"></span></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-r-primary" onclick="window.print()">Imprimir Reporte</button>
+        <button class="btn-r-secondary" onclick="showView('landing')">Volver al inicio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ JAVASCRIPT ════════════════════ -->
+<script>
+// ── Views ──
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
+const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-psicologo','dash-empleado']);
+const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
+const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
+function canAccessView(name){
+  if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
+  if(VIEWS_NEED_SUPERADMIN.has(name)){
+    if(!window.__MIND24_SUPERADMIN){ openModal('modal-login-superadmin'); return false; }
+    return true;
+  }
+  if(VIEWS_NEED_EMPRESA_ADMIN.has(name)){
+    const u=window.__MIND24_USER;
+    if(!u||u.role!=='empresa_admin'){ openModal('modal-empresa'); return false; }
+    return true;
+  }
+  if(VIEWS_NEED_CANDIDATO.has(name)){
+    const u=window.__MIND24_USER;
+    if(!u||u.role!=='candidato'){ openModal('modal-login-candidato'); return false; }
+    return true;
+  }
+  return true;
+}
+function showView(name) {
+  if(!canAccessView(name))return;
+  Object.values(VIEWS).forEach(id => { const el=document.getElementById(id); if(el)el.classList.add('hidden'); });
+  const t=document.getElementById(VIEWS[name]);
+  if(t){ t.classList.remove('hidden'); t.classList.add('fade-in'); setTimeout(()=>t.classList.remove('fade-in'),600); window.scrollTo(0,0); }
+  closeAllModals();
+  if(name==='landing'){ window.ATTEMPT_CTX={useApi:false}; }
+  const nav=document.getElementById('mainNav');
+  if(nav){
+    if(name==='landing'||name==='access-denied'){ nav.classList.remove('light-nav'); resumeParticles(); }
+    else { nav.classList.add('light-nav'); pauseParticles(); }
+  }
+  if(name==='dash-superadmin') refreshSuperadminDashboard();
+}
+// ── Modals ──
+function openModal(id){ const m=document.getElementById(id); if(m){m.classList.remove('hidden');document.body.style.overflow='hidden';} }
+function closeModal(id){
+  const m=document.getElementById(id);
+  if(m){m.style.opacity='0';m.style.transition='opacity .2s';setTimeout(()=>{m.classList.add('hidden');m.style.opacity='';m.style.transition='';},200);}
+  document.body.style.overflow='';
+  if(id==='modal-empresa'){['emp-s0','emp-s1','emp-s2','emp-s3','emp-s-crear'].forEach((s,i)=>{const el=document.getElementById(s);if(el)el.classList.toggle('hidden',i!==0);});}
+}
+function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); document.body.style.overflow=''; }
+function closeModalOnBg(e,id){ if(e.target.classList.contains('modal-overlay'))closeModal(id); }
+function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
+// ── Nav scroll ──
+window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNav'); const land=document.getElementById('view-landing'); if(!land.classList.contains('hidden'))nav.classList.toggle('scrolled',window.scrollY>20); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeAllModals(); });
+// ── Sidebar ──
+document.querySelectorAll('.sidebar-item').forEach(item=>{ item.addEventListener('click',function(){ const p=this.closest('aside'); p.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); this.classList.add('active'); }); });
+// ── Canvas particles ──
+let animId, ptcls=[], canvasPaused=false;
+function pauseParticles(){canvasPaused=true;cancelAnimationFrame(animId);}
+function resumeParticles(){canvasPaused=false;drawPtcls();}
+(function initParticles(){
+  const canvas=document.getElementById('heroCanvas'); if(!canvas)return;
+  const ctx=canvas.getContext('2d'); let W,H;
+  function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;}
+  window.addEventListener('resize',resize); resize();
+  function P(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.r=Math.random()*1.8+.4;this.a=Math.random()*.5+.1;}
+  P.prototype.update=function(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W)this.vx*=-1;if(this.y<0||this.y>H)this.vy*=-1;};
+  for(let i=0;i<90;i++)ptcls.push(new P());
+  window.drawPtcls=function(){
+    if(canvasPaused)return;
+    ctx.clearRect(0,0,W,H);
+    ptcls.forEach(p=>p.update());
+    for(let i=0;i<ptcls.length;i++){for(let j=i+1;j<ptcls.length;j++){const dx=ptcls[i].x-ptcls[j].x,dy=ptcls[i].y-ptcls[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<110){ctx.beginPath();ctx.strokeStyle=`rgba(139,92,246,${.18*(1-d/110)})`;ctx.lineWidth=.5;ctx.moveTo(ptcls[i].x,ptcls[i].y);ctx.lineTo(ptcls[j].x,ptcls[j].y);ctx.stroke();}}}
+    ptcls.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(167,139,250,${p.a})`;ctx.fill();});
+    animId=requestAnimationFrame(drawPtcls);
+  };
+  drawPtcls();
+})();
+// ── IntersectionObserver ──
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});
+document.querySelectorAll('.service-card,.how-card,.metric-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(28px)';el.style.transition='opacity .65s ease,transform .65s ease';io.observe(el);});
+// ── Crear Eval utils ──
+function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code='EVAL-'+new Date().getFullYear()+'-'; for(let i=0;i<4;i++)code+=c[Math.floor(Math.random()*c.length)]; code+=Math.floor(100+Math.random()*900); document.getElementById('eval-code-display').textContent=code; }
+function copyCode(){ const v=document.getElementById('eval-code-display').textContent; if(v.includes('—')){genCode();return;} navigator.clipboard?.writeText(v); const b=document.querySelectorAll('.code-btn')[1]; const p=b.textContent; b.textContent='✓ Copiado'; setTimeout(()=>b.textContent=p,1600); }
+let activeMods=3;
+function toggleMod(el){ const sel=el.classList.toggle('selected'); const ch=el.querySelector('.mod-check'),ic=el.querySelector('.mod-icon'); if(sel){ch.textContent='✓';activeMods++;ic.style.background='var(--assess-gradient)';}else{ch.textContent='';activeMods--;ic.style.background='var(--slate-200)';} document.getElementById('resumen-modulos').textContent=activeMods+' módulos'; document.getElementById('resumen-tiempo').textContent='~'+(activeMods*15)+' minutos'; document.getElementById('mod-counter').textContent=activeMods+'/6 activos'; }
+function registrarEval(){ const n=document.getElementById('inp-nombre')?.value,c=document.getElementById('inp-curp')?.value,e=document.getElementById('inp-email')?.value; if(!n||!c||!e){alert('Por favor completa los campos obligatorios.');return;} if(document.getElementById('eval-code-display').textContent.includes('—'))genCode(); const btn=document.getElementById('btn-registrar'); btn.textContent='✅ Evaluación registrada y enviada'; btn.style.background='linear-gradient(135deg,#059669,#047857)'; setTimeout(()=>{btn.textContent='✓ Registrar y Enviar Evaluación';btn.style.background='';},3000); }
+setTimeout(genCode,600);
+
+// ═══════════════════════════════════════════════════════════
+//  API Mind24 (sesión cookie, mismo origen)
+// ═══════════════════════════════════════════════════════════
+window.ATTEMPT_CTX={useApi:false};
+window.__MIND24_USER=null;
+window.__MIND24_SUPERADMIN=null;
+
+async function apiJson(url,opts={}){
+  const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
+  const fullUrl=url.startsWith('http')?url:(base+url);
+  const r=await fetch(fullUrl,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opts));
+  let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch{}
+  if(!r.ok){
+    let msg=(j&&j.message)||t||('HTTP '+r.status);
+    if(r.status===404&&(fullUrl.includes('/api/')||url.startsWith('/api/'))){
+      msg='No existe la ruta de la API (HTTP 404). La interfaz debe cargarse desde el servidor Mind24 (mismo origen que la API): en la carpeta server ejecuta «npm start» o «npm run dev» y abre http://localhost:3000 en el navegador. No uses doble clic en index.html ni Live Server solo para el HTML, porque ahí /api/… no existe.';
+    }
+    const er=new Error(msg);
+    if(j&&j.error)er.code=j.error;
+    throw er;
+  }
+  return j;
+}
+
+function initialsFromName(name){
+  const p=(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length)return'??';
+  if(p.length===1)return p[0].slice(0,2).toUpperCase();
+  return (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+
+async function authLogout(){
+  try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
+  window.__MIND24_USER=null;
+  window.__MIND24_SUPERADMIN=null;
+  window.ATTEMPT_CTX={useApi:false};
+  showView('landing');
+}
+
+async function loginEmpresaAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-emp-email')||{}).value||'';
+  const password=(document.getElementById('login-emp-pass')||{}).value||'';
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
+    window.__MIND24_USER=data.user;
+    closeModal('modal-empresa');
+    const fn=data.user.fullName||data.user.email;
+    const el=document.getElementById('dash-admin-name'); if(el)el.textContent=fn;
+    const av=document.getElementById('dash-admin-av'); if(av)av.textContent=initialsFromName(fn);
+    const rl=document.getElementById('dash-admin-role'); if(rl)rl.textContent='Admin empresa';
+    showView('dash-admin');
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    alert(err.message||'Error de acceso');
+  }
+}
+
+async function loginEmpresaCrearEval(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-emp-crear-email')||{}).value||'';
+  const password=(document.getElementById('login-emp-crear-pass')||{}).value||'';
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
+    window.__MIND24_USER=data.user;
+    closeModal('modal-empresa');
+    showView('dash-crear-eval');
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    alert(err.message||'Error de acceso');
+  }
+}
+
+async function loginCandidato(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-cand-email')||{}).value||'';
+  const password=(document.getElementById('login-cand-pass')||{}).value||'';
+  const errEl=document.getElementById('login-cand-err');
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
+    window.__MIND24_USER=data.user;
+    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+    closeModal('modal-login-candidato');
+    const fn=data.user.fullName||data.user.email;
+    document.getElementById('dash-cand-name').textContent=fn;
+    document.getElementById('dash-cand-av').textContent=initialsFromName(fn);
+    const av2=document.getElementById('dash-cand-av2'); if(av2)av2.textContent=initialsFromName(fn);
+    showView('dash-candidato');
+    refreshCandidatoAssignments();
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); }
+  }
+}
+
+async function loginSuperAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-su-email')||{}).value||'';
+  const password=(document.getElementById('login-su-pass')||{}).value||'';
+  const errEl=document.getElementById('login-su-err');
+  try{
+    await apiJson('/api/superadmin/login',{method:'POST',body:JSON.stringify({email,password})});
+    window.__MIND24_SUPERADMIN={email:email.trim()};
+    window.__MIND24_USER=null;
+    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+    closeModal('modal-login-superadmin');
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=email.trim();
+    showView('dash-superadmin');
+  }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
+}
+
+async function superadminLogout(){
+  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
+  window.__MIND24_SUPERADMIN=null;
+  showView('landing');
+}
+
+async function refreshSuperadminDashboard(){
+  const err=document.getElementById('su-dash-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  try{
+    const [st, orgs, evs]=await Promise.all([
+      apiJson('/api/superadmin/stats'),
+      apiJson('/api/superadmin/organizations'),
+      apiJson('/api/superadmin/evaluations'),
+    ]);
+    const so=document.getElementById('su-stat-orgs'); if(so)so.textContent=String(st.organizations);
+    const se=document.getElementById('su-stat-ev'); if(se)se.textContent=String(st.submittedAttempts);
+    const tb=document.getElementById('su-org-tbody'); if(tb){ tb.innerHTML='';
+      (orgs.organizations||[]).forEach(o=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text){ const x=document.createElement('td'); x.style.padding='8px'; x.textContent=text; tr.appendChild(x); }
+        td(o.name); td(o.slug||'—'); td(o.empresaPortalEnabled?'Sí':'No'); td(String(o.credits));
+        const act=document.createElement('td'); act.style.padding='8px'; act.style.whiteSpace='nowrap';
+        const b1=document.createElement('button'); b1.type='button'; b1.className='card-action'; b1.textContent='+Tokens'; b1.onclick=()=>superadminCredits(o.id);
+        const b2=document.createElement('button'); b2.type='button'; b2.className='card-action'; b2.textContent=o.blocked?'Desbloquear':'Bloquear'; b2.onclick=()=>superadminToggleBlocked(o.id,!o.blocked);
+        const b3=document.createElement('button'); b3.type='button'; b3.className='card-action'; b3.style.color='#DC2626'; b3.textContent='Eliminar'; b3.onclick=()=>superadminDeleteOrg(o.id,o.name);
+        act.appendChild(b1); act.appendChild(document.createTextNode(' ')); act.appendChild(b2); act.appendChild(document.createTextNode(' ')); act.appendChild(b3);
+        tr.appendChild(act); tb.appendChild(tr);
+      });
+    }
+    const etb=document.getElementById('su-eval-tbody'); if(etb){ etb.innerHTML='';
+      (evs.evaluations||[]).forEach(ev=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text){ const x=document.createElement('td'); x.style.padding='8px'; x.textContent=text; tr.appendChild(x); }
+        const d=ev.submittedAt?new Date(ev.submittedAt).toLocaleString('es-MX'):'—';
+        const score=(ev.scores&&ev.scores.global!=null)?String(ev.scores.global)+'%':'—';
+        td(d); td((ev.organization&&ev.organization.name)||'—'); td((ev.candidate&&ev.candidate.fullName)||''); td((ev.assessment&&ev.assessment.name)||''); td(score);
+        etb.appendChild(tr);
+      });
+    }
+  }catch(e){
+    if(err){ err.textContent=e.message||'Error'; err.classList.remove('hidden'); }
+    if(e.code==='SUPERADMIN_REQUIRED'||e.code==='UNAUTHENTICATED'){
+      window.__MIND24_SUPERADMIN=null;
+      showView('landing');
+      openModal('modal-login-superadmin');
+    }
+  }
+}
+
+async function superadminCredits(orgId){
+  const raw=prompt('Tokens / créditos a sumar (número entero, puede ser negativo):','50');
+  if(raw===null)return;
+  const n=parseInt(raw,10); if(Number.isNaN(n)){ alert('Número inválido'); return; }
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'PATCH',body:JSON.stringify({creditsDelta:n})});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminToggleBlocked(orgId,blocked){
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'PATCH',body:JSON.stringify({blocked})});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminDeleteOrg(orgId,name){
+  if(!confirm('¿Eliminar la empresa "'+(name||orgId)+'" y todos sus datos? Esta acción no se puede deshacer.'))return;
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'DELETE'});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminCreateOrg(e){
+  e.preventDefault();
+  const orgName=(document.getElementById('su-org-name')||{}).value||'';
+  const slug=(document.getElementById('su-org-slug')||{}).value||'';
+  const adminEmail=(document.getElementById('su-admin-email')||{}).value||'';
+  const adminFullName=(document.getElementById('su-admin-name')||{}).value||'';
+  const ic=parseInt((document.getElementById('su-org-credits')||{}).value||'0',10);
+  const outEl=document.getElementById('su-create-result');
+  try{
+    const res=await apiJson('/api/superadmin/organizations',{method:'POST',body:JSON.stringify({
+      orgName, slug:slug||null, adminEmail, adminFullName, initialCredits:Number.isNaN(ic)?0:ic,
+    })});
+    if(outEl){
+      outEl.style.display='block';
+      outEl.textContent='Empresa creada. Contraseña generada para '+res.admin.email+': '+res.generatedPassword+' (cópiala ahora; no se volverá a mostrar).';
+    }
+    await refreshSuperadminDashboard();
+  }catch(err){
+    alert(err.message||'Error');
+  }
+}
+
+function buildFlatFromConfig(cfg){
+  const flat=[];
+  for(const sec of (cfg.sections||[])){
+    for(const q of (sec.questions||[])){
+      flat.push({
+        sectionId:sec.id,
+        id:q.id,
+        texto:q.prompt,
+        tipo:q.labelType||'Pregunta',
+        opciones:q.options||[]
+      });
+    }
+  }
+  return flat;
+}
+
+async function refreshCandidatoAssignments(){
+  const box=document.getElementById('cand-assignments-list');
+  const err=document.getElementById('cand-assign-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(!box)return;
+  box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">Cargando…</p>';
+  try{
+    const j=await apiJson('/api/me/assignments');
+    if(!j.assignments||!j.assignments.length){ box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">No tienes evaluaciones asignadas.</p>'; return; }
+    box.innerHTML='';
+    j.assignments.forEach(a=>{
+      const done=a.status==='completed';
+      const row=document.createElement('div');
+      row.className='ppl-row';
+      row.innerHTML='<div class="p-av" style="background:var(--assess-gradient);">📋</div><div class="p-info"><div class="p-name">'+(a.assessment&&a.assessment.name||'Evaluación')+'</div><div class="p-role">'+(done?'Completada':'Pendiente / en curso')+'</div></div>'+
+        (done?'<span class="p-badge pb-done">Listo</span>':'<span class="p-badge pb-new"><button type="button" style="border:none;background:transparent;cursor:pointer;font-weight:700;font-size:12px;padding:0;">Iniciar →</button></span>');
+      if(!done){
+        row.querySelector('button').onclick=()=>startAssignedTest(a.id);
+      }
+      box.appendChild(row);
+    });
+  }catch(e){ box.innerHTML=''; if(err){ err.textContent=e.message; err.classList.remove('hidden'); } }
+}
+
+async function startAssignedTest(assignmentId){
+  try{
+    const j=await apiJson('/api/me/assignments/'+encodeURIComponent(assignmentId)+'/start',{method:'POST'});
+    const cfg=j.config;
+    const flat=buildFlatFromConfig(cfg);
+    const secsList=(cfg.sections||[]).map(s=>({key:s.id,nombre:s.title,desc:s.description}));
+    window.ATTEMPT_CTX={useApi:true,attemptId:j.attemptId,assignmentId:j.assignmentId,flat,secsList,timeLimitSec:j.timeLimitSec||2700};
+    const u=window.__MIND24_USER||{};
+    ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
+    const meta=cfg.meta||{};
+    const titleEl=document.getElementById('eval-intro-title');
+    if(titleEl) titleEl.innerHTML=(meta.title||'Evaluación psicométrica').replace(/\n/g,'<br>');
+    const sub=document.getElementById('introSub');
+    if(sub) sub.textContent=meta.introSubtitle||'Responde con sinceridad. Una sola sesión, sin pausas ni guardado parcial.';
+    const nq=document.getElementById('eval-meta-questions'); if(nq) nq.textContent=String(flat.length);
+    const tm=document.getElementById('eval-meta-minutes'); if(tm) tm.textContent=String(Math.round((j.timeLimitSec||2700)/60));
+    showView('evaluacion');
+    resetEval();
+    showScr('intro');
+  }catch(e){ alert(e.message||'No se pudo iniciar'); }
+}
+
+function renderServerResult(result){
+  const badgeClass=(result.verdict||'').includes('Reservas')?'rb-res':((result.verdict||'').includes('No')?'rb-rep':'rb-apro');
+  document.getElementById('resScore').textContent=(result.global!=null?result.global:'--')+'%';
+  document.getElementById('resVerdict').textContent=result.verdict||'—';
+  document.getElementById('resDesc').textContent=result.description||'';
+  const be=document.getElementById('resBadge'); be.textContent=result.badge||'—'; be.className='result-badge '+badgeClass;
+  const bars=document.getElementById('compBars'); bars.innerHTML='';
+  const dims=result.dimensions||{};
+  Object.values(dims).forEach(d=>{
+    const avg=d.avg, col=avg>=75?'#A78BFA':avg>=50?'#FCD34D':'#FCA5A5';
+    bars.innerHTML+='<div class="comp-item"><div class="comp-lbl"><span class="comp-name">'+(d.label||'')+'</span><span class="comp-score" style="color:'+col+'">'+avg+'%</span></div><div class="comp-track"><div class="comp-fill" data-t="'+avg+'" style="width:0%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div>';
+  });
+  const flags=result.flags||[];
+  const fb=document.getElementById('flagsBox');
+  if(flags.length){ fb.classList.remove('hidden'); document.getElementById('flagsText').textContent=flags.join(' '); }
+  else{ fb.classList.add('hidden'); document.getElementById('flagsText').textContent=''; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MOTOR DE EVALUACIÓN — Batería de Honestidad y Confianza
+// ═══════════════════════════════════════════════════════════
+const BANCO={
+  calibracion:[
+    {id:'c1',texto:'¿Cuál es el día de la semana que sigue después del lunes?',tipo:'Verificación',opciones:['Martes','Jueves','Domingo','Viernes'],correcta:0},
+    {id:'c2',texto:'¿Qué color resulta de mezclar azul y amarillo?',tipo:'Verificación',opciones:['Verde','Rojo','Morado','Naranja'],correcta:0},
+    {id:'c3',texto:'¿Cuántas patas tiene un perro?',tipo:'Verificación',opciones:['Cuatro','Dos','Tres','Seis'],correcta:0},
+    {id:'c4',texto:'Si tienes tres manzanas y das una, ¿cuántas te quedan?',tipo:'Verificación',opciones:['Dos','Una','Tres','Ninguna'],correcta:0},
+    {id:'c5',texto:'¿Cuál es el nombre del planeta en el que vivimos?',tipo:'Verificación',opciones:['Tierra','Marte','Venus','Júpiter'],correcta:0}
+  ],
+  directas:[
+    {id:'d1',texto:'¿Alguna vez has dicho una mentira, incluso si fue por una razón menor?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca he mentido.','No recuerdo haber mentido.','Solo en situaciones muy necesarias.'],puntajes:[100,0,25,50]},
+    {id:'d2',texto:'¿Te has llevado algo que no era tuyo, incluso si era de poco valor?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo por error.','No estoy seguro.'],puntajes:[100,0,50,25]},
+    {id:'d3',texto:'¿Alguna vez has ocultado información importante para evitar problemas?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, siempre soy completamente transparente.','Solo si no era grave.','Prefiero no responder.'],puntajes:[100,0,50,25]},
+    {id:'d4',texto:'¿Te has aprovechado alguna vez de la confianza de alguien?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo en situaciones justificadas.','No estoy seguro.'],puntajes:[100,0,50,25]},
+    {id:'d5',texto:'¿Alguna vez has tomado un atajo que sabías que era incorrecto, pero que te beneficiaba?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo si no afectaba a otros.','Prefiero no decirlo.'],puntajes:[100,0,50,25]}
+  ],
+  principal:[
+    {id:'p1',texto:'Imagina que estás en un supermercado y la cajera te da más cambio del que te corresponde. ¿Qué harías?',tipo:'Lealtad',opciones:['Devolverlo inmediatamente.','Guardar el dinero sin decir nada.','Guardarlo y donarlo a la caridad.','Pensarlo y quizás devolverlo después.'],puntajes:[100,0,50,75],comp:'lealtad'},
+    {id:'p2',texto:'Un amigo te pide que lo cubras en su trabajo porque quiere irse temprano. Sabes que si lo haces, podrías meterlo en problemas. ¿Qué harías?',tipo:'Ética',opciones:['Decirle que no lo harás.','Cubrirlo, pero sólo si no hay riesgos.','Cubrirlo sin pensarlo.','Sugerirle que pida permiso en lugar de irse.'],puntajes:[100,50,0,75],comp:'etica'},
+    {id:'p3',texto:'En una discusión, alguien te acusa injustamente de algo. ¿Cuál es tu reacción más probable?',tipo:'Lealtad',opciones:['Defenderte y explicar los hechos.','Callarte y dejar que las cosas pasen.','Enfrentar a la persona directamente.','Dejar que otros tomen la palabra por ti.'],puntajes:[100,50,75,25],comp:'lealtad'},
+    {id:'p4',texto:'Si descubres un error en tu cuenta bancaria que te beneficia, ¿qué harías?',tipo:'Lealtad',opciones:['Notificar al banco inmediatamente.','Esperar un tiempo a ver si lo corrigen.','Mantener el dinero.','Usarlo y luego devolverlo si lo solicitan.'],puntajes:[100,50,0,25],comp:'lealtad'},
+    {id:'p5',texto:'Te ofrecen un puesto que implica trabajar con información confidencial. ¿Cómo manejarías esta responsabilidad?',tipo:'Integridad',opciones:['Sería muy cuidadoso con la información.','Sólo la compartiría si es absolutamente necesario.','Lo manejaría como cualquier otra información.','No me preocuparía demasiado por eso.'],puntajes:[100,75,50,25],comp:'integridad'},
+    {id:'p6',texto:'Estás trabajando en un proyecto grupal y uno de tus compañeros no está cumpliendo con su parte. ¿Qué harías?',tipo:'Responsabilidad',opciones:['Hablar directamente con la persona.','Informar al líder del grupo.','Ignorarlo y hacer tu parte.','Cubrir su trabajo sin decir nada.'],puntajes:[100,75,50,25],comp:'responsabilidad'},
+    {id:'p7',texto:'Te ofrecen un descuento adicional por un error en la factura de una tienda. ¿Qué haces?',tipo:'Lealtad',opciones:['Informar del error al encargado.','Aprovechar el descuento sin decir nada.','Preguntar si es correcto el descuento.','Usarlo y si preguntan, negar conocimiento.'],puntajes:[100,0,75,25],comp:'lealtad'},
+    {id:'p8',texto:'Un colega te pide que firmes un documento en su nombre. ¿Cuál sería tu respuesta?',tipo:'Lealtad',opciones:['Decir que no puedes hacerlo.','Firmar solo si es urgente.','Firmar sin pensarlo.','Consultar con alguien más antes de hacerlo.'],puntajes:[100,50,0,75],comp:'lealtad'},
+    {id:'p9',texto:'Estás en una fiesta y alguien te cuenta un chisme sobre un amigo cercano. ¿Cómo reaccionas?',tipo:'Honestidad',opciones:['Defiendo a mi amigo.','Escucho pero no lo comparto.','Lo cuento a otro amigo después.','Lo ignoro completamente.'],puntajes:[100,75,25,50],comp:'honestidad'},
+    {id:'p10',texto:'Encuentras un objeto valioso en un lugar público sin dueño visible. ¿Qué harías?',tipo:'Responsabilidad',opciones:['Llevarlo a la oficina de objetos perdidos.','Guardarlo esperando que alguien lo reclame.','Quedártelo.','Intentar buscar al dueño.'],puntajes:[100,50,0,75],comp:'responsabilidad'},
+    {id:'p11',texto:'En tu trabajo, descubres que alguien más está recibiendo el crédito por tu esfuerzo. ¿Qué harías?',tipo:'Integridad',opciones:['Hablar con tu jefe sobre la situación.','Dejar que las cosas sigan así.','Confrontar a la persona directamente.','Buscar reconocimiento en otra área.'],puntajes:[100,50,75,25],comp:'integridad'},
+    {id:'p12',texto:'Te piden que firmes un contrato que no has tenido tiempo de leer. ¿Cómo actúas?',tipo:'Responsabilidad',opciones:['Pedir más tiempo para leerlo.','Firmarlo sin leer para no retrasar el proceso.','Leer solo las partes importantes.','Consultar a alguien antes de firmarlo.'],puntajes:[100,0,50,75],comp:'responsabilidad'},
+    {id:'p13',texto:'Un compañero de trabajo te pide ayuda para cubrir un error suyo. ¿Qué haces?',tipo:'Ética',opciones:['Lo ayudas pero informas al jefe.','Lo ayudas y lo mantienes en secreto.','No lo ayudas y le sugieres que lo enfrente.','Lo ignoras y dejas que lo resuelva solo.'],puntajes:[75,50,100,25],comp:'etica'},
+    {id:'p14',texto:'Estás en una reunión y escuchas que alguien está siendo menospreciado injustamente. ¿Cómo actúas?',tipo:'Integridad',opciones:['Defiendo a la persona injustamente tratada.','Ignoro la situación.','Apoyo a la mayoría aunque no esté de acuerdo.','Cambio de tema para evitar el conflicto.'],puntajes:[100,25,0,50],comp:'integridad'},
+    {id:'p15',texto:'Si fueras testigo de un pequeño robo en una tienda, ¿qué harías?',tipo:'Responsabilidad',opciones:['Informaría inmediatamente al personal.','No haría nada, no es asunto mío.','Esperaría a ver qué hacen los demás.','Informaría sólo si me preguntan.'],puntajes:[100,0,25,50],comp:'responsabilidad'},
+    {id:'p16',texto:'Un compañero de trabajo te pide que lo cubras en un tema en el que sabes que está mintiendo. ¿Qué harías?',tipo:'Responsabilidad',opciones:['Negarte a ayudarlo.','Ayudarlo solo si no hay riesgos.','Ayudarlo sin preguntar.','Informar a alguien más de la situación.'],puntajes:[100,50,0,75],comp:'responsabilidad'},
+    {id:'p17',texto:'Si te piden que cumplas una tarea para la cual no te sientes capacitado, ¿cómo reaccionas?',tipo:'Ética',opciones:['Admito mi falta de experiencia y pido ayuda.','Intento hacerla de todas formas.','La delego a otra persona.','La rechazo inmediatamente.'],puntajes:[100,50,75,25],comp:'etica'},
+    {id:'p18',texto:'Alguien te confía un secreto importante que podría afectar a muchas personas. ¿Cómo actúas?',tipo:'Integridad',opciones:['Guardarlo y no decir nada.','Compartirlo solo con alguien de confianza.','Contarlo si es necesario para evitar daños.','Divulgarlo discretamente.'],puntajes:[100,50,75,0],comp:'integridad'},
+    {id:'p19',texto:'En tu trabajo, te ofrecen una oportunidad de ascenso por un proyecto que realmente no hiciste tú. ¿Qué haces?',tipo:'Ética',opciones:['Acepto el ascenso, pero aclaro el malentendido.','Acepto el ascenso sin decir nada.','Rechazo el ascenso hasta que se aclare la situación.','Acepto y comparto el crédito con quien corresponde.'],puntajes:[75,0,100,50],comp:'etica'},
+    {id:'p20',texto:'Un cliente te pide que modifiques ligeramente un documento para que sea más favorable para él. ¿Qué haces?',tipo:'Honestidad',opciones:['Me niego a hacer la modificación.','Lo hago, pero informo a mi supervisor.','Lo hago sin pensarlo mucho.','Sugiero un cambio más aceptable.'],puntajes:[100,75,0,50],comp:'honestidad'},
+    {id:'p21',texto:'Te enteras de que tu empresa está en una situación financiera difícil y podrían ocurrir despidos. ¿Cómo actúas?',tipo:'Ética',opciones:['Mantengo la calma y continúo trabajando como siempre.','Empiezo a buscar un nuevo trabajo de inmediato.','Informo a otros sobre la situación.','Tomo precauciones pero sigo mi rutina.'],puntajes:[100,50,25,75],comp:'etica'},
+    {id:'p22',texto:'Si tienes que trabajar con alguien que sabes que es deshonesto, ¿cómo te comportarías?',tipo:'Ética',opciones:['Mantengo la relación profesional pero vigilante.','Me alejo lo más posible de esa persona.','Trabajo con él sin importar su reputación.','Intento confrontarlo sobre su comportamiento.'],puntajes:[75,100,50,100],comp:'etica'},
+    {id:'p23',texto:'Si un conocido te pide que le ayudes en algo ilegal, ¿qué harías?',tipo:'Ética',opciones:['Negarme rotundamente.','Lo consideraría dependiendo de las circunstancias.','Ayudaría si no hay riesgo.','Lo haría, pero bajo condiciones.'],puntajes:[100,50,25,0],comp:'etica'},
+    {id:'p24',texto:'En una situación de crisis, ¿cómo sueles tomar decisiones?',tipo:'Ética',opciones:['Tomo decisiones rápidas basadas en principios.','Me tomo el tiempo necesario para reflexionar.','Sigo la mayoría o lo que otros hagan.','Evito tomar decisiones hasta que sea necesario.'],puntajes:[75,100,50,25],comp:'etica'},
+    {id:'p25',texto:'Si un amigo te ofrece una oportunidad para ganar dinero rápidamente pero sospechas que no es del todo legal, ¿qué harías?',tipo:'Honestidad',opciones:['Rechazar la oferta.','Considerar la oferta antes de decidir.','Aceptar si no hay riesgo de ser descubierto.','Aceptar, pero pedir más detalles antes.'],puntajes:[100,50,0,25],comp:'honestidad'},
+    {id:'p26',texto:'Te ofrecen un regalo a cambio de un favor en tu trabajo. ¿Cómo reaccionas?',tipo:'Integridad',opciones:['Rechazo el regalo y explico por qué.','Acepto el regalo pero no hago el favor.','Acepto y hago el favor.','Rechazo el regalo pero ofrezco ayuda dentro de las reglas.'],puntajes:[100,50,0,75],comp:'integridad'},
+    {id:'p27',texto:'Un colega te pide que mientas para cubrirlo en una situación complicada. ¿Qué haces?',tipo:'Honestidad',opciones:['Me niego a mentir.','Miento solo si no hay riesgo.','Miento para ayudarlo sin pensarlo mucho.','Le sugiero una solución alternativa.'],puntajes:[100,50,0,75],comp:'honestidad'},
+    {id:'p28',texto:'Te das cuenta de que cometiste un error en un proyecto importante. ¿Cómo lo manejas?',tipo:'Lealtad',opciones:['Informo inmediatamente a mi supervisor.','Intento corregirlo sin decir nada.','Lo dejo pasar y espero que nadie lo note.','Consulto con un colega antes de tomar una decisión.'],puntajes:[100,75,0,50],comp:'lealtad'},
+    {id:'p29',texto:'Si recibes información confidencial de manera accidental, ¿qué haces?',tipo:'Responsabilidad',opciones:['No la comparto y la devuelvo a su dueño.','La leo pero no la uso.','La comparto con alguien de confianza.','La uso si me beneficia.'],puntajes:[100,50,25,0],comp:'responsabilidad'},
+    {id:'p30',texto:'En una competencia, descubres que un contrincante está haciendo trampa. ¿Cómo reaccionas?',tipo:'Integridad',opciones:['Informo a los organizadores de inmediato.','No hago nada, que se encarguen otros.','Trato de ganar a pesar de la trampa.','Intento hacer trampa también para equilibrar.'],puntajes:[100,25,75,0],comp:'integridad'},
+    {id:'p31',texto:'Te das cuenta de que alguien está siendo acosado en tu entorno laboral. ¿Qué haces?',tipo:'Lealtad',opciones:['Informo a Recursos Humanos o al supervisor.','Hablo con la persona afectada para apoyarla.','Ignoro la situación para evitar problemas.','Hago lo que pueda sin involucrarme directamente.'],puntajes:[100,75,25,50],comp:'lealtad'},
+    {id:'p32',texto:'Un cliente te pide que hagas algo que sabes que va en contra de la política de la empresa. ¿Qué haces?',tipo:'Honestidad',opciones:['Me niego y explico por qué.','Lo hago si no hay riesgo de ser descubierto.','Busco una solución alternativa dentro de las reglas.','Lo hago y después me aseguro de cubrirlo.'],puntajes:[100,25,75,0],comp:'honestidad'},
+    {id:'p33',texto:'Te enteras de que un colega ha hecho algo que podría causar un problema serio en el trabajo. ¿Qué haces?',tipo:'Honestidad',opciones:['Informo a la persona responsable de inmediato.','Hablo con el colega para que lo resuelva.','Ignoro la situación y sigo con mi trabajo.','Lo resuelvo por mi cuenta sin decir nada.'],puntajes:[100,75,25,50],comp:'honestidad'},
+    {id:'p34',texto:'Estás trabajando en un equipo donde alguien no está haciendo su parte. ¿Qué harías?',tipo:'Honestidad',opciones:['Hablo con la persona y ofrezco ayuda.','Informo al líder del equipo.','Ignoro la situación y hago mi trabajo.','Hago su trabajo para que el equipo no se vea afectado.'],puntajes:[100,75,50,25],comp:'honestidad'},
+    {id:'p35',texto:'Te ofrecen la oportunidad de ganar un bono si alcanzas un objetivo poco realista. ¿Qué haces?',tipo:'Responsabilidad',opciones:['Trabajo duro para alcanzarlo aunque sea difícil.','Intento alcanzarlo pero sin comprometer la calidad.','Hago lo que sea necesario para lograrlo.','Renuncio al bono y hago mi trabajo habitual.'],puntajes:[100,75,50,25],comp:'responsabilidad'},
+    {id:'p36',texto:'Un colega que es amigo personal tuyo comete un error que afecta a toda la empresa. ¿Cómo reaccionas?',tipo:'Lealtad',opciones:['Lo informo a quien corresponde.','Hablo con él y le sugiero que lo reporte.','Lo ayudo a encubrirlo.','Lo ignoro para proteger nuestra amistad.'],puntajes:[100,75,25,50],comp:'lealtad'},
+    {id:'p37',texto:'Te enteras de que un proveedor con el que trabajas regularmente está involucrado en actividades poco éticas. ¿Qué haces?',tipo:'Responsabilidad',opciones:['Informo a mi empresa y sugiero cambiar de proveedor.','Continuo trabajando con él pero con precaución.','Ignoro la situación mientras me beneficie.','Intento confrontarlo y pedir explicaciones.'],puntajes:[100,50,25,75],comp:'responsabilidad'},
+    {id:'p38',texto:'Si descubres que la empresa para la que trabajas está involucrada en actividades ilegales, ¿qué harías?',tipo:'Ética',opciones:['Renuncio inmediatamente y lo denuncio.','Continuo trabajando mientras busco otra opción.','No hago nada si no me afecta personalmente.','Intento hacer lo correcto desde dentro.'],puntajes:[100,50,25,75],comp:'etica'},
+    {id:'p39',texto:'En un evento social, alguien comienza a hacer comentarios inapropiados sobre un compañero de trabajo. ¿Cómo reaccionas?',tipo:'Lealtad',opciones:['Defiendo al compañero y detengo los comentarios.','Ignoro los comentarios y me alejo.','Sigo el juego para no causar problemas.','Hablo con el compañero afectado en privado.'],puntajes:[100,50,25,75],comp:'lealtad'},
+    {id:'p40',texto:'Te enteras de que alguien está manipulando los resultados de una evaluación en el trabajo. ¿Qué haces?',tipo:'Honestidad',opciones:['Informo de inmediato a las autoridades pertinentes.','Confronto a la persona directamente.','Lo ignoro si no me afecta directamente.','Intento arreglar el problema sin que se sepa.'],puntajes:[100,75,25,50],comp:'honestidad'}
+  ]
+};
+
+const SECS=[
+  {key:'calibracion',nombre:'Verificación de Atención',desc:'Responde estas preguntas de calentamiento con atención. No afectan el puntaje final.'},
+  {key:'directas',nombre:'Preguntas Directas',desc:'Responde con sinceridad sobre situaciones cotidianas personales.'},
+  {key:'principal',nombre:'Evaluación Principal',desc:'Lee cada situación y elige la respuesta que mejor refleje tu comportamiento real.'}
+];
+const LETRAS=['A','B','C','D'];
+let ES={candidato:{nombre:'',correo:'',codigo:''},secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:2700,terminado:false};
+
+function iniciarEvaluacion(){
+  window.ATTEMPT_CTX={useApi:false};
+  const n=document.getElementById('eval-nombre')?.value||'Candidato';
+  const e=document.getElementById('eval-correo')?.value||'';
+  const c=document.getElementById('eval-codigo')?.value||'';
+  ES.candidato={nombre:n,correo:e,codigo:c};
+  const sub=document.getElementById('introSub');
+  if(sub&&n)sub.textContent=`Hola, ${n}. Esta evaluación mide tus valores, ética y comportamiento en situaciones laborales y personales reales.`;
+  showView('evaluacion');
+  resetEval();
+  showScr('intro');
+}
+function resetEval(){
+  const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
+  const initialSecs=useApi?(window.ATTEMPT_CTX.timeLimitSec||2700):2700;
+  ES={candidato:ES.candidato,secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:initialSecs,terminado:false};
+  clearInterval(ES.timerInt);
+  const td=document.getElementById('evalTimer');
+  if(td){
+    const m=Math.floor(initialSecs/60),s=initialSecs%60;
+    td.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    td.className='eval-timer-display';
+  }
+  updateProg();
+}
+function showScr(name){
+  document.querySelectorAll('.eval-screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('scr-'+name);
+  if(el){el.classList.add('active');el.classList.add('fade-in');setTimeout(()=>el.classList.remove('fade-in'),600);}
+}
+function startEval(){startTimer();showSecTransition(0);}
+function showSecTransition(idx){
+  const list=(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi)?window.ATTEMPT_CTX.secsList:SECS;
+  const s=list[idx];
+  document.getElementById('secNum').textContent=`Sección ${idx+1} de ${list.length}`;
+  document.getElementById('secTitle').textContent=s.nombre;
+  document.getElementById('secDesc').textContent=s.desc;
+  document.getElementById('evalSecTag').textContent=`📊 ${s.nombre}`;
+  showScr('section');
+}
+function enterSection(){loadQ();showScr('question');}
+function getCurrent(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi) return window.ATTEMPT_CTX.flat[ES.globalIdx];
+  return BANCO[SECS[ES.secIdx].key][ES.locIdx];
+}
+function getTotal(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi) return window.ATTEMPT_CTX.flat.length;
+  return BANCO.calibracion.length+BANCO.directas.length+BANCO.principal.length;
+}
+function loadQ(){
+  const p=getCurrent(),total=getTotal(),g=ES.globalIdx;
+  document.getElementById('qNum').textContent=`Pregunta ${g+1} de ${total}`;
+  document.getElementById('qType').textContent=p.tipo;
+  document.getElementById('qText').textContent=p.texto;
+  const container=document.getElementById('qOptions'); container.innerHTML='';
+  p.opciones.forEach((opt,i)=>{
+    const d=document.createElement('div');
+    d.className='eval-opt'+(ES.resp[p.id]===i?' selected':'');
+    d.onclick=()=>selectOpt(p.id,i);
+    d.innerHTML=`<span class="eval-opt-letter">${LETRAS[i]}</span><span class="eval-opt-text">${opt}</span>`;
+    container.appendChild(d);
+  });
+  const has=ES.resp[p.id]!==undefined;
+  document.getElementById('btnPrev').disabled=(g===0);
+  document.getElementById('btnNext').disabled=!has;
+  document.getElementById('btnNext').textContent=(g===total-1)?'Finalizar ✓':'Siguiente →';
+  document.getElementById('qNote').textContent=has?'✓ Respuesta registrada':'Selecciona una opción para continuar';
+  updateProg();
+}
+function updateProg(){
+  const total=getTotal(),pct=Math.round((ES.globalIdx/total)*100);
+  document.getElementById('evalProgFill').style.width=pct+'%';
+  document.getElementById('evalProgPct').textContent=pct+'%';
+  document.getElementById('evalProgLbl').textContent=`Pregunta ${ES.globalIdx+1} de ${total}`;
+}
+function selectOpt(id,idx){
+  ES.resp[id]=idx;
+  document.querySelectorAll('.eval-opt').forEach((el,i)=>el.classList.toggle('selected',i===idx));
+  document.getElementById('btnNext').disabled=false;
+  document.getElementById('qNote').textContent='✓ Respuesta registrada';
+}
+function nextQ(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    const flat=window.ATTEMPT_CTX.flat,total=flat.length;
+    if(ES.globalIdx>=total-1){finishEval();return;}
+    const cur=flat[ES.globalIdx];
+    ES.globalIdx++;
+    const nxt=flat[ES.globalIdx];
+    if(nxt.sectionId!==cur.sectionId){
+      const ix=window.ATTEMPT_CTX.secsList.findIndex(x=>x.key===nxt.sectionId);
+      showSecTransition(ix>=0?ix:0);
+    }else loadQ();
+    return;
+  }
+  const sec=SECS[ES.secIdx],list=BANCO[sec.key],isLast=ES.globalIdx===getTotal()-1;
+  if(isLast){finishEval();return;}
+  ES.locIdx++;ES.globalIdx++;
+  if(ES.locIdx>=list.length){ES.secIdx++;ES.locIdx=0;showSecTransition(ES.secIdx);}
+  else loadQ();
+}
+function prevQ(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    if(ES.globalIdx===0)return;
+    ES.globalIdx--;
+    loadQ();
+    return;
+  }
+  if(ES.globalIdx===0)return;
+  ES.globalIdx--;
+  const cl=BANCO.calibracion.length,dl=BANCO.directas.length,g=ES.globalIdx;
+  if(g<cl){ES.secIdx=0;ES.locIdx=g;}
+  else if(g<cl+dl){ES.secIdx=1;ES.locIdx=g-cl;}
+  else{ES.secIdx=2;ES.locIdx=g-cl-dl;}
+  loadQ();
+}
+function startTimer(){
+  clearInterval(ES.timerInt);
+  ES.timerInt=setInterval(()=>{
+    ES.secs--;
+    const m=Math.floor(ES.secs/60),s=ES.secs%60;
+    const d=document.getElementById('evalTimer');
+    if(d){
+      d.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if(ES.secs<=300)d.className='eval-timer-display warn';
+      if(ES.secs<=60)d.className='eval-timer-display danger';
+    }
+    if(ES.secs<=0){clearInterval(ES.timerInt);finishEval();}
+  },1000);
+}
+function finishEval(){
+  clearInterval(ES.timerInt);ES.terminado=true;
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    (async()=>{
+      try{
+        const j=await apiJson('/api/me/attempts/'+encodeURIComponent(window.ATTEMPT_CTX.attemptId)+'/submit',{method:'POST',body:JSON.stringify({answers:ES.resp})});
+        renderServerResult(j.result);
+        showScr('results');
+        setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+      }catch(err){ alert(err.message||'Error al enviar'); }
+    })();
+    return;
+  }
+  calcResults();showScr('results');
+  setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+}
+function calcResults(){
+  const resp=ES.resp,flags=[];
+  let errCal=0;
+  BANCO.calibracion.forEach(p=>{if(resp[p.id]===undefined||resp[p.id]!==p.correcta)errCal++;});
+  if(errCal>1)flags.push(`Atención reducida detectada: ${errCal} errores en preguntas de verificación.`);
+  let negDir=0;
+  BANCO.directas.forEach(p=>{if(resp[p.id]===1)negDir++;});
+  if(negDir>=3)flags.push('Patrón de negación detectado: respuestas estadísticamente improbables sugieren posible manipulación de resultados.');
+  const comps={
+    honestidad:{nombre:'Honestidad',pts:['p9','p20','p25','p27','p32','p33','p34','p40'],sum:0,cnt:0,avg:0},
+    etica:{nombre:'Ética Personal y Prof.',pts:['p2','p13','p17','p19','p21','p22','p23','p24','p38'],sum:0,cnt:0,avg:0},
+    responsabilidad:{nombre:'Responsabilidad',pts:['p6','p10','p12','p15','p16','p29','p35','p36','p37'],sum:0,cnt:0,avg:0},
+    lealtad:{nombre:'Lealtad',pts:['p1','p3','p4','p7','p8','p28','p31','p39'],sum:0,cnt:0,avg:0},
+    integridad:{nombre:'Integridad',pts:['p5','p11','p14','p18','p26','p30'],sum:0,cnt:0,avg:0}
+  };
+  BANCO.principal.forEach(p=>{const r=resp[p.id];if(r!==undefined&&comps[p.comp]){comps[p.comp].sum+=p.puntajes[r];comps[p.comp].cnt++;}});
+  let total=0,cnt=0;
+  Object.values(comps).forEach(c=>{c.avg=c.cnt>0?Math.round(c.sum/c.cnt):0;total+=c.avg;cnt++;});
+  const global=Math.round(total/cnt);
+  const honPct=comps.honestidad.avg,etPct=comps.etica.avg;
+  let veredicto,badge,desc,bc;
+  if(honPct<70||etPct<70){veredicto='No Aprobatorio';badge='⚠️ No Aprobatorio';desc=`Puntaje global: ${global}%. Las competencias críticas de Honestidad (${honPct}%) y/o Ética (${etPct}%) están por debajo del umbral mínimo del 70%.`;bc='rb-rep';}
+  else if(global<50){veredicto='No Aprobatorio';badge='⚠️ No Aprobatorio';desc=`El puntaje global de ${global}% está por debajo del umbral mínimo requerido del 50%.`;bc='rb-rep';}
+  else if(global<75){veredicto='Aprobatorio con Reservas';badge='📋 Con Reservas';desc=`Puntaje global: ${global}%. El candidato cumple requisitos mínimos. Se recomienda análisis adicional en áreas de riesgo.`;bc='rb-res';}
+  else{veredicto='Aprobatorio';badge='✅ Aprobatorio';desc=`Excelente resultado. Puntaje global de ${global}% supera el umbral aprobatorio (75%). El candidato demuestra sólidos valores de honestidad e integridad.`;bc='rb-apro';}
+  document.getElementById('resScore').textContent=global+'%';
+  document.getElementById('resVerdict').textContent=veredicto;
+  document.getElementById('resDesc').textContent=desc;
+  const be=document.getElementById('resBadge'); be.textContent=badge; be.className='result-badge '+bc;
+  const bars=document.getElementById('compBars'); bars.innerHTML='';
+  Object.values(comps).forEach(c=>{
+    const col=c.avg>=75?'#A78BFA':c.avg>=50?'#FCD34D':'#FCA5A5';
+    bars.innerHTML+=`<div class="comp-item"><div class="comp-lbl"><span class="comp-name">${c.nombre}</span><span class="comp-score" style="color:${col}">${c.avg}%</span></div><div class="comp-track"><div class="comp-fill" data-t="${c.avg}" style="width:0%;background:linear-gradient(90deg,${col}99,${col})"></div></div></div>`;
+  });
+  if(flags.length>0){document.getElementById('flagsBox').classList.remove('hidden');document.getElementById('flagsText').textContent=flags.join(' ');}
+  window.EVAL_RESULT={global,veredicto,comps,flags,candidato:ES.candidato};
+}
+
+// ── Init ──
+setTimeout(genCode,600);
+console.log('🔮 MIND24 v3 — Full platform loaded');
+</script>
+</body>
+</html>

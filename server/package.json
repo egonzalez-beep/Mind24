@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "npx prisma migrate deploy && node src/server.js",
-    "postinstall": "prisma generate",
+    "postinstall": "node scripts/sync-index-html.mjs && prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",

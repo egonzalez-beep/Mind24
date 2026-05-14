@@ -9,15 +9,17 @@ import { env } from './config/env.js';
 import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
+import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../..');
+const indexHtmlAbs = resolveIndexHtmlPath();
 
 const PgStore = pgSession(session);
 
 export function createApp() {
   const app = express();
-  if (env.TRUST_PROXY) app.set('trust proxy', 1);
+  /** Railway (y otros reverse proxies): debe ir antes de express-rate-limit y sesión. */
+  app.set('trust proxy', 1);
 
   if (env.CLIENT_ORIGINS.length) {
     app.use(
@@ -67,7 +69,7 @@ export function createApp() {
   app.use('/api', apiSoftLimiter, apiRoutes);
 
   app.get('/', (_req, res) => {
-    res.sendFile(path.join(repoRoot, 'index.html'));
+    res.sendFile(indexHtmlAbs);
   });
 
   app.use(errorHandler);
