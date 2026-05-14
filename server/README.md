@@ -36,13 +36,49 @@ npm run dev
 
 La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la API bajo `/api/*` en el **mismo origen** (cookies de sesión).
 
-## Railway
+**Importante:** abre siempre **`http://localhost:3000`** (o el `PORT` que uses). Si abres `index.html` con doble clic (`file://`) o solo un servidor estático (p. ej. Live Server en otro puerto), las llamadas a `/api/...` devolverán **HTTP 404** y no podrás iniciar sesión (ni como superadmin ni como empresa).
 
-1. Servicio Node: directorio raíz del repo o `server`; comando de inicio, por ejemplo:  
-   `cd server && npm install && npx prisma migrate deploy && npm run db:seed && npm start`  
-   (ajusta si no quieres ejecutar seed en cada despliegue).
-2. Variables: `DATABASE_URL` y `SESSION_SECRET` (y `NODE_ENV=production`).
-3. Volumen persistente: útil para logs o futuros uploads; la base de datos sigue en PostgreSQL.
+## Railway (producción)
+
+### Servicio Node
+
+1. En **Settings → Root Directory** del servicio Node, pon **`server`** (el `package.json` del backend está ahí; la raíz del repo no tiene otro `package.json`).
+2. **Build**: Nixpacks ejecutará `npm install` (dispara `postinstall` → `prisma generate`). No hace falta Dockerfile.
+3. **Deploy / Start**: usa `server/railway.json` o el script `npm start` del `package.json`:
+   - `npx prisma migrate deploy && node src/server.js`  
+   Así se aplican migraciones en cada arranque y luego levanta Express (escucha `process.env.PORT` que Railway inyecta).
+
+### Variables de entorno (servicio Node)
+
+| Variable | Obligatoria | Notas |
+|----------|-------------|--------|
+| `DATABASE_URL` | Sí | Referencia al plugin Postgres de Railway (suele inyectarse al vincular el servicio). La URL `*.railway.internal` es correcta para tráfico entre servicios en la misma red. |
+| `SESSION_SECRET` | Sí en producción | Cadena larga y aleatoria (`openssl rand -hex 32`). Sin esto el arranque falla si `NODE_ENV=production`. |
+| `NODE_ENV` | Recomendada | `production` (cookies `Secure`, `trust proxy`, etc.). |
+| `PORT` | No | Railway la define sola; el código usa `process.env.PORT \|\| 3000`. |
+| `SUPERADMIN_EMAIL` | Opcional | Por defecto `e.gonzalez@talento24.com` en código. |
+| `SUPERADMIN_PASSWORD_HASH` | Opcional | bcrypt del password del superadmin; si no, se usa el hash de desarrollo embebido en `env.js`. |
+| `CLIENT_ORIGINS` | Opcional | Solo si el HTML se sirve desde otro dominio que no sea el del API (CORS con credenciales). Mismo dominio Railway → déjalo vacío. |
+| `TRUST_PROXY` | Opcional | En producción ya se confía en proxy por defecto; puedes forzar `1`. |
+
+### Postgres
+
+- La tabla **`session`** se crea con la migración inicial de Prisma (`20260214150000_init`); `connect-pg-simple` usa esa tabla (`createTableIfMissing: false`).
+- **Seed (datos demo)** no corre en el arranque. Tras el primer deploy exitoso, ejecuta **una vez** desde la CLI de Railway o “Run command”:  
+  `npm run db:seed`  
+  (con el mismo `DATABASE_URL` y estando en el directorio `server`).
+
+### URLs a probar
+
+Sustituye `TU_DOMINIO` por el hostname público del servicio (p. ej. `mind24-production.up.railway.app`):
+
+- `https://TU_DOMINIO/api/health` → JSON `{ "ok": true, "db": "up" }` si Postgres responde.
+- `https://TU_DOMINIO/` → `index.html` (mismo origen que `/api/*`, cookies de sesión válidas).
+
+### Qué queda operativo tras el deploy
+
+- API bajo `/api/*`, UI en `/`, Prisma + PostgreSQL, sesiones en tabla `session`, login auth y superadmin, mismas rutas que en local.
+- CRUD de empresas (superadmin), org/candidatos/asignaciones/evaluaciones (según roles) **una vez** aplicadas migraciones y, si quieres cuentas demo, el seed.
 
 ## Cuentas de demostración (tras `npm run db:seed`)
 
