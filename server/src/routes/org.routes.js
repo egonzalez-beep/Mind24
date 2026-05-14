@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
+import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
 import { assertEmpresaAdmin, createCandidateForOrg, listCandidates } from '../services/candidate.service.js';
 import { createAssignment, listAssignmentsForOrg } from '../services/assignment.service.js';
 import { listDefinitionsForOrg } from '../services/assessmentDefinition.service.js';
 
 const router = Router();
 
-router.use(requireAuth, requireRole('empresa_admin'));
+router.use(requireAuth, requireRole('empresa_admin'), requireEmpresaPortal);
 
 router.get('/candidates', async (req, res, next) => {
   try {

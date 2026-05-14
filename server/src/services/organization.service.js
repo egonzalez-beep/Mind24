@@ -7,12 +7,13 @@ export async function listOrganizations() {
   });
 }
 
-export async function createOrganization({ name, slug, credits = 0 }) {
+export async function createOrganization({ name, slug, credits = 0, empresaPortalEnabled = false }) {
   return prisma.organization.create({
     data: {
       name: name.trim(),
       slug: slug?.trim() || null,
       credits,
+      empresaPortalEnabled,
     },
   });
 }

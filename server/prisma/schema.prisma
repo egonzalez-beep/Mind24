@@ -35,13 +35,15 @@ model Session {
 }
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String?  @unique
-  blocked   Boolean  @default(false)
-  credits   Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  name                   String
+  slug                   String?  @unique
+  blocked                Boolean  @default(false)
+  credits                Int      @default(0)
+  /// Solo true si el admin general dio de alta la empresa; sin esto no pueden entrar empresa ni candidatos.
+  empresaPortalEnabled   Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   users                 User[]
   candidates            Candidate[]
@@ -55,7 +57,7 @@ model User {
   fullName       String
   role           UserRole
   organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

@@ -22,6 +22,21 @@ export async function authenticateUser(email, password) {
     err.code = 'INVALID_CREDENTIALS';
     throw err;
   }
+  if (user.role === 'master_admin') {
+    const err = new Error('Este tipo de cuenta ya no usa el login estándar. Usa el acceso de administrador general.');
+    err.code = 'MASTER_LOGIN_DISABLED';
+    throw err;
+  }
+  if ((user.role === 'empresa_admin' || user.role === 'candidato') && user.organizationId) {
+    const org = user.organization;
+    if (!org?.empresaPortalEnabled) {
+      const err = new Error(
+        'Tu empresa no está habilitada en la plataforma. El administrador general debe registrar la empresa antes de que puedas acceder.',
+      );
+      err.code = 'EMPRESA_NOT_PROVISIONED';
+      throw err;
+    }
+  }
   return user;
 }
 

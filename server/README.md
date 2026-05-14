@@ -16,6 +16,7 @@ Opcional:
 
 - `CLIENT_ORIGINS` — orígenes separados por coma si el front se sirve en otro dominio (CORS con credenciales).
 - `TRUST_PROXY=1` — si el servicio está detrás de proxy (por defecto se confía en `X-Forwarded-*` en `NODE_ENV=production`).
+- **Superadmin (panel en la web):** `SUPERADMIN_EMAIL` (único correo permitido) y `SUPERADMIN_PASSWORD_HASH` (bcrypt de la contraseña). Si no defines el hash, el servidor usa un hash embebido solo para desarrollo (contraseña por defecto documentada en `src/config/env.js`). El superadmin **no** es un usuario en base de datos; la sesión es cookie httpOnly en `/api/superadmin/*`.
 
 ## Comandos
 
@@ -47,9 +48,10 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 
 | Rol | Email | Contraseña |
 |-----|--------|--------------|
-| master_admin | master@mind24.local | ChangeMeMaster123! |
 | empresa_admin | admin@demo.mind24.local | ChangeMeAdmin123! |
 | candidato | candidato@demo.mind24.local | ChangeMeCandidato123! |
+
+El panel de **administrador general** no viene del seed: usa `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD_HASH` (o el hash por defecto de desarrollo en código). Crea empresas desde el UI o vía `POST /api/superadmin/organizations` con sesión de superadmin.
 
 Cambia estas contraseñas en producción.
 
@@ -59,7 +61,7 @@ Cambia estas contraseñas en producción.
 - `POST /api/auth/login` — body `{ "email", "password" }`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
-- **master_admin:** `GET/POST /api/master/organizations`, `PATCH /api/master/organizations/:id`, `GET /api/master/stats`, `POST /api/master/assessment-definitions`
+- **Superadmin (sesión aparte, `req.session.superAdmin`):** `POST /api/superadmin/login`, `POST /api/superadmin/logout`, `GET /api/superadmin/me`, y con sesión válida: organizaciones, créditos, evaluaciones globales, etc. (ver `src/routes/superadmin.routes.js`).
 - **empresa_admin:** `GET/POST /api/org/candidates`, `GET /api/org/assessment-definitions`, `GET/POST /api/org/assignments`
 - **candidato:** `GET /api/me/assignments`, `POST /api/me/assignments/:id/start`, `POST /api/me/attempts/:id/submit`, `GET /api/me/attempts/:id/result`
 

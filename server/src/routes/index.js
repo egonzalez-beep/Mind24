@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../db/client.js';
 import authRoutes from './auth.routes.js';
-import masterRoutes from './master.routes.js';
+import superadminRoutes from './superadmin.routes.js';
 import orgRoutes from './org.routes.js';
 import meRoutes from './me.routes.js';
 
@@ -17,7 +17,7 @@ router.get('/health', async (_req, res, next) => {
 });
 
 router.use('/auth', authRoutes);
-router.use('/master', masterRoutes);
+router.use('/superadmin', superadminRoutes);
 router.use('/org', orgRoutes);
 router.use('/me', meRoutes);
 

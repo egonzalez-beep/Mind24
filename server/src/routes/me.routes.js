@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
+import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
 import { listMyAssignments, startAttempt, submitAttempt, getAttemptResult } from '../services/attempt.service.js';
 
 const router = Router();
 
-router.use(requireAuth, requireRole('candidato'));
+router.use(requireAuth, requireRole('candidato'), requireEmpresaPortal);
 
 router.get('/assignments', async (req, res, next) => {
   try {

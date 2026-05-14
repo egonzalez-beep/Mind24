@@ -663,7 +663,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div><div class="footer-col-title">Plataforma</div><ul class="footer-links"><li><a>Mind24 Care</a></li><li><a>Mind24 Assess</a></li><li><a>Integraciones</a></li><li><a>Seguridad</a></li></ul></div>
       <div><div class="footer-col-title">Empresa</div><ul class="footer-links"><li><a>Nosotros</a></li><li><a>Blog</a></li><li><a>Casos de éxito</a></li><li><a>Contacto</a></li></ul></div>
-      <div><div class="footer-col-title">Accesos</div><ul class="footer-links"><li><a onclick="openModal('modal-empresa')">Soy Empresa</a></li><li><a onclick="openModal('modal-empleado')">Soy Empleado</a></li><li><a onclick="openModal('modal-evaluacion')">Aplicar Evaluación</a></li><li><a onclick="openModal('modal-login-master')">Acceso master</a></li></ul></div>
+      <div><div class="footer-col-title">Accesos</div><ul class="footer-links"><li><a onclick="openModal('modal-empresa')">Soy Empresa</a></li><li><a onclick="openModal('modal-empleado')">Soy Empleado</a></li><li><a onclick="openModal('modal-evaluacion')">Aplicar Evaluación</a></li><li><a onclick="openModal('modal-login-superadmin')">Administrador general</a></li></ul></div>
     </div>
     <div class="footer-bottom"><span>© 2024 MIND24. Todos los derechos reservados.</span><span>Hecho con ♥ para el bienestar corporativo</span></div>
   </footer>
@@ -688,9 +688,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="modal-badge modal-badge-purple">◈ Crear Evaluación</div>
       <h2 class="modal-title">Acceso al módulo</h2>
       <p class="modal-subtitle">Ingresa tus credenciales para crear y gestionar evaluaciones psicométricas.</p>
-      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" class="form-input" placeholder="nombre@empresa.com"></div>
-      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
-      <button class="form-submit form-submit-purple" onclick="showView('dash-crear-eval')">Entrar al Módulo →</button>
+      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-crear-email" class="form-input" placeholder="admin@empresa.com" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-emp-crear-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+      <button type="button" class="form-submit form-submit-purple" onclick="loginEmpresaCrearEval(event)">Entrar al Módulo →</button>
       <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:14px;">Acceso restringido a usuarios autorizados por HR.</p>
     </div>
     <div id="emp-s1" class="hidden">
@@ -719,7 +719,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <p class="modal-subtitle">Accede a tu agenda, pacientes y reportes.</p>
       <div class="form-group"><label class="form-label">Correo institucional</label><input type="email" class="form-input" placeholder="psicologo@empresa.com"></div>
       <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
-      <button class="form-submit form-submit-purple" onclick="showView('dash-psicologo')">Ingresar al Portal →</button>
+      <button type="button" class="form-submit form-submit-purple" onclick="alert('Módulo Care / terapias congelado en esta versión.');">Ingresar al Portal →</button>
     </div>
   </div>
 </div>
@@ -733,7 +733,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <p class="modal-subtitle">Un lugar seguro para cuidar tu salud mental. Ingresa con tu cuenta de empleado.</p>
     <div class="form-group"><label class="form-label">Correo de trabajo</label><input type="email" class="form-input" placeholder="tu@empresa.com"></div>
     <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
-    <button class="form-submit form-submit-green" onclick="showView('dash-empleado')">Entrar a Mi Espacio →</button>
+    <button type="button" class="form-submit form-submit-green" onclick="alert('Módulo empleado / Care congelado. Para evaluaciones usa «Aplicar Evaluación» o cuenta candidato.');">Entrar a Mi Espacio →</button>
     <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:16px;">Tus datos son 100% confidenciales y privados.</p>
   </div>
 </div>
@@ -768,17 +768,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
-<div id="modal-login-master" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-master')">
+<div id="modal-login-superadmin" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-superadmin')">
   <div class="modal-card">
-    <button class="modal-close" onclick="closeModal('modal-login-master')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-login-superadmin')">✕</button>
     <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
-    <div class="modal-badge modal-badge-purple">Master</div>
-    <h2 class="modal-title">Administración plataforma</h2>
-    <p class="modal-subtitle">Acceso restringido.</p>
-    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-master-email" class="form-input" placeholder="master@mind24.local" autocomplete="username"></div>
-    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-master-pass" class="form-input" autocomplete="current-password"></div>
-    <button type="button" class="form-submit form-submit-purple" onclick="loginMaster(event)">Ingresar →</button>
-    <p id="login-master-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+    <div class="modal-badge modal-badge-purple">Administrador general</div>
+    <h2 class="modal-title">Acceso exclusivo plataforma</h2>
+    <p class="modal-subtitle">Solo el correo autorizado puede registrar empresas y créditos.</p>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-su-email" class="form-input" placeholder="e.gonzalez@talento24.com" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-su-pass" class="form-input" autocomplete="current-password"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="loginSuperAdmin(event)">Ingresar →</button>
+    <p id="login-su-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
   </div>
 </div>
 
@@ -1131,6 +1131,76 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </main>
 </div>
 
+<!-- ════════════════════ ACCESO DENEGADO ════════════════════ -->
+<div id="view-access-denied" class="app-shell hidden">
+  <main class="main-content" style="max-width:560px;margin:0 auto;padding:48px 24px;">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:40px 28px;">
+        <div style="font-size:48px;margin-bottom:16px;">⛔</div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--primary);margin-bottom:12px;">Acceso no disponible</h1>
+        <p id="access-denied-msg" style="font-size:15px;color:var(--slate-600);line-height:1.65;margin-bottom:28px;">Tu cuenta no puede acceder a este panel.</p>
+        <button type="button" class="form-submit form-submit-purple" onclick="showView('landing')">Volver al inicio</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ DASH SUPERADMIN ════════════════════ -->
+<div id="view-dash-superadmin" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">● Admin general</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Plataforma</div>
+      <button type="button" class="sidebar-item active"><span class="si-icon">🏢</span><span>Empresas y créditos</span></button>
+      <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-evals').scrollIntoView({behavior:'smooth'})"><span class="si-icon">📊</span><span>Evaluaciones globales</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-purple">SA</div><div class="sidebar-user-info"><div class="sidebar-user-name">Superadmin</div><div class="sidebar-user-role" id="su-email-display">—</div></div></div>
+      <button type="button" class="back-btn" onclick="superadminLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+      <button type="button" class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Administrador general</div><div class="topbar-subtitle">Alta de empresas, créditos y visibilidad global</div></div>
+      <div class="topbar-right"><button type="button" class="tb-btn" onclick="refreshSuperadminDashboard()" title="Actualizar">↻</button></div>
+    </div>
+    <div class="page-content">
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-value" id="su-stat-orgs">—</div><div class="stat-label">Empresas registradas</div></div>
+        <div class="stat-card"><div class="stat-value" id="su-stat-ev">—</div><div class="stat-label">Evaluaciones enviadas (total)</div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Registrar nueva empresa</div><div class="card-subtitle">Se crea el acceso del admin de empresa y contraseña aleatoria</div></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Nombre empresa</label><input type="text" id="su-org-name" class="form-input" placeholder="Ej. Talento24"></div>
+            <div><label class="form-label">Slug (opcional)</label><input type="text" id="su-org-slug" class="form-input" placeholder="talento24"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Correo admin empresa</label><input type="email" id="su-admin-email" class="form-input" placeholder="hr@empresa.com"></div>
+            <div><label class="form-label">Nombre admin</label><input type="text" id="su-admin-name" class="form-input" placeholder="Nombre completo"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+            <div><label class="form-label">Créditos iniciales (tokens)</label><input type="number" id="su-org-credits" class="form-input" value="100" min="0"></div>
+            <div style="display:flex;align-items:flex-end;"><button type="button" class="form-submit form-submit-purple" style="width:100%;" onclick="superadminCreateOrg(event)">Crear empresa</button></div>
+          </div>
+          <p id="su-create-result" style="font-size:13px;color:var(--slate-600);display:none;"></p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Empresas</div><div class="card-subtitle">Créditos, bloqueo y eliminación</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Nombre</th><th style="padding:8px;">Slug</th><th style="padding:8px;">Portal</th><th style="padding:8px;">Créditos</th><th style="padding:8px;">Acciones</th></tr></thead><tbody id="su-org-tbody"></tbody></table></div>
+      </div>
+      <div class="card" id="su-scroll-evals">
+        <div class="card-header"><div><div class="card-title">Evaluaciones aplicadas (todas)</div><div class="card-subtitle">Cualquier empresa y candidato</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Fecha</th><th style="padding:8px;">Empresa</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Prueba</th><th style="padding:8px;">Resultado</th></tr></thead><tbody id="su-eval-tbody"></tbody></table></div>
+      </div>
+      <p id="su-dash-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+    </div>
+  </main>
+</div>
+
 <!-- ════════════════════ DASH CANDIDATO (MVP API) ════════════════════ -->
 <div id="view-dash-candidato" class="app-shell hidden">
   <aside class="sidebar">
@@ -1253,15 +1323,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
-const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-candidato':'view-dash-candidato', evaluacion:'view-evaluacion' };
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
+const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-psicologo','dash-empleado']);
+const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
+const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
+function canAccessView(name){
+  if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
+  if(VIEWS_NEED_SUPERADMIN.has(name)){
+    if(!window.__MIND24_SUPERADMIN){ openModal('modal-login-superadmin'); return false; }
+    return true;
+  }
+  if(VIEWS_NEED_EMPRESA_ADMIN.has(name)){
+    const u=window.__MIND24_USER;
+    if(!u||u.role!=='empresa_admin'){ openModal('modal-empresa'); return false; }
+    return true;
+  }
+  if(VIEWS_NEED_CANDIDATO.has(name)){
+    const u=window.__MIND24_USER;
+    if(!u||u.role!=='candidato'){ openModal('modal-login-candidato'); return false; }
+    return true;
+  }
+  return true;
+}
 function showView(name) {
+  if(!canAccessView(name))return;
   Object.values(VIEWS).forEach(id => { const el=document.getElementById(id); if(el)el.classList.add('hidden'); });
   const t=document.getElementById(VIEWS[name]);
   if(t){ t.classList.remove('hidden'); t.classList.add('fade-in'); setTimeout(()=>t.classList.remove('fade-in'),600); window.scrollTo(0,0); }
   closeAllModals();
   if(name==='landing'){ window.ATTEMPT_CTX={useApi:false}; }
   const nav=document.getElementById('mainNav');
-  if(name==='landing'){ nav.classList.remove('light-nav'); resumeParticles(); } else { nav.classList.add('light-nav'); pauseParticles(); }
+  if(nav){
+    if(name==='landing'||name==='access-denied'){ nav.classList.remove('light-nav'); resumeParticles(); }
+    else { nav.classList.add('light-nav'); pauseParticles(); }
+  }
+  if(name==='dash-superadmin') refreshSuperadminDashboard();
 }
 // ── Modals ──
 function openModal(id){ const m=document.getElementById(id); if(m){m.classList.remove('hidden');document.body.style.overflow='hidden';} }
@@ -1317,11 +1413,16 @@ setTimeout(genCode,600);
 // ═══════════════════════════════════════════════════════════
 window.ATTEMPT_CTX={useApi:false};
 window.__MIND24_USER=null;
+window.__MIND24_SUPERADMIN=null;
 
 async function apiJson(url,opts={}){
   const r=await fetch(url,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opts));
   let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch{}
-  if(!r.ok) throw new Error((j&&j.message)||t||('HTTP '+r.status));
+  if(!r.ok){
+    const er=new Error((j&&j.message)||t||('HTTP '+r.status));
+    if(j&&j.error)er.code=j.error;
+    throw er;
+  }
   return j;
 }
 
@@ -1334,7 +1435,9 @@ function initialsFromName(name){
 
 async function authLogout(){
   try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
   window.__MIND24_USER=null;
+  window.__MIND24_SUPERADMIN=null;
   window.ATTEMPT_CTX={useApi:false};
   showView('landing');
 }
@@ -1346,6 +1449,7 @@ async function loginEmpresaAdmin(e){
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
     window.__MIND24_USER=data.user;
     closeModal('modal-empresa');
     const fn=data.user.fullName||data.user.email;
@@ -1353,7 +1457,35 @@ async function loginEmpresaAdmin(e){
     const av=document.getElementById('dash-admin-av'); if(av)av.textContent=initialsFromName(fn);
     const rl=document.getElementById('dash-admin-role'); if(rl)rl.textContent='Admin empresa';
     showView('dash-admin');
-  }catch(err){ alert(err.message||'Error de acceso'); }
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    alert(err.message||'Error de acceso');
+  }
+}
+
+async function loginEmpresaCrearEval(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-emp-crear-email')||{}).value||'';
+  const password=(document.getElementById('login-emp-crear-pass')||{}).value||'';
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
+    window.__MIND24_USER=data.user;
+    closeModal('modal-empresa');
+    showView('dash-crear-eval');
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    alert(err.message||'Error de acceso');
+  }
 }
 
 async function loginCandidato(e){
@@ -1364,6 +1496,7 @@ async function loginCandidato(e){
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_SUPERADMIN=null;
     window.__MIND24_USER=data.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-candidato');
@@ -1373,22 +1506,128 @@ async function loginCandidato(e){
     const av2=document.getElementById('dash-cand-av2'); if(av2)av2.textContent=initialsFromName(fn);
     showView('dash-candidato');
     refreshCandidatoAssignments();
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
+      if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      showView('access-denied');
+      return;
+    }
+    if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); }
+  }
+}
+
+async function loginSuperAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-su-email')||{}).value||'';
+  const password=(document.getElementById('login-su-pass')||{}).value||'';
+  const errEl=document.getElementById('login-su-err');
+  try{
+    await apiJson('/api/superadmin/login',{method:'POST',body:JSON.stringify({email,password})});
+    window.__MIND24_SUPERADMIN={email:email.trim()};
+    window.__MIND24_USER=null;
+    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+    closeModal('modal-login-superadmin');
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=email.trim();
+    showView('dash-superadmin');
   }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
 }
 
-async function loginMaster(e){
-  e.preventDefault();
-  const email=(document.getElementById('login-master-email')||{}).value||'';
-  const password=(document.getElementById('login-master-pass')||{}).value||'';
-  const errEl=document.getElementById('login-master-err');
+async function superadminLogout(){
+  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
+  window.__MIND24_SUPERADMIN=null;
+  showView('landing');
+}
+
+async function refreshSuperadminDashboard(){
+  const err=document.getElementById('su-dash-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
   try{
-    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
-    if(data.user.role!=='master_admin'){ alert('Esta cuenta no es master.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
-    window.__MIND24_USER=data.user;
-    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
-    closeModal('modal-login-master');
-    alert('Sesión master activa. Usa la API en /api/master/* o Prisma Studio para gestión avanzada.');
-  }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
+    const [st, orgs, evs]=await Promise.all([
+      apiJson('/api/superadmin/stats'),
+      apiJson('/api/superadmin/organizations'),
+      apiJson('/api/superadmin/evaluations'),
+    ]);
+    const so=document.getElementById('su-stat-orgs'); if(so)so.textContent=String(st.organizations);
+    const se=document.getElementById('su-stat-ev'); if(se)se.textContent=String(st.submittedAttempts);
+    const tb=document.getElementById('su-org-tbody'); if(tb){ tb.innerHTML='';
+      (orgs.organizations||[]).forEach(o=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text){ const x=document.createElement('td'); x.style.padding='8px'; x.textContent=text; tr.appendChild(x); }
+        td(o.name); td(o.slug||'—'); td(o.empresaPortalEnabled?'Sí':'No'); td(String(o.credits));
+        const act=document.createElement('td'); act.style.padding='8px'; act.style.whiteSpace='nowrap';
+        const b1=document.createElement('button'); b1.type='button'; b1.className='card-action'; b1.textContent='+Tokens'; b1.onclick=()=>superadminCredits(o.id);
+        const b2=document.createElement('button'); b2.type='button'; b2.className='card-action'; b2.textContent=o.blocked?'Desbloquear':'Bloquear'; b2.onclick=()=>superadminToggleBlocked(o.id,!o.blocked);
+        const b3=document.createElement('button'); b3.type='button'; b3.className='card-action'; b3.style.color='#DC2626'; b3.textContent='Eliminar'; b3.onclick=()=>superadminDeleteOrg(o.id,o.name);
+        act.appendChild(b1); act.appendChild(document.createTextNode(' ')); act.appendChild(b2); act.appendChild(document.createTextNode(' ')); act.appendChild(b3);
+        tr.appendChild(act); tb.appendChild(tr);
+      });
+    }
+    const etb=document.getElementById('su-eval-tbody'); if(etb){ etb.innerHTML='';
+      (evs.evaluations||[]).forEach(ev=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text){ const x=document.createElement('td'); x.style.padding='8px'; x.textContent=text; tr.appendChild(x); }
+        const d=ev.submittedAt?new Date(ev.submittedAt).toLocaleString('es-MX'):'—';
+        const score=(ev.scores&&ev.scores.global!=null)?String(ev.scores.global)+'%':'—';
+        td(d); td((ev.organization&&ev.organization.name)||'—'); td((ev.candidate&&ev.candidate.fullName)||''); td((ev.assessment&&ev.assessment.name)||''); td(score);
+        etb.appendChild(tr);
+      });
+    }
+  }catch(e){
+    if(err){ err.textContent=e.message||'Error'; err.classList.remove('hidden'); }
+    if(e.code==='SUPERADMIN_REQUIRED'||e.code==='UNAUTHENTICATED'){
+      window.__MIND24_SUPERADMIN=null;
+      showView('landing');
+      openModal('modal-login-superadmin');
+    }
+  }
+}
+
+async function superadminCredits(orgId){
+  const raw=prompt('Tokens / créditos a sumar (número entero, puede ser negativo):','50');
+  if(raw===null)return;
+  const n=parseInt(raw,10); if(Number.isNaN(n)){ alert('Número inválido'); return; }
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'PATCH',body:JSON.stringify({creditsDelta:n})});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminToggleBlocked(orgId,blocked){
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'PATCH',body:JSON.stringify({blocked})});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminDeleteOrg(orgId,name){
+  if(!confirm('¿Eliminar la empresa "'+(name||orgId)+'" y todos sus datos? Esta acción no se puede deshacer.'))return;
+  try{
+    await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'DELETE'});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminCreateOrg(e){
+  e.preventDefault();
+  const orgName=(document.getElementById('su-org-name')||{}).value||'';
+  const slug=(document.getElementById('su-org-slug')||{}).value||'';
+  const adminEmail=(document.getElementById('su-admin-email')||{}).value||'';
+  const adminFullName=(document.getElementById('su-admin-name')||{}).value||'';
+  const ic=parseInt((document.getElementById('su-org-credits')||{}).value||'0',10);
+  const outEl=document.getElementById('su-create-result');
+  try{
+    const res=await apiJson('/api/superadmin/organizations',{method:'POST',body:JSON.stringify({
+      orgName, slug:slug||null, adminEmail, adminFullName, initialCredits:Number.isNaN(ic)?0:ic,
+    })});
+    if(outEl){
+      outEl.style.display='block';
+      outEl.textContent='Empresa creada. Contraseña generada para '+res.admin.email+': '+res.generatedPassword+' (cópiala ahora; no se volverá a mostrar).';
+    }
+    await refreshSuperadminDashboard();
+  }catch(err){
+    alert(err.message||'Error');
+  }
 }
 
 function buildFlatFromConfig(cfg){

@@ -5,6 +5,12 @@ import { loginRateLimiter } from '../middleware/rateLimit.middleware.js';
 
 const router = Router();
 
+function regenerateSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((err) => (err ? reject(err) : resolve()));
+  });
+}
+
 router.post('/login', loginRateLimiter, async (req, res, next) => {
   try {
     const { email, password } = z
@@ -14,6 +20,7 @@ router.post('/login', loginRateLimiter, async (req, res, next) => {
       })
       .parse(req.body);
     const user = await authenticateUser(email, password);
+    await regenerateSession(req);
     Object.assign(req.session, toSessionPayload(user));
     res.json({
       user: {

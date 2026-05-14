@@ -11,6 +11,10 @@ function req(name, fallback = undefined) {
   return v;
 }
 
+/** Hash bcrypt de la contraseña por defecto del admin general ("mind24", cost 12). Sustituir con SUPERADMIN_PASSWORD_HASH en producción. */
+const DEFAULT_SUPERADMIN_PASSWORD_BCRYPT =
+  '$2a$12$EWksYRjDsAVaGmT0GE6hPegd06z3yCpQ2yz9EOwbXXcWibxqjprUu';
+
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: Number(process.env.PORT || 3000),
@@ -28,4 +32,9 @@ export const env = {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
+
+  /** Único correo permitido para el panel de administrador general (superadmin). */
+  SUPERADMIN_EMAIL: (process.env.SUPERADMIN_EMAIL || 'e.gonzalez@talento24.com').trim().toLowerCase(),
+  /** bcrypt del password del superadmin; por defecto corresponde a "mind24". */
+  SUPERADMIN_PASSWORD_BCRYPT: process.env.SUPERADMIN_PASSWORD_HASH || DEFAULT_SUPERADMIN_PASSWORD_BCRYPT,
 };

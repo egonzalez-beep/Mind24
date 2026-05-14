@@ -15,7 +15,13 @@ async function main() {
   await prisma.assessmentDefinition.deleteMany();
 
   const org = await prisma.organization.create({
-    data: { name: 'Empresa Demo', slug: 'demo', credits: 500, blocked: false },
+    data: {
+      name: 'Empresa Demo',
+      slug: 'demo',
+      credits: 500,
+      blocked: false,
+      empresaPortalEnabled: true,
+    },
   });
 
   const definition = await prisma.assessmentDefinition.create({
@@ -26,16 +32,6 @@ async function main() {
       organizationId: null,
       config: defaultDemoAssessmentConfig,
       isActive: true,
-    },
-  });
-
-  const master = await prisma.user.create({
-    data: {
-      email: 'master@mind24.local',
-      passwordHash: await hash('ChangeMeMaster123!'),
-      fullName: 'Master Admin',
-      role: 'master_admin',
-      organizationId: null,
     },
   });
 
@@ -72,7 +68,7 @@ async function main() {
     },
   });
 
-  console.log('Seed OK:', { master: master.email, empresa: empresa.email, candidato: candUser.email });
+  console.log('Seed OK:', { empresa: empresa.email, candidato: candUser.email });
 }
 
 main()
