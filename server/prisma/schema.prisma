@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  master_admin
+  empresa_admin
+  candidato
+}
+
+enum AssignmentStatus {
+  pending
+  in_progress
+  completed
+}
+
+enum AttemptStatus {
+  in_progress
+  submitted
+  expired
+}
+
+/// Used by connect-pg-simple (Express sessions)
+model Session {
+  sid    String   @id @db.VarChar(255)
+  sess   Json
+  expire DateTime @db.Timestamptz(6)
+
+  @@map("session")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String?  @unique
+  blocked   Boolean  @default(false)
+  credits   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  candidates            Candidate[]
+  assessmentDefinitions AssessmentDefinition[]
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String
+  fullName       String
+  role           UserRole
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  candidateProfile Candidate?
+  assignmentsCreated Assignment[] @relation("AssignmentAssignedBy")
+}
+
+model Candidate {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  assignments Assignment[]
+}
+
+/// Versioned instrument definition (JSON-driven motor)
+model AssessmentDefinition {
+  id             String   @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  key            String
+  name           String
+  version        Int      @default(1)
+  config         Json
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assignments Assignment[]
+
+  @@unique([key, version])
+}
+
+model Assignment {
+  id                     String             @id @default(cuid())
+  candidateId            String
+  candidate              Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  assessmentDefinitionId String
+  assessmentDefinition   AssessmentDefinition @relation(fields: [assessmentDefinitionId], references: [id], onDelete: Restrict)
+  assignedByUserId       String?
+  assignedBy             User?              @relation("AssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+  status                 AssignmentStatus   @default(pending)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  attempts AssessmentAttempt[]
+}
+
+model AssessmentAttempt {
+  id             String        @id @default(cuid())
+  assignmentId   String
+  assignment     Assignment    @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  status         AttemptStatus @default(in_progress)
+  startedAt      DateTime      @default(now())
+  submittedAt    DateTime?
+  timeLimitSec   Int?
+  responses      Json?
+  scores         Json?
+  interpretation Json?
+  flags          Json?
+
+  @@index([assignmentId])
+}

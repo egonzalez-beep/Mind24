@@ -663,7 +663,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div><div class="footer-col-title">Plataforma</div><ul class="footer-links"><li><a>Mind24 Care</a></li><li><a>Mind24 Assess</a></li><li><a>Integraciones</a></li><li><a>Seguridad</a></li></ul></div>
       <div><div class="footer-col-title">Empresa</div><ul class="footer-links"><li><a>Nosotros</a></li><li><a>Blog</a></li><li><a>Casos de éxito</a></li><li><a>Contacto</a></li></ul></div>
-      <div><div class="footer-col-title">Accesos</div><ul class="footer-links"><li><a onclick="openModal('modal-empresa')">Soy Empresa</a></li><li><a onclick="openModal('modal-empleado')">Soy Empleado</a></li><li><a onclick="openModal('modal-evaluacion')">Aplicar Evaluación</a></li></ul></div>
+      <div><div class="footer-col-title">Accesos</div><ul class="footer-links"><li><a onclick="openModal('modal-empresa')">Soy Empresa</a></li><li><a onclick="openModal('modal-empleado')">Soy Empleado</a></li><li><a onclick="openModal('modal-evaluacion')">Aplicar Evaluación</a></li><li><a onclick="openModal('modal-login-master')">Acceso master</a></li></ul></div>
     </div>
     <div class="footer-bottom"><span>© 2024 MIND24. Todos los derechos reservados.</span><span>Hecho con ♥ para el bienestar corporativo</span></div>
   </footer>
@@ -708,9 +708,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="modal-badge modal-badge-purple">Admin Empresa</div>
       <h2 class="modal-title">Panel Corporativo</h2>
       <p class="modal-subtitle">Ingresa con tu cuenta empresarial de MIND24.</p>
-      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" class="form-input" placeholder="nombre@empresa.com"></div>
-      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" placeholder="••••••••"></div>
-      <button class="form-submit form-submit-purple" onclick="showView('dash-admin')">Ingresar al Panel →</button>
+      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-email" class="form-input" placeholder="admin@demo.mind24.local" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-emp-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+      <button type="button" class="form-submit form-submit-purple" onclick="loginEmpresaAdmin(event)">Ingresar al Panel →</button>
     </div>
     <div id="emp-s3" class="hidden">
       <button class="form-back" onclick="showStep('emp-s1','emp-s3')">← Regresar</button>
@@ -750,6 +750,35 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com"></div>
     <button class="form-submit form-submit-purple" onclick="iniciarEvaluacion()">Comenzar Evaluación →</button>
     <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:16px;">Asegúrate de tener 40–60 minutos sin interrupciones.</p>
+    <p style="font-size:12px;color:var(--slate-500);text-align:center;margin-top:12px;"><a href="#" onclick="event.preventDefault();closeModal('modal-evaluacion');openModal('modal-login-candidato');" style="color:var(--purple);font-weight:600;">Ya tengo cuenta MIND24 →</a></p>
+  </div>
+</div>
+
+<div id="modal-login-candidato" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-candidato')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-login-candidato')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">Candidato</div>
+    <h2 class="modal-title">Acceso a evaluaciones</h2>
+    <p class="modal-subtitle">Ingresa con el correo y contraseña que te proporcionó la empresa.</p>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-cand-email" class="form-input" placeholder="candidato@demo.mind24.local" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-cand-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="loginCandidato(event)">Ingresar →</button>
+    <p id="login-cand-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+  </div>
+</div>
+
+<div id="modal-login-master" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-login-master')">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('modal-login-master')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">Master</div>
+    <h2 class="modal-title">Administración plataforma</h2>
+    <p class="modal-subtitle">Acceso restringido.</p>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-master-email" class="form-input" placeholder="master@mind24.local" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-master-pass" class="form-input" autocomplete="current-password"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="loginMaster(event)">Ingresar →</button>
+    <p id="login-master-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
   </div>
 </div>
 
@@ -770,7 +799,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button class="sidebar-item"><span class="si-icon">⚙️</span><span>Configuración</span></button>
     </nav>
     <div class="sidebar-footer">
-      <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
+      <div class="sidebar-user"><div class="s-avatar av-green" id="dash-admin-av">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-admin-name">Admin HR</div><div class="sidebar-user-role" id="dash-admin-role">Empresa</div></div></div>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
       <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
     </div>
   </aside>
@@ -1101,6 +1131,35 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </main>
 </div>
 
+<!-- ════════════════════ DASH CANDIDATO (MVP API) ════════════════════ -->
+<div id="view-dash-candidato" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">● Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button class="sidebar-item active"><span class="si-icon">📋</span><span>Mis pruebas</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-purple" id="dash-cand-av">CD</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-cand-name">Candidato</div><div class="sidebar-user-role">Evaluaciones asignadas</div></div></div>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Mis evaluaciones</div><div class="topbar-subtitle">Inicia una prueba asignada por tu empresa</div></div>
+      <div class="topbar-right"><div class="s-avatar av-purple" id="dash-cand-av2" style="width:36px;height:36px;font-size:13px;">CD</div></div>
+    </div>
+    <div class="page-content">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Pruebas asignadas</div><div class="card-subtitle">Completa cada una en una sola sesión</div></div><button type="button" class="card-action" onclick="refreshCandidatoAssignments()">↻ Actualizar</button></div>
+        <div class="card-body"><div id="cand-assignments-list" class="ppl-list"><p style="font-size:14px;color:var(--slate-500);">Cargando…</p></div></div>
+      </div>
+      <p id="cand-assign-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+    </div>
+  </main>
+</div>
+
 <!-- ════════════════════ EVALUACIÓN SIMULATOR ════════════════════ -->
 <div id="view-evaluacion" class="hidden">
   <div class="eval-topbar">
@@ -1122,11 +1181,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   <div class="eval-screen active" id="scr-intro">
     <div class="eval-intro-card">
       <div class="eval-intro-badge">◈ Mind24 Assess</div>
-      <h1 class="eval-intro-title">Batería de<br>Honestidad y Confianza</h1>
+      <h1 class="eval-intro-title" id="eval-intro-title">Batería de<br>Honestidad y Confianza</h1>
       <p class="eval-intro-subtitle" id="introSub">Esta evaluación mide tus valores, ética y comportamiento en situaciones laborales y personales reales.</p>
       <div class="eval-intro-meta">
-        <div class="eval-meta-item"><span class="eval-meta-icon">📝</span><div class="eval-meta-value">50</div><div class="eval-meta-label">Preguntas</div></div>
-        <div class="eval-meta-item"><span class="eval-meta-icon">⏱</span><div class="eval-meta-value">45 min</div><div class="eval-meta-label">Tiempo límite</div></div>
+        <div class="eval-meta-item"><span class="eval-meta-icon">📝</span><div class="eval-meta-value" id="eval-meta-questions">50</div><div class="eval-meta-label">Preguntas</div></div>
+        <div class="eval-meta-item"><span class="eval-meta-icon">⏱</span><div class="eval-meta-value" id="eval-meta-minutes">45</div><div class="eval-meta-label">Tiempo límite (min)</div></div>
         <div class="eval-meta-item"><span class="eval-meta-icon">🔒</span><div class="eval-meta-value">100%</div><div class="eval-meta-label">Confidencial</div></div>
       </div>
       <div class="eval-instructions"><ul>
@@ -1194,12 +1253,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
-const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', evaluacion:'view-evaluacion' };
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-candidato':'view-dash-candidato', evaluacion:'view-evaluacion' };
 function showView(name) {
   Object.values(VIEWS).forEach(id => { const el=document.getElementById(id); if(el)el.classList.add('hidden'); });
   const t=document.getElementById(VIEWS[name]);
   if(t){ t.classList.remove('hidden'); t.classList.add('fade-in'); setTimeout(()=>t.classList.remove('fade-in'),600); window.scrollTo(0,0); }
   closeAllModals();
+  if(name==='landing'){ window.ATTEMPT_CTX={useApi:false}; }
   const nav=document.getElementById('mainNav');
   if(name==='landing'){ nav.classList.remove('light-nav'); resumeParticles(); } else { nav.classList.add('light-nav'); pauseParticles(); }
 }
@@ -1251,6 +1311,165 @@ let activeMods=3;
 function toggleMod(el){ const sel=el.classList.toggle('selected'); const ch=el.querySelector('.mod-check'),ic=el.querySelector('.mod-icon'); if(sel){ch.textContent='✓';activeMods++;ic.style.background='var(--assess-gradient)';}else{ch.textContent='';activeMods--;ic.style.background='var(--slate-200)';} document.getElementById('resumen-modulos').textContent=activeMods+' módulos'; document.getElementById('resumen-tiempo').textContent='~'+(activeMods*15)+' minutos'; document.getElementById('mod-counter').textContent=activeMods+'/6 activos'; }
 function registrarEval(){ const n=document.getElementById('inp-nombre')?.value,c=document.getElementById('inp-curp')?.value,e=document.getElementById('inp-email')?.value; if(!n||!c||!e){alert('Por favor completa los campos obligatorios.');return;} if(document.getElementById('eval-code-display').textContent.includes('—'))genCode(); const btn=document.getElementById('btn-registrar'); btn.textContent='✅ Evaluación registrada y enviada'; btn.style.background='linear-gradient(135deg,#059669,#047857)'; setTimeout(()=>{btn.textContent='✓ Registrar y Enviar Evaluación';btn.style.background='';},3000); }
 setTimeout(genCode,600);
+
+// ═══════════════════════════════════════════════════════════
+//  API Mind24 (sesión cookie, mismo origen)
+// ═══════════════════════════════════════════════════════════
+window.ATTEMPT_CTX={useApi:false};
+window.__MIND24_USER=null;
+
+async function apiJson(url,opts={}){
+  const r=await fetch(url,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opts));
+  let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch{}
+  if(!r.ok) throw new Error((j&&j.message)||t||('HTTP '+r.status));
+  return j;
+}
+
+function initialsFromName(name){
+  const p=(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length)return'??';
+  if(p.length===1)return p[0].slice(0,2).toUpperCase();
+  return (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+
+async function authLogout(){
+  try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+  window.__MIND24_USER=null;
+  window.ATTEMPT_CTX={useApi:false};
+  showView('landing');
+}
+
+async function loginEmpresaAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-emp-email')||{}).value||'';
+  const password=(document.getElementById('login-emp-pass')||{}).value||'';
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_USER=data.user;
+    closeModal('modal-empresa');
+    const fn=data.user.fullName||data.user.email;
+    const el=document.getElementById('dash-admin-name'); if(el)el.textContent=fn;
+    const av=document.getElementById('dash-admin-av'); if(av)av.textContent=initialsFromName(fn);
+    const rl=document.getElementById('dash-admin-role'); if(rl)rl.textContent='Admin empresa';
+    showView('dash-admin');
+  }catch(err){ alert(err.message||'Error de acceso'); }
+}
+
+async function loginCandidato(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-cand-email')||{}).value||'';
+  const password=(document.getElementById('login-cand-pass')||{}).value||'';
+  const errEl=document.getElementById('login-cand-err');
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_USER=data.user;
+    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+    closeModal('modal-login-candidato');
+    const fn=data.user.fullName||data.user.email;
+    document.getElementById('dash-cand-name').textContent=fn;
+    document.getElementById('dash-cand-av').textContent=initialsFromName(fn);
+    const av2=document.getElementById('dash-cand-av2'); if(av2)av2.textContent=initialsFromName(fn);
+    showView('dash-candidato');
+    refreshCandidatoAssignments();
+  }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
+}
+
+async function loginMaster(e){
+  e.preventDefault();
+  const email=(document.getElementById('login-master-email')||{}).value||'';
+  const password=(document.getElementById('login-master-pass')||{}).value||'';
+  const errEl=document.getElementById('login-master-err');
+  try{
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    if(data.user.role!=='master_admin'){ alert('Esta cuenta no es master.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    window.__MIND24_USER=data.user;
+    if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+    closeModal('modal-login-master');
+    alert('Sesión master activa. Usa la API en /api/master/* o Prisma Studio para gestión avanzada.');
+  }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
+}
+
+function buildFlatFromConfig(cfg){
+  const flat=[];
+  for(const sec of (cfg.sections||[])){
+    for(const q of (sec.questions||[])){
+      flat.push({
+        sectionId:sec.id,
+        id:q.id,
+        texto:q.prompt,
+        tipo:q.labelType||'Pregunta',
+        opciones:q.options||[]
+      });
+    }
+  }
+  return flat;
+}
+
+async function refreshCandidatoAssignments(){
+  const box=document.getElementById('cand-assignments-list');
+  const err=document.getElementById('cand-assign-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(!box)return;
+  box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">Cargando…</p>';
+  try{
+    const j=await apiJson('/api/me/assignments');
+    if(!j.assignments||!j.assignments.length){ box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">No tienes evaluaciones asignadas.</p>'; return; }
+    box.innerHTML='';
+    j.assignments.forEach(a=>{
+      const done=a.status==='completed';
+      const row=document.createElement('div');
+      row.className='ppl-row';
+      row.innerHTML='<div class="p-av" style="background:var(--assess-gradient);">📋</div><div class="p-info"><div class="p-name">'+(a.assessment&&a.assessment.name||'Evaluación')+'</div><div class="p-role">'+(done?'Completada':'Pendiente / en curso')+'</div></div>'+
+        (done?'<span class="p-badge pb-done">Listo</span>':'<span class="p-badge pb-new"><button type="button" style="border:none;background:transparent;cursor:pointer;font-weight:700;font-size:12px;padding:0;">Iniciar →</button></span>');
+      if(!done){
+        row.querySelector('button').onclick=()=>startAssignedTest(a.id);
+      }
+      box.appendChild(row);
+    });
+  }catch(e){ box.innerHTML=''; if(err){ err.textContent=e.message; err.classList.remove('hidden'); } }
+}
+
+async function startAssignedTest(assignmentId){
+  try{
+    const j=await apiJson('/api/me/assignments/'+encodeURIComponent(assignmentId)+'/start',{method:'POST'});
+    const cfg=j.config;
+    const flat=buildFlatFromConfig(cfg);
+    const secsList=(cfg.sections||[]).map(s=>({key:s.id,nombre:s.title,desc:s.description}));
+    window.ATTEMPT_CTX={useApi:true,attemptId:j.attemptId,assignmentId:j.assignmentId,flat,secsList,timeLimitSec:j.timeLimitSec||2700};
+    const u=window.__MIND24_USER||{};
+    ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
+    const meta=cfg.meta||{};
+    const titleEl=document.getElementById('eval-intro-title');
+    if(titleEl) titleEl.innerHTML=(meta.title||'Evaluación psicométrica').replace(/\n/g,'<br>');
+    const sub=document.getElementById('introSub');
+    if(sub) sub.textContent=meta.introSubtitle||'Responde con sinceridad. Una sola sesión, sin pausas ni guardado parcial.';
+    const nq=document.getElementById('eval-meta-questions'); if(nq) nq.textContent=String(flat.length);
+    const tm=document.getElementById('eval-meta-minutes'); if(tm) tm.textContent=String(Math.round((j.timeLimitSec||2700)/60));
+    showView('evaluacion');
+    resetEval();
+    showScr('intro');
+  }catch(e){ alert(e.message||'No se pudo iniciar'); }
+}
+
+function renderServerResult(result){
+  const badgeClass=(result.verdict||'').includes('Reservas')?'rb-res':((result.verdict||'').includes('No')?'rb-rep':'rb-apro');
+  document.getElementById('resScore').textContent=(result.global!=null?result.global:'--')+'%';
+  document.getElementById('resVerdict').textContent=result.verdict||'—';
+  document.getElementById('resDesc').textContent=result.description||'';
+  const be=document.getElementById('resBadge'); be.textContent=result.badge||'—'; be.className='result-badge '+badgeClass;
+  const bars=document.getElementById('compBars'); bars.innerHTML='';
+  const dims=result.dimensions||{};
+  Object.values(dims).forEach(d=>{
+    const avg=d.avg, col=avg>=75?'#A78BFA':avg>=50?'#FCD34D':'#FCA5A5';
+    bars.innerHTML+='<div class="comp-item"><div class="comp-lbl"><span class="comp-name">'+(d.label||'')+'</span><span class="comp-score" style="color:'+col+'">'+avg+'%</span></div><div class="comp-track"><div class="comp-fill" data-t="'+avg+'" style="width:0%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div>';
+  });
+  const flags=result.flags||[];
+  const fb=document.getElementById('flagsBox');
+  if(flags.length){ fb.classList.remove('hidden'); document.getElementById('flagsText').textContent=flags.join(' '); }
+  else{ fb.classList.add('hidden'); document.getElementById('flagsText').textContent=''; }
+}
 
 // ═══════════════════════════════════════════════════════════
 //  MOTOR DE EVALUACIÓN — Batería de Honestidad y Confianza
@@ -1323,6 +1542,7 @@ const LETRAS=['A','B','C','D'];
 let ES={candidato:{nombre:'',correo:'',codigo:''},secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:2700,terminado:false};
 
 function iniciarEvaluacion(){
+  window.ATTEMPT_CTX={useApi:false};
   const n=document.getElementById('eval-nombre')?.value||'Candidato';
   const e=document.getElementById('eval-correo')?.value||'';
   const c=document.getElementById('eval-codigo')?.value||'';
@@ -1334,9 +1554,16 @@ function iniciarEvaluacion(){
   showScr('intro');
 }
 function resetEval(){
-  ES={...ES,secIdx:0,locIdx:0,globalIdx:0,resp:{},secs:2700,terminado:false};
+  const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
+  const initialSecs=useApi?(window.ATTEMPT_CTX.timeLimitSec||2700):2700;
+  ES={candidato:ES.candidato,secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:initialSecs,terminado:false};
   clearInterval(ES.timerInt);
-  const td=document.getElementById('evalTimer'); if(td){td.textContent='45:00';td.className='eval-timer-display';}
+  const td=document.getElementById('evalTimer');
+  if(td){
+    const m=Math.floor(initialSecs/60),s=initialSecs%60;
+    td.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    td.className='eval-timer-display';
+  }
   updateProg();
 }
 function showScr(name){
@@ -1346,16 +1573,23 @@ function showScr(name){
 }
 function startEval(){startTimer();showSecTransition(0);}
 function showSecTransition(idx){
-  const s=SECS[idx];
-  document.getElementById('secNum').textContent=`Sección ${idx+1} de ${SECS.length}`;
+  const list=(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi)?window.ATTEMPT_CTX.secsList:SECS;
+  const s=list[idx];
+  document.getElementById('secNum').textContent=`Sección ${idx+1} de ${list.length}`;
   document.getElementById('secTitle').textContent=s.nombre;
   document.getElementById('secDesc').textContent=s.desc;
   document.getElementById('evalSecTag').textContent=`📊 ${s.nombre}`;
   showScr('section');
 }
 function enterSection(){loadQ();showScr('question');}
-function getCurrent(){return BANCO[SECS[ES.secIdx].key][ES.locIdx];}
-function getTotal(){return BANCO.calibracion.length+BANCO.directas.length+BANCO.principal.length;}
+function getCurrent(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi) return window.ATTEMPT_CTX.flat[ES.globalIdx];
+  return BANCO[SECS[ES.secIdx].key][ES.locIdx];
+}
+function getTotal(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi) return window.ATTEMPT_CTX.flat.length;
+  return BANCO.calibracion.length+BANCO.directas.length+BANCO.principal.length;
+}
 function loadQ(){
   const p=getCurrent(),total=getTotal(),g=ES.globalIdx;
   document.getElementById('qNum').textContent=`Pregunta ${g+1} de ${total}`;
@@ -1389,6 +1623,18 @@ function selectOpt(id,idx){
   document.getElementById('qNote').textContent='✓ Respuesta registrada';
 }
 function nextQ(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    const flat=window.ATTEMPT_CTX.flat,total=flat.length;
+    if(ES.globalIdx>=total-1){finishEval();return;}
+    const cur=flat[ES.globalIdx];
+    ES.globalIdx++;
+    const nxt=flat[ES.globalIdx];
+    if(nxt.sectionId!==cur.sectionId){
+      const ix=window.ATTEMPT_CTX.secsList.findIndex(x=>x.key===nxt.sectionId);
+      showSecTransition(ix>=0?ix:0);
+    }else loadQ();
+    return;
+  }
   const sec=SECS[ES.secIdx],list=BANCO[sec.key],isLast=ES.globalIdx===getTotal()-1;
   if(isLast){finishEval();return;}
   ES.locIdx++;ES.globalIdx++;
@@ -1396,6 +1642,12 @@ function nextQ(){
   else loadQ();
 }
 function prevQ(){
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    if(ES.globalIdx===0)return;
+    ES.globalIdx--;
+    loadQ();
+    return;
+  }
   if(ES.globalIdx===0)return;
   ES.globalIdx--;
   const cl=BANCO.calibracion.length,dl=BANCO.directas.length,g=ES.globalIdx;
@@ -1420,6 +1672,17 @@ function startTimer(){
 }
 function finishEval(){
   clearInterval(ES.timerInt);ES.terminado=true;
+  if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    (async()=>{
+      try{
+        const j=await apiJson('/api/me/attempts/'+encodeURIComponent(window.ATTEMPT_CTX.attemptId)+'/submit',{method:'POST',body:JSON.stringify({answers:ES.resp})});
+        renderServerResult(j.result);
+        showScr('results');
+        setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+      }catch(err){ alert(err.message||'Error al enviar'); }
+    })();
+    return;
+  }
   calcResults();showScr('results');
   setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
 }
