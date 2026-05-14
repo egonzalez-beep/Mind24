@@ -11,9 +11,9 @@ function req(name, fallback = undefined) {
   return v;
 }
 
-/** Hash bcrypt de la contraseña por defecto del admin general ("mind24", cost 12). Sustituir con SUPERADMIN_PASSWORD_HASH en producción. */
+/** Hash bcrypt de "mind24" (cost 12). En producción define SUPERADMIN_PASSWORD_HASH en Railway. */
 const DEFAULT_SUPERADMIN_PASSWORD_BCRYPT =
-  '$2a$12$EWksYRjDsAVaGmT0GE6hPegd06z3yCpQ2yz9EOwbXXcWibxqjprUu';
+  '$2a$12$fGvhXXwhWGjnpMIVR3et1uBjQ9akeFMNqKw9B4OWVhjEBqC00vE.y';
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',

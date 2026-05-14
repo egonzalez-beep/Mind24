@@ -16,7 +16,7 @@ Opcional:
 
 - `CLIENT_ORIGINS` — orígenes separados por coma si el front se sirve en otro dominio (CORS con credenciales).
 - `TRUST_PROXY=1` — si el servicio está detrás de proxy (por defecto se confía en `X-Forwarded-*` en `NODE_ENV=production`).
-- **Superadmin (panel en la web):** `SUPERADMIN_EMAIL` (único correo permitido) y `SUPERADMIN_PASSWORD_HASH` (bcrypt de la contraseña). Si no defines el hash, el servidor usa un hash embebido solo para desarrollo (contraseña por defecto documentada en `src/config/env.js`). El superadmin **no** es un usuario en base de datos; la sesión es cookie httpOnly en `/api/superadmin/*`.
+- **Superadmin (panel en la web):** `SUPERADMIN_EMAIL` (único correo permitido) y `SUPERADMIN_PASSWORD_HASH` (bcrypt cost 12). Si no defines el hash, el servidor usa el valor por defecto en `src/config/env.js` (contraseña **`mind24`**). El superadmin **no** es un usuario en base de datos; la sesión es cookie httpOnly en `/api/superadmin/*`. Login solo: **`POST /api/superadmin/login`** (no uses `/api/auth/login`).
 
 ## Comandos
 
@@ -58,7 +58,7 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 | `NODE_ENV` | Recomendada | `production` (cookies `Secure`, `trust proxy`, etc.). |
 | `PORT` | No | Railway la define sola; el código usa `process.env.PORT \|\| 3000`. |
 | `SUPERADMIN_EMAIL` | Opcional | Por defecto `e.gonzalez@talento24.com` en código. |
-| `SUPERADMIN_PASSWORD_HASH` | Opcional | bcrypt del password del superadmin; si no, se usa el hash de desarrollo embebido en `env.js`. |
+| `SUPERADMIN_PASSWORD_HASH` | Opcional | bcrypt cost 12 de la contraseña del superadmin. Para la contraseña **`mind24`** pega exactamente: `$2a$12$fGvhXXwhWGjnpMIVR3et1uBjQ9akeFMNqKw9B4OWVhjEBqC00vE.y` |
 | `CLIENT_ORIGINS` | Opcional | Solo si el HTML se sirve desde otro dominio que no sea el del API (CORS con credenciales). Mismo dominio Railway → déjalo vacío. |
 | `TRUST_PROXY` | Opcional | En producción ya se confía en proxy por defecto; puedes forzar `1`. |
 
@@ -89,7 +89,7 @@ Si al arrancar no existían `admin@demo.mind24.com` y `candidato@demo.mind24.com
 | empresa_admin | admin@demo.mind24.com | Admin123 |
 | candidato | candidato@demo.mind24.com | Candidato123 |
 
-**Superadmin** (panel «Administrador general»): no es fila en `User`; usa `POST /api/superadmin/login` con `SUPERADMIN_EMAIL` (por defecto `e.gonzalez@talento24.com`) y contraseña acorde a `SUPERADMIN_PASSWORD_HASH` (hash por defecto en código = `mind24`).
+**Superadmin** (panel «Administrador general»): no es fila en `User`. Solo **`POST /api/superadmin/login`** + cookie; luego el front valida con **`GET /api/superadmin/me`**. Variables: `SUPERADMIN_EMAIL` (por defecto `e.gonzalez@talento24.com`) y `SUPERADMIN_PASSWORD_HASH` (para contraseña `mind24` usa el hash documentado en la tabla de variables de Railway arriba).
 
 El comando `npm run db:seed` crea cuentas `@demo.mind24.local` y **borra** datos existentes; úsalo solo en desarrollo.
 

@@ -1427,6 +1427,7 @@ async function apiJson(url,opts={}){
     }
     const er=new Error(msg);
     if(j&&j.error)er.code=j.error;
+    er.httpStatus=r.status;
     throw er;
   }
   return j;
@@ -1528,15 +1529,36 @@ async function loginSuperAdmin(e){
   const email=(document.getElementById('login-su-email')||{}).value||'';
   const password=(document.getElementById('login-su-pass')||{}).value||'';
   const errEl=document.getElementById('login-su-err');
+  const showErr=function(msg){ if(errEl){ errEl.textContent=msg; errEl.classList.remove('hidden'); } };
+  if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
   try{
-    await apiJson('/api/superadmin/login',{method:'POST',body:JSON.stringify({email,password})});
-    window.__MIND24_SUPERADMIN={email:email.trim()};
+    const data=await apiJson('/api/superadmin/login',{method:'POST',body:JSON.stringify({email,password})});
+    console.log('[superadmin] login response',data);
+    let me;
+    try{
+      me=await apiJson('/api/superadmin/me');
+    }catch(e2){
+      const st2=e2.httpStatus||0;
+      if(st2===401) showErr('La sesión no quedó activa (cookie). Usa el mismo dominio que la API y HTTPS en producción.');
+      else if(st2===404) showErr('No existe GET /api/superadmin/me (404).');
+      else if(st2>=500) showErr('Error del servidor al validar sesión (500).');
+      else showErr(e2.message||'No se pudo validar la sesión.');
+      return;
+    }
+    console.log('[superadmin] session verify /me',me);
+    window.__MIND24_SUPERADMIN={email:(me&&me.email)||String(email).trim()};
     window.__MIND24_USER=null;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-superadmin');
-    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=email.trim();
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=(me&&me.email)||String(email).trim();
     showView('dash-superadmin');
-  }catch(err){ if(errEl){ errEl.textContent=err.message||'Error'; errEl.classList.remove('hidden'); } }
+  }catch(err){
+    const st=err.httpStatus||0;
+    if(st===401) showErr(err.message||'Credenciales inválidas.');
+    else if(st===404) showErr('No existe el endpoint (404). Comprueba que cargas la app desde el mismo dominio que la API.');
+    else if(st>=500) showErr('Error del servidor (500). Revisa logs en Railway.');
+    else showErr(err.message||'Error de acceso');
+  }
 }
 
 async function superadminLogout(){
