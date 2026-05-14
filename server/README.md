@@ -65,9 +65,8 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 ### Postgres
 
 - La tabla **`session`** se crea con la migración inicial de Prisma (`20260214150000_init`); `connect-pg-simple` usa esa tabla (`createTableIfMissing: false`).
-- **Seed (datos demo)** no corre en el arranque. Tras el primer deploy exitoso, ejecuta **una vez** desde la CLI de Railway o “Run command”:  
-  `npm run db:seed`  
-  (con el mismo `DATABASE_URL` y estando en el directorio `server`).
+- **Bootstrap automático** al arrancar (`runBootstrapUsers`): si no existen los usuarios demo con correos `admin@demo.mind24.com` y `candidato@demo.mind24.com`, crea org (slug `mind24-bootstrap-demo`), definición de evaluación si falta, candidato, asignación pendiente. Idempotente (no borra ni duplica por email). Logs: `Bootstrap users created` o `Bootstrap users already exist`.
+- **Seed manual** (`npm run db:seed`) sigue disponible; borra y recrea datos demo (no usar en producción salvo que quieras resetear).
 
 ### URLs a probar
 
@@ -79,18 +78,22 @@ Sustituye `TU_DOMINIO` por el hostname público del servicio (p. ej. `mind24-pro
 ### Qué queda operativo tras el deploy
 
 - API bajo `/api/*`, UI en `/`, Prisma + PostgreSQL, sesiones en tabla `session`, login auth y superadmin, mismas rutas que en local.
-- CRUD de empresas (superadmin), org/candidatos/asignaciones/evaluaciones (según roles) **una vez** aplicadas migraciones y, si quieres cuentas demo, el seed.
+- CRUD de empresas (superadmin), org/candidatos/asignaciones/evaluaciones (según roles) tras migraciones; cuentas demo `*.mind24.com` las crea el **bootstrap** en el primer arranque.
 
-## Cuentas de demostración (tras `npm run db:seed`)
+## Cuentas de demostración (bootstrap en producción)
+
+Si al arrancar no existían `admin@demo.mind24.com` y `candidato@demo.mind24.com`, el servidor los crea (org slug `mind24-bootstrap-demo`). Credenciales:
 
 | Rol | Email | Contraseña |
 |-----|--------|--------------|
-| empresa_admin | admin@demo.mind24.local | ChangeMeAdmin123! |
-| candidato | candidato@demo.mind24.local | ChangeMeCandidato123! |
+| empresa_admin | admin@demo.mind24.com | Admin123 |
+| candidato | candidato@demo.mind24.com | Candidato123 |
 
-El panel de **administrador general** no viene del seed: usa `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD_HASH` (o el hash por defecto de desarrollo en código). Crea empresas desde el UI o vía `POST /api/superadmin/organizations` con sesión de superadmin.
+**Superadmin** (panel «Administrador general»): no es fila en `User`; usa `POST /api/superadmin/login` con `SUPERADMIN_EMAIL` (por defecto `e.gonzalez@talento24.com`) y contraseña acorde a `SUPERADMIN_PASSWORD_HASH` (hash por defecto en código = `mind24`).
 
-Cambia estas contraseñas en producción.
+El comando `npm run db:seed` crea cuentas `@demo.mind24.local` y **borra** datos existentes; úsalo solo en desarrollo.
+
+Cambia contraseñas en producción si expusiste estas cuentas.
 
 ## API (resumen)
 
