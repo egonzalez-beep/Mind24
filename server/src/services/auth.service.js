@@ -11,6 +11,15 @@ export async function authenticateUser(email, password) {
     err.code = 'INVALID_CREDENTIALS';
     throw err;
   }
+  if (user.role === 'master_admin') {
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      const err = new Error('Credenciales inválidas');
+      err.code = 'INVALID_CREDENTIALS';
+      throw err;
+    }
+    return user;
+  }
   if (user.organization?.blocked) {
     const err = new Error('La organización está suspendida. Contacta a soporte.');
     err.code = 'ORG_BLOCKED';
@@ -20,11 +29,6 @@ export async function authenticateUser(email, password) {
   if (!ok) {
     const err = new Error('Credenciales inválidas');
     err.code = 'INVALID_CREDENTIALS';
-    throw err;
-  }
-  if (user.role === 'master_admin') {
-    const err = new Error('Este tipo de cuenta ya no usa el login estándar. Usa el acceso de administrador general.');
-    err.code = 'MASTER_LOGIN_DISABLED';
     throw err;
   }
   if ((user.role === 'empresa_admin' || user.role === 'candidato') && user.organizationId) {

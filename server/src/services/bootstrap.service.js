@@ -5,6 +5,9 @@ import { defaultDemoAssessmentConfig } from '../assessment/defaultDefinition.js'
 /** Slug reservado para la org demo de bootstrap. */
 const BOOTSTRAP_ORG_SLUG = 'mind24-bootstrap-demo';
 
+const PLATFORM_MASTER_EMAIL = 'e.gonzalez@talento24.com';
+const PLATFORM_MASTER_PASSWORD = 'mind24';
+
 const DEMO_ADMIN_EMAIL = 'admin@demo.mind24.com';
 const DEMO_CANDIDATE_EMAIL = 'candidato@demo.mind24.com';
 const DEMO_ADMIN_PASSWORD = 'Admin123';
@@ -14,11 +17,12 @@ const DEF_KEY = 'honestidad_confianza';
 const DEF_VERSION = 1;
 
 /**
- * Idempotente: solo crea admin/candidato/org/definición/asignación si faltan.
- * No borra datos, no resetea contraseñas, no duplica emails.
- * Superadmin del panel general NO usa tabla User (solo env + POST /api/superadmin/login).
+ * Idempotente: asegura `master_admin` plataforma + demo empresa/candidato si faltan.
+ * No borra datos, no resetea contraseñas existentes, no duplica emails.
  */
 export async function runBootstrapUsers() {
+  await ensurePlatformMasterAdmin();
+
   const adminEmail = DEMO_ADMIN_EMAIL.trim().toLowerCase();
   const candEmail = DEMO_CANDIDATE_EMAIL.trim().toLowerCase();
 
@@ -29,7 +33,6 @@ export async function runBootstrapUsers() {
     const { def: definition } = await findOrCreateDefinition();
     await ensureCandidateProfileAndAssignment(admin, candUser, definition.id);
     console.log('Bootstrap users already exist');
-    logSuperadminHint();
     return;
   }
 
@@ -100,7 +103,34 @@ export async function runBootstrapUsers() {
   } else {
     console.log('Bootstrap users already exist');
   }
-  logSuperadminHint();
+}
+
+async function ensurePlatformMasterAdmin() {
+  const em = PLATFORM_MASTER_EMAIL.trim().toLowerCase();
+  const existing = await prisma.user.findUnique({ where: { email: em } });
+  if (existing) {
+    if (existing.role === 'master_admin') {
+      console.log('[bootstrap] Platform master_admin already exists');
+    } else {
+      console.warn(
+        '[bootstrap] Skip creating platform user: email',
+        em,
+        'already exists with role',
+        existing.role,
+      );
+    }
+    return;
+  }
+  await prisma.user.create({
+    data: {
+      email: em,
+      passwordHash: await hashPassword(PLATFORM_MASTER_PASSWORD),
+      fullName: 'Administrador plataforma',
+      role: 'master_admin',
+      organizationId: null,
+    },
+  });
+  console.log('[bootstrap] Platform master_admin user created');
 }
 
 async function findOrCreateDefinition() {
@@ -148,10 +178,4 @@ async function ensureCandidateProfileAndAssignment(admin, candUser, definitionId
       },
     });
   }
-}
-
-function logSuperadminHint() {
-  console.log(
-    '[bootstrap] Superadmin (panel general): credenciales por SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD_HASH; login POST /api/superadmin/login (sin fila User).',
-  );
 }

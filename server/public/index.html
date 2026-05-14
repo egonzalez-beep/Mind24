@@ -1189,8 +1189,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Usuario en empresa</div><div class="card-subtitle">Candidato o admin de empresa; tokens 10–1000 opcionales suman créditos a la org</div></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">ID organización (cuid)</label><input type="text" id="su-user-org-id" class="form-input" placeholder="Pega el id desde la tabla"></div>
+            <div><label class="form-label">Rol</label><select id="su-user-role" class="form-input"><option value="candidato">Candidato</option><option value="empresa_admin">Admin empresa</option></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Correo nuevo usuario</label><input type="email" id="su-user-email" class="form-input" placeholder="nuevo@empresa.com"></div>
+            <div><label class="form-label">Nombre completo</label><input type="text" id="su-user-name" class="form-input" placeholder="Nombre"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px;">
+            <div><label class="form-label">Contraseña (opcional, mín. 8)</label><input type="password" id="su-user-pass" class="form-input" placeholder="Vacío = aleatoria"></div>
+            <div><label class="form-label">Tokens a la empresa (10–1000, opcional)</label><input type="number" id="su-user-tokens" class="form-input" min="10" max="1000" placeholder="Vacío = sin suma"></div>
+            <div style="display:flex;align-items:flex-end;"><button type="button" class="form-submit form-submit-purple" style="width:100%;" onclick="superadminCreateUserInOrg(event)">Crear usuario</button></div>
+          </div>
+          <p id="su-user-create-result" style="font-size:13px;color:var(--slate-600);display:none;"></p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
         <div class="card-header"><div><div class="card-title">Empresas</div><div class="card-subtitle">Créditos, bloqueo y eliminación</div></div></div>
-        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Nombre</th><th style="padding:8px;">Slug</th><th style="padding:8px;">Portal</th><th style="padding:8px;">Créditos</th><th style="padding:8px;">Acciones</th></tr></thead><tbody id="su-org-tbody"></tbody></table></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Id (org)</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Slug</th><th style="padding:8px;">Portal</th><th style="padding:8px;">Créditos</th><th style="padding:8px;">Acciones</th></tr></thead><tbody id="su-org-tbody"></tbody></table></div>
       </div>
       <div class="card" id="su-scroll-evals">
         <div class="card-header"><div><div class="card-title">Evaluaciones aplicadas (todas)</div><div class="card-subtitle">Cualquier empresa y candidato</div></div></div>
@@ -1330,7 +1349,8 @@ const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
 function canAccessView(name){
   if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
   if(VIEWS_NEED_SUPERADMIN.has(name)){
-    if(!window.__MIND24_SUPERADMIN){ openModal('modal-login-superadmin'); return false; }
+    const u=window.__MIND24_USER;
+    if(!u||u.role!=='master_admin'){ openModal('modal-login-superadmin'); return false; }
     return true;
   }
   if(VIEWS_NEED_EMPRESA_ADMIN.has(name)){
@@ -1413,7 +1433,6 @@ setTimeout(genCode,600);
 // ═══════════════════════════════════════════════════════════
 window.ATTEMPT_CTX={useApi:false};
 window.__MIND24_USER=null;
-window.__MIND24_SUPERADMIN=null;
 
 async function apiJson(url,opts={}){
   const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
@@ -1442,9 +1461,7 @@ function initialsFromName(name){
 
 async function authLogout(){
   try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
-  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
   window.__MIND24_USER=null;
-  window.__MIND24_SUPERADMIN=null;
   window.ATTEMPT_CTX={useApi:false};
   showView('landing');
 }
@@ -1456,7 +1473,6 @@ async function loginEmpresaAdmin(e){
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
-    window.__MIND24_SUPERADMIN=null;
     window.__MIND24_USER=data.user;
     closeModal('modal-empresa');
     const fn=data.user.fullName||data.user.email;
@@ -1481,7 +1497,6 @@ async function loginEmpresaCrearEval(e){
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
-    window.__MIND24_SUPERADMIN=null;
     window.__MIND24_USER=data.user;
     closeModal('modal-empresa');
     showView('dash-crear-eval');
@@ -1503,7 +1518,6 @@ async function loginCandidato(e){
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
-    window.__MIND24_SUPERADMIN=null;
     window.__MIND24_USER=data.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-candidato');
@@ -1532,25 +1546,30 @@ async function loginSuperAdmin(e){
   const showErr=function(msg){ if(errEl){ errEl.textContent=msg; errEl.classList.remove('hidden'); } };
   if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
   try{
-    const data=await apiJson('/api/superadmin/login',{method:'POST',body:JSON.stringify({email,password})});
-    console.log('[superadmin] login response',data);
+    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    console.log('[master-admin] login response',data);
+    if(!data.user||data.user.role!=='master_admin'){
+      try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+      showErr('Esta cuenta no es administrador de plataforma (master_admin). Usa el correo de administrador general.');
+      return;
+    }
     let me;
     try{
-      me=await apiJson('/api/superadmin/me');
+      me=await apiJson('/api/auth/me');
     }catch(e2){
       const st2=e2.httpStatus||0;
       if(st2===401) showErr('La sesión no quedó activa (cookie). Usa el mismo dominio que la API y HTTPS en producción.');
-      else if(st2===404) showErr('No existe GET /api/superadmin/me (404).');
+      else if(st2===404) showErr('No existe GET /api/auth/me (404).');
       else if(st2>=500) showErr('Error del servidor al validar sesión (500).');
       else showErr(e2.message||'No se pudo validar la sesión.');
       return;
     }
-    console.log('[superadmin] session verify /me',me);
-    window.__MIND24_SUPERADMIN={email:(me&&me.email)||String(email).trim()};
-    window.__MIND24_USER=null;
+    console.log('[master-admin] session verify /me',me);
+    window.__MIND24_USER=me.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-superadmin');
-    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=(me&&me.email)||String(email).trim();
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=(me.user&&me.user.email)||String(email).trim();
+    const av=document.querySelector('#view-dash-superadmin .sidebar-user .s-avatar'); if(av&&me.user)av.textContent=initialsFromName(me.user.fullName||me.user.email);
     showView('dash-superadmin');
   }catch(err){
     const st=err.httpStatus||0;
@@ -1562,8 +1581,8 @@ async function loginSuperAdmin(e){
 }
 
 async function superadminLogout(){
-  try{ await apiJson('/api/superadmin/logout',{method:'POST'}); }catch{}
-  window.__MIND24_SUPERADMIN=null;
+  try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+  window.__MIND24_USER=null;
   showView('landing');
 }
 
@@ -1582,7 +1601,7 @@ async function refreshSuperadminDashboard(){
       (orgs.organizations||[]).forEach(o=>{
         const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
         function td(text){ const x=document.createElement('td'); x.style.padding='8px'; x.textContent=text; tr.appendChild(x); }
-        td(o.name); td(o.slug||'—'); td(o.empresaPortalEnabled?'Sí':'No'); td(String(o.credits));
+        td(o.id); td(o.name); td(o.slug||'—'); td(o.empresaPortalEnabled?'Sí':'No'); td(String(o.credits));
         const act=document.createElement('td'); act.style.padding='8px'; act.style.whiteSpace='nowrap';
         const b1=document.createElement('button'); b1.type='button'; b1.className='card-action'; b1.textContent='+Tokens'; b1.onclick=()=>superadminCredits(o.id);
         const b2=document.createElement('button'); b2.type='button'; b2.className='card-action'; b2.textContent=o.blocked?'Desbloquear':'Bloquear'; b2.onclick=()=>superadminToggleBlocked(o.id,!o.blocked);
@@ -1603,8 +1622,8 @@ async function refreshSuperadminDashboard(){
     }
   }catch(e){
     if(err){ err.textContent=e.message||'Error'; err.classList.remove('hidden'); }
-    if(e.code==='SUPERADMIN_REQUIRED'||e.code==='UNAUTHENTICATED'){
-      window.__MIND24_SUPERADMIN=null;
+    if(e.code==='MASTER_ADMIN_REQUIRED'||e.code==='FORBIDDEN'||e.code==='UNAUTHENTICATED'){
+      window.__MIND24_USER=null;
       showView('landing');
       openModal('modal-login-superadmin');
     }
@@ -1632,6 +1651,34 @@ async function superadminDeleteOrg(orgId,name){
   if(!confirm('¿Eliminar la empresa "'+(name||orgId)+'" y todos sus datos? Esta acción no se puede deshacer.'))return;
   try{
     await apiJson('/api/superadmin/organizations/'+encodeURIComponent(orgId),{method:'DELETE'});
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminCreateUserInOrg(e){
+  e.preventDefault();
+  const organizationId=(document.getElementById('su-user-org-id')||{}).value||'';
+  const email=(document.getElementById('su-user-email')||{}).value||'';
+  const fullName=(document.getElementById('su-user-name')||{}).value||'';
+  const password=(document.getElementById('su-user-pass')||{}).value||'';
+  const role=(document.getElementById('su-user-role')||{}).value||'candidato';
+  const tokRaw=(document.getElementById('su-user-tokens')||{}).value||'';
+  const outEl=document.getElementById('su-user-create-result');
+  try{
+    const body={ organizationId, email, fullName, role };
+    if(password&&password.length>=8) body.password=password;
+    if(String(tokRaw).trim()!==''){
+      const n=parseInt(tokRaw,10);
+      if(Number.isNaN(n)||n<10||n>1000){ alert('Tokens a la empresa: número entre 10 y 1000 o deja vacío.'); return; }
+      body.creditsGrantToOrg=n;
+    }
+    const res=await apiJson('/api/superadmin/users',{method:'POST',body:JSON.stringify(body)});
+    if(outEl){
+      outEl.style.display='block';
+      let msg='Usuario creado: '+res.user.email;
+      if(res.generatedPassword)msg+='. Contraseña generada: '+res.generatedPassword;
+      outEl.textContent=msg;
+    }
     await refreshSuperadminDashboard();
   }catch(err){ alert(err.message||'Error'); }
 }

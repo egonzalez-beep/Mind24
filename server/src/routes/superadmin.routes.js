@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db/client.js';
-import { loginRateLimiter } from '../middleware/rateLimit.middleware.js';
-import { requireSuperAdmin } from '../middleware/superadmin.middleware.js';
+import { requireMasterAdmin } from '../middleware/superadmin.middleware.js';
 import {
-  verifySuperAdminCredentials,
   createCompanyWithAdmin,
+  createUserInOrganizationForMaster,
   deleteOrganizationById,
   listAllSubmittedEvaluations,
 } from '../services/superadmin.service.js';
@@ -14,51 +13,7 @@ import { defaultDemoAssessmentConfig } from '../assessment/defaultDefinition.js'
 
 const router = Router();
 
-function regenerateSession(req) {
-  return new Promise((resolve, reject) => {
-    req.session.regenerate((err) => (err ? reject(err) : resolve()));
-  });
-}
-
-router.post('/login', loginRateLimiter, async (req, res, next) => {
-  try {
-    const { email, password } = z
-      .object({
-        email: z.string().email(),
-        password: z.string().min(1).max(200),
-      })
-      .parse(req.body);
-    const ok = await verifySuperAdminCredentials(email, password);
-    if (!ok) {
-      const err = new Error('Credenciales inválidas');
-      err.code = 'INVALID_CREDENTIALS';
-      throw err;
-    }
-    await regenerateSession(req);
-    req.session.superAdmin = true;
-    req.session.superAdminEmail = email.trim().toLowerCase();
-    res.json({ ok: true, superAdmin: { email: req.session.superAdminEmail } });
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.post('/logout', (req, res, next) => {
-  req.session.destroy((err) => {
-    if (err) return next(err);
-    res.clearCookie('mind24.sid');
-    res.json({ ok: true });
-  });
-});
-
-router.get('/me', (req, res) => {
-  if (!req.session?.superAdmin) {
-    return res.status(401).json({ error: 'UNAUTHENTICATED', message: 'Sesión de administrador general requerida.' });
-  }
-  res.json({ superAdmin: true, email: req.session.superAdminEmail });
-});
-
-router.use(requireSuperAdmin);
+router.use(requireMasterAdmin);
 
 router.get('/organizations', async (_req, res, next) => {
   try {
@@ -92,6 +47,34 @@ router.post('/organizations', async (req, res, next) => {
       admin: { id: out.admin.id, email: out.admin.email, fullName: out.admin.fullName },
       generatedPassword: out.plainPassword,
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/users', async (req, res, next) => {
+  try {
+    const parsed = z
+      .object({
+        organizationId: z.string().min(1),
+        email: z.string().email(),
+        fullName: z.string().min(2).max(200),
+        password: z.string().min(8).max(200).optional(),
+        role: z.enum(['empresa_admin', 'candidato']),
+        creditsGrantToOrg: z.number().int().min(10).max(1000).optional(),
+      })
+      .parse(req.body);
+    const password =
+      parsed.password && parsed.password.length >= 8 ? parsed.password : undefined;
+    const out = await createUserInOrganizationForMaster({
+      organizationId: parsed.organizationId,
+      email: parsed.email,
+      fullName: parsed.fullName,
+      password,
+      role: parsed.role,
+      creditsGrantToOrg: parsed.creditsGrantToOrg,
+    });
+    res.status(201).json(out);
   } catch (e) {
     next(e);
   }
