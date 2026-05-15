@@ -817,6 +817,31 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-b">🧘</div><span class="stat-trend trend-up">↑ +8%</span></div><div class="stat-value">87%</div><div class="stat-label">Índice bienestar</div></div>
         <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-a">🗓</div><span class="stat-trend trend-dn">↓ -2%</span></div><div class="stat-value">6</div><div class="stat-label">Sesiones pendientes</div></div>
       </div>
+      <div id="aspen-pioneer-wrap" class="hidden" style="margin-bottom:24px;">
+        <div class="card" style="border-color:rgba(16,185,129,.35);">
+          <div class="card-body" style="padding:16px 18px;">
+            <button type="button" class="form-submit" style="width:100%;max-width:440px;background:linear-gradient(135deg,#059669,#047857);border:none;border-radius:var(--r-sm);padding:12px 18px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit;" onclick="toggleAspenAdminPanel()">+ Administradores Aspen — altas para envío de pruebas</button>
+            <p style="font-size:12px;color:var(--slate-500);margin-top:10px;line-height:1.5;">Solo para la cuenta <strong>admin@demo.mind24.com</strong>. Cada administrador recibe contraseña aleatoria y un saldo de <strong>créditos vinculado a su correo</strong> (el consumo al crear pruebas se aplicará después).</p>
+            <div id="aspen-panel-body" class="hidden" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--slate-200);">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div><label class="form-label">Correo del nuevo administrador</label><input type="email" id="aspen-new-email" class="form-input" placeholder="nuevo.admin@empresa.com" autocomplete="off"></div>
+                <div><label class="form-label">Nombre completo</label><input type="text" id="aspen-new-name" class="form-input" placeholder="Nombre y apellido" autocomplete="off"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:12px;">
+                <div><label class="form-label">Créditos iniciales (saldo en su correo)</label><input type="number" id="aspen-new-credits" class="form-input" min="1" max="1000000" value="100"></div>
+                <button type="button" class="form-submit form-submit-purple" style="padding:12px 20px;" onclick="aspenProvisionAdmin(event)">Crear administrador</button>
+              </div>
+              <p id="aspen-provision-result" style="font-size:13px;color:var(--slate-600);display:none;margin-bottom:8px;"></p>
+              <div style="overflow-x:auto;margin-top:8px;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                  <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Alta</th><th style="padding:8px;">Correo</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Créditos (correo)</th></tr></thead>
+                  <tbody id="aspen-admins-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="dash-grid">
         <div class="card">
           <div class="card-header"><div><div class="card-title">Actividad Reciente</div><div class="card-subtitle">Últimos movimientos</div></div><button class="card-action">Ver todo</button></div>
@@ -1378,6 +1403,56 @@ const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
 function mind24IsMasterAdminRole(role){
   return Boolean(role && String(role).trim().toLowerCase() === 'master_admin');
 }
+function mind24IsPioneerAspenAdmin(){
+  const u=window.__MIND24_USER;
+  if(u&&u.aspenPioneer===true)return true;
+  return Boolean(u&&String(u.email||'').trim().toLowerCase()==='admin@demo.mind24.com');
+}
+function mind24UpdateAspenPioneerVisibility(){
+  const w=document.getElementById('aspen-pioneer-wrap');
+  if(w) w.classList.toggle('hidden', !mind24IsPioneerAspenAdmin());
+}
+function toggleAspenAdminPanel(){
+  const b=document.getElementById('aspen-panel-body');
+  if(b) b.classList.toggle('hidden');
+}
+async function refreshAspenAdminsList(){
+  if(!mind24IsPioneerAspenAdmin())return;
+  const tb=document.getElementById('aspen-admins-tbody');
+  if(!tb)return;
+  try{
+    const j=await apiJson('/api/org/aspen-admins');
+    tb.innerHTML='';
+    (j.administrators||[]).forEach(a=>{
+      const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+      function td(v){
+        const x=document.createElement('td'); x.style.padding='8px';
+        x.textContent=v==null||v===''?'—':String(v); tr.appendChild(x);
+      }
+      td(a.createdAt?new Date(a.createdAt).toLocaleString('es-MX'):'—');
+      td(a.email); td(a.fullName);
+      td(String(a.adminCredits!=null?a.adminCredits:0));
+      tb.appendChild(tr);
+    });
+  }catch(e){ console.warn('[aspen] list',e); }
+}
+async function aspenProvisionAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('aspen-new-email')||{}).value||'';
+  const fullName=(document.getElementById('aspen-new-name')||{}).value||'';
+  const credits=parseInt((document.getElementById('aspen-new-credits')||{}).value||'0',10);
+  const outEl=document.getElementById('aspen-provision-result');
+  if(!String(email).trim()||!String(fullName).trim()||String(fullName).trim().length<2){ alert('Indica correo y nombre completo (mínimo 2 caracteres).'); return; }
+  if(Number.isNaN(credits)||credits<1){ alert('Los créditos deben ser al menos 1.'); return; }
+  try{
+    const res=await apiJson('/api/org/aspen-admins',{method:'POST',body:JSON.stringify({email:String(email).trim(),fullName:String(fullName).trim(),credits})});
+    if(outEl){
+      outEl.style.display='block';
+      outEl.textContent='Alta correcta: '+res.user.email+' — contraseña (cópiala ahora): '+res.generatedPassword;
+    }
+    await refreshAspenAdminsList();
+  }catch(err){ alert(err.message||'Error'); }
+}
 function canAccessView(name){
   if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
   if(VIEWS_NEED_SUPERADMIN.has(name)){
@@ -1412,6 +1487,10 @@ function showView(name) {
   if(name==='dash-superadmin'){
     setTimeout(function(){ refreshSuperadminDashboard(); },0);
   }
+  if(name==='dash-admin'){
+    setTimeout(function(){ refreshAspenAdminsList(); },0);
+  }
+  mind24UpdateAspenPioneerVisibility();
 }
 // ── Modals ──
 function openModal(id){ const m=document.getElementById(id); if(m){m.classList.remove('hidden');document.body.style.overflow='hidden';} }

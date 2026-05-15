@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { prisma } from '../db/client.js';
 import { authenticateUser, toSessionPayload } from '../services/auth.service.js';
 import { loginRateLimiter } from '../middleware/rateLimit.middleware.js';
+import { isPioneerAspenAdminEmail } from '../services/aspenAdmin.service.js';
 
 const router = Router();
 
@@ -29,6 +31,8 @@ router.post('/login', loginRateLimiter, async (req, res, next) => {
         fullName: user.fullName,
         role: user.role,
         organizationId: user.organizationId,
+        adminCredits: user.adminCredits ?? 0,
+        aspenPioneer: isPioneerAspenAdminEmail(user.email),
       },
     });
   } catch (e) {
@@ -51,19 +55,31 @@ router.post('/logout', (req, res, next) => {
   });
 });
 
-router.get('/me', (req, res) => {
-  if (!req.session?.userId) {
-    return res.status(401).json({ error: 'UNAUTHENTICATED', message: 'Se requiere sesión.' });
+router.get('/me', async (req, res, next) => {
+  try {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: 'UNAUTHENTICATED', message: 'Se requiere sesión.' });
+    }
+    const u = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        organizationId: true,
+        adminCredits: true,
+      },
+    });
+    if (!u) {
+      return res.status(401).json({ error: 'UNAUTHENTICATED', message: 'Sesión inválida.' });
+    }
+    res.json({
+      user: { ...u, adminCredits: u.adminCredits ?? 0, aspenPioneer: isPioneerAspenAdminEmail(u.email) },
+    });
+  } catch (e) {
+    next(e);
   }
-  res.json({
-    user: {
-      id: req.session.userId,
-      email: req.session.email,
-      fullName: req.session.fullName,
-      role: req.session.role,
-      organizationId: req.session.organizationId,
-    },
-  });
 });
 
 export default router;

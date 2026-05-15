@@ -5,6 +5,11 @@ import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js'
 import { assertEmpresaAdmin, createCandidateForOrg, listCandidates } from '../services/candidate.service.js';
 import { createAssignment, listAssignmentsForOrg } from '../services/assignment.service.js';
 import { listDefinitionsForOrg } from '../services/assessmentDefinition.service.js';
+import {
+  listAspenAdminsInOrganization,
+  provisionAspenAdminPeer,
+  isPioneerAspenAdminEmail,
+} from '../services/aspenAdmin.service.js';
 
 const router = Router();
 
@@ -88,6 +93,46 @@ router.post('/assignments', async (req, res, next) => {
       assignedByUserId: u.id,
     });
     res.status(201).json({ assignment });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Lista admins Aspen de la org (solo cuenta pionera admin@demo.mind24.com). */
+router.get('/aspen-admins', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    if (!isPioneerAspenAdminEmail(u.email)) {
+      return res.status(403).json({ error: 'FORBIDDEN', message: 'No autorizado.' });
+    }
+    const administrators = await listAspenAdminsInOrganization(u.organizationId);
+    res.json({ administrators });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Alta de otro admin Aspen + créditos iniciales en su correo (solo cuenta pionera). */
+router.post('/aspen-admins', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    if (!isPioneerAspenAdminEmail(u.email)) {
+      return res.status(403).json({ error: 'FORBIDDEN', message: 'No autorizado.' });
+    }
+    const { email, fullName, credits } = z
+      .object({
+        email: z.string().email(),
+        fullName: z.string().min(2).max(200),
+        credits: z.number().int().min(1).max(1_000_000),
+      })
+      .parse(req.body);
+    const out = await provisionAspenAdminPeer({
+      pioneerUserId: u.id,
+      email,
+      fullName,
+      credits,
+    });
+    res.status(201).json(out);
   } catch (e) {
     next(e);
   }

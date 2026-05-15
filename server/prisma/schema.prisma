@@ -56,6 +56,8 @@ model User {
   passwordHash   String
   fullName       String
   role           UserRole
+  /// Créditos Aspen vinculados a este correo (admin que envía pruebas); consumo futuro al crear pruebas.
+  adminCredits   Int       @default(0)
   /// Nota opcional visible solo para master_admin (seguimiento / gestión).
   adminNote      String?
   organizationId String?

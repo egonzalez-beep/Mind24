@@ -98,7 +98,7 @@ Sustituye `TU_DOMINIO` por el hostname público del servicio:
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 - **`master_admin` (misma sesión que el resto):** `GET/POST /api/superadmin/organizations`, `POST /api/superadmin/empresa-admins/quick` (alta rápida admin empresa + tokens 1–1000), `GET /api/superadmin/empresa-admins`, `GET /api/superadmin/registrations` (todos los usuarios), `POST /api/superadmin/users`, `PATCH /api/superadmin/organizations/:id`, `DELETE ...`, `GET /api/superadmin/evaluations`, `GET /api/superadmin/stats`, `POST /api/superadmin/assessment-definitions` (ver `src/routes/superadmin.routes.js`).
-- **empresa_admin:** `GET/POST /api/org/candidates`, `GET /api/org/assessment-definitions`, `GET/POST /api/org/assignments`
+- **empresa_admin:** `GET/POST /api/org/candidates`, `GET /api/org/assessment-definitions`, `GET/POST /api/org/assignments`; además **`GET/POST /api/org/aspen-admins`** solo si el correo coincide con `ASPEN_PIONEER_ADMIN_EMAIL` (por defecto `admin@demo.mind24.com`): alta de otros admins Aspen con créditos por correo (`User.adminCredits`).
 - **candidato:** `GET /api/me/assignments`, `POST /api/me/assignments/:id/start`, `POST /api/me/attempts/:id/submit`, `GET /api/me/attempts/:id/result`
 
 Motor psicométrico: definiciones en JSON (`AssessmentDefinition.config`); el cálculo se hace solo en servidor al enviar el intento.
