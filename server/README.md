@@ -9,14 +9,15 @@
 
 Copia `server/.env.example` a `server/.env` y define al menos:
 
-- `DATABASE_URL` — cadena PostgreSQL (Railway la inyecta automáticamente al vincular el plugin Postgres).
-- `SESSION_SECRET` — cadena larga y aleatoria en producción.
+- `DATABASE_URL` — cadena PostgreSQL (Railway la inyecta al vincular Postgres).
+- `SESSION_SECRET` — cadena larga y aleatoria en cualquier entorno (`openssl rand -hex 32`).
+- `PLATFORM_ADMIN_EMAIL` — correo del administrador de plataforma (`master_admin`). En cada arranque el bootstrap **sincroniza** ese usuario: fuerza `role = master_admin` y `organizationId = null` si hace falta. Si `PLATFORM_ADMIN_PASSWORD` está definida y no coincide con el hash guardado, actualiza la contraseña. Si el usuario **no existe** y la contraseña está vacía o ausente, no se crea (debes definir `PLATFORM_ADMIN_PASSWORD` para el alta inicial).
 
 Opcional:
 
+- `BOOTSTRAP_DEMO_ADMIN_EMAIL`, `BOOTSTRAP_DEMO_ADMIN_PASSWORD`, `BOOTSTRAP_DEMO_CANDIDATE_EMAIL`, `BOOTSTRAP_DEMO_CANDIDATE_PASSWORD` — si las **cuatro** están definidas y no vacías, el bootstrap crea (si faltan) la org demo interna, admin empresa, candidato y asignación. Si falta alguna, se omite por completo el bloque demo (solo aplica el bootstrap de plataforma según las vars anteriores).
 - `CLIENT_ORIGINS` — orígenes separados por coma si el front se sirve en otro dominio (CORS con credenciales).
 - `TRUST_PROXY=1` — si el servicio está detrás de proxy (por defecto se confía en `X-Forwarded-*` en `NODE_ENV=production`).
-- **Administrador de plataforma (`master_admin`):** usuario en BD (bootstrap: `e.gonzalez@talento24.com` / `mind24` si no existe). Entra con **`POST /api/auth/login`**. Las rutas **`/api/superadmin/*`** usan la misma cookie de sesión y exigen rol `master_admin` (no hay variables `SUPERADMIN_*`).
 
 ## Comandos
 
@@ -24,6 +25,11 @@ Opcional:
 cd server
 npm install
 npx prisma migrate deploy
+```
+
+Para **seed destructivo** (`npm run db:seed`), define en `server/.env` las variables `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_CANDIDATE_EMAIL`, `SEED_CANDIDATE_PASSWORD` (y opcionalmente `SEED_ORG_SLUG`, por defecto `demo`). El seed **borra** datos existentes de las tablas implicadas; úsalo solo en desarrollo o cuando quieras resetear a propósito.
+
+```bash
 npm run db:seed
 npm start
 ```
@@ -54,7 +60,10 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 | Variable | Obligatoria | Notas |
 |----------|-------------|--------|
 | `DATABASE_URL` | Sí | Referencia al plugin Postgres de Railway (suele inyectarse al vincular el servicio). La URL `*.railway.internal` es correcta para tráfico entre servicios en la misma red. |
-| `SESSION_SECRET` | Sí en producción | Cadena larga y aleatoria (`openssl rand -hex 32`). Sin esto el arranque falla si `NODE_ENV=production`. |
+| `SESSION_SECRET` | Sí | Cadena larga y aleatoria (`openssl rand -hex 32`). El servidor la exige en todos los entornos. |
+| `PLATFORM_ADMIN_EMAIL` | Recomendada si usas bootstrap de plataforma | Identifica al usuario que debe ser `master_admin` (creación o corrección en cada arranque). |
+| `PLATFORM_ADMIN_PASSWORD` | Condicional | Obligatoria para **crear** el usuario si no existe. Si existe, se usa para **actualizar** el hash solo cuando difiere de la contraseña actual; si está vacía, el bootstrap puede igualmente corregir rol/org sin tocar la contraseña. |
+| `BOOTSTRAP_DEMO_*` (cuatro vars) | No | Solo si quieres usuarios demo automáticos al arrancar; ver arriba. |
 | `NODE_ENV` | Recomendada | `production` (cookies `Secure`, `trust proxy`, etc.). |
 | `PORT` | No | Railway la define sola; el código usa `process.env.PORT \|\| 3000`. |
 | `CLIENT_ORIGINS` | Opcional | Solo si el HTML se sirve desde otro dominio que no sea el del API (CORS con credenciales). Mismo dominio Railway → déjalo vacío. |
@@ -63,12 +72,11 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 ### Postgres
 
 - La tabla **`session`** se crea con la migración inicial de Prisma (`20260214150000_init`); `connect-pg-simple` usa esa tabla (`createTableIfMissing: false`).
-- **Bootstrap automático** al arrancar (`runBootstrapUsers`): crea **`master_admin`** `e.gonzalez@talento24.com` / `mind24` si no hay usuario con ese correo. Crea también usuarios demo `admin@demo.mind24.com` / `candidato@demo.mind24.com` si faltan (org slug `mind24-bootstrap-demo`), definición de evaluación y asignación. Idempotente. Logs: `Bootstrap users created` / `Bootstrap users already exist` y logs de plataforma en consola.
-- **Seed manual** (`npm run db:seed`) sigue disponible; borra y recrea datos demo (no usar en producción salvo que quieras resetear).
+- **Bootstrap al arrancar** (`runBootstrapUsers`): sincroniza el `master_admin` de `PLATFORM_ADMIN_EMAIL` (rol, `organizationId` y contraseña según env; ver logs `[bootstrap] created platform admin`, `upgraded user to master_admin`, `updated platform admin password`, `platform admin already valid`). Opcionalmente crea la demo si las cuatro variables `BOOTSTRAP_DEMO_*` están definidas. Idempotente.
 
 ### URLs a probar
 
-Sustituye `TU_DOMINIO` por el hostname público del servicio (p. ej. `mind24-production.up.railway.app`):
+Sustituye `TU_DOMINIO` por el hostname público del servicio:
 
 - `https://TU_DOMINIO/api/health` → JSON `{ "ok": true, "db": "up" }` si Postgres responde.
 - `https://TU_DOMINIO/` → `index.html` (mismo origen que `/api/*`, cookies de sesión válidas).
@@ -76,23 +84,12 @@ Sustituye `TU_DOMINIO` por el hostname público del servicio (p. ej. `mind24-pro
 ### Qué queda operativo tras el deploy
 
 - API bajo `/api/*`, UI en `/`, Prisma + PostgreSQL, sesiones en tabla `session`, login estándar y rutas `/api/superadmin/*` para `master_admin`.
-- CRUD de empresas y usuarios globales (`master_admin`), org/candidatos/asignaciones para empresa/candidato; cuentas demo `*.mind24.com` las crea el **bootstrap** en el primer arranque.
+- CRUD de empresas y usuarios globales (`master_admin`), org/candidatos/asignaciones para empresa/candidato.
 
-## Cuentas de demostración (bootstrap en producción)
+## Seguridad y secretos
 
-Si al arrancar no existían `admin@demo.mind24.com` y `candidato@demo.mind24.com`, el servidor los crea (org slug `mind24-bootstrap-demo`). El **`master_admin`** de plataforma se crea si no hay usuario con `e.gonzalez@talento24.com`. Credenciales:
-
-| Rol | Email | Contraseña |
-|-----|--------|--------------|
-| master_admin (panel «Administrador general») | e.gonzalez@talento24.com | mind24 |
-| empresa_admin | admin@demo.mind24.com | Admin123 |
-| candidato | candidato@demo.mind24.com | Candidato123 |
-
-Entra al panel de administrador general con **`POST /api/auth/login`**. El panel usa **`/api/superadmin/*`** (organizaciones, evaluaciones globales, `POST /api/superadmin/users` para alta de usuarios en una org; campo opcional `creditsGrantToOrg` entre **10 y 1000** suma créditos a esa empresa).
-
-El comando `npm run db:seed` crea cuentas `@demo.mind24.local` y **borra** datos existentes; úsalo solo en desarrollo.
-
-Cambia contraseñas en producción si expusiste estas cuentas.
+- No subas `server/.env` ni archivos con URLs o contraseñas reales. Usa solo `server/.env.example` como plantilla.
+- Tras el deploy, cambia cualquier contraseña de demostración que hayas puesto en variables de entorno si las compartiste.
 
 ## API (resumen)
 

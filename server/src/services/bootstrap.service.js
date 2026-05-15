@@ -1,30 +1,46 @@
+import bcrypt from 'bcryptjs';
 import { prisma } from '../db/client.js';
 import { hashPassword } from './auth.service.js';
 import { defaultDemoAssessmentConfig } from '../assessment/defaultDefinition.js';
+import { env } from '../config/env.js';
 
 /** Slug reservado para la org demo de bootstrap. */
 const BOOTSTRAP_ORG_SLUG = 'mind24-bootstrap-demo';
 
-const PLATFORM_MASTER_EMAIL = 'e.gonzalez@talento24.com';
-const PLATFORM_MASTER_PASSWORD = 'mind24';
-
-const DEMO_ADMIN_EMAIL = 'admin@demo.mind24.com';
-const DEMO_CANDIDATE_EMAIL = 'candidato@demo.mind24.com';
-const DEMO_ADMIN_PASSWORD = 'Admin123';
-const DEMO_CANDIDATE_PASSWORD = 'Candidato123';
-
 const DEF_KEY = 'honestidad_confianza';
 const DEF_VERSION = 1;
 
+function nonempty(s) {
+  return typeof s === 'string' && s.trim().length > 0;
+}
+
 /**
- * Idempotente: asegura `master_admin` plataforma + demo empresa/candidato si faltan.
- * No borra datos, no resetea contraseñas existentes, no duplica emails.
+ * Idempotente: sincroniza el `master_admin` de plataforma desde env y/o usuarios demo si todas las vars demo están definidas.
+ * No borra organizaciones ni datos; el correo `PLATFORM_ADMIN_EMAIL` puede actualizarse rol/contraseña según env.
  */
 export async function runBootstrapUsers() {
   await ensurePlatformMasterAdmin();
 
-  const adminEmail = DEMO_ADMIN_EMAIL.trim().toLowerCase();
-  const candEmail = DEMO_CANDIDATE_EMAIL.trim().toLowerCase();
+  const adminEmailRaw = env.BOOTSTRAP_DEMO_ADMIN_EMAIL;
+  const candEmailRaw = env.BOOTSTRAP_DEMO_CANDIDATE_EMAIL;
+  const adminPass = env.BOOTSTRAP_DEMO_ADMIN_PASSWORD;
+  const candPass = env.BOOTSTRAP_DEMO_CANDIDATE_PASSWORD;
+
+  const demoReady =
+    nonempty(adminEmailRaw) &&
+    nonempty(candEmailRaw) &&
+    nonempty(adminPass) &&
+    nonempty(candPass);
+
+  if (!demoReady) {
+    console.log(
+      '[bootstrap] Demo org/users skipped: set BOOTSTRAP_DEMO_ADMIN_EMAIL, BOOTSTRAP_DEMO_ADMIN_PASSWORD, BOOTSTRAP_DEMO_CANDIDATE_EMAIL, BOOTSTRAP_DEMO_CANDIDATE_PASSWORD to enable.',
+    );
+    return;
+  }
+
+  const adminEmail = adminEmailRaw.trim().toLowerCase();
+  const candEmail = candEmailRaw.trim().toLowerCase();
 
   const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
   const candUser = await prisma.user.findUnique({ where: { email: candEmail } });
@@ -73,7 +89,7 @@ export async function runBootstrapUsers() {
     adminRow = await prisma.user.create({
       data: {
         email: adminEmail,
-        passwordHash: await hashPassword(DEMO_ADMIN_PASSWORD),
+        passwordHash: await hashPassword(adminPass.trim()),
         fullName: 'Admin Demo',
         role: 'empresa_admin',
         organizationId: org.id,
@@ -87,7 +103,7 @@ export async function runBootstrapUsers() {
     candRow = await prisma.user.create({
       data: {
         email: candEmail,
-        passwordHash: await hashPassword(DEMO_CANDIDATE_PASSWORD),
+        passwordHash: await hashPassword(candPass.trim()),
         fullName: 'Candidato Demo',
         role: 'candidato',
         organizationId: org.id,
@@ -106,31 +122,70 @@ export async function runBootstrapUsers() {
 }
 
 async function ensurePlatformMasterAdmin() {
-  const em = PLATFORM_MASTER_EMAIL.trim().toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email: em } });
-  if (existing) {
-    if (existing.role === 'master_admin') {
-      console.log('[bootstrap] Platform master_admin already exists');
-    } else {
-      console.warn(
-        '[bootstrap] Skip creating platform user: email',
-        em,
-        'already exists with role',
-        existing.role,
-      );
-    }
+  const em = (env.PLATFORM_ADMIN_EMAIL || '').trim().toLowerCase();
+  if (!em) {
+    console.warn('[bootstrap] Skip platform master_admin: PLATFORM_ADMIN_EMAIL not set.');
     return;
   }
-  await prisma.user.create({
-    data: {
-      email: em,
-      passwordHash: await hashPassword(PLATFORM_MASTER_PASSWORD),
-      fullName: 'Administrador plataforma',
-      role: 'master_admin',
-      organizationId: null,
-    },
-  });
-  console.log('[bootstrap] Platform master_admin user created');
+
+  const rawPw = env.PLATFORM_ADMIN_PASSWORD;
+  const hasPassword = nonempty(rawPw);
+  const trimmedPw = hasPassword ? String(rawPw).trim() : '';
+
+  const existing = await prisma.user.findUnique({ where: { email: em } });
+
+  if (!existing) {
+    if (!hasPassword) {
+      console.log(
+        '[bootstrap] Skip platform master_admin: user does not exist and PLATFORM_ADMIN_PASSWORD not set.',
+      );
+      return;
+    }
+    await prisma.user.create({
+      data: {
+        email: em,
+        passwordHash: await hashPassword(trimmedPw),
+        fullName: 'Administrador plataforma',
+        role: 'master_admin',
+        organizationId: null,
+      },
+    });
+    console.log('[bootstrap] created platform admin');
+    return;
+  }
+
+  const data = {};
+  let needsRoleOrOrgFix = false;
+
+  if (existing.role !== 'master_admin') {
+    data.role = 'master_admin';
+    needsRoleOrOrgFix = true;
+  }
+  if (existing.organizationId != null) {
+    data.organizationId = null;
+    needsRoleOrOrgFix = true;
+  }
+
+  if (hasPassword) {
+    const pwdMatches = await bcrypt.compare(trimmedPw, existing.passwordHash);
+    if (!pwdMatches) {
+      data.passwordHash = await hashPassword(trimmedPw);
+    }
+  }
+
+  if (Object.keys(data).length === 0) {
+    console.log('[bootstrap] platform admin already valid');
+    return;
+  }
+
+  await prisma.user.update({ where: { id: existing.id }, data });
+
+  if (needsRoleOrOrgFix) {
+    console.log('[bootstrap] upgraded user to master_admin');
+  }
+  if (data.passwordHash) {
+    console.log('[bootstrap] updated platform admin password');
+  }
 }
 
 async function findOrCreateDefinition() {

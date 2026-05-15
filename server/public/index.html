@@ -708,7 +708,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="modal-badge modal-badge-purple">Admin Empresa</div>
       <h2 class="modal-title">Panel Corporativo</h2>
       <p class="modal-subtitle">Ingresa con tu cuenta empresarial de MIND24.</p>
-      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-email" class="form-input" placeholder="admin@demo.mind24.local" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Correo corporativo</label><input type="email" id="login-emp-email" class="form-input" placeholder="admin@example.com" autocomplete="username"></div>
       <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-emp-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
       <button type="button" class="form-submit form-submit-purple" onclick="loginEmpresaAdmin(event)">Ingresar al Panel →</button>
     </div>
@@ -761,7 +761,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="modal-badge modal-badge-purple">Candidato</div>
     <h2 class="modal-title">Acceso a evaluaciones</h2>
     <p class="modal-subtitle">Ingresa con el correo y contraseña que te proporcionó la empresa.</p>
-    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-cand-email" class="form-input" placeholder="candidato@demo.mind24.local" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-cand-email" class="form-input" placeholder="candidato@example.com" autocomplete="username"></div>
     <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-cand-pass" class="form-input" placeholder="••••••••" autocomplete="current-password"></div>
     <button type="button" class="form-submit form-submit-purple" onclick="loginCandidato(event)">Ingresar →</button>
     <p id="login-cand-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
@@ -775,7 +775,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="modal-badge modal-badge-purple">Administrador general</div>
     <h2 class="modal-title">Acceso exclusivo plataforma</h2>
     <p class="modal-subtitle">Solo el correo autorizado puede registrar empresas y créditos.</p>
-    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-su-email" class="form-input" placeholder="e.gonzalez@talento24.com" autocomplete="username"></div>
+    <div class="form-group"><label class="form-label">Correo</label><input type="email" id="login-su-email" class="form-input" placeholder="admin@example.com" autocomplete="username"></div>
     <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="login-su-pass" class="form-input" autocomplete="current-password"></div>
     <button type="button" class="form-submit form-submit-purple" onclick="loginSuperAdmin(event)">Ingresar →</button>
     <p id="login-su-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
@@ -1175,7 +1175,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="card-body">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
             <div><label class="form-label">Nombre empresa</label><input type="text" id="su-org-name" class="form-input" placeholder="Ej. Talento24"></div>
-            <div><label class="form-label">Slug (opcional)</label><input type="text" id="su-org-slug" class="form-input" placeholder="talento24"></div>
+            <div><label class="form-label">Slug (opcional)</label><input type="text" id="su-org-slug" class="form-input" placeholder="mi-empresa"></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
             <div><label class="form-label">Correo admin empresa</label><input type="email" id="su-admin-email" class="form-input" placeholder="hr@empresa.com"></div>
@@ -1377,7 +1377,9 @@ function showView(name) {
     if(name==='landing'||name==='access-denied'){ nav.classList.remove('light-nav'); resumeParticles(); }
     else { nav.classList.add('light-nav'); pauseParticles(); }
   }
-  if(name==='dash-superadmin') refreshSuperadminDashboard();
+  if(name==='dash-superadmin'){
+    setTimeout(function(){ refreshSuperadminDashboard(); },0);
+  }
 }
 // ── Modals ──
 function openModal(id){ const m=document.getElementById(id); if(m){m.classList.remove('hidden');document.body.style.overflow='hidden';} }
@@ -1459,8 +1461,15 @@ function initialsFromName(name){
   return (p[0][0]+p[p.length-1][0]).toUpperCase();
 }
 
-async function authLogout(){
+async function mind24LogoutApi(reason){
+  const meta=reason==null?{}:(typeof reason==='object'?reason:{detail:String(reason)});
+  console.log('[auth] logout triggered', meta);
+  console.trace('[auth] logout trace');
   try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+}
+
+async function authLogout(){
+  await mind24LogoutApi({reason:'authLogout'});
   window.__MIND24_USER=null;
   window.ATTEMPT_CTX={useApi:false};
   showView('landing');
@@ -1472,7 +1481,7 @@ async function loginEmpresaAdmin(e){
   const password=(document.getElementById('login-emp-pass')||{}).value||'';
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
-    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
     closeModal('modal-empresa');
     const fn=data.user.fullName||data.user.email;
@@ -1496,7 +1505,7 @@ async function loginEmpresaCrearEval(e){
   const password=(document.getElementById('login-emp-crear-pass')||{}).value||'';
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
-    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
     closeModal('modal-empresa');
     showView('dash-crear-eval');
@@ -1517,7 +1526,7 @@ async function loginCandidato(e){
   const errEl=document.getElementById('login-cand-err');
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
-    if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await apiJson('/api/auth/logout',{method:'POST'}); return; }
+    if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await mind24LogoutApi({reason:'candidato_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-candidato');
@@ -1540,6 +1549,10 @@ async function loginCandidato(e){
 
 async function loginSuperAdmin(e){
   e.preventDefault();
+  e.stopPropagation();
+  if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  if(window.__mind24MasterLoginBusy)return;
+  window.__mind24MasterLoginBusy=true;
   const email=(document.getElementById('login-su-email')||{}).value||'';
   const password=(document.getElementById('login-su-pass')||{}).value||'';
   const errEl=document.getElementById('login-su-err');
@@ -1547,41 +1560,35 @@ async function loginSuperAdmin(e){
   if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
   try{
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
-    console.log('[master-admin] login response',data);
-    if(!data.user||data.user.role!=='master_admin'){
-      try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+    console.log('[auth] login success');
+    console.log('[auth] current user',data&&data.user);
+    const roleNorm=String((data&&data.user&&data.user.role)||'').trim();
+    if(!data||!data.user||roleNorm!=='master_admin'){
+      console.warn('[auth] login rejected: expected master_admin, got role=',roleNorm);
+      await mind24LogoutApi({reason:'master_login_wrong_role',role:roleNorm});
       showErr('Esta cuenta no es administrador de plataforma (master_admin). Usa el correo de administrador general.');
       return;
     }
-    let me;
-    try{
-      me=await apiJson('/api/auth/me');
-    }catch(e2){
-      const st2=e2.httpStatus||0;
-      if(st2===401) showErr('La sesión no quedó activa (cookie). Usa el mismo dominio que la API y HTTPS en producción.');
-      else if(st2===404) showErr('No existe GET /api/auth/me (404).');
-      else if(st2>=500) showErr('Error del servidor al validar sesión (500).');
-      else showErr(e2.message||'No se pudo validar la sesión.');
-      return;
-    }
-    console.log('[master-admin] session verify /me',me);
-    window.__MIND24_USER=me.user;
+    window.__MIND24_USER=data.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-superadmin');
-    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=(me.user&&me.user.email)||String(email).trim();
-    const av=document.querySelector('#view-dash-superadmin .sidebar-user .s-avatar'); if(av&&me.user)av.textContent=initialsFromName(me.user.fullName||me.user.email);
-    showView('dash-superadmin');
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=data.user.email||String(email).trim();
+    const av=document.querySelector('#view-dash-superadmin .sidebar-user .s-avatar'); if(av&&data.user)av.textContent=initialsFromName(data.user.fullName||data.user.email);
+    console.log('[auth] entering dashboard');
+    setTimeout(function(){ showView('dash-superadmin'); },0);
   }catch(err){
     const st=err.httpStatus||0;
     if(st===401) showErr(err.message||'Credenciales inválidas.');
     else if(st===404) showErr('No existe el endpoint (404). Comprueba que cargas la app desde el mismo dominio que la API.');
     else if(st>=500) showErr('Error del servidor (500). Revisa logs en Railway.');
     else showErr(err.message||'Error de acceso');
+  }finally{
+    window.__mind24MasterLoginBusy=false;
   }
 }
 
 async function superadminLogout(){
-  try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
+  await mind24LogoutApi({reason:'superadminLogout'});
   window.__MIND24_USER=null;
   showView('landing');
 }
@@ -1620,9 +1627,17 @@ async function refreshSuperadminDashboard(){
         etb.appendChild(tr);
       });
     }
+    window.__mind24SuAuthRetryN=0;
   }catch(e){
     if(err){ err.textContent=e.message||'Error'; err.classList.remove('hidden'); }
-    if(e.code==='MASTER_ADMIN_REQUIRED'||e.code==='FORBIDDEN'||e.code==='UNAUTHENTICATED'){
+    const authFail=e.code==='MASTER_ADMIN_REQUIRED'||e.code==='FORBIDDEN'||e.code==='UNAUTHENTICATED';
+    if(authFail&&(window.__mind24SuAuthRetryN||0)<1){
+      window.__mind24SuAuthRetryN=(window.__mind24SuAuthRetryN||0)+1;
+      setTimeout(function(){ refreshSuperadminDashboard(); },120);
+      return;
+    }
+    if(authFail){
+      window.__mind24SuAuthRetryN=0;
       window.__MIND24_USER=null;
       showView('landing');
       openModal('modal-login-superadmin');

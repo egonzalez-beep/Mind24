@@ -37,6 +37,13 @@ router.post('/login', loginRateLimiter, async (req, res, next) => {
 });
 
 router.post('/logout', (req, res, next) => {
+  // Diagnóstico temporal: quién llama a logout (no altera la sesión).
+  console.log('[auth/logout]', {
+    referer: req.get('referer'),
+    origin: req.get('origin'),
+    path: req.originalUrl || req.url,
+    hadSession: Boolean(req.session?.userId),
+  });
   req.session.destroy((err) => {
     if (err) return next(err);
     res.clearCookie('mind24.sid');
