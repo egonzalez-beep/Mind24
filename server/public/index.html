@@ -1346,11 +1346,14 @@ const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-ps
 const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-psicologo','dash-empleado']);
 const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
 const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
+function mind24IsMasterAdminRole(role){
+  return Boolean(role && String(role).trim().toLowerCase() === 'master_admin');
+}
 function canAccessView(name){
   if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
   if(VIEWS_NEED_SUPERADMIN.has(name)){
     const u=window.__MIND24_USER;
-    if(!u||u.role!=='master_admin'){ openModal('modal-login-superadmin'); return false; }
+    if(!u||!mind24IsMasterAdminRole(u.role)){ openModal('modal-login-superadmin'); return false; }
     return true;
   }
   if(VIEWS_NEED_EMPRESA_ADMIN.has(name)){
@@ -1565,8 +1568,9 @@ async function loginSuperAdmin(e){
     const user=me&&me.user;
     console.log('[MASTER LOGIN USER]', user);
     console.log('[MASTER ROLE]', user&&user.role);
-    const isMaster=user&&user.role==='master_admin';
+    const isMaster=user&&(String(user.role).trim().toLowerCase()==='master_admin');
     if(!isMaster){
+      console.error('ERROR DE ROL:', user&&user.role);
       alert('Tu usuario no tiene permisos de administrador general');
       showErr('Tu usuario no tiene permisos de administrador general');
       return;
@@ -1633,13 +1637,18 @@ async function refreshSuperadminDashboard(){
   }catch(e){
     if(err){ err.textContent=e.message||'Error'; err.classList.remove('hidden'); }
     const authFail=e.code==='MASTER_ADMIN_REQUIRED'||e.code==='FORBIDDEN'||e.code==='UNAUTHENTICATED';
-    if(authFail&&(window.__mind24SuAuthRetryN||0)<1){
-      window.__mind24SuAuthRetryN=(window.__mind24SuAuthRetryN||0)+1;
-      setTimeout(function(){ refreshSuperadminDashboard(); },120);
+    const maxSuDashAuthRetries=4;
+    const n=window.__mind24SuAuthRetryN||0;
+    if(authFail&&n<maxSuDashAuthRetries){
+      window.__mind24SuAuthRetryN=n+1;
+      const delay=120+n*180;
+      console.warn('[su-dash] sesión o permisos aún no listos; reintento',window.__mind24SuAuthRetryN,'/',maxSuDashAuthRetries,'en',delay+'ms',e.code||'');
+      setTimeout(function(){ refreshSuperadminDashboard(); },delay);
       return;
     }
     if(authFail){
       window.__mind24SuAuthRetryN=0;
+      console.warn('[su-dash] auth definitivo tras reintentos; no se llama POST logout desde aquí',e.code||'');
       window.__MIND24_USER=null;
       showView('landing');
       openModal('modal-login-superadmin');
