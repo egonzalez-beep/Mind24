@@ -1559,21 +1559,23 @@ async function loginSuperAdmin(e){
   const showErr=function(msg){ if(errEl){ errEl.textContent=msg; errEl.classList.remove('hidden'); } };
   if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
   try{
-    const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     console.log('[auth] login success');
-    console.log('[auth] current user',data&&data.user);
-    const roleNorm=String((data&&data.user&&data.user.role)||'').trim();
-    if(!data||!data.user||roleNorm!=='master_admin'){
-      console.warn('[auth] login rejected: expected master_admin, got role=',roleNorm);
-      await mind24LogoutApi({reason:'master_login_wrong_role',role:roleNorm});
-      showErr('Esta cuenta no es administrador de plataforma (master_admin). Usa el correo de administrador general.');
+    const me=await apiJson('/api/auth/me');
+    const user=me&&me.user;
+    console.log('[MASTER LOGIN USER]', user);
+    console.log('[MASTER ROLE]', user&&user.role);
+    const isMaster=user&&user.role==='master_admin';
+    if(!isMaster){
+      alert('Tu usuario no tiene permisos de administrador general');
+      showErr('Tu usuario no tiene permisos de administrador general');
       return;
     }
-    window.__MIND24_USER=data.user;
+    window.__MIND24_USER=user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-superadmin');
-    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=data.user.email||String(email).trim();
-    const av=document.querySelector('#view-dash-superadmin .sidebar-user .s-avatar'); if(av&&data.user)av.textContent=initialsFromName(data.user.fullName||data.user.email);
+    const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=user.email||String(email).trim();
+    const av=document.querySelector('#view-dash-superadmin .sidebar-user .s-avatar'); if(av&&user)av.textContent=initialsFromName(user.fullName||user.email);
     console.log('[auth] entering dashboard');
     setTimeout(function(){ showView('dash-superadmin'); },0);
   }catch(err){
