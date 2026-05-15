@@ -6,6 +6,111 @@ export function generateRandomPassword(len = 16) {
   return crypto.randomBytes(Math.ceil(len * 0.75)).toString('base64url').slice(0, len);
 }
 
+/**
+ * Alta rápida: nueva organización + admin empresa. Tokens 1–1000 → créditos iniciales de la org.
+ * Contraseña aleatoria; nota opcional solo visible para master_admin.
+ */
+export async function createEmpresaAdminQuick({ email, fullName, tokens, adminNote }) {
+  const n = Number(tokens);
+  if (Number.isNaN(n) || n < 1 || n > 1000) {
+    const err = new Error('Los tokens deben estar entre 1 y 1000.');
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+  const em = email.trim().toLowerCase();
+  const exists = await prisma.user.findUnique({ where: { email: em } });
+  if (exists) {
+    const err = new Error('El correo del administrador ya está registrado.');
+    err.code = 'EMAIL_IN_USE';
+    throw err;
+  }
+  const rawName =
+    fullName && String(fullName).trim().length >= 2
+      ? String(fullName).trim()
+      : em.split('@')[0].replace(/[._-]+/g, ' ').trim() || 'Administrador';
+  const plainPassword = generateRandomPassword(14);
+  const passwordHash = await hashPassword(plainPassword);
+  const slugBase = em
+    .split('@')[0]
+    .replace(/[^a-z0-9]/gi, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+    .slice(0, 24) || 'org';
+  const slug = `${slugBase}-${crypto.randomBytes(4).toString('hex')}`;
+  const note = adminNote && String(adminNote).trim() ? String(adminNote).trim() : null;
+
+  return prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: {
+        name: `Empresa — ${rawName}`,
+        slug,
+        credits: n,
+        blocked: false,
+        empresaPortalEnabled: true,
+      },
+    });
+    const admin = await tx.user.create({
+      data: {
+        email: em,
+        passwordHash,
+        fullName: rawName,
+        role: 'empresa_admin',
+        organizationId: org.id,
+        adminNote: note,
+      },
+    });
+    return {
+      organization: { id: org.id, name: org.name, slug: org.slug, credits: org.credits },
+      admin: { id: admin.id, email: admin.email, fullName: admin.fullName, role: admin.role },
+      generatedPassword: plainPassword,
+      tokensAssigned: n,
+    };
+  });
+}
+
+export async function listEmpresaAdminsForMaster() {
+  return prisma.user.findMany({
+    where: { role: 'empresa_admin' },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          credits: true,
+          blocked: true,
+          empresaPortalEnabled: true,
+        },
+      },
+    },
+  });
+}
+
+/** Todos los usuarios registrados (visión master): empresa, rol, candidato, notas. */
+export async function listAllRegistrationsForMaster({ take = 3000 } = {}) {
+  return prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+    take,
+    include: {
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          credits: true,
+          blocked: true,
+          empresaPortalEnabled: true,
+        },
+      },
+      candidateProfile: {
+        select: { id: true, createdAt: true },
+      },
+    },
+  });
+}
+
 export async function createCompanyWithAdmin({
   orgName,
   slug,

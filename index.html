@@ -1152,6 +1152,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Plataforma</div>
       <button type="button" class="sidebar-item active"><span class="si-icon">🏢</span><span>Empresas y créditos</span></button>
+      <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-quick-admins').scrollIntoView({behavior:'smooth'})"><span class="si-icon">➕</span><span>Alta administradores</span></button>
+      <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-admins').scrollIntoView({behavior:'smooth'})"><span class="si-icon">👤</span><span>Lista administradores</span></button>
+      <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-registry').scrollIntoView({behavior:'smooth'})"><span class="si-icon">📇</span><span>Todos los usuarios</span></button>
       <button type="button" class="sidebar-item" onclick="document.getElementById('su-scroll-evals').scrollIntoView({behavior:'smooth'})"><span class="si-icon">📊</span><span>Evaluaciones globales</span></button>
     </nav>
     <div class="sidebar-footer">
@@ -1206,6 +1209,32 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
           <p id="su-user-create-result" style="font-size:13px;color:var(--slate-600);display:none;"></p>
         </div>
+      </div>
+      <div class="card" id="su-scroll-quick-admins" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Alta rápida — Administrador de empresa</div><div class="card-subtitle">Correo, contraseña aleatoria por defecto y tokens iniciales (1–1000) en la nueva empresa</div></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Correo electrónico</label><input type="email" id="su-quick-admin-email" class="form-input" placeholder="admin@empresa.com"></div>
+            <div><label class="form-label">Nombre (opcional)</label><input type="text" id="su-quick-admin-name" class="form-input" placeholder="Si vacío, se infiere del correo"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div><label class="form-label">Tokens iniciales (1–1000)</label><input type="number" id="su-quick-admin-tokens" class="form-input" value="100" min="1" max="1000"></div>
+            <div style="display:flex;align-items:flex-end;"><button type="button" class="form-submit form-submit-purple" style="width:100%;" onclick="superadminQuickAddAdmin(event)">Crear administrador</button></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label class="form-label">Nota interna (opcional)</label>
+            <textarea id="su-quick-admin-note" class="form-input" rows="2" placeholder="Seguimiento o referencia (visible solo en este panel)" style="resize:vertical;min-height:56px;font-family:inherit;"></textarea>
+          </div>
+          <p id="su-quick-admin-result" style="font-size:13px;color:var(--slate-600);display:none;"></p>
+        </div>
+      </div>
+      <div class="card" id="su-scroll-admins" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Administradores de empresa</div><div class="card-subtitle">Lista completa con correo, tokens (créditos de su empresa) y nota</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Alta</th><th style="padding:8px;">Correo</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Empresa</th><th style="padding:8px;">Tokens</th><th style="padding:8px;">Nota</th></tr></thead><tbody id="su-admins-tbody"></tbody></table></div>
+      </div>
+      <div class="card" id="su-scroll-registry" style="margin-bottom:24px;">
+        <div class="card-header"><div><div class="card-title">Registro global de usuarios</div><div class="card-subtitle">Todas las altas: rol, organización, candidato y nota</div></div></div>
+        <div class="card-body" style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Alta</th><th style="padding:8px;">Correo</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Rol</th><th style="padding:8px;">Empresa</th><th style="padding:8px;">Tokens org.</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Portal emp.</th><th style="padding:8px;">Nota</th></tr></thead><tbody id="su-registry-tbody"></tbody></table></div>
       </div>
       <div class="card" style="margin-bottom:24px;">
         <div class="card-header"><div><div class="card-title">Empresas</div><div class="card-subtitle">Créditos, bloqueo y eliminación</div></div></div>
@@ -1603,13 +1632,56 @@ async function refreshSuperadminDashboard(){
   const err=document.getElementById('su-dash-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
   try{
-    const [st, orgs, evs]=await Promise.all([
+    const [st, orgs, evs, adm, reg]=await Promise.all([
       apiJson('/api/superadmin/stats'),
       apiJson('/api/superadmin/organizations'),
       apiJson('/api/superadmin/evaluations'),
+      apiJson('/api/superadmin/empresa-admins'),
+      apiJson('/api/superadmin/registrations'),
     ]);
     const so=document.getElementById('su-stat-orgs'); if(so)so.textContent=String(st.organizations);
     const se=document.getElementById('su-stat-ev'); if(se)se.textContent=String(st.submittedAttempts);
+    const atb=document.getElementById('su-admins-tbody');
+    if(atb){
+      atb.innerHTML='';
+      (adm.administrators||[]).forEach(a=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text,opt){
+          const x=document.createElement('td'); x.style.padding='8px';
+          if(opt&&opt.ellip){ x.style.maxWidth='200px'; x.style.overflow='hidden'; x.style.textOverflow='ellipsis'; }
+          const s=text==null||text===''?'—':String(text);
+          x.title=s;
+          x.textContent=s;
+          tr.appendChild(x);
+        }
+        const d=a.createdAt?new Date(a.createdAt).toLocaleString('es-MX'):'—';
+        const org=a.organization||{};
+        td(d); td(a.email); td(a.fullName); td(org.name||'—'); td(org.credits!=null?String(org.credits):'—'); td(a.adminNote||'',{ellip:true});
+        atb.appendChild(tr);
+      });
+    }
+    const rtb=document.getElementById('su-registry-tbody');
+    if(rtb){
+      rtb.innerHTML='';
+      (reg.users||[]).forEach(a=>{
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function td(text,opt){
+          const x=document.createElement('td'); x.style.padding='8px';
+          if(opt&&opt.ellip){ x.style.maxWidth='160px'; x.style.overflow='hidden'; x.style.textOverflow='ellipsis'; }
+          const s=text==null||text===''?'—':String(text);
+          x.title=s;
+          x.textContent=s;
+          tr.appendChild(x);
+        }
+        const org=a.organization;
+        const d=a.createdAt?new Date(a.createdAt).toLocaleString('es-MX'):'—';
+        const tok=org&&org.credits!=null?String(org.credits):'—';
+        const cand=a.candidateProfile?'Sí':'—';
+        const portal=org?(org.empresaPortalEnabled?'Sí':'No'):'—';
+        td(d); td(a.email); td(a.fullName); td(a.role); td(org?org.name:'—'); td(tok); td(cand); td(portal); td(a.adminNote||'',{ellip:true});
+        rtb.appendChild(tr);
+      });
+    }
     const tb=document.getElementById('su-org-tbody'); if(tb){ tb.innerHTML='';
       (orgs.organizations||[]).forEach(o=>{
         const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
@@ -1704,6 +1776,28 @@ async function superadminCreateUserInOrg(e){
       let msg='Usuario creado: '+res.user.email;
       if(res.generatedPassword)msg+='. Contraseña generada: '+res.generatedPassword;
       outEl.textContent=msg;
+    }
+    await refreshSuperadminDashboard();
+  }catch(err){ alert(err.message||'Error'); }
+}
+
+async function superadminQuickAddAdmin(e){
+  e.preventDefault();
+  const email=(document.getElementById('su-quick-admin-email')||{}).value||'';
+  const fullName=(document.getElementById('su-quick-admin-name')||{}).value||'';
+  const tokRaw=(document.getElementById('su-quick-admin-tokens')||{}).value||'100';
+  const adminNote=(document.getElementById('su-quick-admin-note')||{}).value||'';
+  const outEl=document.getElementById('su-quick-admin-result');
+  const n=parseInt(tokRaw,10);
+  if(Number.isNaN(n)||n<1||n>1000){ alert('Los tokens deben estar entre 1 y 1000.'); return; }
+  try{
+    const body={ email:email.trim(), tokens:n };
+    if(fullName&&String(fullName).trim().length>=2) body.fullName=String(fullName).trim();
+    if(adminNote&&String(adminNote).trim()) body.adminNote=String(adminNote).trim();
+    const res=await apiJson('/api/superadmin/empresa-admins/quick',{method:'POST',body:JSON.stringify(body)});
+    if(outEl){
+      outEl.style.display='block';
+      outEl.textContent='Alta correcta: '+res.admin.email+' — contraseña generada: '+res.generatedPassword+' — tokens asignados: '+res.tokensAssigned+' (cópiala ahora; no se vuelve a mostrar).';
     }
     await refreshSuperadminDashboard();
   }catch(err){ alert(err.message||'Error'); }

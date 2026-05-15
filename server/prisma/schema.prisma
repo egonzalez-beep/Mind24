@@ -56,6 +56,8 @@ model User {
   passwordHash   String
   fullName       String
   role           UserRole
+  /// Nota opcional visible solo para master_admin (seguimiento / gestión).
+  adminNote      String?
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime  @default(now())

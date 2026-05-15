@@ -4,9 +4,12 @@ import { prisma } from '../db/client.js';
 import { requireMasterAdmin } from '../middleware/superadmin.middleware.js';
 import {
   createCompanyWithAdmin,
+  createEmpresaAdminQuick,
   createUserInOrganizationForMaster,
   deleteOrganizationById,
+  listAllRegistrationsForMaster,
   listAllSubmittedEvaluations,
+  listEmpresaAdminsForMaster,
 } from '../services/superadmin.service.js';
 import { listOrganizations, updateOrganization } from '../services/organization.service.js';
 import { defaultDemoAssessmentConfig } from '../assessment/defaultDefinition.js';
@@ -47,6 +50,52 @@ router.post('/organizations', async (req, res, next) => {
       admin: { id: out.admin.id, email: out.admin.email, fullName: out.admin.fullName },
       generatedPassword: out.plainPassword,
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/empresa-admins/quick', async (req, res, next) => {
+  try {
+    const parsed = z
+      .object({
+        email: z.string().email(),
+        fullName: z.string().min(2).max(200).optional().nullable(),
+        tokens: z.number().int().min(1).max(1000),
+        adminNote: z.string().max(4000).optional().nullable(),
+      })
+      .parse(req.body);
+    const out = await createEmpresaAdminQuick({
+      email: parsed.email,
+      fullName: parsed.fullName,
+      tokens: parsed.tokens,
+      adminNote: parsed.adminNote,
+    });
+    res.status(201).json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+function userPublic(u) {
+  if (!u) return u;
+  const { passwordHash: _, ...rest } = u;
+  return rest;
+}
+
+router.get('/empresa-admins', async (_req, res, next) => {
+  try {
+    const administrators = (await listEmpresaAdminsForMaster()).map(userPublic);
+    res.json({ administrators });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/registrations', async (_req, res, next) => {
+  try {
+    const users = (await listAllRegistrationsForMaster()).map(userPublic);
+    res.json({ users });
   } catch (e) {
     next(e);
   }
