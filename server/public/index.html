@@ -402,15 +402,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-desc{font-size:12px;color:var(--slate-500);margin-top:1px;}
 .mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--white);background:var(--assess-gradient);flex-shrink:0;}
 .mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
-.cev-nueva-intro{margin-bottom:clamp(18px,3vw,28px);}
-.cev-nueva-intro h2{font-size:clamp(1.15rem,2.8vw,1.375rem);font-weight:800;letter-spacing:-.03em;color:var(--primary);margin-bottom:6px;}
-.cev-nueva-intro p{font-size:14px;color:var(--slate-500);line-height:1.55;max-width:52ch;}
 .cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:clamp(18px,3vw,24px);align-items:start;}
 @media(min-width:721px){
   .cev-main-grid{grid-template-columns:1fr 1fr;}
 }
 .cev-col-form,.cev-col-mods{min-width:0;display:flex;flex-direction:column;gap:20px;}
-.cev-api-banner{margin:0 0 16px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;display:none;}
+.cev-api-banner{margin:0 0 14px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;display:none;}
 .cev-api-banner:not(.hidden){display:block;}
 .cev-api-banner.err{color:#991B1B;background:linear-gradient(135deg,#FEF2F2,#FECACA);border:1px solid rgba(220,38,38,.25);}
 .cev-api-banner.ok{color:#065F46;background:linear-gradient(135deg,#ECFDF5,#A7F3D0);border:1px solid rgba(16,185,129,.28);}
@@ -422,10 +419,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-code-success-wrap.hidden{display:none!important;}
 @keyframes cevCodeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 .cev-code-success-card{border:1px solid rgba(124,58,237,.35)!important;background:linear-gradient(165deg,var(--d2) 0%,#1e1635 48%,#2e1067 100%)!important;overflow:hidden;}
-.cev-code-success-card .card-header{margin-bottom:12px!important;}
 .cev-code-success-card .card-title{color:#fff!important;}
-.cev-code-success-card .card-subtitle{color:rgba(226,232,240,.75)!important;}
 .cev-code-success-inner{padding-bottom:8px;}
+.cev-code-success-minimal{padding:22px 22px 24px!important;}
+.cev-code-unique-title{font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:rgba(196,181,253,.95);margin:0 0 14px;}
+.cev-code-box-minimal{background:linear-gradient(135deg,var(--d2),var(--d3));border:1px solid rgba(139,92,246,.3);border-radius:var(--r-lg);padding:20px 22px;display:flex;flex-direction:column;align-items:stretch;gap:16px;}
+.cev-code-box-minimal .cev-code-block{text-align:center;}
+.cev-code-box-minimal .code-btn{width:100%;justify-content:center;}
 .cev-code-display-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
 .cev-code-val{font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:clamp(1.35rem,4.5vw,1.75rem);font-weight:800;color:#E9D5FF;letter-spacing:.18em;}
 .cev-resumen-footer{max-width:920px;margin:0 auto;width:100%;}
@@ -436,8 +436,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-btn-primary{width:100%;padding:15px 20px;background:var(--purple-gradient);color:#fff;font-size:15px;font-weight:800;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 8px 28px rgba(124,58,237,.42);transition:transform .18s ease,box-shadow .18s ease,opacity .18s;}
 .cev-btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 36px rgba(124,58,237,.5);}
 .cev-btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
-.cev-btn-ghost{margin-top:12px;width:100%;padding:11px 16px;font-size:13px;font-weight:700;color:rgba(255,255,255,.88);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
-.cev-btn-ghost:hover{background:rgba(255,255,255,.14);}
 .create-input:disabled{opacity:.68;cursor:not-allowed;background:var(--slate-100);color:var(--slate-600);}
 #cev-mod-list.cev-locked .mod-toggle{cursor:not-allowed;opacity:.85;}
 
@@ -1176,13 +1174,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
-      <div class="cev-nueva-intro">
-        <h2>Nueva evaluación psicométrica</h2>
-        <p>Completa los datos del candidato y elige los módulos. Al crear la evaluación recibirás un código corto y un mensaje listo para compartir por el canal que prefieras.</p>
-      </div>
       <div id="cev-api-banner" class="cev-api-banner hidden" role="status"></div>
       <div class="cev-main-grid">
         <div class="cev-col-form">
@@ -1198,7 +1192,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="cev-col-mods">
           <div class="card" id="cev-mod-card">
-            <div class="card-header"><div><div class="card-title">Módulos de evaluación</div><div class="card-subtitle">Selecciona al menos uno · estimación de duración orientativa</div></div><div style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;" id="mod-counter">5/5 activos</div></div>
+            <div class="card-header"><div><div class="card-title">Módulos de evaluación</div></div><div style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;" id="mod-counter">5/5 activos</div></div>
             <div class="card-body">
               <div id="cev-mod-list">
                 <div class="mod-toggle selected" data-mod-key="habilidades" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">⚡</div><div><div class="mod-name">Habilidades</div><div class="mod-desc">Competencias blandas y sociales</div></div></div><div class="mod-check">✓</div></div>
@@ -1214,15 +1208,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div id="cev-code-success-wrap" class="cev-code-success-wrap hidden">
         <div class="card cev-code-success-card">
-          <div class="card-header"><div><div class="card-title">Código de acceso</div><div class="card-subtitle">Comparte el mensaje con el candidato de forma segura</div></div></div>
-          <div class="card-body cev-code-success-inner">
-            <p id="cev-success-strap" style="font-size:13px;color:rgba(226,232,240,.88);margin-bottom:16px;line-height:1.55;">Evaluación creada correctamente. Usa el código y el botón de copiado para enviar las instrucciones.</p>
-            <div class="code-box" style="margin-bottom:14px;">
-              <div><div style="font-size:11px;font-weight:700;color:rgba(167,139,250,.85);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Código único</div><div class="code-val cev-code-val" id="eval-code-display">—</div></div>
+          <div class="card-body cev-code-success-inner cev-code-success-minimal">
+            <div class="cev-code-unique-title">CÓDIGO ÚNICO</div>
+            <div class="code-box cev-code-box-minimal">
+              <div class="cev-code-block"><div class="code-val cev-code-val" id="eval-code-display">—</div></div>
               <button type="button" class="code-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
             </div>
-            <p id="cev-temp-password-line" style="font-size:12px;color:rgba(226,232,240,.72);line-height:1.55;margin-bottom:8px;"></p>
-            <button type="button" class="cev-btn-ghost" onclick="crearEvalResetNuevaFlow()">Crear otra evaluación</button>
           </div>
         </div>
       </div>
@@ -1692,7 +1683,7 @@ function crearEvalSidebarNav(which){
     if(el) el.classList.toggle('hidden', k!==which);
   });
   const titles={
-    nueva:['Crear evaluación','Registra un candidato y genera su código de acceso'],
+    nueva:['Crear Evaluación',''],
     mis:['Mis evaluaciones','Seguimiento de asignaciones: pendiente o aplicada'],
     resultados:['Resultados','Evaluaciones finalizadas por los evaluados']
   };
@@ -1700,7 +1691,11 @@ function crearEvalSidebarNav(which){
   const t=document.getElementById('cev-topbar-title');
   const s=document.getElementById('cev-topbar-sub');
   if(t) t.textContent=pair[0];
-  if(s) s.textContent=pair[1];
+  if(s){
+    const sub=pair[1]||'';
+    s.textContent=sub;
+    s.style.display=sub?'block':'none';
+  }
   crearEvalSyncSidebarActive();
   refreshCrearEvalAssignmentsTables();
 }
@@ -2021,8 +2016,6 @@ function crearEvalResetNuevaFlow(){
   if(wrap) wrap.classList.add('hidden');
   const codeEl=document.getElementById('eval-code-display');
   if(codeEl) codeEl.textContent='—';
-  const pw=document.getElementById('cev-temp-password-line');
-  if(pw) pw.textContent='';
   crearEvalHideApiBanner();
   const warn=document.getElementById('cev-mod-inline-warn');
   if(warn) warn.classList.add('hidden');
@@ -2107,8 +2100,6 @@ async function registrarEval(){
       wrap.classList.remove('hidden');
       requestAnimationFrame(()=>{ try{ wrap.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ wrap.scrollIntoView(); } });
     }
-    const pw=document.getElementById('cev-temp-password-line');
-    if(pw) pw.textContent='Contraseña temporal de acceso (solo para el candidato): '+password;
     if(btn){ btn.disabled=true; btn.textContent='Evaluación creada'; }
     crearEvalShowApiBanner('ok','Listo. Usa «Copiar Mensaje de Acceso» para enviar instrucciones al candidato.');
   }catch(err){
