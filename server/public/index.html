@@ -255,6 +255,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .topbar-title{font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--primary);}
 .topbar-subtitle{font-size:12px;color:var(--slate-500);}
 .topbar-right{display:flex;align-items:center;gap:12px;}
+.mind24-credits-chip{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;padding:8px 16px;border-radius:14px;background:linear-gradient(145deg,#1e1b4b 0%,#4c1d95 48%,#312e81 100%);color:#fff;box-shadow:0 6px 22px rgba(76,29,149,.32),inset 0 1px 0 rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);min-width:112px;}
+.mind24-credits-chip .m24-cc-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.9;}
+.mind24-credits-chip .m24-cc-val{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.15;}
+.aspen-pw-plain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:var(--slate-50);color:var(--primary);padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);word-break:break-all;display:inline-block;max-width:220px;}
+.aspen-pw-missing{font-size:12px;color:var(--slate-400);}
+@media (max-width:720px){
+  .mind24-credits-chip{min-width:96px;padding:7px 12px;}
+  .mind24-credits-chip .m24-cc-val{font-size:16px;}
+}
 .tb-btn{width:36px;height:36px;border-radius:var(--r-sm);border:1.5px solid var(--slate-200);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--slate-600);transition:var(--tr-fast);position:relative;}
 .tb-btn:hover{background:var(--purple-light);color:var(--purple);border-color:rgba(124,58,237,.2);}
 .tb-notif::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--purple);border:2px solid var(--white);}
@@ -806,11 +815,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </aside>
   <main class="main-content">
     <div class="topbar">
-      <div><div class="topbar-title">Panel Corporativo</div><div class="topbar-subtitle">Miércoles, 15 de Mayo 2024</div></div>
-      <div class="topbar-right"><button class="tb-btn">🔍</button><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-green" style="width:36px;height:36px;font-size:13px;">AM</div></div>
+      <div><div class="topbar-title">Panel Corporativo</div><div class="topbar-subtitle" id="dash-admin-topbar-date">—</div></div>
+      <div class="topbar-right">
+        <div id="dash-admin-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo">
+          <span class="m24-cc-lbl">Créditos disponibles</span>
+          <span class="m24-cc-val" id="dash-admin-credits-value">0</span>
+        </div>
+        <button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button>
+        <div class="s-avatar av-green" id="dash-admin-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div>
+      </div>
     </div>
     <div class="page-content">
-      <div style="margin-bottom:24px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:4px;">Buenos días, Ana ☀️</h2><p style="font-size:14px;color:var(--slate-500);">Aquí está el resumen de actividad de tu empresa esta semana.</p></div>
+      <div style="margin-bottom:24px;"><h2 id="dash-admin-greeting-h2" style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:4px;">Buenos días —</h2><p id="dash-admin-greeting-lead" style="font-size:14px;color:var(--slate-500);line-height:1.5;">Aquí está el resumen de actividad de tu espacio de trabajo.</p></div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-g">👥</div><span class="stat-trend trend-up">↑ +4%</span></div><div class="stat-value">48</div><div class="stat-label">Empleados activos</div></div>
         <div class="stat-card"><div class="stat-card-hd"><div class="stat-icon si-p">📋</div><span class="stat-trend trend-up">↑ +12%</span></div><div class="stat-value">12</div><div class="stat-label">Evaluaciones este mes</div></div>
@@ -834,9 +850,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <p id="aspen-provision-result" style="font-size:13px;color:var(--slate-600);display:none;margin-bottom:8px;"></p>
               <div style="overflow-x:auto;margin-top:8px;">
                 <table style="width:100%;border-collapse:collapse;font-size:13px;">
-                  <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Alta</th><th style="padding:8px;">Correo</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Créditos (correo)</th></tr></thead>
+                  <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Alta</th><th style="padding:8px;">Correo</th><th style="padding:8px;">Nombre</th><th style="padding:8px;">Contraseña <span style="font-weight:500;color:var(--slate-400);font-size:11px;">(esta sesión)</span></th><th style="padding:8px;">Créditos</th></tr></thead>
                   <tbody id="aspen-admins-tbody"></tbody>
                 </table>
+                <p style="font-size:11px;color:var(--slate-400);margin-top:10px;line-height:1.45;">Las contraseñas generadas se muestran en texto plano aquí solo cuando das el alta en este navegador; se recuerdan de forma local hasta cerrar sesión.</p>
               </div>
             </div>
           </div>
@@ -1105,7 +1122,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title">Crear Evaluación</div><div class="topbar-subtitle">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><button class="tb-btn">🔍</button><button class="tb-btn tb-notif">🔔</button><div class="s-avatar av-green" style="width:36px;height:36px;font-size:13px;">AM</div></div></div>
+    <div class="topbar"><div><div class="topbar-title">Crear Evaluación</div><div class="topbar-subtitle">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div style="margin-bottom:28px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Nueva Evaluación Psicométrica</h2><p style="font-size:14px;color:var(--slate-500);">Completa los datos del candidato. Se generará un código único automáticamente.</p></div>
       <div class="dash-grid" style="align-items:start;">
@@ -1400,6 +1417,98 @@ const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-ps
 const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-psicologo','dash-empleado']);
 const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
 const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
+const MIND24_ASPEN_PW_STORAGE='mind24_aspen_pw_v1';
+function mind24LoadAspenPasswordMap(){
+  try{ return JSON.parse(sessionStorage.getItem(MIND24_ASPEN_PW_STORAGE)||'{}'); }catch(e){ return {}; }
+}
+function mind24SaveAspenPasswordMap(m){
+  try{ sessionStorage.setItem(MIND24_ASPEN_PW_STORAGE, JSON.stringify(m)); }catch(e){ console.warn(e); }
+}
+function mind24RememberAspenPlainPassword(email, plain){
+  if(!email||!plain)return;
+  const m=mind24LoadAspenPasswordMap();
+  m[String(email).trim().toLowerCase()]=String(plain);
+  mind24SaveAspenPasswordMap(m);
+}
+function mind24GetAspenPlainPassword(email){
+  return mind24LoadAspenPasswordMap()[String(email).trim().toLowerCase()]||'';
+}
+function mind24ClearAspenPasswordCache(){
+  try{ sessionStorage.removeItem(MIND24_ASPEN_PW_STORAGE); }catch(e){}
+}
+function mind24FormatTopbarDateEs(){
+  try{
+    return new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }catch(e){ return ''; }
+}
+function mind24GreetingLineForSession(){
+  const u=window.__MIND24_USER;
+  const name=(u&&u.fullName)?String(u.fullName).trim():((u&&u.email)?String(u.email):'Usuario');
+  const h=new Date().getHours();
+  let pre='Buenos días', icon='☀️';
+  if(h>=12&&h<19){ pre='Buenas tardes'; icon='🌤️'; }
+  else if(h>=19||h<5){ pre='Buenas noches'; icon='🌙'; }
+  return { text: pre+', '+name+' '+icon, lead: 'Aquí está el resumen de actividad de tu espacio de trabajo.' };
+}
+function mind24SyncCrearEvalShell(){
+  const u=window.__MIND24_USER;
+  if(!u)return;
+  const root=document.getElementById('view-dash-crear-eval');
+  if(!root)return;
+  const nm=root.querySelector('.sidebar-user-name');
+  const rl=root.querySelector('.sidebar-user-role');
+  const av=root.querySelector('.sidebar-footer .s-avatar');
+  if(nm) nm.textContent=u.fullName||u.email||'';
+  if(rl) rl.textContent='Administrador · Envío de pruebas';
+  if(av) av.textContent=initialsFromName(u.fullName||u.email||'');
+}
+function mind24RefreshEmpresaAdminDashboardChrome(){
+  const u=window.__MIND24_USER;
+  if(!u||u.role!=='empresa_admin')return;
+  const g=mind24GreetingLineForSession();
+  const h2=document.getElementById('dash-admin-greeting-h2');
+  const lead=document.getElementById('dash-admin-greeting-lead');
+  const dateEl=document.getElementById('dash-admin-topbar-date');
+  const chip=document.getElementById('dash-admin-credits-chip');
+  const val=document.getElementById('dash-admin-credits-value');
+  const tbAv=document.getElementById('dash-admin-topbar-av');
+  if(h2) h2.textContent=g.text;
+  if(lead) lead.textContent=g.lead;
+  if(dateEl) dateEl.textContent=mind24FormatTopbarDateEs();
+  const credits=Number(u.adminCredits);
+  const num=Number.isNaN(credits)?0:credits;
+  if(chip&&val){
+    val.textContent=String(num);
+    chip.style.display='flex';
+  }
+  const fn=u.fullName||u.email||'';
+  const ini=initialsFromName(fn);
+  if(tbAv) tbAv.textContent=ini;
+  const sbAv=document.getElementById('dash-admin-av');
+  if(sbAv) sbAv.textContent=ini;
+  const nameEl=document.getElementById('dash-admin-name');
+  if(nameEl) nameEl.textContent=u.fullName||u.email||'';
+  const roleEl=document.getElementById('dash-admin-role');
+  if(roleEl) roleEl.textContent='Admin empresa';
+  const cChip=document.getElementById('crear-eval-credits-chip');
+  const cVal=document.getElementById('crear-eval-credits-value');
+  const cAv=document.getElementById('crear-eval-topbar-av');
+  if(cChip&&cVal){
+    cVal.textContent=String(num);
+    cChip.style.display='flex';
+  }
+  if(cAv) cAv.textContent=ini;
+  mind24SyncCrearEvalShell();
+}
+async function mind24RefreshEmpresaAdminSessionMeta(){
+  const u=window.__MIND24_USER;
+  if(!u||u.role!=='empresa_admin')return;
+  try{
+    const me=await apiJson('/api/auth/me');
+    if(me&&me.user){ window.__MIND24_USER=Object.assign({},u,me.user); }
+  }catch(e){ console.warn('[auth/me]',e); }
+  mind24RefreshEmpresaAdminDashboardChrome();
+}
 function mind24IsMasterAdminRole(role){
   return Boolean(role && String(role).trim().toLowerCase() === 'master_admin');
 }
@@ -1431,6 +1540,23 @@ async function refreshAspenAdminsList(){
       }
       td(a.createdAt?new Date(a.createdAt).toLocaleString('es-MX'):'—');
       td(a.email); td(a.fullName);
+      const pw=mind24GetAspenPlainPassword(a.email);
+      const pwTd=document.createElement('td');
+      pwTd.style.padding='8px'; pwTd.style.verticalAlign='top';
+      if(pw){
+        const span=document.createElement('span');
+        span.className='aspen-pw-plain';
+        span.textContent=pw;
+        span.title='Contraseña recordada en este navegador tras el alta (demo)';
+        pwTd.appendChild(span);
+      }else{
+        const span=document.createElement('span');
+        span.className='aspen-pw-missing';
+        span.textContent='—';
+        span.title='Genera el usuario de nuevo o revisa el mensaje de confirmación al crearlo.';
+        pwTd.appendChild(span);
+      }
+      tr.appendChild(pwTd);
       td(String(a.adminCredits!=null?a.adminCredits:0));
       tb.appendChild(tr);
     });
@@ -1446,6 +1572,7 @@ async function aspenProvisionAdmin(e){
   if(Number.isNaN(credits)||credits<1){ alert('Los créditos deben ser al menos 1.'); return; }
   try{
     const res=await apiJson('/api/org/aspen-admins',{method:'POST',body:JSON.stringify({email:String(email).trim(),fullName:String(fullName).trim(),credits})});
+    if(res.generatedPassword) mind24RememberAspenPlainPassword(res.user.email, res.generatedPassword);
     if(outEl){
       outEl.style.display='block';
       outEl.textContent='Alta correcta: '+res.user.email+' — contraseña (cópiala ahora): '+res.generatedPassword;
@@ -1488,7 +1615,15 @@ function showView(name) {
     setTimeout(function(){ refreshSuperadminDashboard(); },0);
   }
   if(name==='dash-admin'){
-    setTimeout(function(){ refreshAspenAdminsList(); },0);
+    setTimeout(function(){
+      (async function(){
+        await mind24RefreshEmpresaAdminSessionMeta();
+        await refreshAspenAdminsList();
+      })();
+    },0);
+  }
+  if(name==='dash-crear-eval'){
+    setTimeout(function(){ mind24RefreshEmpresaAdminSessionMeta(); },0);
   }
   mind24UpdateAspenPioneerVisibility();
 }
@@ -1581,6 +1716,7 @@ async function mind24LogoutApi(reason){
 
 async function authLogout(){
   await mind24LogoutApi({reason:'authLogout'});
+  mind24ClearAspenPasswordCache();
   window.__MIND24_USER=null;
   window.ATTEMPT_CTX={useApi:false};
   showView('landing');
@@ -1594,11 +1730,8 @@ async function loginEmpresaAdmin(e){
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
+    mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
-    const fn=data.user.fullName||data.user.email;
-    const el=document.getElementById('dash-admin-name'); if(el)el.textContent=fn;
-    const av=document.getElementById('dash-admin-av'); if(av)av.textContent=initialsFromName(fn);
-    const rl=document.getElementById('dash-admin-role'); if(rl)rl.textContent='Admin empresa';
     showView('dash-admin');
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
@@ -1618,6 +1751,7 @@ async function loginEmpresaCrearEval(e){
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
+    mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
     showView('dash-crear-eval');
   }catch(err){
