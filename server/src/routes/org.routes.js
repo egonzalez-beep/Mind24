@@ -28,11 +28,12 @@ router.get('/candidates', async (req, res, next) => {
 router.post('/candidates', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const { email, fullName, password } = z
+    const { email, fullName, password, curp } = z
       .object({
         email: z.string().email(),
         fullName: z.string().min(2).max(200),
         password: z.string().min(8).max(200),
+        curp: z.string().length(18).regex(/^[A-Za-z0-9]+$/).optional().nullable(),
       })
       .parse(req.body);
     const { user, candidate } = await createCandidateForOrg({
@@ -41,6 +42,7 @@ router.post('/candidates', async (req, res, next) => {
       fullName,
       password,
       createdByUserId: u.id,
+      curp: curp ?? null,
     });
     res.status(201).json({
       candidate: { id: candidate.id, userId: user.id, email: user.email, fullName: user.fullName },
@@ -80,10 +82,11 @@ router.get('/assignments', async (req, res, next) => {
 router.post('/assignments', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const { candidateId, assessmentDefinitionId } = z
+    const { candidateId, assessmentDefinitionId, selectedModules } = z
       .object({
         candidateId: z.string().min(1),
         assessmentDefinitionId: z.string().min(1),
+        selectedModules: z.array(z.string().min(1)).max(32).optional(),
       })
       .parse(req.body);
     const assignment = await createAssignment({
@@ -91,6 +94,7 @@ router.post('/assignments', async (req, res, next) => {
       candidateId,
       assessmentDefinitionId,
       assignedByUserId: u.id,
+      selectedModules,
     });
     res.status(201).json({ assignment });
   } catch (e) {

@@ -402,7 +402,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-desc{font-size:12px;color:var(--slate-500);margin-top:1px;}
 .mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--white);background:var(--assess-gradient);flex-shrink:0;}
 .mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
-.cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:clamp(18px,3vw,24px);align-items:start;}
+.cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:0;align-items:start;}
 @media(min-width:721px){
   .cev-main-grid{grid-template-columns:1fr 1fr;}
 }
@@ -415,24 +415,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-field-hint:empty{display:none;}
 .cev-inline-warn{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:700;line-height:1.45;color:#9A3412;background:linear-gradient(135deg,rgba(251,146,60,.14),rgba(248,113,113,.1));border:1px solid rgba(234,88,12,.35);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;}
 .cev-inline-warn.hidden{display:none!important;}
-.cev-code-success-wrap{max-width:920px;margin:0 auto clamp(16px,3vw,24px);width:100%;animation:cevCodeIn .42s ease;}
-.cev-code-success-wrap.hidden{display:none!important;}
-@keyframes cevCodeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-.cev-code-success-card{border:1px solid rgba(124,58,237,.35)!important;background:linear-gradient(165deg,var(--d2) 0%,#1e1635 48%,#2e1067 100%)!important;overflow:hidden;}
-.cev-code-success-card .card-title{color:#fff!important;}
-.cev-code-success-inner{padding-bottom:8px;}
-.cev-code-success-minimal{padding:22px 22px 24px!important;}
-.cev-code-unique-title{font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:rgba(196,181,253,.95);margin:0 0 14px;}
-.cev-code-box-minimal{background:linear-gradient(135deg,var(--d2),var(--d3));border:1px solid rgba(139,92,246,.3);border-radius:var(--r-lg);padding:20px 22px;display:flex;flex-direction:column;align-items:stretch;gap:16px;}
-.cev-code-box-minimal .cev-code-block{text-align:center;}
-.cev-code-box-minimal .code-btn{width:100%;justify-content:center;}
-.cev-code-display-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
-.cev-code-val{font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:clamp(1.35rem,4.5vw,1.75rem);font-weight:800;color:#E9D5FF;letter-spacing:.18em;}
-.cev-resumen-footer{max-width:920px;margin:0 auto;width:100%;}
-.cev-resumen-inner{background:var(--primary);border-radius:var(--r-xl);padding:clamp(20px,4vw,28px);position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,.12);}
-.cev-resumen-inner::before{content:'';position:absolute;right:-24px;top:-24px;width:120px;height:120px;background:radial-gradient(circle,rgba(124,58,237,.35) 0%,transparent 70%);border-radius:50%;}
-.cev-resumen-inner::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);background-size:28px 28px;border-radius:var(--r-xl);pointer-events:none;}
-.cev-resumen-z{position:relative;z-index:1;}
+.cev-mod-card-head{align-items:flex-start!important;}
+@media(min-width:721px){
+  .cev-mod-card-head{align-items:center!important;}
+}
+.cev-mod-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;}
+.cev-mod-time{font-size:11px;font-weight:600;color:var(--slate-500);letter-spacing:.02em;white-space:nowrap;}
+.cev-mod-chip{background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;}
+.cev-success-overlay{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,17,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:m24fo .35s ease;}
+.cev-success-overlay.hidden{display:none!important;}
+.cev-success-dialog{position:relative;width:100%;max-width:420px;padding:40px 32px 28px;border-radius:24px;background:linear-gradient(165deg,#13081f 0%,#2e1067 52%,#1e1b4b 100%);border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 100px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.1);text-align:center;}
+.cev-success-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-size:20px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.cev-success-x:hover{background:rgba(255,255,255,.14);}
+.cev-success-heading{font-size:22px;font-weight:800;color:#fff;margin:0 0 22px;letter-spacing:-.03em;}
+.cev-modal-access-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(1.85rem,5.5vw,2.65rem);font-weight:800;color:#E9D5FF;letter-spacing:.22em;margin:0 0 26px;line-height:1.2;}
+.cev-success-copy-btn{width:100%;padding:14px 18px;border-radius:var(--r-sm);border:none;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1e1b4b;box-shadow:0 10px 32px rgba(250,204,21,.3);margin-bottom:8px;transition:transform .15s,box-shadow .15s;}
+.cev-success-copy-btn:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(250,204,21,.4);}
+.cev-success-close-link{display:block;width:100%;padding:10px;background:transparent;border:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.cev-success-close-link:hover{color:rgba(255,255,255,.75);}
+.cev-td-mods{max-width:240px;white-space:normal;word-break:break-word;line-height:1.4;}
+.cev-td-mono{font-family:ui-monospace,monospace;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;}
 .cev-btn-primary{width:100%;padding:15px 20px;background:var(--purple-gradient);color:#fff;font-size:15px;font-weight:800;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 8px 28px rgba(124,58,237,.42);transition:transform .18s ease,box-shadow .18s ease,opacity .18s;}
 .cev-btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 36px rgba(124,58,237,.5);}
 .cev-btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
@@ -1186,13 +1188,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Nombre completo <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="name" placeholder="Ej. Juan Carlos Pérez López" id="inp-nombre" aria-describedby="cev-err-nombre"><p id="cev-err-nombre" class="cev-field-hint" aria-live="polite"></p></div>
               <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">CURP <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="off" placeholder="Ej. PELJ850101HDFRZN09" id="inp-curp" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;" maxlength="18" aria-describedby="cev-err-curp"><p id="cev-err-curp" class="cev-field-hint" aria-live="polite"></p></div>
               <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Correo electrónico <span style="color:var(--purple);">*</span></label><input type="email" class="create-input" autocomplete="email" placeholder="candidato@correo.com" id="inp-email" aria-describedby="cev-err-email"><p id="cev-err-email" class="cev-field-hint" aria-live="polite"></p></div>
-              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Puesto al que aplica <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="organization-title" placeholder="Ej. Analista de Ventas Sr." id="inp-puesto" aria-describedby="cev-err-puesto"><p id="cev-err-puesto" class="cev-field-hint" aria-live="polite"></p></div>
+              <div style="margin-bottom:18px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Puesto al que aplica <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="organization-title" placeholder="Ej. Analista de Ventas Sr." id="inp-puesto" aria-describedby="cev-err-puesto"><p id="cev-err-puesto" class="cev-field-hint" aria-live="polite"></p></div>
+              <button type="button" onclick="registrarEval()" class="cev-btn-primary" id="btn-registrar">Crear Evaluación</button>
             </div>
           </div>
         </div>
         <div class="cev-col-mods">
           <div class="card" id="cev-mod-card">
-            <div class="card-header"><div><div class="card-title">Módulos de evaluación</div></div><div style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;" id="mod-counter">5/5 activos</div></div>
+            <div class="card-header cev-mod-card-head"><div><div class="card-title">Módulos de evaluación</div></div><div class="cev-mod-meta"><span class="cev-mod-time" id="cev-mod-time-estimate">~75 min</span><span class="cev-mod-chip" id="mod-counter">5/5 activos</span></div></div>
             <div class="card-body">
               <div id="cev-mod-list">
                 <div class="mod-toggle selected" data-mod-key="habilidades" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">⚡</div><div><div class="mod-name">Habilidades</div><div class="mod-desc">Competencias blandas y sociales</div></div></div><div class="mod-check">✓</div></div>
@@ -1206,28 +1209,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
         </div>
       </div>
-      <div id="cev-code-success-wrap" class="cev-code-success-wrap hidden">
-        <div class="card cev-code-success-card">
-          <div class="card-body cev-code-success-inner cev-code-success-minimal">
-            <div class="cev-code-unique-title">CÓDIGO ÚNICO</div>
-            <div class="code-box cev-code-box-minimal">
-              <div class="cev-code-block"><div class="code-val cev-code-val" id="eval-code-display">—</div></div>
-              <button type="button" class="code-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="cev-resumen-footer">
-        <div class="cev-resumen-inner">
-          <div class="cev-resumen-z">
-            <div style="font-size:11px;font-weight:700;color:var(--violet-light);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Resumen</div>
-            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Módulos activos</span><span style="font-size:13px;font-weight:700;color:var(--violet-light);" id="resumen-modulos">5 módulos</span></div>
-            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Tiempo estimado</span><span style="font-size:13px;font-weight:700;color:var(--violet-light);" id="resumen-tiempo">~75 minutos</span></div>
-            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;"><span style="font-size:13px;color:rgba(255,255,255,.5);">Instrucciones</span><span style="font-size:13px;font-weight:700;color:#6EE7B7;">✓ Mensaje de acceso al copiar</span></div>
-            <button type="button" onclick="registrarEval()" class="cev-btn-primary" id="btn-registrar">Crear Evaluación</button>
-          </div>
-        </div>
-      </div>
       </div>
       <div id="cev-panel-mis" class="cev-panel hidden">
         <div style="margin-bottom:22px;">
@@ -1235,11 +1216,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Listado de asignaciones creadas para tu organización. El estado refleja si el evaluado ya completó la prueba.</p>
         </div>
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Asignaciones</div><div class="card-subtitle">Pendiente = sin enviar o en curso · Aplicada = completada</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-header"><div><div class="card-title">Registros</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Estado</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th></tr></thead>
               <tbody id="cev-mis-assign-tbody"></tbody>
             </table>
           </div>
@@ -1251,11 +1232,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Solo evaluaciones finalizadas por el evaluado. El detalle de puntuación se integrará en una siguiente versión.</p>
         </div>
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Evaluaciones completadas</div><div class="card-subtitle">Filtradas automáticamente</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-header"><div><div class="card-title">Completadas</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Resultado</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th></tr></thead>
               <tbody id="cev-res-assign-tbody"></tbody>
             </table>
           </div>
@@ -1263,6 +1244,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
     </div>
   </main>
+  <div id="cev-success-modal" class="cev-success-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cev-success-title" onclick="if(event.target===this)crearEvalCloseSuccessModal()">
+    <div class="cev-success-dialog" onclick="event.stopPropagation()">
+      <button type="button" class="cev-success-x" onclick="crearEvalCloseSuccessModal()" aria-label="Cerrar">×</button>
+      <h2 id="cev-success-title" class="cev-success-heading">Evaluación Creada</h2>
+      <div id="cev-modal-access-code" class="cev-modal-access-code" aria-live="polite">—</div>
+      <button type="button" class="cev-success-copy-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
+      <button type="button" class="cev-success-close-link" onclick="crearEvalCloseSuccessModal()">Cerrar</button>
+    </div>
+  </div>
   <div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)crearEvalCloseFitnessModal()">
     <div class="m24-fitness-card" onclick="event.stopPropagation()">
       <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
@@ -1580,7 +1570,9 @@ function crearEvalCloseFitnessModal(){
   const m=document.getElementById('m24-fitness-modal');
   if(m)m.classList.add('hidden');
   const anyOv=document.querySelector('.modal-overlay:not(.hidden)');
-  if(!anyOv) document.body.style.overflow='';
+  const cev=document.getElementById('cev-success-modal');
+  const cevOpen=cev && !cev.classList.contains('hidden');
+  if(!anyOv && !cevOpen) document.body.style.overflow='';
 }
 function crearEvalOpenFitnessModal(){
   window.__mind24FitnessModalOpen = true;
@@ -1613,6 +1605,33 @@ function crearEvalAssessmentName(a){
   if(!d)return '—';
   return String(d.name||d.key||'Evaluación');
 }
+/** Etiquetas de módulos UI (alta) → nombre legible en tablas */
+function crearEvalModLabelsMap(){
+  return { habilidades:'Habilidades', conocimientos:'Conocimientos', disc:'Perfil DISC', ie:'Inteligencia emocional', liderazgo:'Liderazgo' };
+}
+function crearEvalCandidateCurp(a){
+  const c=a&&a.candidate;
+  if(!c||c.curp==null||String(c.curp).trim()==='') return '—';
+  return String(c.curp).toUpperCase();
+}
+/** Lista de módulos: guardados en la asignación o dimensiones del instrumento */
+function crearEvalModulesDisplayList(a){
+  const L=crearEvalModLabelsMap();
+  let keys=[];
+  const raw=a.selectedModules;
+  if(Array.isArray(raw)&&raw.length){
+    keys=raw.map((x)=>String(x));
+  }else{
+    const dims=a.assessmentDefinition&&a.assessmentDefinition.config&&Array.isArray(a.assessmentDefinition.config.dimensions)
+      ? a.assessmentDefinition.config.dimensions
+      : [];
+    keys=dims.map((d)=>d.label||d.id||'').filter(Boolean);
+  }
+  if(!keys.length) return { text: crearEvalAssessmentName(a), full: crearEvalAssessmentName(a) };
+  const labels=keys.map((k)=>L[k]||k);
+  const full=labels.join(', ');
+  return { text: full, full };
+}
 async function refreshCrearEvalAssignmentsTables(){
   const errMis=document.getElementById('cev-mis-err');
   const errRes=document.getElementById('cev-res-err');
@@ -1633,13 +1652,23 @@ async function refreshCrearEvalAssignmentsTables(){
       rows.forEach(a=>{
         const pill=crearEvalMapStatusPill(a.status);
         const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
-        function tdText(txt){
+        function tdText(txt, opts){
           const x=document.createElement('td'); x.style.padding='8px';
-          x.textContent=txt==null||txt===''?'—':String(txt); tr.appendChild(x);
+          if(opts&&opts.mono) x.className='cev-td-mono';
+          if(opts&&opts.mods){
+            x.className='cev-td-mods';
+            const mod=crearEvalModulesDisplayList(a);
+            x.textContent=mod.text;
+            x.title=mod.full;
+          }else x.textContent=txt==null||txt===''?'—':String(txt);
+          tr.appendChild(x);
         }
         tdText(crearEvalFmtDate(a.createdAt));
         tdText(crearEvalCandidateLabel(a));
+        tdText(crearEvalCandidateCurp(a), { mono:true });
         tdText(crearEvalAssessmentName(a));
+        tdText('', { mods:true });
+        tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         const tdx=document.createElement('td'); tdx.style.padding='8px';
         const span=document.createElement('span'); span.className=pill.cls; span.textContent=pill.label;
         tdx.appendChild(span); tr.appendChild(tdx);
@@ -1655,13 +1684,23 @@ async function refreshCrearEvalAssignmentsTables(){
         let globalTxt='—';
         if(scores&&typeof scores==='object'&&scores.global!=null) globalTxt=String(scores.global)+'%';
         const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
-        function tdText(txt){
+        function tdText(txt, opts){
           const x=document.createElement('td'); x.style.padding='8px';
-          x.textContent=txt==null||txt===''?'—':String(txt); tr.appendChild(x);
+          if(opts&&opts.mono) x.className='cev-td-mono';
+          if(opts&&opts.mods){
+            x.className='cev-td-mods';
+            const mod=crearEvalModulesDisplayList(a);
+            x.textContent=mod.text;
+            x.title=mod.full;
+          }else x.textContent=txt==null||txt===''?'—':String(txt);
+          tr.appendChild(x);
         }
         tdText(crearEvalFmtDate(fin));
         tdText(crearEvalCandidateLabel(a));
+        tdText(crearEvalCandidateCurp(a), { mono:true });
         tdText(crearEvalAssessmentName(a));
+        tdText('', { mods:true });
+        tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         tdText(globalTxt);
         tbRes.appendChild(tr);
       });
@@ -1676,6 +1715,11 @@ function crearEvalSidebarNav(which){
   const allowed=new Set(['nueva','mis','resultados']);
   if(!allowed.has(which))return;
   if(which==='nueva') crearEvalResetNuevaFlow();
+  else{
+    const sm=document.getElementById('cev-success-modal');
+    if(sm && !sm.classList.contains('hidden')){ sm.classList.add('hidden'); document.body.style.overflow=''; }
+    if(window.__CEV_FORM_LOCKED) crearEvalResetNuevaFlow();
+  }
   window.__cevLastNav=which;
   const panels={nueva:'cev-panel-nueva',mis:'cev-panel-mis',resultados:'cev-panel-resultados'};
   Object.keys(panels).forEach(k=>{
@@ -1875,7 +1919,7 @@ function closeModal(id){
   document.body.style.overflow='';
   if(id==='modal-empresa'){['emp-s0','emp-s1','emp-s2','emp-s3','emp-s-crear'].forEach((s,i)=>{const el=document.getElementById(s);if(el)el.classList.toggle('hidden',i!==0);});}
 }
-function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); crearEvalCloseFitnessModal(); document.body.style.overflow=''; }
+function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); window.__mind24FitnessModalOpen=false; const fit=document.getElementById('m24-fitness-modal'); if(fit) fit.classList.add('hidden'); crearEvalCloseSuccessModal(); document.body.style.overflow=''; }
 function closeModalOnBg(e,id){ if(e.target.classList.contains('modal-overlay'))closeModal(id); }
 function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
 // ── Nav scroll ──
@@ -1926,11 +1970,9 @@ function crearEvalGetSelectedModuleKeys(){
 function crearEvalCountSelectedModules(){ return crearEvalGetSelectedModuleKeys().length; }
 function crearEvalSyncModSummary(){
   const n=crearEvalCountSelectedModules();
-  const rm=document.getElementById('resumen-modulos');
-  const rt=document.getElementById('resumen-tiempo');
+  const te=document.getElementById('cev-mod-time-estimate');
   const mc=document.getElementById('mod-counter');
-  if(rm) rm.textContent=n+(n===1?' módulo':' módulos');
-  if(rt) rt.textContent='~'+(n*15)+' minutos';
+  if(te) te.textContent='~'+(n*15)+' min';
   if(mc) mc.textContent=n+'/5 activos';
 }
 function toggleMod(el){
@@ -2009,12 +2051,25 @@ function copyCrearEvalAccessMessage(){
     }catch(_){ crearEvalShowApiBanner('err','Copia manualmente el código mostrado.'); setTimeout(crearEvalHideApiBanner,5000); }
   }
 }
+function crearEvalOpenSuccessModal(code){
+  const el=document.getElementById('cev-modal-access-code');
+  if(el) el.textContent=code;
+  const m=document.getElementById('cev-success-modal');
+  if(m){ m.classList.remove('hidden'); document.body.style.overflow='hidden'; }
+}
+function crearEvalCloseSuccessModal(){
+  const m=document.getElementById('cev-success-modal');
+  if(!m||m.classList.contains('hidden'))return;
+  m.classList.add('hidden');
+  document.body.style.overflow='';
+  crearEvalResetNuevaFlow();
+}
 function crearEvalResetNuevaFlow(){
   window.__CEV_FORM_LOCKED=false;
   window.__CEV_ACCESS_CLIP=null;
-  const wrap=document.getElementById('cev-code-success-wrap');
-  if(wrap) wrap.classList.add('hidden');
-  const codeEl=document.getElementById('eval-code-display');
+  const sm=document.getElementById('cev-success-modal');
+  if(sm) sm.classList.add('hidden');
+  const codeEl=document.getElementById('cev-modal-access-code');
   if(codeEl) codeEl.textContent='—';
   crearEvalHideApiBanner();
   const warn=document.getElementById('cev-mod-inline-warn');
@@ -2079,29 +2134,22 @@ async function registrarEval(){
     const combined=n+' · '+puesto;
     if(combined.length<=200) fullName=combined;
     else fullName=n.length>200?n.slice(0,200):n;
-    const candRes=await apiJson('/api/org/candidates',{method:'POST',body:JSON.stringify({email:e,fullName,password})});
+    const candRes=await apiJson('/api/org/candidates',{method:'POST',body:JSON.stringify({email:e,fullName,password,curp:c})});
     const candidateId=candRes&&candRes.candidate&&candRes.candidate.id;
     if(!candidateId) throw new Error('Respuesta inválida al crear el candidato.');
-    const assignRes=await apiJson('/api/org/assignments',{method:'POST',body:JSON.stringify({candidateId,assessmentDefinitionId})});
+    const assignRes=await apiJson('/api/org/assignments',{method:'POST',body:JSON.stringify({candidateId,assessmentDefinitionId,selectedModules:moduleKeysSnapshot})});
     const aid=assignRes&&assignRes.assignment&&assignRes.assignment.id;
     if(!aid) throw new Error('Respuesta inválida al crear la asignación.');
     const shortCode=mind24ShortAssignmentCode(aid);
     window.__CEV_ACCESS_CLIP={ candidateName:n, email:e, shortCode, moduleKeys:moduleKeysSnapshot, assignmentId:aid };
-    const codeEl=document.getElementById('eval-code-display');
-    if(codeEl) codeEl.textContent=shortCode;
     await refreshCrearEvalAssignmentsTables();
     try{ await mind24RefreshEmpresaAdminSessionMeta(); }catch(_){}
     window.__CEV_FORM_LOCKED=true;
     document.querySelectorAll('#cev-panel-nueva .create-input').forEach(inp=>{ inp.disabled=true; });
     const list=document.getElementById('cev-mod-list');
     if(list) list.classList.add('cev-locked');
-    const wrap=document.getElementById('cev-code-success-wrap');
-    if(wrap){
-      wrap.classList.remove('hidden');
-      requestAnimationFrame(()=>{ try{ wrap.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ wrap.scrollIntoView(); } });
-    }
+    crearEvalOpenSuccessModal(shortCode);
     if(btn){ btn.disabled=true; btn.textContent='Evaluación creada'; }
-    crearEvalShowApiBanner('ok','Listo. Usa «Copiar Mensaje de Acceso» para enviar instrucciones al candidato.');
   }catch(err){
     if(btn){ btn.disabled=false; btn.textContent='Crear Evaluación'; }
     const msg=errMap[err.code]||(err.message||'No se pudo registrar la evaluación.');

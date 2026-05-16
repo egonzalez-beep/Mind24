@@ -11,7 +11,7 @@ export async function assertEmpresaAdmin(userId) {
   return u;
 }
 
-export async function createCandidateForOrg({ organizationId, email, fullName, password, createdByUserId }) {
+export async function createCandidateForOrg({ organizationId, email, fullName, password, createdByUserId, curp }) {
   const em = email.trim().toLowerCase();
   const exists = await prisma.user.findUnique({ where: { email: em } });
   if (exists) {
@@ -20,6 +20,7 @@ export async function createCandidateForOrg({ organizationId, email, fullName, p
     throw err;
   }
   const passwordHash = await hashPassword(password);
+  const curpNorm = curp != null && String(curp).trim() !== '' ? String(curp).trim().toUpperCase() : null;
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -34,6 +35,7 @@ export async function createCandidateForOrg({ organizationId, email, fullName, p
       data: {
         organizationId,
         userId: user.id,
+        curp: curpNorm,
       },
     });
     return { user, candidate };

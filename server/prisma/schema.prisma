@@ -75,6 +75,8 @@ model Candidate {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// CURP capturada al registrar la evaluación (opcional en registros previos a este campo).
+  curp           String?
   createdAt      DateTime @default(now())
 
   assignments Assignment[]
@@ -106,6 +108,8 @@ model Assignment {
   assessmentDefinition   AssessmentDefinition @relation(fields: [assessmentDefinitionId], references: [id], onDelete: Restrict)
   assignedByUserId       String?
   assignedBy             User?              @relation("AssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+  /// Módulos elegidos en el alta (keys UI: habilidades, conocimientos, …). Opcional en asignaciones antiguas.
+  selectedModules        Json?
   status                 AssignmentStatus   @default(pending)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt

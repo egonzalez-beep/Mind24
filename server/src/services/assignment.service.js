@@ -5,6 +5,7 @@ export async function createAssignment({
   candidateId,
   assessmentDefinitionId,
   assignedByUserId,
+  selectedModules,
 }) {
   return prisma.$transaction(async (tx) => {
     const org = await tx.organization.findUnique({ where: { id: organizationId } });
@@ -52,6 +53,10 @@ export async function createAssignment({
         assessmentDefinitionId,
         assignedByUserId,
         status: 'pending',
+        selectedModules:
+          Array.isArray(selectedModules) && selectedModules.length > 0
+            ? selectedModules.map((s) => String(s))
+            : undefined,
       },
     });
   });
@@ -62,7 +67,7 @@ export async function listAssignmentsForOrg(organizationId) {
     where: { candidate: { organizationId } },
     include: {
       candidate: { include: { user: { select: { email: true, fullName: true } } } },
-      assessmentDefinition: { select: { id: true, name: true, key: true, version: true } },
+      assessmentDefinition: { select: { id: true, name: true, key: true, version: true, config: true } },
       attempts: { orderBy: { startedAt: 'desc' }, take: 1 },
     },
     orderBy: { createdAt: 'desc' },
