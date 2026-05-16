@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db/client.js';
 import { authenticateUser, toSessionPayload } from '../services/auth.service.js';
+import {
+  authenticateCandidateByAccess,
+} from '../services/candidateAuth.service.js';
 import { loginRateLimiter } from '../middleware/rateLimit.middleware.js';
 import { isPioneerAspenAdminEmail } from '../services/aspenAdmin.service.js';
 
@@ -12,6 +15,39 @@ function regenerateSession(req) {
     req.session.regenerate((err) => (err ? reject(err) : resolve()));
   });
 }
+
+/** Acceso candidato: correo + clave de evaluación (sin contraseña). */
+router.post('/candidate-access', loginRateLimiter, async (req, res, next) => {
+  try {
+    const { email, accessCode, fullName } = z
+      .object({
+        email: z.string().email(),
+        accessCode: z.string().min(1).max(32),
+        fullName: z.string().min(1).max(200).optional(),
+      })
+      .parse(req.body);
+    const out = await authenticateCandidateByAccess({ email, accessCode });
+    await regenerateSession(req);
+    Object.assign(req.session, toSessionPayload(out.user));
+    res.json({
+      user: {
+        id: out.user.id,
+        email: out.user.email,
+        fullName: fullName?.trim() || out.user.fullName,
+        role: out.user.role,
+        organizationId: out.user.organizationId,
+      },
+      lobby: {
+        assignmentId: out.assignmentId,
+        accessCode: out.accessCode,
+        modules: out.modules,
+        assignments: out.assignments,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.post('/login', loginRateLimiter, async (req, res, next) => {
   try {

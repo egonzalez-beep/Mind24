@@ -3,10 +3,32 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
 import { listMyAssignments, startAttempt, submitAttempt, getAttemptResult } from '../services/attempt.service.js';
+import { getCandidateLobbyForUser } from '../services/candidateAuth.service.js';
 
 const router = Router();
 
 router.use(requireAuth, requireRole('candidato'), requireEmpresaPortal);
+
+router.get('/lobby', async (req, res, next) => {
+  try {
+    const lobby = await getCandidateLobbyForUser(req.session.userId);
+    res.json({
+      user: {
+        id: lobby.user.id,
+        email: lobby.user.email,
+        fullName: lobby.user.fullName,
+        role: lobby.user.role,
+      },
+      lobby: {
+        assignmentId: lobby.assignmentId,
+        modules: lobby.modules,
+        assignments: lobby.assignments,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.get('/assignments', async (req, res, next) => {
   try {

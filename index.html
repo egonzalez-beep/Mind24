@@ -440,6 +440,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
 .create-input:disabled{opacity:.68;cursor:not-allowed;background:var(--slate-100);color:var(--slate-600);}
 #cev-mod-list.cev-locked .mod-toggle{cursor:not-allowed;opacity:.85;}
+.cand-lobby-shell{min-height:100vh;background:linear-gradient(165deg,#0a0614 0%,#1a1035 42%,#120a22 100%);display:flex;flex-direction:column;}
+.cand-lobby-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.cand-lobby-logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em;}
+.cand-lobby-logo span{color:var(--violet-light);}
+.cand-lobby-main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px 32px;}
+.cand-lobby-inner{width:100%;max-width:480px;}
+.cand-lobby-h1{font-size:clamp(1.25rem,4vw,1.5rem);font-weight:800;color:#fff;line-height:1.3;margin:0 0 20px;letter-spacing:-.03em;}
+.cand-lobby-h1 em{font-style:normal;color:var(--violet-light);}
+.cand-lobby-modules{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.cand-lobby-mod-card{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(167,139,250,.28);color:#fff;font-size:14px;font-weight:700;letter-spacing:-.01em;}
+.cand-lobby-mod-card span{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+.cand-lobby-cta{width:100%;padding:16px 20px;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;color:#0f0720;background:linear-gradient(135deg,#e9d5ff,#a78bfa);box-shadow:0 12px 40px rgba(124,58,237,.45);transition:transform .15s,box-shadow .15s;}
+.cand-lobby-cta:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 16px 48px rgba(124,58,237,.55);}
+.cand-lobby-cta:disabled{opacity:.5;cursor:not-allowed;}
+.cand-lobby-err{margin-top:14px;font-size:13px;font-weight:600;color:#fca5a5;text-align:center;}
+.cand-lobby-err.hidden{display:none;}
+.cand-lobby-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;}
+.cand-lobby-out:hover{background:rgba(255,255,255,.08);}
 
 /* ══════ EVALUACIÓN SIMULATOR ══════ */
 #view-evaluacion{min-height:100vh;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 50%,var(--d3) 100%);display:flex;flex-direction:column;position:relative;overflow-x:hidden;}
@@ -808,12 +826,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
     <div class="modal-badge modal-badge-purple">◈ Mind24 Assess</div>
     <h2 class="modal-title">Aplicar Evaluación</h2>
-    <p class="modal-subtitle">Ingresa tu código de acceso proporcionado por la empresa para comenzar.</p>
-    <div class="form-group"><label class="form-label">Código de evaluación</label><input type="text" id="eval-codigo" class="form-input" placeholder="Ej. EVAL-2024-XXXX" style="font-weight:600;letter-spacing:2px;text-transform:uppercase;"></div>
-    <div class="form-group"><label class="form-label">Tu nombre completo</label><input type="text" id="eval-nombre" class="form-input" placeholder="Nombre Apellido"></div>
-    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com"></div>
-    <button class="form-submit form-submit-purple" onclick="iniciarEvaluacion()">Comenzar Evaluación →</button>
-    <p style="font-size:12px;color:var(--slate-400);text-align:center;margin-top:16px;">Asegúrate de tener 40–60 minutos sin interrupciones.</p>
+    <p class="modal-subtitle">Correo y código que te envió la empresa.</p>
+    <div class="form-group"><label class="form-label">Nombre completo</label><input type="text" id="eval-nombre" class="form-input" placeholder="Nombre Apellido" autocomplete="name"></div>
+    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com" autocomplete="email"></div>
+    <div class="form-group"><label class="form-label">Código de acceso</label><input type="text" id="eval-codigo" class="form-input" placeholder="12345" style="font-weight:700;letter-spacing:.2em;text-align:center;font-size:18px;" maxlength="12" inputmode="numeric"></div>
+    <button type="button" class="form-submit form-submit-purple" onclick="iniciarEvaluacion(event)">Continuar →</button>
+    <p id="eval-access-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;text-align:center;"></p>
     <p style="font-size:12px;color:var(--slate-500);text-align:center;margin-top:12px;"><a href="#" onclick="event.preventDefault();closeModal('modal-evaluacion');openModal('modal-login-candidato');" style="color:var(--purple);font-weight:600;">Ya tengo cuenta MIND24 →</a></p>
   </div>
 </div>
@@ -1383,35 +1401,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </main>
 </div>
 
-<!-- ════════════════════ DASH CANDIDATO (MVP API) ════════════════════ -->
-<div id="view-dash-candidato" class="app-shell hidden">
-  <aside class="sidebar">
-    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">● Assess</div></div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-section-label">Evaluaciones</div>
-      <button class="sidebar-item active"><span class="si-icon">📋</span><span>Mis pruebas</span></button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user"><div class="s-avatar av-purple" id="dash-cand-av">CD</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-cand-name">Candidato</div><div class="sidebar-user-role">Evaluaciones asignadas</div></div></div>
-      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
-      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
-    </div>
-  </aside>
-  <main class="main-content">
-    <div class="topbar">
-      <div><div class="topbar-title">Mis evaluaciones</div><div class="topbar-subtitle">Inicia una prueba asignada por tu empresa</div></div>
-      <div class="topbar-right"><div class="s-avatar av-purple" id="dash-cand-av2" style="width:36px;height:36px;font-size:13px;">CD</div></div>
-    </div>
-    <div class="page-content">
-      <div class="card">
-        <div class="card-header"><div><div class="card-title">Pruebas asignadas</div><div class="card-subtitle">Completa cada una en una sola sesión</div></div><button type="button" class="card-action" onclick="refreshCandidatoAssignments()">↻ Actualizar</button></div>
-        <div class="card-body"><div id="cand-assignments-list" class="ppl-list"><p style="font-size:14px;color:var(--slate-500);">Cargando…</p></div></div>
-      </div>
-      <p id="cand-assign-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;"></p>
+<!-- ════════════════════ LOBBY CANDIDATO (#/candidato/dashboard) ════════════════════ -->
+<div id="view-dash-candidato" class="cand-lobby-shell hidden">
+  <header class="cand-lobby-top">
+    <div class="cand-lobby-logo">MIND<span>24</span></div>
+    <button type="button" class="cand-lobby-out" onclick="authLogout()">Salir</button>
+  </header>
+  <main class="cand-lobby-main">
+    <div class="cand-lobby-inner">
+      <h1 id="cand-lobby-h1" class="cand-lobby-h1">Hola. Estas son tus pruebas asignadas.</h1>
+      <div id="cand-lobby-modules" class="cand-lobby-modules"></div>
+      <button type="button" id="cand-lobby-start" class="cand-lobby-cta" onclick="candidatoLobbyStartTests()">Iniciar Mis Pruebas</button>
+      <p id="cand-lobby-err" class="cand-lobby-err hidden"></p>
     </div>
   </main>
 </div>
-
 <!-- ════════════════════ EVALUACIÓN SIMULATOR ════════════════════ -->
 <div id="view-evaluacion" class="hidden">
   <div class="eval-topbar">
@@ -1909,6 +1913,9 @@ function showView(name) {
       crearEvalSidebarNav('nueva');
     },0);
   }
+  if(name==='dash-candidato'){
+    try{ history.replaceState(null,'','#/candidato/dashboard'); }catch(e){}
+  }
   mind24UpdateAspenPioneerVisibility();
 }
 // ── Modals ──
@@ -2162,6 +2169,7 @@ async function registrarEval(){
 // ═══════════════════════════════════════════════════════════
 window.ATTEMPT_CTX={useApi:false};
 window.__MIND24_USER=null;
+window.__CAND_LOBBY=null;
 
 async function apiJson(url,opts={}){
   const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
@@ -2259,12 +2267,7 @@ async function loginCandidato(e){
     window.__MIND24_USER=data.user;
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-candidato');
-    const fn=data.user.fullName||data.user.email;
-    document.getElementById('dash-cand-name').textContent=fn;
-    document.getElementById('dash-cand-av').textContent=initialsFromName(fn);
-    const av2=document.getElementById('dash-cand-av2'); if(av2)av2.textContent=initialsFromName(fn);
-    showView('dash-candidato');
-    refreshCandidatoAssignments();
+    await openCandidatoLobby();
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
       if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
@@ -2538,28 +2541,67 @@ function buildFlatFromConfig(cfg){
   return flat;
 }
 
-async function refreshCandidatoAssignments(){
-  const box=document.getElementById('cand-assignments-list');
-  const err=document.getElementById('cand-assign-err');
-  if(err){ err.classList.add('hidden'); err.textContent=''; }
-  if(!box)return;
-  box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">Cargando…</p>';
-  try{
-    const j=await apiJson('/api/me/assignments');
-    if(!j.assignments||!j.assignments.length){ box.innerHTML='<p style="font-size:14px;color:var(--slate-500);">No tienes evaluaciones asignadas.</p>'; return; }
-    box.innerHTML='';
-    j.assignments.forEach(a=>{
-      const done=a.status==='completed';
-      const row=document.createElement('div');
-      row.className='ppl-row';
-      row.innerHTML='<div class="p-av" style="background:var(--assess-gradient);">📋</div><div class="p-info"><div class="p-name">'+(a.assessment&&a.assessment.name||'Evaluación')+'</div><div class="p-role">'+(done?'Completada':'Pendiente / en curso')+'</div></div>'+
-        (done?'<span class="p-badge pb-done">Listo</span>':'<span class="p-badge pb-new"><button type="button" style="border:none;background:transparent;cursor:pointer;font-weight:700;font-size:12px;padding:0;">Iniciar →</button></span>');
-      if(!done){
-        row.querySelector('button').onclick=()=>startAssignedTest(a.id);
-      }
-      box.appendChild(row);
-    });
-  }catch(e){ box.innerHTML=''; if(err){ err.textContent=e.message; err.classList.remove('hidden'); } }
+function mind24EscHtml(s){
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderCandidatoLobby(lobby, user) {
+  const u = user || window.__MIND24_USER || {};
+  const name = (u.fullName || u.email || 'Candidato').trim();
+  const h1 = document.getElementById('cand-lobby-h1');
+  if (h1) h1.innerHTML = 'Hola, <em>' + mind24EscHtml(name) + '</em>. Estas son tus pruebas asignadas.';
+  const box = document.getElementById('cand-lobby-modules');
+  const cta = document.getElementById('cand-lobby-start');
+  const err = document.getElementById('cand-lobby-err');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  const mods = (lobby && lobby.modules) || [];
+  window.__CAND_LOBBY = lobby || { assignmentId: null, modules: [] };
+  if (!box) return;
+  box.innerHTML = '';
+  if (!mods.length) {
+    box.innerHTML = '<p class="cand-lobby-mod-card" style="opacity:.7;font-weight:600;">Sin módulos pendientes.</p>';
+    if (cta) cta.disabled = true;
+    return;
+  }
+  mods.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'cand-lobby-mod-card';
+    card.innerHTML = mind24EscHtml(m.label || m.key || 'Módulo') + '<span>Módulo ' + (i + 1) + '</span>';
+    box.appendChild(card);
+  });
+  if (cta) cta.disabled = !lobby || !lobby.assignmentId;
+}
+
+async function openCandidatoLobby() {
+  try {
+    const j = await apiJson('/api/me/lobby');
+    window.__MIND24_USER = j.user;
+    renderCandidatoLobby(j.lobby, j.user);
+    showView('dash-candidato');
+  } catch (e) {
+    const err = document.getElementById('cand-lobby-err');
+    if (err) { err.textContent = e.message || 'No se pudo cargar el lobby.'; err.classList.remove('hidden'); }
+    showView('dash-candidato');
+  }
+}
+
+async function candidatoLobbyStartTests() {
+  const lobby = window.__CAND_LOBBY;
+  const id = lobby && lobby.assignmentId;
+  const err = document.getElementById('cand-lobby-err');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  if (!id) {
+    if (err) { err.textContent = 'No hay evaluación pendiente para iniciar.'; err.classList.remove('hidden'); }
+    return;
+  }
+  const cta = document.getElementById('cand-lobby-start');
+  if (cta) cta.disabled = true;
+  try {
+    await startAssignedTest(id);
+  } catch (e) {
+    if (err) { err.textContent = e.message || 'No se pudo iniciar.'; err.classList.remove('hidden'); }
+    if (cta) cta.disabled = false;
+  }
 }
 
 async function startAssignedTest(assignmentId){
@@ -2672,17 +2714,38 @@ const SECS=[
 const LETRAS=['A','B','C','D'];
 let ES={candidato:{nombre:'',correo:'',codigo:''},secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:2700,terminado:false};
 
-function iniciarEvaluacion(){
-  window.ATTEMPT_CTX={useApi:false};
-  const n=document.getElementById('eval-nombre')?.value||'Candidato';
-  const e=document.getElementById('eval-correo')?.value||'';
-  const c=document.getElementById('eval-codigo')?.value||'';
-  ES.candidato={nombre:n,correo:e,codigo:c};
-  const sub=document.getElementById('introSub');
-  if(sub&&n)sub.textContent=`Hola, ${n}. Esta evaluación mide tus valores, ética y comportamiento en situaciones laborales y personales reales.`;
-  showView('evaluacion');
-  resetEval();
-  showScr('intro');
+async function iniciarEvaluacion(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  const errEl=document.getElementById('eval-access-err');
+  const nombre=(document.getElementById('eval-nombre')?.value||'').trim();
+  const email=(document.getElementById('eval-correo')?.value||'').trim();
+  const accessCode=(document.getElementById('eval-codigo')?.value||'').trim();
+  if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+  if(!nombre||!email||!accessCode){
+    if(errEl){ errEl.textContent='Completa nombre, correo y código.'; errEl.classList.remove('hidden'); }
+    return;
+  }
+  try{
+    const data=await apiJson('/api/auth/candidate-access',{
+      method:'POST',
+      body:JSON.stringify({email,accessCode,fullName:nombre}),
+    });
+    window.__MIND24_USER=data.user;
+    renderCandidatoLobby(data.lobby,data.user);
+    closeModal('modal-evaluacion');
+    showView('dash-candidato');
+  }catch(err){
+    if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'){
+      const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
+      closeModal('modal-evaluacion');
+      showView('access-denied');
+      return;
+    }
+    const msg=(err.code==='INVALID_CANDIDATE_ACCESS'||err.httpStatus===401)
+      ?'Credenciales inválidas o prueba no asignada.'
+      :(err.message||'No se pudo validar el acceso.');
+    if(errEl){ errEl.textContent=msg; errEl.classList.remove('hidden'); }
+  }
 }
 function resetEval(){
   const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
