@@ -62,9 +62,18 @@ export async function createAssignment({
   });
 }
 
-export async function listAssignmentsForOrg(organizationId) {
+/**
+ * Lista asignaciones de la organización.
+ * @param {string} organizationId
+ * @param {{ assignedByUserId?: string }} [options] — si `assignedByUserId` está definido, solo asignaciones creadas por ese admin.
+ */
+export async function listAssignmentsForOrg(organizationId, options = {}) {
+  const where = { candidate: { organizationId } };
+  if (options.assignedByUserId) {
+    where.assignedByUserId = options.assignedByUserId;
+  }
   return prisma.assignment.findMany({
-    where: { candidate: { organizationId } },
+    where,
     include: {
       candidate: { include: { user: { select: { email: true, fullName: true } } } },
       assessmentDefinition: { select: { id: true, name: true, key: true, version: true, config: true } },

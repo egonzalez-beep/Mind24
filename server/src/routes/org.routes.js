@@ -72,7 +72,11 @@ router.get('/assessment-definitions', async (req, res, next) => {
 router.get('/assignments', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const assignments = await listAssignmentsForOrg(u.organizationId);
+    /** Admin demo (pionero): ve todas las asignaciones de la org. Resto: solo las que creó. */
+    const listOptions = isPioneerAspenAdminEmail(u.email)
+      ? {}
+      : { assignedByUserId: u.id };
+    const assignments = await listAssignmentsForOrg(u.organizationId, listOptions);
     res.json({ assignments });
   } catch (e) {
     next(e);
