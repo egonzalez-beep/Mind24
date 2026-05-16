@@ -260,6 +260,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mind24-credits-chip .m24-cc-val{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.15;}
 .aspen-pw-plain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:var(--slate-50);color:var(--primary);padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);word-break:break-all;display:inline-block;max-width:220px;}
 .aspen-pw-missing{font-size:12px;color:var(--slate-400);}
+.m24-fitness-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,6,20,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:m24fo .38s ease;}
+.m24-fitness-overlay.hidden{display:none!important;}
+@keyframes m24fo{from{opacity:0}to{opacity:1}}
+.m24-fitness-card{max-width:500px;width:100%;border-radius:26px;padding:44px 36px 40px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(168deg,#0f0720 0%,#1e1b4b 38%,#6d28d9 72%,#c026d3 100%);border:1px solid rgba(255,255,255,.22);box-shadow:0 48px 140px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14);}
+.m24-fitness-card::before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 30% 20%,rgba(250,250,255,.12),transparent 45%),radial-gradient(circle at 80% 80%,rgba(236,72,153,.15),transparent 40%);pointer-events:none;}
+.m24-fitness-card-inner{position:relative;z-index:1;}
+.m24-fitness-kicker{font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:14px;}
+.m24-fitness-title{font-size:28px;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1.15;margin-bottom:16px;text-shadow:0 2px 24px rgba(0,0,0,.35);}
+.m24-fitness-msg{font-size:17px;font-weight:600;color:rgba(255,255,255,.92);line-height:1.55;margin-bottom:28px;}
+.m24-fitness-cta{display:inline-flex;align-items:center;justify-content:center;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:800;color:#1e1b4b;background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;cursor:pointer;box-shadow:0 12px 40px rgba(250,204,21,.35);font-family:inherit;transition:transform .15s ease,box-shadow .15s ease;}
+.m24-fitness-cta:hover{transform:translateY(-2px);box-shadow:0 16px 48px rgba(250,204,21,.45);}
+.m24-fitness-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;z-index:2;transition:background .15s;}
+.m24-fitness-close:hover{background:rgba(255,255,255,.16);}
+.cev-panel.hidden{display:none!important;}
+.cev-status-pill{display:inline-block;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:800;letter-spacing:.02em;}
+.cev-st-aplicada{background:linear-gradient(135deg,#d1fae5,#6ee7b7);color:#065f46;}
+.cev-st-pendiente{background:linear-gradient(135deg,#fef3c7,#fcd34d);color:#92400e;}
 @media (max-width:720px){
   .mind24-credits-chip{min-width:96px;padding:7px 12px;}
   .mind24-credits-chip .m24-cc-val{font-size:16px;}
@@ -1108,13 +1125,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Evaluaciones</div>
-      <button class="sidebar-item active"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
-      <button class="sidebar-item"><span class="si-icon">📋</span><span>Mis Evaluaciones</span><span class="si-badge">7</span></button>
-      <button class="sidebar-item"><span class="si-icon">👥</span><span>Candidatos</span></button>
+      <button type="button" class="sidebar-item active" data-cev-nav="nueva" onclick="crearEvalSidebarNav('nueva')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-cev-nav="mis" onclick="crearEvalSidebarNav('mis')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span><span class="si-badge" id="cev-nav-mis-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Reportes</div>
-      <button class="sidebar-item"><span class="si-icon">📊</span><span>Resultados</span></button>
+      <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span></button>
       <div class="sidebar-section-label">Cuenta</div>
-      <button class="sidebar-item" onclick="showView('dash-admin')"><span class="si-icon">📈</span><span>Panel General</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="crearEvalOpenFitnessModal()"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1122,8 +1138,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title">Crear Evaluación</div><div class="topbar-subtitle">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub">Registra un candidato y genera su código de acceso</div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
+      <div id="cev-panel-nueva" class="cev-panel">
       <div style="margin-bottom:28px;"><h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Nueva Evaluación Psicométrica</h2><p style="font-size:14px;color:var(--slate-500);">Completa los datos del candidato. Se generará un código único automáticamente.</p></div>
       <div class="dash-grid" style="align-items:start;">
         <div style="display:flex;flex-direction:column;gap:20px;">
@@ -1169,11 +1186,54 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
         </div>
       </div>
+      </div>
+      <div id="cev-panel-mis" class="cev-panel hidden">
+        <div style="margin-bottom:22px;">
+          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Mis evaluaciones</h2>
+          <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Listado de asignaciones creadas para tu organización. El estado refleja si el evaluado ya completó la prueba.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Asignaciones</div><div class="card-subtitle">Pendiente = sin enviar o en curso · Aplicada = completada</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-body" style="overflow-x:auto;">
+            <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Estado</th></tr></thead>
+              <tbody id="cev-mis-assign-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="cev-panel-resultados" class="cev-panel hidden">
+        <div style="margin-bottom:22px;">
+          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Resultados</h2>
+          <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Solo evaluaciones finalizadas por el evaluado. El detalle de puntuación se integrará en una siguiente versión.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Evaluaciones completadas</div><div class="card-subtitle">Filtradas automáticamente</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-body" style="overflow-x:auto;">
+            <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Evaluación</th><th style="padding:8px;">Resultado</th></tr></thead>
+              <tbody id="cev-res-assign-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
+  <div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)crearEvalCloseFitnessModal()">
+    <div class="m24-fitness-card" onclick="event.stopPropagation()">
+      <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
+      <div class="m24-fitness-card-inner">
+        <div class="m24-fitness-kicker">Mind Fitness</div>
+        <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar organizacional</h2>
+        <p class="m24-fitness-msg">Contacta a personal de ventas</p>
+        <button type="button" class="m24-fitness-cta" onclick="crearEvalCloseFitnessModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ════════════════════ ACCESO DENEGADO ════════════════════ -->
 <div id="view-access-denied" class="app-shell hidden">
   <main class="main-content" style="max-width:560px;margin:0 auto;padding:48px 24px;">
     <div class="card">
@@ -1462,6 +1522,136 @@ function mind24SyncCrearEvalShell(){
   if(rl) rl.textContent='Administrador · Envío de pruebas';
   if(av) av.textContent=initialsFromName(u.fullName||u.email||'');
 }
+window.__mind24FitnessModalOpen = false;
+window.__cevLastNav = 'nueva';
+function crearEvalSyncSidebarActive(){
+  const root=document.getElementById('view-dash-crear-eval');
+  if(!root)return;
+  const cur=window.__cevLastNav||'nueva';
+  root.querySelectorAll('[data-cev-nav]').forEach(b=>{
+    const w=b.getAttribute('data-cev-nav');
+    b.classList.toggle('active', w===cur);
+  });
+}
+function crearEvalCloseFitnessModal(){
+  window.__mind24FitnessModalOpen = false;
+  const m=document.getElementById('m24-fitness-modal');
+  if(m)m.classList.add('hidden');
+  const anyOv=document.querySelector('.modal-overlay:not(.hidden)');
+  if(!anyOv) document.body.style.overflow='';
+}
+function crearEvalOpenFitnessModal(){
+  window.__mind24FitnessModalOpen = true;
+  const modal=document.getElementById('m24-fitness-modal');
+  if(modal)modal.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  crearEvalSyncSidebarActive();
+}
+function crearEvalMapStatusPill(status){
+  if(String(status)==='completed') return { label:'Aplicada', cls:'cev-status-pill cev-st-aplicada' };
+  return { label:'Pendiente', cls:'cev-status-pill cev-st-pendiente' };
+}
+function crearEvalFmtDate(iso){
+  if(!iso)return '—';
+  try{ return new Date(iso).toLocaleString('es-MX',{ dateStyle:'short', timeStyle:'short' }); }
+  catch(_){ return '—'; }
+}
+function crearEvalCandidateLabel(a){
+  const c=a.candidate;
+  if(!c)return '—';
+  const u=c.user;
+  const fn=u&&(u.fullName||'').trim();
+  const em=u&&(u.email||'').trim();
+  if(fn)return fn;
+  if(em)return em;
+  return '—';
+}
+function crearEvalAssessmentName(a){
+  const d=a.assessmentDefinition;
+  if(!d)return '—';
+  return String(d.name||d.key||'Evaluación');
+}
+async function refreshCrearEvalAssignmentsTables(){
+  const errMis=document.getElementById('cev-mis-err');
+  const errRes=document.getElementById('cev-res-err');
+  const tbMis=document.getElementById('cev-mis-assign-tbody');
+  const tbRes=document.getElementById('cev-res-assign-tbody');
+  const cnt=document.getElementById('cev-nav-mis-count');
+  if(errMis){ errMis.classList.add('hidden'); errMis.textContent=''; }
+  if(errRes){ errRes.classList.add('hidden'); errRes.textContent=''; }
+  try{
+    const j=await apiJson('/api/org/assignments');
+    const rows=Array.isArray(j.assignments)?j.assignments:[];
+    if(cnt){
+      cnt.textContent=String(rows.length);
+      cnt.style.display=rows.length?'inline-flex':'none';
+    }
+    if(tbMis){
+      tbMis.innerHTML='';
+      rows.forEach(a=>{
+        const pill=crearEvalMapStatusPill(a.status);
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function tdText(txt){
+          const x=document.createElement('td'); x.style.padding='8px';
+          x.textContent=txt==null||txt===''?'—':String(txt); tr.appendChild(x);
+        }
+        tdText(crearEvalFmtDate(a.createdAt));
+        tdText(crearEvalCandidateLabel(a));
+        tdText(crearEvalAssessmentName(a));
+        const tdx=document.createElement('td'); tdx.style.padding='8px';
+        const span=document.createElement('span'); span.className=pill.cls; span.textContent=pill.label;
+        tdx.appendChild(span); tr.appendChild(tdx);
+        tbMis.appendChild(tr);
+      });
+    }
+    if(tbRes){
+      tbRes.innerHTML='';
+      rows.filter(a=>String(a.status)==='completed').forEach(a=>{
+        const att=(a.attempts&&a.attempts[0])||null;
+        const fin=(att&&att.submittedAt)||a.updatedAt||a.createdAt;
+        const scores=att&&att.scores;
+        let globalTxt='—';
+        if(scores&&typeof scores==='object'&&scores.global!=null) globalTxt=String(scores.global)+'%';
+        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
+        function tdText(txt){
+          const x=document.createElement('td'); x.style.padding='8px';
+          x.textContent=txt==null||txt===''?'—':String(txt); tr.appendChild(x);
+        }
+        tdText(crearEvalFmtDate(fin));
+        tdText(crearEvalCandidateLabel(a));
+        tdText(crearEvalAssessmentName(a));
+        tdText(globalTxt);
+        tbRes.appendChild(tr);
+      });
+    }
+  }catch(e){
+    const msg=(e&&e.message)?String(e.message):'No se pudieron cargar las asignaciones.';
+    if(errMis){ errMis.textContent=msg; errMis.classList.remove('hidden'); }
+    if(errRes){ errRes.textContent=msg; errRes.classList.remove('hidden'); }
+  }
+}
+function crearEvalSidebarNav(which){
+  const allowed=new Set(['nueva','mis','resultados']);
+  if(!allowed.has(which))return;
+  window.__cevLastNav=which;
+  const panels={nueva:'cev-panel-nueva',mis:'cev-panel-mis',resultados:'cev-panel-resultados'};
+  Object.keys(panels).forEach(k=>{
+    const el=document.getElementById(panels[k]);
+    if(el) el.classList.toggle('hidden', k!==which);
+  });
+  const titles={
+    nueva:['Crear evaluación','Registra un candidato y genera su código de acceso'],
+    mis:['Mis evaluaciones','Seguimiento de asignaciones: pendiente o aplicada'],
+    resultados:['Resultados','Evaluaciones finalizadas por los evaluados']
+  };
+  const pair=titles[which]||titles.nueva;
+  const t=document.getElementById('cev-topbar-title');
+  const s=document.getElementById('cev-topbar-sub');
+  if(t) t.textContent=pair[0];
+  if(s) s.textContent=pair[1];
+  crearEvalSyncSidebarActive();
+  refreshCrearEvalAssignmentsTables();
+}
 function mind24RefreshEmpresaAdminDashboardChrome(){
   const u=window.__MIND24_USER;
   if(!u||u.role!=='empresa_admin')return;
@@ -1623,7 +1813,10 @@ function showView(name) {
     },0);
   }
   if(name==='dash-crear-eval'){
-    setTimeout(function(){ mind24RefreshEmpresaAdminSessionMeta(); },0);
+    setTimeout(function(){
+      mind24RefreshEmpresaAdminSessionMeta();
+      crearEvalSidebarNav('nueva');
+    },0);
   }
   mind24UpdateAspenPioneerVisibility();
 }
@@ -1635,14 +1828,14 @@ function closeModal(id){
   document.body.style.overflow='';
   if(id==='modal-empresa'){['emp-s0','emp-s1','emp-s2','emp-s3','emp-s-crear'].forEach((s,i)=>{const el=document.getElementById(s);if(el)el.classList.toggle('hidden',i!==0);});}
 }
-function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); document.body.style.overflow=''; }
+function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden')); crearEvalCloseFitnessModal(); document.body.style.overflow=''; }
 function closeModalOnBg(e,id){ if(e.target.classList.contains('modal-overlay'))closeModal(id); }
 function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
 // ── Nav scroll ──
 window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNav'); const land=document.getElementById('view-landing'); if(!land.classList.contains('hidden'))nav.classList.toggle('scrolled',window.scrollY>20); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeAllModals(); });
 // ── Sidebar ──
-document.querySelectorAll('.sidebar-item').forEach(item=>{ item.addEventListener('click',function(){ const p=this.closest('aside'); p.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); this.classList.add('active'); }); });
+document.querySelectorAll('.sidebar-item').forEach(item=>{ item.addEventListener('click',function(){ if(this.getAttribute('data-skip-sidebar-active')==='1')return; const p=this.closest('aside'); p.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); this.classList.add('active'); }); });
 // ── Canvas particles ──
 let animId, ptcls=[], canvasPaused=false;
 function pauseParticles(){canvasPaused=true;cancelAnimationFrame(animId);}
@@ -1673,8 +1866,85 @@ function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code='EVAL-'
 function copyCode(){ const v=document.getElementById('eval-code-display').textContent; if(v.includes('—')){genCode();return;} navigator.clipboard?.writeText(v); const b=document.querySelectorAll('.code-btn')[1]; const p=b.textContent; b.textContent='✓ Copiado'; setTimeout(()=>b.textContent=p,1600); }
 let activeMods=3;
 function toggleMod(el){ const sel=el.classList.toggle('selected'); const ch=el.querySelector('.mod-check'),ic=el.querySelector('.mod-icon'); if(sel){ch.textContent='✓';activeMods++;ic.style.background='var(--assess-gradient)';}else{ch.textContent='';activeMods--;ic.style.background='var(--slate-200)';} document.getElementById('resumen-modulos').textContent=activeMods+' módulos'; document.getElementById('resumen-tiempo').textContent='~'+(activeMods*15)+' minutos'; document.getElementById('mod-counter').textContent=activeMods+'/6 activos'; }
-function registrarEval(){ const n=document.getElementById('inp-nombre')?.value,c=document.getElementById('inp-curp')?.value,e=document.getElementById('inp-email')?.value; if(!n||!c||!e){alert('Por favor completa los campos obligatorios.');return;} if(document.getElementById('eval-code-display').textContent.includes('—'))genCode(); const btn=document.getElementById('btn-registrar'); btn.textContent='✅ Evaluación registrada y enviada'; btn.style.background='linear-gradient(135deg,#059669,#047857)'; setTimeout(()=>{btn.textContent='✓ Registrar y Enviar Evaluación';btn.style.background='';},3000); }
-setTimeout(genCode,600);
+function mind24RandomCandidatePassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const buf=new Uint8Array(14);
+  if(typeof crypto!=='undefined'&&crypto.getRandomValues) crypto.getRandomValues(buf);
+  else for(let i=0;i<buf.length;i++) buf[i]=Math.floor(Math.random()*256);
+  let s='';
+  for(let i=0;i<buf.length;i++) s+=chars[buf[i]%chars.length];
+  return 'Aa1'+s;
+}
+async function mind24DefaultAssessmentDefinitionId(){
+  if(window.__MIND24_DEFAULT_ASSESS_DEF_ID) return window.__MIND24_DEFAULT_ASSESS_DEF_ID;
+  const j=await apiJson('/api/org/assessment-definitions');
+  const defs=j&&j.definitions;
+  if(!Array.isArray(defs)||!defs.length) throw Object.assign(new Error('No hay evaluaciones activas configuradas para tu organización.'),{code:'NO_DEFINITIONS'});
+  window.__MIND24_DEFAULT_ASSESS_DEF_ID=defs[0].id;
+  return window.__MIND24_DEFAULT_ASSESS_DEF_ID;
+}
+async function registrarEval(){
+  const nombre=(document.getElementById('inp-nombre')||{}).value||'';
+  const curp=(document.getElementById('inp-curp')||{}).value||'';
+  const email=(document.getElementById('inp-email')||{}).value||'';
+  const puesto=(document.getElementById('inp-puesto')||{}).value||'';
+  const n=nombre.trim(), c=curp.trim().toUpperCase(), e=email.trim();
+  if(!n||!c||!e){ alert('Completa nombre, CURP y correo electrónico.'); return; }
+  if(c.length!==18){ alert('El CURP debe tener 18 caracteres.'); return; }
+  const codeEl=document.getElementById('eval-code-display');
+  if(codeEl&&String(codeEl.textContent).includes('—')) genCode();
+  const btn=document.getElementById('btn-registrar');
+  const prevText=btn?btn.textContent:'';
+  const prevBg=btn&&btn.style.background?btn.style.background:'var(--purple-gradient)';
+  if(btn){
+    btn.disabled=true;
+    btn.textContent='Enviando…';
+    btn.style.opacity='0.92';
+  }
+  const errMap={
+    EMAIL_IN_USE:'Ya existe una cuenta con ese correo. Prueba con otro correo o revisa candidatos ya registrados.',
+    NO_CREDITS:'La organización no tiene créditos disponibles para una nueva evaluación.',
+    ORG_BLOCKED:'La organización está suspendida.',
+    DEFINITION_NOT_FOUND:'La definición de evaluación no está disponible.',
+    NO_DEFINITIONS:'No hay evaluaciones activas para asignar. Contacta al administrador general.',
+    NOT_FOUND:'No se encontró el candidato o la evaluación.'
+  };
+  try{
+    const assessmentDefinitionId=await mind24DefaultAssessmentDefinitionId();
+    const password=mind24RandomCandidatePassword();
+    let fullName=n.length>200?n.slice(0,200):n;
+    const pt=puesto.trim();
+    if(pt&&fullName.length+pt.length+4<=200) fullName=fullName+' · '+pt;
+    const candRes=await apiJson('/api/org/candidates',{method:'POST',body:JSON.stringify({email:e,fullName,password})});
+    const candidateId=candRes&&candRes.candidate&&candRes.candidate.id;
+    if(!candidateId) throw new Error('Respuesta inválida al crear el candidato.');
+    const assignRes=await apiJson('/api/org/assignments',{method:'POST',body:JSON.stringify({candidateId,assessmentDefinitionId})});
+    const aid=assignRes&&assignRes.assignment&&assignRes.assignment.id;
+    if(codeEl&&aid) codeEl.textContent='ASG-'+String(aid).replace(/[^a-zA-Z0-9]/g,'').slice(0,10).toUpperCase();
+    await refreshCrearEvalAssignmentsTables();
+    try{ await mind24RefreshEmpresaAdminSessionMeta(); }catch(_){}
+    if(btn){
+      btn.disabled=false;
+      btn.style.opacity='';
+      btn.textContent='✅ Evaluación registrada';
+      btn.style.background='linear-gradient(135deg,#059669,#047857)';
+      setTimeout(()=>{ btn.textContent=prevText; btn.style.background=prevBg; },3200);
+    }
+    alert('Evaluación creada y asignada.\n\nAcceso del candidato (Mind24 · portal candidato):\nCorreo: '+e+'\nContraseña temporal: '+password+'\n\nIndícale que puede iniciar sesión con estos datos y completar la evaluación.');
+    const iN=document.getElementById('inp-nombre'), iC=document.getElementById('inp-curp'), iE=document.getElementById('inp-email'), iP=document.getElementById('inp-puesto');
+    if(iN) iN.value=''; if(iC) iC.value=''; if(iE) iE.value=''; if(iP) iP.value='';
+    genCode();
+  }catch(err){
+    if(btn){
+      btn.disabled=false;
+      btn.style.opacity='';
+      btn.textContent=prevText;
+      btn.style.background=prevBg;
+    }
+    const msg=errMap[err.code]||(err.message||'No se pudo registrar la evaluación.');
+    alert(msg);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 //  API Mind24 (sesión cookie, mismo origen)
@@ -1719,6 +1989,7 @@ async function authLogout(){
   mind24ClearAspenPasswordCache();
   window.__MIND24_USER=null;
   window.ATTEMPT_CTX={useApi:false};
+  try{ delete window.__MIND24_DEFAULT_ASSESS_DEF_ID; }catch(_){}
   showView('landing');
 }
 
