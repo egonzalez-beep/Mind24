@@ -2134,7 +2134,7 @@ async function registrarEval(){
     const combined=n+' · '+puesto;
     if(combined.length<=200) fullName=combined;
     else fullName=n.length>200?n.slice(0,200):n;
-    const candRes=await apiJson('/api/org/candidates',{method:'POST',body:JSON.stringify({email:e,fullName,password,curp:c})});
+    const candRes=await apiJson('/api/org/candidates',{method:'POST',body:JSON.stringify({email:e,fullName,password,curp})});
     const candidateId=candRes&&candRes.candidate&&candRes.candidate.id;
     if(!candidateId) throw new Error('Respuesta inválida al crear el candidato.');
     const assignRes=await apiJson('/api/org/assignments',{method:'POST',body:JSON.stringify({candidateId,assessmentDefinitionId,selectedModules:moduleKeysSnapshot})});
