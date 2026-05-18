@@ -110,6 +110,8 @@ model Assignment {
   assignedBy             User?              @relation("AssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
   /// Módulos elegidos en el alta (keys UI: habilidades, conocimientos, …). Opcional en asignaciones antiguas.
   selectedModules        Json?
+  /// Keys de módulos ya enviados por el candidato.
+  completedModules       Json?
   status                 AssignmentStatus   @default(pending)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
@@ -121,6 +123,8 @@ model AssessmentAttempt {
   id             String        @id @default(cuid())
   assignmentId   String
   assignment     Assignment    @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  /// Módulo UI iniciado (habilidades, disc, …).
+  moduleKey      String?
   status         AttemptStatus @default(in_progress)
   startedAt      DateTime      @default(now())
   submittedAt    DateTime?

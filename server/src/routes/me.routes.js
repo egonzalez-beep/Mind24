@@ -51,7 +51,10 @@ router.get('/assignments', async (req, res, next) => {
 
 router.post('/assignments/:assignmentId/start', async (req, res, next) => {
   try {
-    const out = await startAttempt(req.session.userId, req.params.assignmentId);
+    const { moduleKey } = z
+      .object({ moduleKey: z.string().min(1).max(64) })
+      .parse(req.body ?? {});
+    const out = await startAttempt(req.session.userId, req.params.assignmentId, { moduleKey });
     res.json(out);
   } catch (e) {
     next(e);

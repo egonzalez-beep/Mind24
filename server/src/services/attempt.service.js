@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { filterConfigByModule, moduleMetaForKey } from '../utils/moduleCatalog.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 
 function getTimeLimitSec(config) {
@@ -19,7 +20,19 @@ export async function listMyAssignments(userId) {
   });
 }
 
-export async function startAttempt(userId, assignmentId) {
+function readCompletedModules(assignment) {
+  const raw = assignment.completedModules;
+  if (!Array.isArray(raw)) return [];
+  return raw.map((x) => String(x));
+}
+
+function selectedModuleKeys(assignment) {
+  const raw = assignment.selectedModules;
+  if (Array.isArray(raw) && raw.length) return raw.map((x) => String(x));
+  return [];
+}
+
+export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
   const cand = await prisma.candidate.findUnique({ where: { userId } });
   if (!cand) {
     const err = new Error('NOT_CANDIDATE');
@@ -27,31 +40,53 @@ export async function startAttempt(userId, assignmentId) {
     throw err;
   }
 
+  const mk = moduleKey ? String(moduleKey).trim() : '';
+  if (!mk) {
+    const err = new Error('MODULE_KEY_REQUIRED');
+    err.code = 'MODULE_KEY_REQUIRED';
+    throw err;
+  }
+
   const assignment = await prisma.assignment.findFirst({
     where: { id: assignmentId, candidateId: cand.id },
-    include: { assessmentDefinition: true, attempts: { where: { status: 'in_progress' } } },
+    include: {
+      assessmentDefinition: true,
+      attempts: { where: { status: 'in_progress', moduleKey: mk } },
+    },
   });
   if (!assignment) {
     const err = new Error('NOT_FOUND');
     err.code = 'NOT_FOUND';
     throw err;
   }
-  if (assignment.status === 'completed') {
-    const err = new Error('ALREADY_COMPLETED');
-    err.code = 'ALREADY_COMPLETED';
+
+  const completed = new Set(readCompletedModules(assignment));
+  if (completed.has(mk)) {
+    const err = new Error('MODULE_ALREADY_COMPLETED');
+    err.code = 'MODULE_ALREADY_COMPLETED';
     throw err;
   }
 
-  const config = assignment.assessmentDefinition.config;
-  const timeLimitSec = getTimeLimitSec(config);
+  const allowed = selectedModuleKeys(assignment);
+  if (allowed.length && !allowed.includes(mk)) {
+    const err = new Error('MODULE_NOT_ASSIGNED');
+    err.code = 'MODULE_NOT_ASSIGNED';
+    throw err;
+  }
+
+  const fullConfig = assignment.assessmentDefinition.config;
+  const moduleConfig = filterConfigByModule(fullConfig, mk);
+  const meta = moduleMetaForKey(mk);
+  const timeLimitSec = moduleConfig.meta?.timeLimitSec || meta.estimatedMinutes * 60;
 
   const existing = assignment.attempts[0];
   if (existing) {
     return {
       attemptId: existing.id,
       assignmentId: assignment.id,
-      timeLimitSec,
-      config: sanitizeConfigForClient(config),
+      moduleKey: mk,
+      timeLimitSec: existing.timeLimitSec ?? timeLimitSec,
+      config: sanitizeConfigForClient(moduleConfig),
       startedAt: existing.startedAt,
       resumed: true,
     };
@@ -61,22 +96,26 @@ export async function startAttempt(userId, assignmentId) {
     const a = await tx.assessmentAttempt.create({
       data: {
         assignmentId: assignment.id,
+        moduleKey: mk,
         status: 'in_progress',
         timeLimitSec,
       },
     });
-    await tx.assignment.update({
-      where: { id: assignment.id },
-      data: { status: 'in_progress' },
-    });
+    if (assignment.status === 'pending') {
+      await tx.assignment.update({
+        where: { id: assignment.id },
+        data: { status: 'in_progress' },
+      });
+    }
     return a;
   });
 
   return {
     attemptId: attempt.id,
     assignmentId: assignment.id,
+    moduleKey: mk,
     timeLimitSec,
-    config: sanitizeConfigForClient(config),
+    config: sanitizeConfigForClient(moduleConfig),
     startedAt: attempt.startedAt,
     resumed: false,
   };
@@ -114,8 +153,10 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     throw err;
   }
 
+  const mk = attempt.moduleKey || '';
   const fullConfig = attempt.assignment.assessmentDefinition.config;
-  const limit = attempt.timeLimitSec ?? getTimeLimitSec(fullConfig);
+  const moduleConfig = mk ? filterConfigByModule(fullConfig, mk) : fullConfig;
+  const limit = attempt.timeLimitSec ?? getTimeLimitSec(moduleConfig);
   const deadline = new Date(attempt.startedAt.getTime() + limit * 1000);
   if (new Date() > deadline) {
     await prisma.assessmentAttempt.update({
@@ -127,7 +168,17 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     throw err;
   }
 
-  const scored = scoreAssessment(fullConfig, answers);
+  const scored = scoreAssessment(moduleConfig, answers);
+
+  const assignment = attempt.assignment;
+  const prevCompleted = readCompletedModules(assignment);
+  const nextCompleted = mk && !prevCompleted.includes(mk) ? [...prevCompleted, mk] : prevCompleted;
+
+  let selected = selectedModuleKeys(assignment);
+  if (!selected.length && mk) {
+    selected = [mk];
+  }
+  const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
 
   await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
@@ -139,7 +190,7 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
         scores: {
           global: scored.global,
           dimensions: scored.dimensions,
-          meta: scored.meta,
+          meta: { ...(scored.meta || {}), moduleKey: mk || null },
         },
         interpretation: {
           verdict: scored.verdict,
@@ -151,11 +202,14 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     });
     await tx.assignment.update({
       where: { id: attempt.assignmentId },
-      data: { status: 'completed' },
+      data: {
+        completedModules: nextCompleted,
+        status: allDone ? 'completed' : 'in_progress',
+      },
     });
   });
 
-  return scored;
+  return { ...scored, moduleKey: mk || null, assignmentCompleted: allDone };
 }
 
 export async function getAttemptResult(userId, attemptId) {

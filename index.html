@@ -440,21 +440,31 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
 .create-input:disabled{opacity:.68;cursor:not-allowed;background:var(--slate-100);color:var(--slate-600);}
 #cev-mod-list.cev-locked .mod-toggle{cursor:not-allowed;opacity:.85;}
-.cand-lobby-shell{min-height:100vh;background:linear-gradient(165deg,#0a0614 0%,#1a1035 42%,#120a22 100%);display:flex;flex-direction:column;}
-.cand-lobby-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.cand-lobby-shell{min-height:100vh;background:linear-gradient(165deg,#0a0614 0%,#1a1035 42%,#120a22 100%);display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.cand-lobby-shell::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(124,58,237,.18),transparent 55%);pointer-events:none;}
+.cand-lobby-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:1;}
 .cand-lobby-logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em;}
 .cand-lobby-logo span{color:var(--violet-light);}
-.cand-lobby-main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px 32px;}
-.cand-lobby-inner{width:100%;max-width:480px;}
-.cand-lobby-h1{font-size:clamp(1.25rem,4vw,1.5rem);font-weight:800;color:#fff;line-height:1.3;margin:0 0 20px;letter-spacing:-.03em;}
-.cand-lobby-h1 em{font-style:normal;color:var(--violet-light);}
-.cand-lobby-modules{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
-.cand-lobby-mod-card{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(167,139,250,.28);color:#fff;font-size:14px;font-weight:700;letter-spacing:-.01em;}
-.cand-lobby-mod-card span{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
-.cand-lobby-cta{width:100%;padding:16px 20px;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;color:#0f0720;background:linear-gradient(135deg,#e9d5ff,#a78bfa);box-shadow:0 12px 40px rgba(124,58,237,.45);transition:transform .15s,box-shadow .15s;}
-.cand-lobby-cta:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 16px 48px rgba(124,58,237,.55);}
-.cand-lobby-cta:disabled{opacity:.5;cursor:not-allowed;}
-.cand-lobby-err{margin-top:14px;font-size:13px;font-weight:600;color:#fca5a5;text-align:center;}
+.cand-lobby-main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 20px 40px;position:relative;z-index:1;}
+.cand-lobby-inner{width:100%;max-width:520px;}
+.cand-lobby-h1{font-size:clamp(1.5rem,5vw,1.85rem);font-weight:800;color:#fff;line-height:1.2;margin:0 0 10px;letter-spacing:-.04em;}
+.cand-lobby-sub{font-size:clamp(.95rem,2.8vw,1.05rem);font-weight:500;color:#9ca3af;line-height:1.45;margin:0 0 28px;}
+.cand-lobby-modules{display:flex;flex-direction:column;gap:12px;}
+.cand-lobby-mod-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;text-align:left;font-family:inherit;color:inherit;transition:all .22s ease;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+.cand-lobby-mod-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);transform:scale(1.02);box-shadow:0 12px 40px rgba(124,58,237,.15);}
+.cand-lobby-mod-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.cand-lobby-mod-btn.is-done{opacity:.55;}
+.cand-lobby-mod-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1;}
+.cand-lobby-mod-ico{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cand-lobby-mod-texts{min-width:0;}
+.cand-lobby-mod-kicker{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-bottom:4px;}
+.cand-lobby-mod-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.25;}
+.cand-lobby-mod-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cand-lobby-time-badge{font-size:11px;font-weight:600;color:rgba(255,255,255,.65);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:100px;white-space:nowrap;}
+.cand-lobby-mod-arrow{font-size:18px;font-weight:300;color:rgba(255,255,255,.35);line-height:1;}
+.cand-lobby-mod-btn:hover:not(:disabled) .cand-lobby-mod-arrow{color:rgba(255,255,255,.75);}
+.cand-lobby-empty{padding:18px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9ca3af;font-size:14px;font-weight:600;text-align:center;}
+.cand-lobby-err{margin-top:18px;font-size:13px;font-weight:600;color:#fca5a5;text-align:center;}
 .cand-lobby-err.hidden{display:none;}
 .cand-lobby-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;}
 .cand-lobby-out:hover{background:rgba(255,255,255,.08);}
@@ -1409,9 +1419,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </header>
   <main class="cand-lobby-main">
     <div class="cand-lobby-inner">
-      <h1 id="cand-lobby-h1" class="cand-lobby-h1">Hola. Estas son tus pruebas asignadas.</h1>
+      <h1 id="cand-lobby-h1" class="cand-lobby-h1">Hola.</h1>
+      <p id="cand-lobby-sub" class="cand-lobby-sub">Selecciona el módulo con el que deseas comenzar hoy.</p>
       <div id="cand-lobby-modules" class="cand-lobby-modules"></div>
-      <button type="button" id="cand-lobby-start" class="cand-lobby-cta" onclick="candidatoLobbyStartTests()">Iniciar Mis Pruebas</button>
       <p id="cand-lobby-err" class="cand-lobby-err hidden"></p>
     </div>
   </main>
@@ -1500,7 +1510,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div class="result-actions">
         <button class="btn-r-primary" onclick="window.print()">Imprimir Reporte</button>
-        <button class="btn-r-secondary" onclick="showView('landing')">Volver al inicio</button>
+        <button type="button" class="btn-r-secondary" id="btn-eval-back-lobby" onclick="candidatoReturnToLobby()">Volver al lobby</button>
+        <button type="button" class="btn-r-secondary hidden" id="btn-eval-back-landing" onclick="showView('landing')">Volver al inicio</button>
       </div>
     </div>
   </div>
@@ -2545,31 +2556,56 @@ function mind24EscHtml(s){
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+const CAND_MODULE_ICONS={habilidades:'⚡',conocimientos:'📚',disc:'🎯',ie:'🧠',liderazgo:'🏆'};
+
+function candModuleEstimatedLabel(m){
+  const min=m.estimatedMinutes||m.estimatedTime;
+  if(min!=null&&Number(min)>0) return '⏱️ '+min+' min';
+  return '⏱️ 10 min';
+}
+
 function renderCandidatoLobby(lobby, user) {
   const u = user || window.__MIND24_USER || {};
   const name = (u.fullName || u.email || 'Candidato').trim();
   const h1 = document.getElementById('cand-lobby-h1');
-  if (h1) h1.innerHTML = 'Hola, <em>' + mind24EscHtml(name) + '</em>. Estas son tus pruebas asignadas.';
+  if (h1) h1.textContent = 'Hola, ' + name + '.';
   const box = document.getElementById('cand-lobby-modules');
-  const cta = document.getElementById('cand-lobby-start');
   const err = document.getElementById('cand-lobby-err');
   if (err) { err.classList.add('hidden'); err.textContent = ''; }
   const mods = (lobby && lobby.modules) || [];
   window.__CAND_LOBBY = lobby || { assignmentId: null, modules: [] };
   if (!box) return;
   box.innerHTML = '';
+  const assignmentId = lobby && lobby.assignmentId;
   if (!mods.length) {
-    box.innerHTML = '<p class="cand-lobby-mod-card" style="opacity:.7;font-weight:600;">Sin módulos pendientes.</p>';
-    if (cta) cta.disabled = true;
+    box.innerHTML = '<p class="cand-lobby-empty">No hay módulos pendientes. ¡Buen trabajo!</p>';
     return;
   }
   mods.forEach((m, i) => {
-    const card = document.createElement('div');
-    card.className = 'cand-lobby-mod-card';
-    card.innerHTML = mind24EscHtml(m.label || m.key || 'Módulo') + '<span>Módulo ' + (i + 1) + '</span>';
-    box.appendChild(card);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cand-lobby-mod-btn' + (m.completed ? ' is-done' : '');
+    btn.disabled = !!m.completed;
+    const icon = m.icon || CAND_MODULE_ICONS[m.key] || '◈';
+    const label = m.label || m.key || 'Módulo';
+    const timeLbl = candModuleEstimatedLabel(m);
+    btn.innerHTML =
+      '<span class="cand-lobby-mod-left">' +
+        '<span class="cand-lobby-mod-ico" aria-hidden="true">' + icon + '</span>' +
+        '<span class="cand-lobby-mod-texts">' +
+          '<span class="cand-lobby-mod-kicker">Módulo ' + (i + 1) + '</span>' +
+          '<span class="cand-lobby-mod-title">' + mind24EscHtml(label) + '</span>' +
+        '</span>' +
+      '</span>' +
+      '<span class="cand-lobby-mod-right">' +
+        '<span class="cand-lobby-time-badge">' + mind24EscHtml(timeLbl) + '</span>' +
+        '<span class="cand-lobby-mod-arrow" aria-hidden="true">' + (m.completed ? '✓' : '❯') + '</span>' +
+      '</span>';
+    if (!m.completed && assignmentId) {
+      btn.onclick = () => startAssignedModule(assignmentId, m.key);
+    }
+    box.appendChild(btn);
   });
-  if (cta) cta.disabled = !lobby || !lobby.assignmentId;
 }
 
 async function openCandidatoLobby() {
@@ -2585,32 +2621,29 @@ async function openCandidatoLobby() {
   }
 }
 
-async function candidatoLobbyStartTests() {
-  const lobby = window.__CAND_LOBBY;
-  const id = lobby && lobby.assignmentId;
-  const err = document.getElementById('cand-lobby-err');
-  if (err) { err.classList.add('hidden'); err.textContent = ''; }
-  if (!id) {
-    if (err) { err.textContent = 'No hay evaluación pendiente para iniciar.'; err.classList.remove('hidden'); }
-    return;
-  }
-  const cta = document.getElementById('cand-lobby-start');
-  if (cta) cta.disabled = true;
-  try {
-    await startAssignedTest(id);
-  } catch (e) {
-    if (err) { err.textContent = e.message || 'No se pudo iniciar.'; err.classList.remove('hidden'); }
-    if (cta) cta.disabled = false;
-  }
+async function candidatoReturnToLobby(){
+  window.ATTEMPT_CTX={useApi:false};
+  clearInterval(ES.timerInt);
+  await openCandidatoLobby();
 }
 
-async function startAssignedTest(assignmentId){
+async function startAssignedModule(assignmentId, moduleKey){
+  const err=document.getElementById('cand-lobby-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(!assignmentId||!moduleKey){
+    if(err){ err.textContent='Módulo no válido.'; err.classList.remove('hidden'); }
+    return;
+  }
   try{
-    const j=await apiJson('/api/me/assignments/'+encodeURIComponent(assignmentId)+'/start',{method:'POST'});
+    const j=await apiJson('/api/me/assignments/'+encodeURIComponent(assignmentId)+'/start',{
+      method:'POST',
+      body:JSON.stringify({moduleKey}),
+    });
     const cfg=j.config;
     const flat=buildFlatFromConfig(cfg);
     const secsList=(cfg.sections||[]).map(s=>({key:s.id,nombre:s.title,desc:s.description}));
-    window.ATTEMPT_CTX={useApi:true,attemptId:j.attemptId,assignmentId:j.assignmentId,flat,secsList,timeLimitSec:j.timeLimitSec||2700};
+    window.ATTEMPT_CTX={useApi:true,attemptId:j.attemptId,assignmentId:j.assignmentId,moduleKey:j.moduleKey||moduleKey,flat,secsList,timeLimitSec:j.timeLimitSec||2700};
+    mind24SyncEvalResultNav();
     const u=window.__MIND24_USER||{};
     ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
     const meta=cfg.meta||{};
@@ -2623,7 +2656,18 @@ async function startAssignedTest(assignmentId){
     showView('evaluacion');
     resetEval();
     showScr('intro');
-  }catch(e){ alert(e.message||'No se pudo iniciar'); }
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo iniciar.'; err.classList.remove('hidden'); }
+    else alert(e.message||'No se pudo iniciar');
+  }
+}
+
+function mind24SyncEvalResultNav(){
+  const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
+  const lobbyBtn=document.getElementById('btn-eval-back-lobby');
+  const landBtn=document.getElementById('btn-eval-back-landing');
+  if(lobbyBtn) lobbyBtn.classList.toggle('hidden',!useApi);
+  if(landBtn) landBtn.classList.toggle('hidden',!!useApi);
 }
 
 function renderServerResult(result){
@@ -2871,8 +2915,13 @@ function finishEval(){
       try{
         const j=await apiJson('/api/me/attempts/'+encodeURIComponent(window.ATTEMPT_CTX.attemptId)+'/submit',{method:'POST',body:JSON.stringify({answers:ES.resp})});
         renderServerResult(j.result);
+        mind24SyncEvalResultNav();
         showScr('results');
         setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+        if(j.result&&j.result.assignmentCompleted){
+          const sub=document.getElementById('resDesc');
+          if(sub) sub.textContent=(sub.textContent||'')+' Has completado todos los módulos asignados.';
+        }
       }catch(err){ alert(err.message||'Error al enviar'); }
     })();
     return;

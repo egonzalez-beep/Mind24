@@ -1,13 +1,12 @@
 import { prisma } from '../db/client.js';
 import { mind24ShortAssignmentCode, normalizeAccessCodeInput } from '../utils/accessCode.js';
+import { moduleMetaForKey } from '../utils/moduleCatalog.js';
 
-const MODULE_LABELS = {
-  habilidades: 'Habilidades',
-  conocimientos: 'Conocimientos',
-  disc: 'Perfil DISC',
-  ie: 'Inteligencia emocional',
-  liderazgo: 'Liderazgo',
-};
+function readCompletedModules(assignment) {
+  const raw = assignment.completedModules;
+  if (!Array.isArray(raw)) return [];
+  return raw.map((x) => String(x));
+}
 
 function assertCandidateOrgAccess(user) {
   if (user.organization?.blocked) {
@@ -44,11 +43,25 @@ function modulesFromAssignment(assignment) {
       },
     ];
   }
-  return keys.map((key) => ({
-    key,
-    label: MODULE_LABELS[key] || key,
-    assignmentId: assignment.id,
-  }));
+  const done = new Set(readCompletedModules(assignment));
+  return keys.map((key) => {
+    const meta = moduleMetaForKey(key);
+    return {
+      key,
+      label: meta.label,
+      icon: meta.icon,
+      estimatedMinutes: meta.estimatedMinutes,
+      estimatedTime: meta.estimatedMinutes,
+      assignmentId: assignment.id,
+      completed: done.has(key),
+    };
+  });
+}
+
+function assignmentStillPending(assignment) {
+  const keys = modulesFromAssignment(assignment).map((m) => m.key);
+  const done = new Set(readCompletedModules(assignment));
+  return keys.some((k) => !done.has(k));
 }
 
 function mapAssignmentRow(a) {
@@ -110,18 +123,21 @@ export async function authenticateCandidateByAccess({ email, accessCode }) {
   }
 
   const assignment = matched[0];
-  if (assignment.status === 'completed') {
+  if (assignment.status === 'completed' && !assignmentStillPending(assignment)) {
     throw invalidAccessError();
   }
 
-  const pending = assignments.filter((a) => a.status !== 'completed');
-  const modules = modulesFromAssignment(assignment);
+  const pending = assignments.filter(
+    (a) => a.status !== 'completed' || assignmentStillPending(a),
+  );
+  const allMods = modulesFromAssignment(assignment);
+  const modules = allMods.filter((m) => !m.completed);
 
   return {
     user,
     assignmentId: assignment.id,
     accessCode: code,
-    modules,
+    modules: modules.length ? modules : allMods,
     assignments: pending.map(mapAssignmentRow),
   };
 }
@@ -147,13 +163,17 @@ export async function getCandidateLobbyForUser(userId) {
     orderBy: { createdAt: 'desc' },
   });
 
-  const pending = assignments.filter((a) => a.status !== 'completed');
+  const pending = assignments.filter(
+    (a) => a.status !== 'completed' || assignmentStillPending(a),
+  );
   const primary = pending[0] || null;
+  const allMods = primary ? modulesFromAssignment(primary) : [];
+  const openMods = allMods.filter((m) => !m.completed);
 
   return {
     user,
     assignmentId: primary?.id ?? null,
-    modules: primary ? modulesFromAssignment(primary) : [],
+    modules: openMods.length ? openMods : allMods,
     assignments: pending.map(mapAssignmentRow),
   };
 }
