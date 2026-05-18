@@ -399,7 +399,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-left{display:flex;align-items:center;gap:12px;}
 .mod-icon{width:36px;height:36px;border-radius:8px;background:var(--assess-gradient);display:flex;align-items:center;justify-content:center;font-size:16px;}
 .mod-name{font-size:14px;font-weight:700;color:var(--primary);}
-.mod-desc{font-size:12px;color:var(--slate-500);margin-top:1px;}
+.mod-desc{font-size:12px;color:var(--slate-500);margin-top:4px;white-space:normal;line-height:1.35;max-width:100%;}
+.mod-toggle .mod-left{align-items:flex-start;}
+.mod-toggle.featured-mod{border-color:rgba(124,58,237,.45);background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(167,139,250,.12));}
+.cev-mod-time.hidden{display:none;}
 .mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--white);background:var(--assess-gradient);flex-shrink:0;}
 .mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
 .cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:0;align-items:start;}
@@ -459,6 +462,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cand-lobby-mod-texts{min-width:0;}
 .cand-lobby-mod-kicker{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-bottom:4px;}
 .cand-lobby-mod-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.25;}
+.cand-lobby-mod-desc{font-size:12px;font-weight:500;color:#9ca3af;margin-top:5px;white-space:normal;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.cand-lobby-mod-btn.featured-mod{border-color:rgba(167,139,250,.35);background:rgba(124,58,237,.12);}
+.cev-mod-time.hidden{display:none;}
 .cand-lobby-mod-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .cand-lobby-time-badge{font-size:11px;font-weight:600;color:rgba(255,255,255,.65);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:100px;white-space:nowrap;}
 .cand-lobby-mod-arrow{font-size:18px;font-weight:300;color:rgba(255,255,255,.35);line-height:1;}
@@ -1223,15 +1229,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="cev-col-mods">
           <div class="card" id="cev-mod-card">
-            <div class="card-header cev-mod-card-head"><div><div class="card-title">Módulos de evaluación</div></div><div class="cev-mod-meta"><span class="cev-mod-time" id="cev-mod-time-estimate">~75 min</span><span class="cev-mod-chip" id="mod-counter">5/5 activos</span></div></div>
+            <div class="card-header cev-mod-card-head"><div><div class="card-title">Módulos de evaluación</div></div><div class="cev-mod-meta"><span class="cev-mod-time hidden" id="cev-mod-time-estimate" aria-hidden="true"></span><span class="cev-mod-chip" id="mod-counter">7/7 activos</span></div></div>
             <div class="card-body">
-              <div id="cev-mod-list">
-                <div class="mod-toggle selected" data-mod-key="habilidades" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">⚡</div><div><div class="mod-name">Habilidades</div><div class="mod-desc">Competencias blandas y sociales</div></div></div><div class="mod-check">✓</div></div>
-                <div class="mod-toggle selected" data-mod-key="conocimientos" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">📚</div><div><div class="mod-name">Conocimientos</div><div class="mod-desc">Aptitud técnica y cognitiva general</div></div></div><div class="mod-check">✓</div></div>
-                <div class="mod-toggle selected" data-mod-key="disc" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">🎯</div><div><div class="mod-name">Perfil DISC</div><div class="mod-desc">Estilos de comportamiento conductual</div></div></div><div class="mod-check">✓</div></div>
-                <div class="mod-toggle selected" data-mod-key="ie" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">🧠</div><div><div class="mod-name">Inteligencia emocional</div><div class="mod-desc">Autoconciencia y gestión emocional</div></div></div><div class="mod-check">✓</div></div>
-                <div class="mod-toggle selected" data-mod-key="liderazgo" onclick="toggleMod(this)"><div class="mod-left"><div class="mod-icon">🏆</div><div><div class="mod-name">Liderazgo</div><div class="mod-desc">Capacidad de influencia y dirección</div></div></div><div class="mod-check">✓</div></div>
-              </div>
+              <div id="cev-mod-list"></div>
+              
+              
               <p id="cev-mod-inline-warn" class="cev-inline-warn hidden" role="alert">⚠️ Debes seleccionar al menos un módulo para continuar.</p>
             </div>
           </div>
@@ -1620,9 +1622,44 @@ function crearEvalAssessmentName(a){
   if(!d)return '—';
   return String(d.name||d.key||'Evaluación');
 }
+/** Catálogo corporativo Mind24 (sincronizado con server/src/utils/moduleCatalog.js) */
+const MIND24_EVAL_MODULES=[
+  {key:'honestidad',label:'Batería de Honestidad (Exclusivo Mind24)',description:'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',icon:'🛡️',featured:true},
+  {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
+  {key:'cognitivo',label:'Potencial Cognitivo (TERMAN & RAVEN)',description:'Mide el IQ, capacidad de aprendizaje y juicio ejecutivo.',icon:'🧠'},
+  {key:'mrr',label:'Personalidad MRR',description:'Identifica líderes resilientes capaces de innovar bajo demanda.',icon:'🌟'},
+  {key:'habilidades_especificas',label:'Habilidades Específicas',description:'Evaluaciones de impacto para Ventas y Atención al Cliente.',icon:'📊'},
+  {key:'entrevista_digital',label:'Entrevista Digital',description:'Filtro asíncrono automatizado de preguntas clave sin intervención humana.',icon:'🎤'},
+  {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️'},
+];
+const MIND24_LEGACY_MOD_KEYS={habilidades:'habilidades_especificas',conocimientos:'cognitivo',disc:'cleaver',ie:'mrr',liderazgo:'medida'};
+function mind24ResolveModKey(key){ return MIND24_LEGACY_MOD_KEYS[key]||key; }
+function mind24ModByKey(key){
+  const k=mind24ResolveModKey(key);
+  return MIND24_EVAL_MODULES.find(m=>m.key===k)||{key:k,label:k,description:'',icon:'◈'};
+}
+function mind24InitCrearEvalModules(){
+  const list=document.getElementById('cev-mod-list');
+  if(!list)return;
+  list.innerHTML='';
+  MIND24_EVAL_MODULES.forEach(mod=>{
+    const el=document.createElement('div');
+    el.className='mod-toggle selected'+(mod.featured?' featured-mod':'');
+    el.setAttribute('data-mod-key',mod.key);
+    el.onclick=function(){toggleMod(this);};
+    el.innerHTML='<div class="mod-left"><div class="mod-icon">'+mod.icon+'</div><div><div class="mod-name">'+mind24EscHtml(mod.label)+'</div><div class="mod-desc">'+mind24EscHtml(mod.description)+'</div></div></div><div class="mod-check">✓</div>';
+    list.appendChild(el);
+  });
+  crearEvalSyncModSummary();
+}
 /** Etiquetas de módulos UI (alta) → nombre legible en tablas */
 function crearEvalModLabelsMap(){
-  return { habilidades:'Habilidades', conocimientos:'Conocimientos', disc:'Perfil DISC', ie:'Inteligencia emocional', liderazgo:'Liderazgo' };
+  const m={};
+  MIND24_EVAL_MODULES.forEach(x=>{m[x.key]=x.label;});
+  Object.keys(MIND24_LEGACY_MOD_KEYS).forEach(legacy=>{
+    m[legacy]=mind24ModByKey(legacy).label;
+  });
+  return m;
 }
 function crearEvalCandidateCurp(a){
   const c=a&&a.candidate;
@@ -1921,6 +1958,7 @@ function showView(name) {
   if(name==='dash-crear-eval'){
     setTimeout(function(){
       mind24RefreshEmpresaAdminSessionMeta();
+      mind24InitCrearEvalModules();
       crearEvalSidebarNav('nueva');
     },0);
   }
@@ -1990,8 +2028,9 @@ function crearEvalSyncModSummary(){
   const n=crearEvalCountSelectedModules();
   const te=document.getElementById('cev-mod-time-estimate');
   const mc=document.getElementById('mod-counter');
-  if(te) te.textContent='~'+(n*15)+' min';
-  if(mc) mc.textContent=n+'/5 activos';
+  const total=MIND24_EVAL_MODULES.length;
+  if(te) te.classList.add('hidden');
+  if(mc) mc.textContent=n+'/'+total+' activos';
 }
 function toggleMod(el){
   if(window.__CEV_FORM_LOCKED)return;
@@ -2556,12 +2595,14 @@ function mind24EscHtml(s){
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-const CAND_MODULE_ICONS={habilidades:'⚡',conocimientos:'📚',disc:'🎯',ie:'🧠',liderazgo:'🏆'};
-
+function candModuleShowTimeBadge(m){
+  const min=m.estimatedMinutes??m.estimatedTime;
+  return min!=null&&Number(min)>0;
+}
 function candModuleEstimatedLabel(m){
-  const min=m.estimatedMinutes||m.estimatedTime;
+  const min=m.estimatedMinutes??m.estimatedTime;
   if(min!=null&&Number(min)>0) return '⏱️ '+min+' min';
-  return '⏱️ 10 min';
+  return '';
 }
 
 function renderCandidatoLobby(lobby, user) {
@@ -2586,19 +2627,24 @@ function renderCandidatoLobby(lobby, user) {
     btn.type = 'button';
     btn.className = 'cand-lobby-mod-btn' + (m.completed ? ' is-done' : '');
     btn.disabled = !!m.completed;
-    const icon = m.icon || CAND_MODULE_ICONS[m.key] || '◈';
-    const label = m.label || m.key || 'Módulo';
+    const meta = mind24ModByKey(m.key);
+    const icon = m.icon || meta.icon || '◈';
+    const label = m.label || meta.label || m.key || 'Módulo';
+    const desc = m.description || meta.description || '';
+    const showTime = candModuleShowTimeBadge(m);
     const timeLbl = candModuleEstimatedLabel(m);
+    if (m.featured || meta.featured) btn.classList.add('featured-mod');
     btn.innerHTML =
       '<span class="cand-lobby-mod-left">' +
         '<span class="cand-lobby-mod-ico" aria-hidden="true">' + icon + '</span>' +
         '<span class="cand-lobby-mod-texts">' +
           '<span class="cand-lobby-mod-kicker">Módulo ' + (i + 1) + '</span>' +
           '<span class="cand-lobby-mod-title">' + mind24EscHtml(label) + '</span>' +
+          (desc ? '<span class="cand-lobby-mod-desc">' + mind24EscHtml(desc) + '</span>' : '') +
         '</span>' +
       '</span>' +
       '<span class="cand-lobby-mod-right">' +
-        '<span class="cand-lobby-time-badge">' + mind24EscHtml(timeLbl) + '</span>' +
+        (showTime && timeLbl ? '<span class="cand-lobby-time-badge">' + mind24EscHtml(timeLbl) + '</span>' : '') +
         '<span class="cand-lobby-mod-arrow" aria-hidden="true">' + (m.completed ? '✓' : '❯') + '</span>' +
       '</span>';
     if (!m.completed && assignmentId) {

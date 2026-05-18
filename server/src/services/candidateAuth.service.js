@@ -1,6 +1,6 @@
 import { prisma } from '../db/client.js';
 import { mind24ShortAssignmentCode, normalizeAccessCodeInput } from '../utils/accessCode.js';
-import { moduleMetaForKey } from '../utils/moduleCatalog.js';
+import { moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
 
 function readCompletedModules(assignment) {
   const raw = assignment.completedModules;
@@ -45,15 +45,18 @@ function modulesFromAssignment(assignment) {
   }
   const done = new Set(readCompletedModules(assignment));
   return keys.map((key) => {
-    const meta = moduleMetaForKey(key);
+    const resolved = moduleMetaForKey(key);
+    const storeKey = resolveModuleKey(key);
     return {
-      key,
-      label: meta.label,
-      icon: meta.icon,
-      estimatedMinutes: meta.estimatedMinutes,
-      estimatedTime: meta.estimatedMinutes,
+      key: storeKey,
+      label: resolved.label,
+      description: resolved.description || '',
+      icon: resolved.icon,
+      estimatedMinutes: resolved.estimatedMinutes,
+      estimatedTime: resolved.estimatedMinutes,
+      featured: !!resolved.featured,
       assignmentId: assignment.id,
-      completed: done.has(key),
+      completed: done.has(storeKey) || done.has(key),
     };
   });
 }

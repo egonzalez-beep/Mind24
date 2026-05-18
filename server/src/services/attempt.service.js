@@ -1,5 +1,5 @@
 import { prisma } from '../db/client.js';
-import { filterConfigByModule, moduleMetaForKey } from '../utils/moduleCatalog.js';
+import { filterConfigByModule, moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 
 function getTimeLimitSec(config) {
@@ -40,7 +40,7 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     throw err;
   }
 
-  const mk = moduleKey ? String(moduleKey).trim() : '';
+  const mk = moduleKey ? resolveModuleKey(String(moduleKey).trim()) : '';
   if (!mk) {
     const err = new Error('MODULE_KEY_REQUIRED');
     err.code = 'MODULE_KEY_REQUIRED';

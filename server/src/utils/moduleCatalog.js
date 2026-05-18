@@ -1,51 +1,113 @@
-/** Catálogo UI de módulos (keys alineadas con crear-eval). */
+/** Catálogo corporativo Mind24 — keys alineadas con crear-eval y lobby. */
+export const MIND24_MODULE_KEYS = [
+  'honestidad',
+  'cleaver',
+  'cognitivo',
+  'mrr',
+  'habilidades_especificas',
+  'entrevista_digital',
+  'medida',
+];
+
+/** Keys legacy (asignaciones antiguas) → catálogo actual. */
+const LEGACY_ALIASES = {
+  habilidades: 'habilidades_especificas',
+  conocimientos: 'cognitivo',
+  disc: 'cleaver',
+  ie: 'mrr',
+  liderazgo: 'medida',
+};
+
 export const MODULE_CATALOG = {
-  habilidades: {
-    label: 'Habilidades',
-    icon: '⚡',
-    estimatedMinutes: 15,
-    sectionIds: ['calibracion', 'directas'],
+  honestidad: {
+    label: 'Batería de Honestidad (Exclusivo Mind24)',
+    description:
+      'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',
+    icon: '🛡️',
+    estimatedMinutes: null,
+    featured: true,
+    sectionIds: ['calibracion', 'directas', 'principal'],
   },
-  conocimientos: {
-    label: 'Conocimientos',
-    icon: '📚',
-    estimatedMinutes: 20,
-    sectionIds: ['principal'],
-    questionIdRange: [1, 14],
-  },
-  disc: {
-    label: 'Perfil DISC',
+  cleaver: {
+    label: 'Comportamiento (CLEAVER)',
+    description: 'Predice la reacción bajo presión y adaptabilidad al puesto.',
     icon: '🎯',
-    estimatedMinutes: 15,
+    estimatedMinutes: null,
     sectionIds: ['principal'],
-    questionIdRange: [15, 28],
+    questionIdRange: [1, 7],
   },
-  ie: {
-    label: 'Inteligencia emocional',
+  cognitivo: {
+    label: 'Potencial Cognitivo (TERMAN & RAVEN)',
+    description: 'Mide el IQ, capacidad de aprendizaje y juicio ejecutivo.',
     icon: '🧠',
-    estimatedMinutes: 15,
+    estimatedMinutes: null,
     sectionIds: ['principal'],
-    questionIdRange: [29, 35],
+    questionIdRange: [8, 14],
   },
-  liderazgo: {
-    label: 'Liderazgo',
-    icon: '🏆',
-    estimatedMinutes: 15,
+  mrr: {
+    label: 'Personalidad MRR',
+    description: 'Identifica líderes resilientes capaces de innovar bajo demanda.',
+    icon: '🌟',
+    estimatedMinutes: null,
     sectionIds: ['principal'],
-    questionIdRange: [36, 40],
+    questionIdRange: [15, 22],
+  },
+  habilidades_especificas: {
+    label: 'Habilidades Específicas',
+    description: 'Evaluaciones de impacto para Ventas y Atención al Cliente.',
+    icon: '📊',
+    estimatedMinutes: null,
+    sectionIds: ['principal'],
+    questionIdRange: [23, 30],
+  },
+  entrevista_digital: {
+    label: 'Entrevista Digital',
+    description: 'Filtro asíncrono automatizado de preguntas clave sin intervención humana.',
+    icon: '🎤',
+    estimatedMinutes: null,
+    sectionIds: ['principal'],
+    questionIdRange: [31, 36],
+  },
+  medida: {
+    label: 'Módulo a la Medida',
+    description: 'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',
+    icon: '🛠️',
+    estimatedMinutes: null,
+    sectionIds: ['principal'],
+    questionIdRange: [37, 40],
   },
 };
 
+export const DEFAULT_SELECTED_MODULES = [...MIND24_MODULE_KEYS];
+
+export function resolveModuleKey(key) {
+  const k = String(key || '').trim();
+  return LEGACY_ALIASES[k] || k;
+}
+
 export function moduleMetaForKey(key) {
-  const m = MODULE_CATALOG[key];
-  if (m) return { key, ...m };
+  const resolved = resolveModuleKey(key);
+  const m = MODULE_CATALOG[resolved];
+  if (m) return { key: resolved, ...m };
   return {
-    key,
-    label: key,
+    key: resolved,
+    label: resolved,
+    description: '',
     icon: '◈',
-    estimatedMinutes: 10,
+    estimatedMinutes: null,
     sectionIds: [],
   };
+}
+
+export function moduleLabelMap() {
+  const out = {};
+  for (const k of MIND24_MODULE_KEYS) {
+    out[k] = MODULE_CATALOG[k].label;
+  }
+  for (const [legacy, target] of Object.entries(LEGACY_ALIASES)) {
+    out[legacy] = MODULE_CATALOG[target]?.label || legacy;
+  }
+  return out;
 }
 
 function questionNum(id) {
@@ -72,14 +134,20 @@ export function filterConfigByModule(config, moduleKey) {
     })
     .filter((sec) => (sec.questions || []).length > 0);
 
-  const minutes = meta.estimatedMinutes || 10;
+  const timeLimitSec =
+    meta.estimatedMinutes != null && meta.estimatedMinutes > 0
+      ? meta.estimatedMinutes * 60
+      : base.meta?.timeLimitSec || 2700;
+
   return {
     ...base,
     meta: {
       ...(base.meta || {}),
       title: meta.label,
-      introSubtitle: `Módulo: ${meta.label}. Responde con sinceridad; puedes volver al lobby al finalizar.`,
-      timeLimitSec: minutes * 60,
+      introSubtitle:
+        meta.description ||
+        `Módulo: ${meta.label}. Responde con sinceridad; puedes volver al lobby al finalizar.`,
+      timeLimitSec,
     },
     sections,
   };

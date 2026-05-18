@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { defaultDemoAssessmentConfig } from '../src/assessment/defaultDefinition.js';
+import { DEFAULT_SELECTED_MODULES } from '../src/utils/moduleCatalog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -49,7 +50,7 @@ async function main() {
   const definition = await prisma.assessmentDefinition.create({
     data: {
       key: 'honestidad_confianza',
-      name: 'Batería de Honestidad y Confianza',
+      name: 'Batería de Honestidad (Exclusivo Mind24)',
       version: 1,
       organizationId: null,
       config: defaultDemoAssessmentConfig,
@@ -86,6 +87,7 @@ async function main() {
       candidateId: candidate.id,
       assessmentDefinitionId: definition.id,
       assignedByUserId: empresa.id,
+      selectedModules: DEFAULT_SELECTED_MODULES,
       status: 'pending',
     },
   });
