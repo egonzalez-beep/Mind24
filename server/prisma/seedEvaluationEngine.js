@@ -1,4 +1,5 @@
 import { MODULE_CATALOG, MIND24_MODULE_KEYS } from '../src/utils/moduleCatalog.js';
+import { cleaverBlocks } from '../src/data/cleaverData.js';
 
 /**
  * Preguntas placeholder por tipo — validación visual del motor dinámico.
@@ -12,18 +13,6 @@ const PLACEHOLDER_QUESTIONS = [
       { label: 'Escuchar con calma y pedir detalles', value: 'a' },
       { label: 'Derivar de inmediato sin escuchar', value: 'b' },
       { label: 'Ignorar el comentario', value: 'c' },
-    ],
-  },
-  {
-    moduleKey: 'cleaver',
-    type: 'CLEAVER_MATRIX',
-    text: '[Demo] Selecciona la palabra que MÁS y MENOS te representa en el trabajo.',
-    metadata: { instruction: 'No puedes elegir la misma palabra en ambas columnas.' },
-    options: [
-      { label: 'Decidido', value: 'decidido' },
-      { label: 'Empático', value: 'empatico' },
-      { label: 'Metódico', value: 'metodico' },
-      { label: 'Entusiasta', value: 'entusiasta' },
     ],
   },
   {
@@ -80,6 +69,7 @@ export async function seedEvaluationEngine(prisma) {
               create: spec.options.map((o, j) => ({
                 label: o.label,
                 value: o.value,
+                metadata: o.metadata ?? undefined,
                 sortOrder: j,
               })),
             }
@@ -88,8 +78,38 @@ export async function seedEvaluationEngine(prisma) {
     });
   }
 
+  const cleaverModuleId = moduleIdByKey.cleaver;
+  let cleaverQuestionCount = 0;
+  if (cleaverModuleId) {
+    for (let b = 0; b < cleaverBlocks.length; b++) {
+      const block = cleaverBlocks[b];
+      await prisma.question.create({
+        data: {
+          moduleId: cleaverModuleId,
+          type: 'CLEAVER_MATRIX',
+          text: `Bloque ${block.blockNumber} — Selecciona la palabra que MÁS y MENOS te describe.`,
+          metadata: {
+            blockNumber: block.blockNumber,
+            instruction: 'Elige una palabra en MÁS y otra distinta en MENOS.',
+          },
+          sortOrder: b,
+          options: {
+            create: block.options.map((opt, j) => ({
+              label: opt.text,
+              value: opt.dimension,
+              metadata: { dimension: opt.dimension },
+              sortOrder: j,
+            })),
+          },
+        },
+      });
+      cleaverQuestionCount++;
+    }
+  }
+
   console.log('Evaluation engine seeded:', {
     modules: MIND24_MODULE_KEYS.length,
     placeholderQuestions: PLACEHOLDER_QUESTIONS.length,
+    cleaverBlocks: cleaverQuestionCount,
   });
 }

@@ -16,6 +16,7 @@ export function serializeQuestion(q) {
       id: o.id,
       label: o.label,
       value: o.value,
+      metadata: o.metadata ?? null,
       sortOrder: o.sortOrder,
     })),
   };

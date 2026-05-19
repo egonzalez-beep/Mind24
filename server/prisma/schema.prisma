@@ -166,8 +166,10 @@ model QuestionOption {
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   label      String
-  /// Identificador estable para scoring / Cleaver (ej. palabra clave).
+  /// Identificador estable para scoring / Cleaver (ej. palabra clave o dimensión DISC).
   value      String?
+  /// Metadata por opción (ej. Cleaver: `{ "dimension": "D" | "I" | "S" | "C" }`).
+  metadata   Json?
   sortOrder  Int      @default(0)
 
   responsesMore  CandidateResponse[] @relation("ResponseMoreOption")
