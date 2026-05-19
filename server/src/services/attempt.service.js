@@ -1,5 +1,6 @@
 import { prisma } from '../db/client.js';
 import { filterConfigByModule, moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
+import { buildDynamicStartPayload, moduleHasDynamicQuestions } from './dynamicAssessment.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 
 function getTimeLimitSec(config) {
@@ -81,7 +82,17 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
 
   const existing = assignment.attempts[0];
   if (existing) {
+    const dynamicResume = await buildDynamicStartPayload({
+      assignmentId: assignment.id,
+      moduleKey: mk,
+      attemptId: existing.id,
+      timeLimitSec: existing.timeLimitSec ?? timeLimitSec,
+      startedAt: existing.startedAt,
+      resumed: true,
+    });
+    if (dynamicResume) return dynamicResume;
     return {
+      engine: 'legacy',
       attemptId: existing.id,
       assignmentId: assignment.id,
       moduleKey: mk,
@@ -91,6 +102,8 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
       resumed: true,
     };
   }
+
+  const useDynamic = await moduleHasDynamicQuestions(mk);
 
   const attempt = await prisma.$transaction(async (tx) => {
     const a = await tx.assessmentAttempt.create({
@@ -110,7 +123,20 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     return a;
   });
 
+  if (useDynamic) {
+    const dynamicStart = await buildDynamicStartPayload({
+      assignmentId: assignment.id,
+      moduleKey: mk,
+      attemptId: attempt.id,
+      timeLimitSec,
+      startedAt: attempt.startedAt,
+      resumed: false,
+    });
+    if (dynamicStart) return dynamicStart;
+  }
+
   return {
+    engine: 'legacy',
     attemptId: attempt.id,
     assignmentId: assignment.id,
     moduleKey: mk,

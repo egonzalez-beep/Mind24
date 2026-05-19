@@ -4,6 +4,11 @@ import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
 import { listMyAssignments, startAttempt, submitAttempt, getAttemptResult } from '../services/attempt.service.js';
 import { getCandidateLobbyForUser } from '../services/candidateAuth.service.js';
+import {
+  getAttemptEnginePayload,
+  saveCandidateResponse,
+  completeDynamicAttempt,
+} from '../services/dynamicAssessment.service.js';
 
 const router = Router();
 
@@ -55,6 +60,43 @@ router.post('/assignments/:assignmentId/start', async (req, res, next) => {
       .object({ moduleKey: z.string().min(1).max(64) })
       .parse(req.body ?? {});
     const out = await startAttempt(req.session.userId, req.params.assignmentId, { moduleKey });
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/attempts/:attemptId/engine', async (req, res, next) => {
+  try {
+    const payload = await getAttemptEnginePayload(req.session.userId, req.params.attemptId);
+    res.json(payload);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/attempts/:attemptId/responses', async (req, res, next) => {
+  try {
+    const body = z
+      .object({
+        questionId: z.string().min(1),
+        selectedOptionId: z.string().optional(),
+        moreOptionId: z.string().optional(),
+        lessOptionId: z.string().optional(),
+        textValue: z.string().optional(),
+        audioUrl: z.string().optional(),
+      })
+      .parse(req.body);
+    const out = await saveCandidateResponse(req.session.userId, req.params.attemptId, body);
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/attempts/:attemptId/complete', async (req, res, next) => {
+  try {
+    const out = await completeDynamicAttempt(req.session.userId, req.params.attemptId);
     res.json(out);
   } catch (e) {
     next(e);

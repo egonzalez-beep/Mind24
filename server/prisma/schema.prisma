@@ -25,6 +25,14 @@ enum AttemptStatus {
   expired
 }
 
+/// Tipos de ítem del motor dinámico de evaluaciones.
+enum QuestionType {
+  MULTIPLE_CHOICE
+  CLEAVER_MATRIX
+  AUDIO_RECORDING
+  OPEN_TEXT
+}
+
 /// Used by connect-pg-simple (Express sessions)
 model Session {
   sid    String   @id @db.VarChar(255)
@@ -108,7 +116,7 @@ model Assignment {
   assessmentDefinition   AssessmentDefinition @relation(fields: [assessmentDefinitionId], references: [id], onDelete: Restrict)
   assignedByUserId       String?
   assignedBy             User?              @relation("AssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
-  /// Módulos elegidos en el alta (keys UI: habilidades, conocimientos, …). Opcional en asignaciones antiguas.
+  /// Módulos elegidos en el alta (keys catálogo: honestidad, cleaver, …). Opcional en asignaciones antiguas.
   selectedModules        Json?
   /// Keys de módulos ya enviados por el candidato.
   completedModules       Json?
@@ -119,20 +127,95 @@ model Assignment {
   attempts AssessmentAttempt[]
 }
 
+/// Módulo corporativo del catálogo (honestidad, cleaver, …) con banco de preguntas relacional.
+model EvaluationModule {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  title       String
+  description String?
+  icon        String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  questions Question[]
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  moduleId  String
+  module    EvaluationModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  type      QuestionType
+  text      String
+  /// Configuración flexible (instrucciones Cleaver, límites de audio, etc.).
+  metadata  Json?
+  sortOrder Int          @default(0)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  options   QuestionOption[]
+  responses CandidateResponse[]
+
+  @@index([moduleId, sortOrder])
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  /// Identificador estable para scoring / Cleaver (ej. palabra clave).
+  value      String?
+  sortOrder  Int      @default(0)
+
+  responsesMore  CandidateResponse[] @relation("ResponseMoreOption")
+  responsesLess  CandidateResponse[] @relation("ResponseLessOption")
+  responsesChoice CandidateResponse[] @relation("ResponseSelectedOption")
+
+  @@index([questionId, sortOrder])
+}
+
 model AssessmentAttempt {
   id             String        @id @default(cuid())
   assignmentId   String
   assignment     Assignment    @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  /// Módulo UI iniciado (habilidades, disc, …).
+  /// Módulo UI iniciado (honestidad, cleaver, …).
   moduleKey      String?
   status         AttemptStatus @default(in_progress)
   startedAt      DateTime      @default(now())
   submittedAt    DateTime?
   timeLimitSec   Int?
+  /// legacy JSON motor (honestidad demo) — convive con motor dinámico.
   responses      Json?
   scores         Json?
   interpretation Json?
   flags          Json?
 
+  candidateResponses CandidateResponse[]
+
   @@index([assignmentId])
+}
+
+/// Respuesta granular por pregunta (motor dinámico).
+model CandidateResponse {
+  id               String   @id @default(cuid())
+  attemptId        String
+  attempt          AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId String?
+  selectedOption   QuestionOption? @relation("ResponseSelectedOption", fields: [selectedOptionId], references: [id], onDelete: SetNull)
+  moreOptionId     String?
+  moreOption       QuestionOption? @relation("ResponseMoreOption", fields: [moreOptionId], references: [id], onDelete: SetNull)
+  lessOptionId     String?
+  lessOption       QuestionOption? @relation("ResponseLessOption", fields: [lessOptionId], references: [id], onDelete: SetNull)
+  textValue        String?  @db.Text
+  audioUrl         String?
+  answeredAt       DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
 }

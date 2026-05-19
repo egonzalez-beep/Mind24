@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { defaultDemoAssessmentConfig } from '../src/assessment/defaultDefinition.js';
 import { DEFAULT_SELECTED_MODULES } from '../src/utils/moduleCatalog.js';
+import { seedEvaluationEngine } from './seedEvaluationEngine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -30,6 +31,10 @@ async function main() {
   const candEmail = reqEnv('SEED_CANDIDATE_EMAIL').toLowerCase();
   const candPassword = reqEnv('SEED_CANDIDATE_PASSWORD');
 
+  await prisma.candidateResponse.deleteMany();
+  await prisma.questionOption.deleteMany();
+  await prisma.question.deleteMany();
+  await prisma.evaluationModule.deleteMany();
   await prisma.assessmentAttempt.deleteMany();
   await prisma.assignment.deleteMany();
   await prisma.candidate.deleteMany();
@@ -91,6 +96,8 @@ async function main() {
       status: 'pending',
     },
   });
+
+  await seedEvaluationEngine(prisma);
 
   console.log('Seed OK:', { empresa: empresa.email, candidato: candUser.email });
 }
