@@ -2,6 +2,10 @@ import MultipleChoiceQuestion from './questions/MultipleChoiceQuestion.jsx';
 import CleaverMatrixQuestion from './questions/CleaverMatrixQuestion.jsx';
 import AudioRecordingQuestion from './questions/AudioRecordingQuestion.jsx';
 import OpenTextQuestion from './questions/OpenTextQuestion.jsx';
+import {
+  buildDynamicResponsePayload,
+  isDynamicDraftValid,
+} from '../utils/dynamicDraft.js';
 
 /**
  * Contenedor del motor dinámico Mind24.
@@ -10,7 +14,7 @@ import OpenTextQuestion from './questions/OpenTextQuestion.jsx';
  * - currentIndex: índice activo
  * - draft: respuesta en edición del ítem actual
  * - onChange: (partialDraft) => void
- * - onPrev / onNext: navegación
+ * - onPrev / onNext: navegación (onNext debe persistir con buildDynamicResponsePayload)
  * - isLast: boolean
  */
 export default function AssessmentRunner({
@@ -26,6 +30,8 @@ export default function AssessmentRunner({
   if (!question) {
     return <p className="text-gray-400">No hay preguntas en este módulo.</p>;
   }
+
+  const canAdvance = isDynamicDraftValid(question, draft);
 
   const handleChange = (partial) => onChange?.({ ...draft, ...partial });
 
@@ -44,8 +50,8 @@ export default function AssessmentRunner({
       body = (
         <CleaverMatrixQuestion
           question={question}
-          moreOptionId={draft.moreOptionId}
-          lessOptionId={draft.lessOptionId}
+          moreOptionId={draft.moreOptionId ?? null}
+          lessOptionId={draft.lessOptionId ?? null}
           onChange={handleChange}
         />
       );
@@ -81,23 +87,31 @@ export default function AssessmentRunner({
         <h2 className="text-lg font-semibold text-white mt-1">{question.text}</h2>
       </header>
       {body}
-      <footer className="flex justify-between items-center gap-4 pt-4">
-        <button
-          type="button"
-          onClick={onPrev}
-          disabled={currentIndex === 0}
-          className="px-4 py-2 rounded-lg border border-white/20 text-white/80 disabled:opacity-40"
-        >
-          ← Anterior
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="px-5 py-2 rounded-lg bg-violet-600 text-white font-bold"
-        >
-          {isLast ? 'Finalizar ✓' : 'Siguiente →'}
-        </button>
+      <footer className="flex flex-col gap-3 pt-4 border-t border-white/10">
+        <p className="text-center text-xs text-white/45">
+          {canAdvance ? '✓ Listo para continuar' : 'Responde para continuar'}
+        </p>
+        <div className="flex justify-between items-center gap-4">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={currentIndex === 0}
+            className="px-4 py-2 rounded-lg border border-white/20 text-white/80 disabled:opacity-40 transition hover:bg-white/5"
+          >
+            ← Anterior
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canAdvance}
+            className="px-5 py-2 rounded-lg bg-violet-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed transition hover:bg-violet-500"
+          >
+            {isLast ? 'Finalizar ✓' : 'Siguiente →'}
+          </button>
+        </div>
       </footer>
     </div>
   );
 }
+
+export { buildDynamicResponsePayload, isDynamicDraftValid };

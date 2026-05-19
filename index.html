@@ -481,11 +481,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .dyn-mc-opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);cursor:pointer;transition:var(--tr-fast);}
 .dyn-mc-opt:hover,.dyn-mc-opt.selected{border-color:rgba(167,139,250,.6);background:rgba(124,58,237,.15);}
 .dyn-mc-opt input{margin-top:3px;accent-color:#a78bfa;}
-.dyn-cleaver-table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:13px;}
-.dyn-cleaver-table th{color:rgba(255,255,255,.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;}
-.dyn-cleaver-table td{padding:8px 10px;background:rgba(255,255,255,.05);border-radius:8px;color:#fff;}
-.dyn-cleaver-word{font-weight:700;}
-.dyn-cleaver-radio{text-align:center;}
+.dyn-cleaver-wrap{overflow:hidden;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);}
+.dyn-cleaver-hint{font-size:12px;line-height:1.45;color:rgba(255,255,255,.45);margin-bottom:10px;}
+.dyn-cleaver-hint.ok{color:rgba(167,243,208,.9);}
+.dyn-cleaver-head,.dyn-cleaver-row{display:grid;grid-template-columns:1fr 72px 72px;align-items:center;}
+.dyn-cleaver-head{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);}
+.dyn-cleaver-head .col-more{text-align:center;color:rgba(196,181,253,.9);}
+.dyn-cleaver-head .col-less{text-align:center;color:rgba(254,205,211,.85);}
+.dyn-cleaver-row{border-bottom:1px solid rgba(255,255,255,.06);transition:background .15s ease;}
+.dyn-cleaver-row:last-child{border-bottom:none;}
+.dyn-cleaver-row.is-active{background:rgba(124,58,237,.08);}
+.dyn-cleaver-word{padding:14px 16px;font-weight:700;font-size:14px;color:#fff;line-height:1.35;}
+.dyn-cleaver-cell{display:flex;justify-content:center;padding:10px 0;}
+.dyn-cleaver-pick{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr-fast);}
+.dyn-cleaver-pick:hover:not(:disabled){border-color:rgba(167,139,250,.75);background:rgba(124,58,237,.15);}
+.dyn-cleaver-pick.is-on{border-color:#c4b5fd;background:rgba(124,58,237,.35);box-shadow:0 0 0 3px rgba(124,58,237,.22);}
+.dyn-cleaver-pick:disabled{opacity:.28;cursor:not-allowed;}
+.dyn-cleaver-pick.is-on::after{content:'';width:10px;height:10px;border-radius:50%;background:#fff;}
 .dyn-open-text{width:100%;min-height:120px;padding:14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);background:rgba(0,0,0,.2);color:#fff;font-family:inherit;font-size:14px;resize:vertical;}
 .dyn-audio-box{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px;border-radius:14px;border:1px dashed rgba(255,255,255,.25);background:rgba(0,0,0,.15);}
 .dyn-audio-status{font-size:14px;font-weight:600;color:#e9d5ff;}
@@ -2789,25 +2801,56 @@ function renderDynamicQuestionUI(q){
     });
     host.appendChild(list);
   }else if(q.type==='CLEAVER_MATRIX'){
-    const table=document.createElement('table'); table.className='dyn-cleaver-table';
-    table.innerHTML='<thead><tr><th>Palabra</th><th class="dyn-cleaver-radio">MÁS</th><th class="dyn-cleaver-radio">MENOS</th></tr></thead>';
-    const tb=document.createElement('tbody');
-    (q.options||[]).forEach(opt=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML='<td class="dyn-cleaver-word">'+mind24EscHtml(opt.label)+'</td><td class="dyn-cleaver-radio"><input type="radio" name="dyn_more" value="'+opt.id+'"></td><td class="dyn-cleaver-radio"><input type="radio" name="dyn_less" value="'+opt.id+'"></td>';
-      const more=tr.querySelector('input[name="dyn_more"]');
-      const less=tr.querySelector('input[name="dyn_less"]');
-      if(draft.moreOptionId===opt.id)more.checked=true;
-      if(draft.lessOptionId===opt.id)less.checked=true;
-      const sync=()=>{
-        const m=document.querySelector('input[name="dyn_more"]:checked');
-        const l=document.querySelector('input[name="dyn_less"]:checked');
-        dynamicSetDraft(q.id,{moreOptionId:m?m.value:null,lessOptionId:l?l.value:null});
-      };
-      more.onchange=sync; less.onchange=sync;
-      tb.appendChild(tr);
+    const instr=(q.metadata&&q.metadata.instruction)||'Elige una palabra distinta en MÁS y en MENOS.';
+  const hint=document.createElement('p'); hint.className='dyn-cleaver-hint'; hint.textContent=instr;
+  host.appendChild(hint);
+  const wrap=document.createElement('div'); wrap.className='dyn-cleaver-wrap';
+  const head=document.createElement('div'); head.className='dyn-cleaver-head';
+  head.innerHTML='<div></div><div class="col-more">MÁS (+)</div><div class="col-less">MENOS (-)</div>';
+  wrap.appendChild(head);
+  const applyDraft=(next)=>{
+    dynamicSetDraft(q.id,next);
+    const ok=dynamicDraftValid(q,next);
+    hint.classList.toggle('ok',ok);
+    hint.textContent=ok?'✓ Selección completa. Puedes continuar.':instr;
+    wrap.querySelectorAll('.dyn-cleaver-row').forEach(row=>{
+      const id=row.dataset.optionId;
+      const moreOn=next.moreOptionId===id;
+      const lessOn=next.lessOptionId===id;
+      row.classList.toggle('is-active',moreOn||lessOn);
+      const btnMore=row.querySelector('[data-role="more"]');
+      const btnLess=row.querySelector('[data-role="less"]');
+      btnMore.classList.toggle('is-on',moreOn);
+      btnLess.classList.toggle('is-on',lessOn);
+      btnMore.disabled=next.lessOptionId===id;
+      btnLess.disabled=next.moreOptionId===id;
     });
-    table.appendChild(tb); host.appendChild(table);
+  };
+  let cur={moreOptionId:draft.moreOptionId||null,lessOptionId:draft.lessOptionId||null};
+  (q.options||[]).forEach(opt=>{
+    const row=document.createElement('div'); row.className='dyn-cleaver-row'; row.dataset.optionId=opt.id;
+    const word=document.createElement('div'); word.className='dyn-cleaver-word'; word.textContent=opt.label;
+    const cellMore=document.createElement('div'); cellMore.className='dyn-cleaver-cell';
+    const cellLess=document.createElement('div'); cellLess.className='dyn-cleaver-cell';
+    const btnMore=document.createElement('button'); btnMore.type='button'; btnMore.className='dyn-cleaver-pick'; btnMore.dataset.role='more'; btnMore.setAttribute('aria-label','MÁS: '+opt.label);
+    const btnLess=document.createElement('button'); btnLess.type='button'; btnLess.className='dyn-cleaver-pick'; btnLess.dataset.role='less'; btnLess.setAttribute('aria-label','MENOS: '+opt.label);
+    btnMore.onclick=()=>{
+      let less=cur.lessOptionId;
+      if(less===opt.id)less=null;
+      cur={moreOptionId:opt.id,lessOptionId:less};
+      applyDraft(cur);
+    };
+    btnLess.onclick=()=>{
+      if(cur.moreOptionId===opt.id)return;
+      cur={moreOptionId:cur.moreOptionId,lessOptionId:opt.id};
+      applyDraft(cur);
+    };
+    cellMore.appendChild(btnMore); cellLess.appendChild(btnLess);
+    row.appendChild(word); row.appendChild(cellMore); row.appendChild(cellLess);
+    wrap.appendChild(row);
+  });
+  host.appendChild(wrap);
+  applyDraft(cur);
   }else if(q.type==='OPEN_TEXT'){
     const ta=document.createElement('textarea'); ta.className='dyn-open-text';
     ta.placeholder=(q.metadata&&q.metadata.placeholder)||'Escribe tu respuesta…';
@@ -2839,7 +2882,8 @@ function renderDynamicQuestionUI(q){
     if(draft.audioUrl){ status.textContent='Audio guardado'; }
     box.appendChild(status); box.appendChild(btn); host.appendChild(box);
   }
-  dynamicSetDraft(q.id,draft);
+  const latest=dynamicGetDraft(q.id)||{};
+  dynamicSetDraft(q.id,latest);
 }
 
 function loadDynamicQuestion(){

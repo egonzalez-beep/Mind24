@@ -6,6 +6,8 @@ Esqueleto del motor de evaluaciones para integración futura con Vite/Next.
 
 - `components/AssessmentRunner.jsx` — enrutador por `QuestionType`
 - `components/questions/*` — UI por tipo
+- `components/questions/CleaverMatrixQuestion.jsx` — matriz MÁS/MENOS (DISC)
+- `utils/dynamicDraft.js` — validación y payload `{ questionId, moreOptionId, lessOptionId }`
 
 ## API (candidato autenticado)
 
