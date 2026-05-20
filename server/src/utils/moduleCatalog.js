@@ -85,6 +85,11 @@ export function resolveModuleKey(key) {
   return LEGACY_ALIASES[k] || k;
 }
 
+/** Único módulo que puede usar el instrumento JSON legacy (AssessmentDefinition.config). */
+export function isLegacyJsonModule(moduleKey) {
+  return resolveModuleKey(moduleKey) === 'honestidad';
+}
+
 export function moduleMetaForKey(key) {
   const resolved = resolveModuleKey(key);
   const m = MODULE_CATALOG[resolved];

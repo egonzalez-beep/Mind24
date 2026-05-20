@@ -1,5 +1,10 @@
 import { prisma } from '../db/client.js';
-import { filterConfigByModule, moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
+import {
+  filterConfigByModule,
+  isLegacyJsonModule,
+  moduleMetaForKey,
+  resolveModuleKey,
+} from '../utils/moduleCatalog.js';
 import { buildDynamicStartPayload, moduleHasDynamicQuestions } from './dynamicAssessment.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 
@@ -31,6 +36,76 @@ function selectedModuleKeys(assignment) {
   const raw = assignment.selectedModules;
   if (Array.isArray(raw) && raw.length) return raw.map((x) => String(x));
   return [];
+}
+
+function legacyStartPayload({
+  attemptId,
+  assignmentId,
+  moduleKey,
+  timeLimitSec,
+  moduleConfig,
+  startedAt,
+  resumed,
+}) {
+  return {
+    engine: 'legacy',
+    attemptId,
+    assignmentId,
+    moduleKey,
+    timeLimitSec,
+    config: sanitizeConfigForClient(moduleConfig),
+    startedAt,
+    resumed,
+  };
+}
+
+/** Motor dinámico (BD) o legacy JSON solo para honestidad — sin mezclar instrumentos. */
+async function resolveModuleStartPayload({
+  assignmentId,
+  moduleKey,
+  attemptId,
+  timeLimitSec,
+  moduleConfig,
+  startedAt,
+  resumed,
+}) {
+  const hasDynamic = await moduleHasDynamicQuestions(moduleKey);
+
+  if (hasDynamic) {
+    const dynamicPayload = await buildDynamicStartPayload({
+      assignmentId,
+      moduleKey,
+      attemptId,
+      timeLimitSec,
+      startedAt,
+      resumed,
+    });
+    if (!dynamicPayload) {
+      const err = new Error('DYNAMIC_ENGINE_NOT_AVAILABLE');
+      err.code = 'DYNAMIC_ENGINE_NOT_AVAILABLE';
+      err.message = 'El módulo no tiene preguntas dinámicas activas.';
+      throw err;
+    }
+    return dynamicPayload;
+  }
+
+  if (isLegacyJsonModule(moduleKey)) {
+    return legacyStartPayload({
+      attemptId,
+      assignmentId,
+      moduleKey,
+      timeLimitSec,
+      moduleConfig,
+      startedAt,
+      resumed,
+    });
+  }
+
+  const err = new Error('MODULE_NOT_CONFIGURED');
+  err.code = 'MODULE_NOT_CONFIGURED';
+  err.message =
+    'Este módulo aún no está disponible. Contacta al administrador o vuelve al lobby.';
+  throw err;
 }
 
 export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
@@ -82,28 +157,16 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
 
   const existing = assignment.attempts[0];
   if (existing) {
-    const dynamicResume = await buildDynamicStartPayload({
+    return resolveModuleStartPayload({
       assignmentId: assignment.id,
       moduleKey: mk,
       attemptId: existing.id,
       timeLimitSec: existing.timeLimitSec ?? timeLimitSec,
+      moduleConfig,
       startedAt: existing.startedAt,
       resumed: true,
     });
-    if (dynamicResume) return dynamicResume;
-    return {
-      engine: 'legacy',
-      attemptId: existing.id,
-      assignmentId: assignment.id,
-      moduleKey: mk,
-      timeLimitSec: existing.timeLimitSec ?? timeLimitSec,
-      config: sanitizeConfigForClient(moduleConfig),
-      startedAt: existing.startedAt,
-      resumed: true,
-    };
   }
-
-  const useDynamic = await moduleHasDynamicQuestions(mk);
 
   const attempt = await prisma.$transaction(async (tx) => {
     const a = await tx.assessmentAttempt.create({
@@ -123,28 +186,15 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     return a;
   });
 
-  if (useDynamic) {
-    const dynamicStart = await buildDynamicStartPayload({
-      assignmentId: assignment.id,
-      moduleKey: mk,
-      attemptId: attempt.id,
-      timeLimitSec,
-      startedAt: attempt.startedAt,
-      resumed: false,
-    });
-    if (dynamicStart) return dynamicStart;
-  }
-
-  return {
-    engine: 'legacy',
-    attemptId: attempt.id,
+  return resolveModuleStartPayload({
     assignmentId: assignment.id,
     moduleKey: mk,
+    attemptId: attempt.id,
     timeLimitSec,
-    config: sanitizeConfigForClient(moduleConfig),
+    moduleConfig,
     startedAt: attempt.startedAt,
     resumed: false,
-  };
+  });
 }
 
 export async function submitAttempt(userId, attemptId, rawAnswers) {

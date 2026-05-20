@@ -24,7 +24,7 @@ export function serializeQuestion(q) {
 
 export async function getActiveModuleWithQuestions(moduleKey) {
   const key = resolveModuleKey(moduleKey);
-  return prisma.evaluationModule.findFirst({
+  const mod = await prisma.evaluationModule.findFirst({
     where: { key, isActive: true },
     include: {
       questions: {
@@ -34,6 +34,10 @@ export async function getActiveModuleWithQuestions(moduleKey) {
       },
     },
   });
+  if (!mod) return null;
+  // Aislamiento estricto: solo preguntas cuyo moduleId pertenece a este módulo.
+  const questions = (mod.questions || []).filter((q) => q.moduleId === mod.id);
+  return { ...mod, questions };
 }
 
 export async function moduleHasDynamicQuestions(moduleKey) {

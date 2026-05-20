@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from 'react';
 import MultipleChoiceQuestion from './questions/MultipleChoiceQuestion.jsx';
 import CleaverMatrixQuestion from './questions/CleaverMatrixQuestion.jsx';
 import AudioRecordingQuestion from './questions/AudioRecordingQuestion.jsx';
@@ -9,15 +10,8 @@ import {
 
 /**
  * Contenedor del motor dinámico Mind24.
- * Props:
- * - questions: array serializado desde GET /api/me/attempts/:id/engine
- * - currentIndex: índice activo
- * - draft: respuesta en edición del ítem actual
- * - onChange: (partialDraft) => void
- * - onPrev / onNext: navegación (onNext debe persistir con buildDynamicResponsePayload)
- * - isLast: boolean
  */
-export default function AssessmentRunner({
+function AssessmentRunnerInner({
   questions = [],
   currentIndex = 0,
   draft = {},
@@ -27,13 +21,19 @@ export default function AssessmentRunner({
   isLast = false,
 }) {
   const question = questions[currentIndex];
+  const canAdvance = useMemo(
+    () => isDynamicDraftValid(question, draft),
+    [question, draft],
+  );
+
+  const handleChange = useCallback(
+    (partial) => onChange?.({ ...draft, ...partial }),
+    [draft, onChange],
+  );
+
   if (!question) {
     return <p className="text-gray-400">No hay preguntas en este módulo.</p>;
   }
-
-  const canAdvance = isDynamicDraftValid(question, draft);
-
-  const handleChange = (partial) => onChange?.({ ...draft, ...partial });
 
   let body = null;
   switch (question.type) {
@@ -114,4 +114,6 @@ export default function AssessmentRunner({
   );
 }
 
+const AssessmentRunner = memo(AssessmentRunnerInner);
+export default AssessmentRunner;
 export { buildDynamicResponsePayload, isDynamicDraftValid };

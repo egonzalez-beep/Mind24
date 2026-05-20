@@ -1,9 +1,11 @@
+import { memo, useCallback } from 'react';
+
 /**
  * CLEAVER_MATRIX — matriz MÁS (+) / MENOS (-) por bloque de 4 palabras.
  * Estado controlado: moreOptionId, lessOptionId (IDs de QuestionOption).
  */
 
-function CleaverPick({ checked, disabled, onSelect, ariaLabel }) {
+const CleaverPick = memo(function CleaverPick({ checked, disabled, onSelect, ariaLabel }) {
   return (
     <button
       type="button"
@@ -13,7 +15,7 @@ function CleaverPick({ checked, disabled, onSelect, ariaLabel }) {
       disabled={disabled}
       onClick={onSelect}
       className={[
-        'group relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all duration-200',
+        'group relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-200',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
         disabled
           ? 'cursor-not-allowed border-white/10 opacity-30'
@@ -30,9 +32,9 @@ function CleaverPick({ checked, disabled, onSelect, ariaLabel }) {
       />
     </button>
   );
-}
+});
 
-export default function CleaverMatrixQuestion({
+function CleaverMatrixQuestionInner({
   question,
   moreOptionId = null,
   lessOptionId = null,
@@ -43,17 +45,23 @@ export default function CleaverMatrixQuestion({
     question?.metadata?.instruction ||
     'Elige una palabra distinta en MÁS y en MENOS. No puedes usar la misma en ambas columnas.';
 
-  const pickMore = (optionId) => {
-    onChange?.({
-      moreOptionId: optionId,
-      lessOptionId: lessOptionId === optionId ? null : lessOptionId,
-    });
-  };
+  const pickMore = useCallback(
+    (optionId) => {
+      onChange?.({
+        moreOptionId: optionId,
+        lessOptionId: lessOptionId === optionId ? null : lessOptionId,
+      });
+    },
+    [lessOptionId, onChange],
+  );
 
-  const pickLess = (optionId) => {
-    if (moreOptionId === optionId) return;
-    onChange?.({ moreOptionId, lessOptionId: optionId });
-  };
+  const pickLess = useCallback(
+    (optionId) => {
+      if (moreOptionId === optionId) return;
+      onChange?.({ moreOptionId, lessOptionId: optionId });
+    },
+    [moreOptionId, onChange],
+  );
 
   const isValid =
     Boolean(moreOptionId) &&
@@ -65,7 +73,7 @@ export default function CleaverMatrixQuestion({
       <p className="text-xs leading-relaxed text-white/55">{instruction}</p>
 
       <div
-        className="overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm"
+        className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
         role="group"
         aria-label="Matriz Cleaver"
       >
@@ -87,7 +95,7 @@ export default function CleaverMatrixQuestion({
               className={[
                 'grid grid-cols-[1fr_4.5rem_4.5rem] items-center px-3 py-1 sm:px-4',
                 index < options.length - 1 ? 'border-b border-white/5' : '',
-                moreOn || lessOn ? 'bg-violet-500/[0.07]' : 'hover:bg-white/[0.03]',
+                moreOn || lessOn ? 'bg-violet-500/[0.07]' : '',
               ].join(' ')}
             >
               <div className="py-3 pr-2 text-sm font-semibold leading-snug text-white sm:text-[15px]">
@@ -118,7 +126,7 @@ export default function CleaverMatrixQuestion({
 
       <p
         className={[
-          'text-xs font-medium transition-colors',
+          'text-xs font-medium',
           isValid ? 'text-emerald-300/90' : 'text-white/40',
         ].join(' ')}
         aria-live="polite"
@@ -130,3 +138,6 @@ export default function CleaverMatrixQuestion({
     </div>
   );
 }
+
+const CleaverMatrixQuestion = memo(CleaverMatrixQuestionInner);
+export default CleaverMatrixQuestion;
