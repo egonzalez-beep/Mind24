@@ -7,7 +7,8 @@
     "dev": "node --watch src/server.js",
     "start": "npx prisma migrate deploy && node src/server.js",
     "postinstall": "node scripts/sync-index-html.mjs && prisma generate",
-    "seed": "node prisma/seed.js",
+    "seed": "node prisma/seed-catalog.js",
+    "seed:full": "node prisma/seed.js",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -15,7 +16,7 @@
     "db:studio": "prisma studio"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed-catalog.js"
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",

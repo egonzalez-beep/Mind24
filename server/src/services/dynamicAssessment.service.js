@@ -41,8 +41,18 @@ export async function getActiveModuleWithQuestions(moduleKey) {
 }
 
 export async function moduleHasDynamicQuestions(moduleKey) {
+  const key = resolveModuleKey(moduleKey);
   const mod = await getActiveModuleWithQuestions(moduleKey);
-  return Boolean(mod?.questions?.length);
+  const ok = Boolean(mod?.questions?.length);
+  if (!ok) {
+    console.warn('[dynamic] moduleHasDynamicQuestions=false', {
+      requestedKey: moduleKey,
+      resolvedKey: key,
+      moduleFound: Boolean(mod),
+      questionCount: mod?.questions?.length ?? 0,
+    });
+  }
+  return ok;
 }
 
 export async function getAttemptEnginePayload(userId, attemptId) {
