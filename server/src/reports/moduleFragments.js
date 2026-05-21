@@ -13,6 +13,10 @@ import {
   extractHonestidadPayload,
 } from './honestidadReport.fragment.js';
 import { buildGenericModuleFragment } from './genericModule.fragment.js';
+import {
+  buildTermanModuleFragment,
+  extractTermanScores,
+} from './fragments/termanReport.fragment.js';
 
 const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
 
@@ -34,6 +38,12 @@ export function buildModuleFragment(attempt) {
     const payload = extractHonestidadPayload(attempt);
     if (!payload) return null;
     return buildHonestidadModuleFragment({ payload, submittedAt });
+  }
+
+  if (moduleKey === 'terman') {
+    const scores = extractTermanScores(attempt);
+    if (!scores) return null;
+    return buildTermanModuleFragment({ scores, submittedAt });
   }
 
   if (attempt.status !== 'submitted') return null;

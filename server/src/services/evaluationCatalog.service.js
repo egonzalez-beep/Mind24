@@ -1,5 +1,10 @@
 import { prisma as defaultPrisma } from '../db/client.js';
 import { CLEAVER_TETRAD_COUNT, cleaverBlocks } from '../data/cleaverData.js';
+import {
+  TERMAN_CATALOG_VERSION,
+  termanQuestionCount,
+  termanQuestionsFlat,
+} from '../data/termanData.js';
 
 /** Incrementar cuando cambie la clave DISC o el banco Cleaver (fuerza resync en prod). */
 export const CLEAVER_CATALOG_VERSION = 2;
@@ -65,6 +70,11 @@ async function upsertModules(db) {
       },
     });
   }
+
+  await db.evaluationModule.updateMany({
+    where: { key: { in: ['cognitivo', 'raven'] } },
+    data: { isActive: false },
+  });
 
   return moduleIdByKey;
 }
@@ -185,6 +195,77 @@ async function ensureCleaverQuestions(db, moduleId) {
   return { existing, created: cleaverBlocks.length, expected };
 }
 
+async function termanBankNeedsResync(db, moduleId) {
+  const expected = termanQuestionCount();
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+  if (existing !== expected) return true;
+
+  const mod = await db.evaluationModule.findUnique({
+    where: { id: moduleId },
+    select: { description: true },
+  });
+  const desc = String(mod?.description || '');
+  return !desc.includes(`terman:v${TERMAN_CATALOG_VERSION}`);
+}
+
+async function ensureTermanQuestions(db, moduleId) {
+  const expected = termanQuestionCount();
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+
+  if (existing === expected && !(await termanBankNeedsResync(db, moduleId))) {
+    return { existing, created: 0, expected };
+  }
+
+  if (existing > 0) {
+    await db.question.deleteMany({
+      where: { moduleId, type: 'MULTIPLE_CHOICE' },
+    });
+  }
+
+  const flat = termanQuestionsFlat();
+  for (const row of flat) {
+    await db.question.create({
+      data: {
+        moduleId,
+        type: 'MULTIPLE_CHOICE',
+        text: row.text,
+        metadata: {
+          termanItemId: row.termanItemId,
+          seriesId: row.seriesId,
+          seriesName: row.seriesName,
+          seriesIndex: row.seriesIndex,
+          seriesTimeLimitSeconds: row.seriesTimeLimitSeconds,
+          seriesInstruction: row.seriesInstruction,
+          questionIndexInSeries: row.questionIndexInSeries,
+          correctIndex: row.correctIndex,
+        },
+        sortOrder: row.sortOrder,
+        options: {
+          create: row.options.map((label, j) => ({
+            label,
+            value: String(j),
+            sortOrder: j,
+          })),
+        },
+      },
+    });
+  }
+
+  const cat = MODULE_CATALOG.terman;
+  await db.evaluationModule.update({
+    where: { id: moduleId },
+    data: {
+      description: `${cat.description} [terman:v${TERMAN_CATALOG_VERSION}]`,
+    },
+  });
+
+  return { existing, created: flat.length, expected };
+}
+
 /**
  * Idempotente: asegura módulos del catálogo y preguntas mínimas (Cleaver, placeholders).
  * No borra usuarios, asignaciones ni intentos. Seguro en cada arranque de producción.
@@ -199,9 +280,21 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
     cleaver = await ensureCleaverQuestions(db, cleaverModuleId);
   }
 
+  const termanModuleId = moduleIdByKey.terman;
+  let terman = { existing: 0, created: 0 };
+  if (termanModuleId) {
+    terman = await ensureTermanQuestions(db, termanModuleId);
+  }
+
   const cleaverCount = cleaverModuleId
     ? await db.question.count({
         where: { moduleId: cleaverModuleId, type: 'CLEAVER_MATRIX', isActive: true },
+      })
+    : 0;
+
+  const termanCount = termanModuleId
+    ? await db.question.count({
+        where: { moduleId: termanModuleId, type: 'MULTIPLE_CHOICE', isActive: true },
       })
     : 0;
 
@@ -209,8 +302,11 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
     modules: MIND24_MODULE_KEYS.length,
     cleaverQuestions: cleaverCount,
     cleaverExpected: CLEAVER_TETRAD_COUNT,
+    termanQuestions: termanCount,
+    termanExpected: termanQuestionCount(),
     placeholdersCreated,
     cleaverSeeded: cleaver.created,
+    termanSeeded: terman.created,
   };
 
   console.log('[catalog] Evaluation catalog OK:', summary);
@@ -218,6 +314,14 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   if (cleaverCount < CLEAVER_TETRAD_COUNT) {
     const err = new Error(
       `CLEAVER_INCOMPLETE: ${cleaverCount}/${CLEAVER_TETRAD_COUNT} tétradas activas`,
+    );
+    console.error('[catalog]', err.message);
+    throw err;
+  }
+
+  if (termanCount < termanQuestionCount()) {
+    const err = new Error(
+      `TERMAN_INCOMPLETE: ${termanCount}/${termanQuestionCount()} ítems activos`,
     );
     console.error('[catalog]', err.message);
     throw err;

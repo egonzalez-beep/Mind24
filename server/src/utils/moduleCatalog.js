@@ -2,7 +2,7 @@
 export const MIND24_MODULE_KEYS = [
   'honestidad',
   'cleaver',
-  'cognitivo',
+  'terman',
   'mrr',
   'habilidades_especificas',
   'entrevista_digital',
@@ -12,7 +12,9 @@ export const MIND24_MODULE_KEYS = [
 /** Keys legacy (asignaciones antiguas) → catálogo actual. */
 const LEGACY_ALIASES = {
   habilidades: 'habilidades_especificas',
-  conocimientos: 'cognitivo',
+  conocimientos: 'terman',
+  cognitivo: 'terman',
+  raven: 'terman',
   disc: 'cleaver',
   ie: 'mrr',
   liderazgo: 'medida',
@@ -36,13 +38,13 @@ export const MODULE_CATALOG = {
     sectionIds: ['principal'],
     questionIdRange: [1, 7],
   },
-  cognitivo: {
-    label: 'Potencial Cognitivo (TERMAN & RAVEN)',
-    description: 'Mide el IQ, capacidad de aprendizaje y juicio ejecutivo.',
+  terman: {
+    label: 'Inteligencia Analítica (Terman)',
+    description:
+      'Test Terman-Merrill textual: razonamiento, vocabulario y lógica por series cronometradas.',
     icon: '🧠',
     estimatedMinutes: null,
     sectionIds: ['principal'],
-    questionIdRange: [8, 14],
   },
   mrr: {
     label: 'Personalidad MRR',
@@ -108,7 +110,7 @@ export function moduleMetaForKey(key) {
 export const MODULE_TABLE_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Cleaver',
-  cognitivo: 'Cognitivo',
+  terman: 'Terman',
   mrr: 'MRR',
   habilidades_especificas: 'Habilidades',
   entrevista_digital: 'Entrevista',
@@ -119,7 +121,7 @@ export const MODULE_TABLE_LABELS = {
 export const MODULE_REPORT_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Comportamiento',
-  cognitivo: 'Potencial cognitivo',
+  terman: 'Inteligencia analítica',
   mrr: 'Personalidad MRR',
   habilidades_especificas: 'Habilidades específicas',
   entrevista_digital: 'Entrevista digital',

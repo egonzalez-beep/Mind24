@@ -1,9 +1,14 @@
 import { prisma } from '../db/client.js';
 import { moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
+import { TERMAN_SERIES } from '../data/termanData.js';
 import {
   buildCleaverAttemptScores,
   scoreCleaverResponses,
 } from './cleaverScoring.service.js';
+import {
+  buildTermanAttemptScores,
+  scoreTermanResponses,
+} from './termanScoring.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -97,6 +102,34 @@ export async function getAttemptEnginePayload(userId, attemptId) {
  * Si el módulo tiene preguntas en BD, devuelve payload de inicio dinámico.
  * Reutiliza intento en curso o crea uno nuevo (llamado desde attempt.service).
  */
+/** Agrupa preguntas BD en series Terman para el cliente. */
+export function buildTermanSeriesPayload(questions) {
+  const bySeries = new Map();
+  for (const q of questions) {
+    const meta = q.metadata && typeof q.metadata === 'object' ? q.metadata : {};
+    const seriesId = meta.seriesId;
+    if (!seriesId) continue;
+    if (!bySeries.has(seriesId)) {
+      const def = TERMAN_SERIES.find((s) => s.seriesId === seriesId);
+      bySeries.set(seriesId, {
+        seriesId,
+        name: meta.seriesName || def?.name || seriesId,
+        timeLimitSeconds: meta.seriesTimeLimitSeconds ?? def?.timeLimitSeconds ?? 120,
+        instruction: meta.seriesInstruction || def?.instruction || '',
+        seriesIndex: meta.seriesIndex ?? 0,
+        questions: [],
+      });
+    }
+    bySeries.get(seriesId).questions.push(serializeQuestion(q));
+  }
+  return [...bySeries.values()]
+    .sort((a, b) => a.seriesIndex - b.seriesIndex)
+    .map((s) => ({
+      ...s,
+      questions: s.questions.sort((a, b) => a.sortOrder - b.sortOrder),
+    }));
+}
+
 export async function buildDynamicStartPayload({
   assignmentId,
   moduleKey,
@@ -109,11 +142,12 @@ export async function buildDynamicStartPayload({
   if (!mod?.questions?.length) return null;
 
   const meta = moduleMetaForKey(moduleKey);
-  return {
+  const resolved = resolveModuleKey(moduleKey);
+  const base = {
     engine: 'dynamic',
     attemptId,
     assignmentId,
-    moduleKey,
+    moduleKey: resolved,
     moduleTitle: mod.title,
     timeLimitSec: timeLimitSec ?? 900,
     startedAt,
@@ -121,6 +155,14 @@ export async function buildDynamicStartPayload({
     questions: mod.questions.map(serializeQuestion),
     answeredQuestionIds: [],
   };
+
+  if (resolved === 'terman') {
+    base.assessmentMode = 'terman';
+    base.termanSeries = buildTermanSeriesPayload(mod.questions);
+    base.totalSeries = base.termanSeries.length;
+  }
+
+  return base;
 }
 
 export async function saveCandidateResponse(userId, attemptId, payload) {
@@ -252,26 +294,32 @@ export async function completeDynamicAttempt(userId, attemptId) {
   }
 
   const mod = await getActiveModuleWithQuestions(attempt.moduleKey || '');
-  const requiredIds = new Set((mod?.questions || []).map((q) => q.id));
-  const answeredIds = new Set(attempt.candidateResponses.map((r) => r.questionId));
-  for (const qid of requiredIds) {
-    if (!answeredIds.has(qid)) {
-      const err = new Error('INCOMPLETE_ANSWERS');
-      err.code = 'INCOMPLETE_ANSWERS';
-      err.details = { missing: [...requiredIds].filter((id) => !answeredIds.has(id)) };
-      throw err;
+  const mk = attempt.moduleKey || '';
+  const resolvedKey = resolveModuleKey(mk);
+
+  if (resolvedKey !== 'terman') {
+    const requiredIds = new Set((mod?.questions || []).map((q) => q.id));
+    const answeredIds = new Set(attempt.candidateResponses.map((r) => r.questionId));
+    for (const qid of requiredIds) {
+      if (!answeredIds.has(qid)) {
+        const err = new Error('INCOMPLETE_ANSWERS');
+        err.code = 'INCOMPLETE_ANSWERS';
+        err.details = { missing: [...requiredIds].filter((id) => !answeredIds.has(id)) };
+        throw err;
+      }
     }
   }
-
-  const mk = attempt.moduleKey || '';
   const assignment = attempt.assignment;
   const prevCompleted = readCompletedModules(assignment);
-  const nextCompleted = mk && !prevCompleted.includes(mk) ? [...prevCompleted, mk] : prevCompleted;
-  let selected = selectedModuleKeys(assignment);
-  if (!selected.length && mk) selected = [mk];
-  const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
+  const nextCompleted =
+    resolvedKey && !prevCompleted.includes(resolvedKey)
+      ? [...prevCompleted, resolvedKey]
+      : prevCompleted;
+  let selected = selectedModuleKeys(assignment).map((k) => resolveModuleKey(k));
+  if (!selected.length && resolvedKey) selected = [resolvedKey];
+  const allDone =
+    selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
 
-  const resolvedKey = resolveModuleKey(mk);
   let attemptScores = null;
   let interpretation = {
     verdict: 'Módulo completado',
@@ -311,6 +359,27 @@ export async function completeDynamicAttempt(userId, attemptId) {
       badge: '◈',
       description: `Perfil total dominante: ${dominant.k} (${dominant.v >= 0 ? '+' : ''}${dominant.v}). Revisa el gráfico Más / Menos / Total.`,
       cleaverProfile: dominant.k,
+    };
+  }
+
+  if (resolvedKey === 'terman') {
+    const termanRows = await prisma.candidateResponse.findMany({
+      where: { attemptId: attempt.id },
+      include: {
+        selectedOption: true,
+        question: { select: { metadata: true, sortOrder: true } },
+      },
+    });
+    const scoring = scoreTermanResponses(termanRows);
+    attemptScores = buildTermanAttemptScores(scoring);
+    const topSeries = [...scoring.series].sort((a, b) => b.percent - a.percent)[0];
+    interpretation = {
+      verdict: 'Terman calificado',
+      badge: '◈',
+      description: `Puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos). ${
+        topSeries ? `Serie más fuerte: ${topSeries.name}.` : ''
+      } CI oficial en calibración.`,
+      termanRawScore: scoring.rawScore,
     };
   }
 

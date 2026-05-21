@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { termanTotalTimeSeconds } from '../data/termanData.js';
 import {
   filterConfigByModule,
   isLegacyJsonModule,
@@ -11,6 +12,17 @@ import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from '.
 function getTimeLimitSec(config) {
   const m = config?.meta?.timeLimitSec;
   return typeof m === 'number' && m > 0 ? m : 2700;
+}
+
+function resolveModuleTimeLimitSec(moduleKey, moduleConfig, meta) {
+  const mk = resolveModuleKey(moduleKey);
+  if (mk === 'terman') return termanTotalTimeSeconds();
+  const fromConfig = moduleConfig?.meta?.timeLimitSec;
+  if (typeof fromConfig === 'number' && fromConfig > 0) return fromConfig;
+  if (meta?.estimatedMinutes != null && meta.estimatedMinutes > 0) {
+    return meta.estimatedMinutes * 60;
+  }
+  return 2700;
 }
 
 export async function listMyAssignments(userId) {
@@ -153,7 +165,7 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
   const fullConfig = assignment.assessmentDefinition.config;
   const moduleConfig = filterConfigByModule(fullConfig, mk);
   const meta = moduleMetaForKey(mk);
-  const timeLimitSec = moduleConfig.meta?.timeLimitSec || meta.estimatedMinutes * 60;
+  const timeLimitSec = resolveModuleTimeLimitSec(mk, moduleConfig, meta);
 
   const existing = assignment.attempts[0];
   if (existing) {
