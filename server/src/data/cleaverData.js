@@ -1,42 +1,220 @@
 /**
- * Bloques Cleaver (CLEAVER_MATRIX) — palabras con dimensión DISC por opción.
- * D = Dominancia, I = Influencia, S = Estabilidad, C = Cumplimiento.
+ * Instrumento Cleaver oficial — 24 tétradas (96 adjetivos).
+ * Texto estandarizado; dimensiones DISC se asignan en sprint posterior.
  */
+export const CLEAVER_TETRAD_COUNT = 24;
+
+function opt(text) {
+  return { text, metadata: { dimension: '' } };
+}
+
 export const cleaverBlocks = [
   {
-    blockNumber: 1,
+    order: 1,
+    options: [opt('Persuasivo'), opt('Gentil'), opt('Humilde'), opt('Original')],
+  },
+  {
+    order: 2,
     options: [
-      { text: 'Persuasivo', dimension: 'I' },
-      { text: 'Gentil', dimension: 'S' },
-      { text: 'Humilde', dimension: 'C' },
-      { text: 'Original', dimension: 'D' },
+      opt('Agresivo'),
+      opt('Alma de la fiesta'),
+      opt('Comodino'),
+      opt('Temeroso'),
     ],
   },
   {
-    blockNumber: 2,
+    order: 3,
     options: [
-      { text: 'Agresivo', dimension: 'D' },
-      { text: 'Alma de la fiesta', dimension: 'I' },
-      { text: 'Comodino', dimension: 'S' },
-      { text: 'Temeroso', dimension: 'C' },
+      opt('Agradable'),
+      opt('Temeroso de Dios'),
+      opt('Tenaz'),
+      opt('Atractivo'),
     ],
   },
   {
-    blockNumber: 3,
+    order: 4,
     options: [
-      { text: 'Agradable', dimension: 'I' },
-      { text: 'Temeroso de Dios', dimension: 'C' },
-      { text: 'Tenaz', dimension: 'D' },
-      { text: 'Atractivo', dimension: 'I' },
+      opt('Cauteloso'),
+      opt('Determinado'),
+      opt('Convincente'),
+      opt('Bonachón'),
     ],
   },
   {
-    blockNumber: 4,
+    order: 5,
+    options: [opt('Dócil'), opt('Atrevido'), opt('Leal'), opt('Encantador')],
+  },
+  {
+    order: 6,
     options: [
-      { text: 'Animoso', dimension: 'I' },
-      { text: 'Complaciente', dimension: 'S' },
-      { text: 'Juguetón', dimension: 'I' },
-      { text: 'Moderado', dimension: 'C' },
+      opt('Dispuesto'),
+      opt('Deseoso'),
+      opt('Consecuente'),
+      opt('Entusiasta'),
+    ],
+  },
+  {
+    order: 7,
+    options: [
+      opt('Fuerza de voluntad'),
+      opt('Mente abierta'),
+      opt('Complaciente'),
+      opt('Animoso'),
+    ],
+  },
+  {
+    order: 8,
+    options: [
+      opt('Confiado'),
+      opt('Simpatizador'),
+      opt('Tolerante'),
+      opt('Afirmativo'),
+    ],
+  },
+  {
+    order: 9,
+    options: [opt('Ecuánime'), opt('Preciso'), opt('Nervioso'), opt('Jovial')],
+  },
+  {
+    order: 10,
+    options: [
+      opt('Disciplinado'),
+      opt('Generoso'),
+      opt('Animoso'),
+      opt('Persistente'),
+    ],
+  },
+  {
+    order: 11,
+    options: [
+      opt('Competitivo'),
+      opt('Alegre'),
+      opt('Considerado'),
+      opt('Armonioso'),
+    ],
+  },
+  {
+    order: 12,
+    options: [
+      opt('Admirable'),
+      opt('Bondadoso'),
+      opt('Resignado'),
+      opt('Carácter firme'),
+    ],
+  },
+  {
+    order: 13,
+    options: [
+      opt('Obediente'),
+      opt('Quisquilloso'),
+      opt('Inconquistable'),
+      opt('Juguetón'),
+    ],
+  },
+  {
+    order: 14,
+    options: [
+      opt('Respetuoso'),
+      opt('Emprendedor'),
+      opt('Optimista'),
+      opt('Servicial'),
+    ],
+  },
+  {
+    order: 15,
+    options: [opt('Valiente'), opt('Inspirador'), opt('Sumiso'), opt('Tímido')],
+  },
+  {
+    order: 16,
+    options: [
+      opt('Adaptable'),
+      opt('Disputador'),
+      opt('Indiferente'),
+      opt('Sangre liviana'),
+    ],
+  },
+  {
+    order: 17,
+    options: [
+      opt('Amiguero'),
+      opt('Paciente'),
+      opt('Confianza en sí mismo'),
+      opt('Mesurado para hablar'),
+    ],
+  },
+  {
+    order: 18,
+    options: [
+      opt('Conforme'),
+      opt('Confiable'),
+      opt('Pacífico'),
+      opt('Positivo'),
+    ],
+  },
+  {
+    order: 19,
+    options: [
+      opt('Aventurero'),
+      opt('Receptivo'),
+      opt('Cordial'),
+      opt('Moderado'),
+    ],
+  },
+  {
+    order: 20,
+    options: [
+      opt('Indulgente'),
+      opt('Esteta'),
+      opt('Vigoroso'),
+      opt('Sociable'),
+    ],
+  },
+  {
+    order: 21,
+    options: [
+      opt('Parlanchín'),
+      opt('Controlado'),
+      opt('Convencional'),
+      opt('Decisivo'),
+    ],
+  },
+  {
+    order: 22,
+    options: [
+      opt('Cohibido'),
+      opt('Exacto'),
+      opt('Franco'),
+      opt('Buen compañero'),
+    ],
+  },
+  {
+    order: 23,
+    options: [
+      opt('Diplomático'),
+      opt('Audaz'),
+      opt('Refinado'),
+      opt('Satisfecho'),
+    ],
+  },
+  {
+    order: 24,
+    options: [
+      opt('Inquieto'),
+      opt('Popular'),
+      opt('Buen vecino'),
+      opt('Devoto'),
     ],
   },
 ];
+
+if (cleaverBlocks.length !== CLEAVER_TETRAD_COUNT) {
+  throw new Error(
+    `cleaverData: se esperaban ${CLEAVER_TETRAD_COUNT} tétradas, hay ${cleaverBlocks.length}`,
+  );
+}
+
+for (const block of cleaverBlocks) {
+  if (!block.options || block.options.length !== 4) {
+    throw new Error(`cleaverData: tétrada ${block.order} debe tener exactamente 4 opciones`);
+  }
+}

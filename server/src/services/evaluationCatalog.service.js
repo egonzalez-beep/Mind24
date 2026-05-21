@@ -1,5 +1,5 @@
 import { prisma as defaultPrisma } from '../db/client.js';
-import { cleaverBlocks } from '../data/cleaverData.js';
+import { CLEAVER_TETRAD_COUNT, cleaverBlocks } from '../data/cleaverData.js';
 import { MODULE_CATALOG, MIND24_MODULE_KEYS } from '../utils/moduleCatalog.js';
 
 const PLACEHOLDER_QUESTIONS = [
@@ -92,12 +92,13 @@ async function ensurePlaceholderQuestions(db, moduleIdByKey) {
 }
 
 async function ensureCleaverQuestions(db, moduleId) {
+  const expected = CLEAVER_TETRAD_COUNT;
   const existing = await db.question.count({
     where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
   });
 
-  if (existing >= cleaverBlocks.length) {
-    return { existing, created: 0 };
+  if (existing === expected) {
+    return { existing, created: 0, expected };
   }
 
   if (existing > 0) {
@@ -108,29 +109,34 @@ async function ensureCleaverQuestions(db, moduleId) {
 
   for (let b = 0; b < cleaverBlocks.length; b++) {
     const block = cleaverBlocks[b];
+    const order = block.order;
     await db.question.create({
       data: {
         moduleId,
         type: 'CLEAVER_MATRIX',
-        text: `Bloque ${block.blockNumber} — Selecciona la palabra que MÁS y MENOS te describe.`,
+        text: `Bloque ${order} — Selecciona la palabra que MÁS y MENOS te describe.`,
         metadata: {
-          blockNumber: block.blockNumber,
+          order,
+          blockNumber: order,
           instruction: 'Elige una palabra en MÁS y otra distinta en MENOS.',
         },
         sortOrder: b,
         options: {
-          create: block.options.map((opt, j) => ({
-            label: opt.text,
-            value: opt.dimension,
-            metadata: { dimension: opt.dimension },
-            sortOrder: j,
-          })),
+          create: block.options.map((opt, j) => {
+            const dimension = opt.metadata?.dimension ?? '';
+            return {
+              label: opt.text,
+              value: dimension,
+              metadata: { dimension },
+              sortOrder: j,
+            };
+          }),
         },
       },
     });
   }
 
-  return { existing, created: cleaverBlocks.length };
+  return { existing, created: cleaverBlocks.length, expected };
 }
 
 /**
@@ -156,14 +162,17 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   const summary = {
     modules: MIND24_MODULE_KEYS.length,
     cleaverQuestions: cleaverCount,
+    cleaverExpected: CLEAVER_TETRAD_COUNT,
     placeholdersCreated,
     cleaverSeeded: cleaver.created,
   };
 
   console.log('[catalog] Evaluation catalog OK:', summary);
 
-  if (!cleaverCount) {
-    const err = new Error('CLEAVER_MODULE_EMPTY_AFTER_CATALOG_SYNC');
+  if (cleaverCount < CLEAVER_TETRAD_COUNT) {
+    const err = new Error(
+      `CLEAVER_INCOMPLETE: ${cleaverCount}/${CLEAVER_TETRAD_COUNT} tétradas activas`,
+    );
     console.error('[catalog]', err.message);
     throw err;
   }
