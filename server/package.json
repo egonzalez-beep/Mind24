@@ -29,7 +29,12 @@
     "express-session": "^1.18.1",
     "helmet": "^8.0.0",
     "zod": "^3.24.1",
-    "prisma": "^6.3.0"
+    "prisma": "^6.3.0",
+    "puppeteer-core": "^24.2.0",
+    "@sparticuz/chromium": "^133.0.0"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^24.2.0"
   },
   "engines": {
     "node": ">=20"

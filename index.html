@@ -1280,7 +1280,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th></tr></thead>
               <tbody id="cev-mis-assign-tbody"></tbody>
             </table>
           </div>
@@ -1296,7 +1296,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th></tr></thead>
               <tbody id="cev-res-assign-tbody"></tbody>
             </table>
           </div>
@@ -1663,6 +1663,77 @@ function crearEvalCandidateLabel(a){
   if(em)return em;
   return '—';
 }
+function crearEvalCandidateId(a){
+  const c=a.candidate;
+  return c&&c.id?String(c.id):'';
+}
+function crearEvalCleaverScoresFromAttempt(att){
+  if(!att||!att.scores||typeof att.scores!=='object') return null;
+  const raw=att.scores;
+  const inner=raw.scores&&typeof raw.scores==='object'?raw.scores:raw;
+  const total=inner.total||inner.Total;
+  if(!total||typeof total!=='object') return null;
+  return total;
+}
+function crearEvalCleaverReportReady(a){
+  const attempts=Array.isArray(a.attempts)?a.attempts:[];
+  return attempts.some(att=>{
+    const mk=String(att.moduleKey||'').toLowerCase();
+    if(mk!=='cleaver'&&mk!=='disc') return false;
+    if(String(att.status||'')!=='submitted') return false;
+    return !!crearEvalCleaverScoresFromAttempt(att);
+  });
+}
+async function downloadCleaverReportPdf(candidateId, label){
+  if(!candidateId){ alert('Candidato no identificado.'); return; }
+  const btn=event&&event.target?event.target:null;
+  if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
+  try{
+    const res=await fetch('/api/reports/candidate/'+encodeURIComponent(candidateId)+'/pdf',{ credentials:'include' });
+    if(!res.ok){
+      let msg='No se pudo generar el reporte.';
+      try{ const j=await res.json(); if(j&&j.message) msg=String(j.message); }catch(_){}
+      throw new Error(msg);
+    }
+    const blob=await res.blob();
+    let filename='Cleaver_reporte.pdf';
+    const cd=res.headers.get('Content-Disposition')||'';
+    const m=/filename\*?=(?:UTF-8'')?["']?([^"';]+)/i.exec(cd);
+    if(m&&m[1]) filename=decodeURIComponent(m[1].trim());
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    a.rel='noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert((e&&e.message)?String(e.message):'Error al descargar el PDF.');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent=label||'↓ PDF Cleaver'; }
+  }
+}
+function crearEvalReportesCell(tr, a){
+  const tdx=document.createElement('td');
+  tdx.style.padding='8px';
+  const cid=crearEvalCandidateId(a);
+  if(crearEvalCleaverReportReady(a)&&cid){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='card-action';
+    btn.style.fontSize='12px';
+    btn.textContent='↓ PDF Cleaver';
+    btn.title='Descargar reporte psicométrico Cleaver';
+    btn.onclick=function(){ downloadCleaverReportPdf(cid,'↓ PDF Cleaver'); };
+    tdx.appendChild(btn);
+  }else{
+    tdx.textContent='—';
+    tdx.style.color='var(--slate-400)';
+  }
+  tr.appendChild(tdx);
+}
 function crearEvalAssessmentName(a){
   const d=a.assessmentDefinition;
   if(!d)return '—';
@@ -1786,6 +1857,7 @@ async function refreshCrearEvalAssignmentsTables(){
         const tdx=document.createElement('td'); tdx.style.padding='8px';
         const span=document.createElement('span'); span.className=pill.cls; span.textContent=pill.label;
         tdx.appendChild(span); tr.appendChild(tdx);
+        crearEvalReportesCell(tr,a);
         tbMis.appendChild(tr);
       });
     }
@@ -1816,6 +1888,7 @@ async function refreshCrearEvalAssignmentsTables(){
         tdText('', { mods:true });
         tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         tdText(globalTxt);
+        crearEvalReportesCell(tr,a);
         tbRes.appendChild(tr);
       });
     }

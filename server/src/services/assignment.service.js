@@ -77,7 +77,7 @@ export async function listAssignmentsForOrg(organizationId, options = {}) {
     include: {
       candidate: { include: { user: { select: { email: true, fullName: true } } } },
       assessmentDefinition: { select: { id: true, name: true, key: true, version: true, config: true } },
-      attempts: { orderBy: { startedAt: 'desc' }, take: 1 },
+      attempts: { orderBy: { submittedAt: 'desc' } },
     },
     orderBy: { createdAt: 'desc' },
   });

@@ -4,6 +4,7 @@ import authRoutes from './auth.routes.js';
 import superadminRoutes from './superadmin.routes.js';
 import orgRoutes from './org.routes.js';
 import meRoutes from './me.routes.js';
+import reportsRoutes from './reports.routes.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/auth', authRoutes);
 router.use('/superadmin', superadminRoutes);
 router.use('/org', orgRoutes);
 router.use('/me', meRoutes);
+router.use('/reports', reportsRoutes);
 
 export default router;
