@@ -1280,7 +1280,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
               <tbody id="cev-mis-assign-tbody"></tbody>
             </table>
           </div>
@@ -1296,7 +1296,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
               <tbody id="cev-res-assign-tbody"></tbody>
             </table>
           </div>
@@ -1716,10 +1716,59 @@ function crearEvalReportesCell(tr, a){
   }
   tr.appendChild(tdx);
 }
-function crearEvalAssessmentName(a){
-  const d=a.assessmentDefinition;
-  if(!d)return '—';
-  return String(d.name||d.key||'Evaluación');
+async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel){
+  if(!assignmentId) return;
+  const who=candidateLabel?String(candidateLabel):'esta evaluación';
+  if(!confirm('¿Eliminar la evaluación de '+who+'?\n\nSe borrarán la asignación y todos los intentos. Esta acción no se puede deshacer.')) return;
+  const btn=event&&event.target?event.target:null;
+  if(btn){ btn.disabled=true; btn.textContent='Eliminando…'; }
+  try{
+    await apiJson('/api/org/assignments/'+encodeURIComponent(assignmentId),{ method:'DELETE' });
+    await refreshCrearEvalAssignmentsTables();
+    try{ await mind24RefreshEmpresaAdminSessionMeta(); }catch(_){}
+  }catch(e){
+    alert((e&&e.message)?String(e.message):'No se pudo eliminar la evaluación.');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='Eliminar'; }
+  }
+}
+function crearEvalAccionesCell(tr, a){
+  const tdx=document.createElement('td');
+  tdx.style.padding='8px';
+  const aid=a&&a.id?String(a.id):'';
+  if(aid){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='card-action';
+    btn.style.fontSize='12px';
+    btn.style.color='#B91C1C';
+    btn.style.borderColor='#FECACA';
+    btn.textContent='Eliminar';
+    btn.title='Eliminar asignación e intentos de la base de datos';
+    btn.onclick=function(){ eliminarEvaluacionAsignacion(aid, crearEvalCandidateLabel(a)); };
+    tdx.appendChild(btn);
+  }else{
+    tdx.textContent='—';
+    tdx.style.color='var(--slate-400)';
+  }
+  tr.appendChild(tdx);
+}
+function crearEvalAssessmentName(_a){
+  return 'Evaluación Mind24';
+}
+/** Etiquetas cortas para columna Módulos (ej. Cleaver, Honestidad). */
+const MIND24_MOD_TABLE_LABELS={
+  honestidad:'Honestidad',
+  cleaver:'Cleaver',
+  cognitivo:'Cognitivo',
+  mrr:'MRR',
+  habilidades_especificas:'Habilidades',
+  entrevista_digital:'Entrevista',
+  medida:'A la medida'
+};
+function crearEvalModTableLabel(key){
+  const k=mind24ResolveModKey(key);
+  return MIND24_MOD_TABLE_LABELS[k]||k;
 }
 /** Catálogo corporativo Mind24 (sincronizado con server/src/utils/moduleCatalog.js) */
 const MIND24_EVAL_MODULES=[
@@ -1781,23 +1830,20 @@ function crearEvalCandidateCurp(a){
   if(!c||c.curp==null||String(c.curp).trim()==='') return '—';
   return String(c.curp).toUpperCase();
 }
-/** Lista de módulos: guardados en la asignación o dimensiones del instrumento */
+/** Lista de módulos asignados (nombres cortos legibles). */
 function crearEvalModulesDisplayList(a){
-  const L=crearEvalModLabelsMap();
   let keys=[];
   const raw=a.selectedModules;
   if(Array.isArray(raw)&&raw.length){
-    keys=raw.map((x)=>String(x));
-  }else{
-    const dims=a.assessmentDefinition&&a.assessmentDefinition.config&&Array.isArray(a.assessmentDefinition.config.dimensions)
-      ? a.assessmentDefinition.config.dimensions
-      : [];
-    keys=dims.map((d)=>d.label||d.id||'').filter(Boolean);
+    keys=raw.map((x)=>mind24ResolveModKey(String(x)));
+  }else if(Array.isArray(a.completedModules)&&a.completedModules.length){
+    keys=a.completedModules.map((x)=>mind24ResolveModKey(String(x)));
   }
-  if(!keys.length) return { text: crearEvalAssessmentName(a), full: crearEvalAssessmentName(a) };
-  const labels=keys.map((k)=>L[k]||k);
-  const full=labels.join(', ');
-  return { text: full, full };
+  keys=[...new Set(keys.filter(Boolean))];
+  if(!keys.length) return { text:'—', full:'Sin módulos registrados' };
+  const labels=keys.map((k)=>crearEvalModTableLabel(k));
+  const text=labels.join(', ');
+  return { text, full:text };
 }
 async function refreshCrearEvalAssignmentsTables(){
   const errMis=document.getElementById('cev-mis-err');
@@ -1840,6 +1886,7 @@ async function refreshCrearEvalAssignmentsTables(){
         const span=document.createElement('span'); span.className=pill.cls; span.textContent=pill.label;
         tdx.appendChild(span); tr.appendChild(tdx);
         crearEvalReportesCell(tr,a);
+        crearEvalAccionesCell(tr,a);
         tbMis.appendChild(tr);
       });
     }
@@ -1871,6 +1918,7 @@ async function refreshCrearEvalAssignmentsTables(){
         tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         tdText(globalTxt);
         crearEvalReportesCell(tr,a);
+        crearEvalAccionesCell(tr,a);
         tbRes.appendChild(tr);
       });
     }

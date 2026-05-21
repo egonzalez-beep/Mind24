@@ -196,7 +196,7 @@ async function findOrCreateDefinition() {
   def = await prisma.assessmentDefinition.create({
     data: {
       key: DEF_KEY,
-      name: 'Batería de Honestidad y Confianza',
+      name: 'Evaluación Mind24',
       version: DEF_VERSION,
       organizationId: null,
       config: defaultDemoAssessmentConfig,

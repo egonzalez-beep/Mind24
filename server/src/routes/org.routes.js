@@ -3,7 +3,11 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
 import { assertEmpresaAdmin, createCandidateForOrg, listCandidates } from '../services/candidate.service.js';
-import { createAssignment, listAssignmentsForOrg } from '../services/assignment.service.js';
+import {
+  createAssignment,
+  deleteAssignmentForOrg,
+  listAssignmentsForOrg,
+} from '../services/assignment.service.js';
 import { listDefinitionsForOrg } from '../services/assessmentDefinition.service.js';
 import {
   listAspenAdminsInOrganization,
@@ -78,6 +82,23 @@ router.get('/assignments', async (req, res, next) => {
       : { assignedByUserId: u.id };
     const assignments = await listAssignmentsForOrg(u.organizationId, listOptions);
     res.json({ assignments });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/assignments/:assignmentId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const listOptions = isPioneerAspenAdminEmail(u.email)
+      ? {}
+      : { assignedByUserId: u.id };
+    const out = await deleteAssignmentForOrg(
+      req.params.assignmentId,
+      u.organizationId,
+      listOptions,
+    );
+    res.json(out);
   } catch (e) {
     next(e);
   }

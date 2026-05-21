@@ -82,3 +82,29 @@ export async function listAssignmentsForOrg(organizationId, options = {}) {
     orderBy: { createdAt: 'desc' },
   });
 }
+
+/**
+ * Elimina asignación e intentos (cascade). No restaura créditos.
+ */
+export async function deleteAssignmentForOrg(assignmentId, organizationId, options = {}) {
+  const assignment = await prisma.assignment.findFirst({
+    where: { id: assignmentId, candidate: { organizationId } },
+    select: { id: true, assignedByUserId: true },
+  });
+  if (!assignment) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  if (
+    options.assignedByUserId &&
+    assignment.assignedByUserId !== options.assignedByUserId
+  ) {
+    const err = new Error('FORBIDDEN');
+    err.code = 'FORBIDDEN';
+    err.message = 'No puedes eliminar evaluaciones creadas por otro administrador.';
+    throw err;
+  }
+  await prisma.assignment.delete({ where: { id: assignmentId } });
+  return { deleted: true, id: assignmentId };
+}

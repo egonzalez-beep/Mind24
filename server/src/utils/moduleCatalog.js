@@ -104,6 +104,47 @@ export function moduleMetaForKey(key) {
   };
 }
 
+/** Nombre corto para tablas del dashboard (ej. Cleaver, Honestidad). */
+export const MODULE_TABLE_LABELS = {
+  honestidad: 'Honestidad',
+  cleaver: 'Cleaver',
+  cognitivo: 'Cognitivo',
+  mrr: 'MRR',
+  habilidades_especificas: 'Habilidades',
+  entrevista_digital: 'Entrevista',
+  medida: 'A la medida',
+};
+
+/** Nombre amigable para reportes PDF (ej. Comportamiento, Honestidad). */
+export const MODULE_REPORT_LABELS = {
+  honestidad: 'Honestidad',
+  cleaver: 'Comportamiento',
+  cognitivo: 'Potencial cognitivo',
+  mrr: 'Personalidad MRR',
+  habilidades_especificas: 'Habilidades específicas',
+  entrevista_digital: 'Entrevista digital',
+  medida: 'Módulo a la medida',
+};
+
+export function moduleTableLabel(key) {
+  const rk = resolveModuleKey(key);
+  return MODULE_TABLE_LABELS[rk] || moduleMetaForKey(rk).label;
+}
+
+export function moduleReportLabel(key) {
+  const rk = resolveModuleKey(key);
+  return MODULE_REPORT_LABELS[rk] || moduleMetaForKey(rk).label;
+}
+
+/** Lista legible en español: "A, B y C". */
+export function formatModuleListSpanish(keys, labelFn = moduleReportLabel) {
+  const labels = [...new Set(keys.map((k) => labelFn(k)).filter(Boolean))];
+  if (!labels.length) return '—';
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} y ${labels[1]}`;
+  return `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}`;
+}
+
 export function moduleLabelMap() {
   const out = {};
   for (const k of MIND24_MODULE_KEYS) {

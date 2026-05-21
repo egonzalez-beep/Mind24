@@ -2,7 +2,12 @@ import { prisma } from '../db/client.js';
 import { renderHtmlToPdfBuffer } from './pdf.service.js';
 import { assertEmpresaAdmin } from './candidate.service.js';
 import { isPioneerAspenAdminEmail } from './aspenAdmin.service.js';
-import { resolveModuleKey, moduleMetaForKey } from '../utils/moduleCatalog.js';
+import {
+  resolveModuleKey,
+  moduleMetaForKey,
+  moduleReportLabel,
+  formatModuleListSpanish,
+} from '../utils/moduleCatalog.js';
 import { buildUnifiedReportHtml } from '../reports/unifiedReport.template.js';
 import {
   buildModuleFragment,
@@ -106,18 +111,16 @@ export async function buildUnifiedPdfForAssignment(adminUserId, assignmentId) {
     lastSubmitted ? new Date(lastSubmitted).toISOString() : assignment.updatedAt,
   );
 
+  const modulesAppliedLine = formatModuleListSpanish(moduleKeys, moduleReportLabel);
+
   const html = buildUnifiedReportHtml({
     organizationName: assignment.candidate.organization?.name || 'Organización',
     candidateName: display.name,
     puesto: display.puesto,
     curp,
-    assessmentName:
-      assignment.assessmentDefinition?.name ||
-      assignment.assessmentDefinition?.key ||
-      'Evaluación',
-    evaluationId: shortEvalId(assignment.id),
+    instrumentLabel: 'Mind24',
+    modulesAppliedLine,
     completedAt,
-    moduleLabels: labels,
     moduleFragmentsHtml: fragments.join('\n'),
   });
 

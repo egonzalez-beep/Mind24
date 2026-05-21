@@ -10,9 +10,8 @@ const MASTER_STYLES = `
   .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:20px}
   .meta-item label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF}
   .meta-item span{font-size:12px;font-weight:600;color:#111827}
+  .meta-item .meta-line{display:block;line-height:1.5}
   .status{display:inline-block;padding:4px 10px;border-radius:999px;background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700}
-  .modules-pills{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
-  .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#EDE9FE;color:#5B21B6;font-size:9px;font-weight:700}
   .module-block{margin-top:28px;padding-top:22px;border-top:2px solid #E5E7EB;page-break-inside:avoid}
   .module-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
   .module-icon{font-size:22px;line-height:1}
@@ -50,8 +49,13 @@ const MASTER_STYLES = `
   .kpi-value.kpi-sm{font-size:14px}
   .kpi-badge{font-size:10px;color:#6B7280;margin-top:4px}
   .interp{font-size:10px;color:#374151;line-height:1.5}
+  .synthesis-box{padding:12px 14px;border-radius:8px;background:#F5F3FF;border:1px solid #DDD6FE}
   .flag-list{margin:0;padding-left:18px;font-size:10px;color:#374151}
   .flag-list li{margin-bottom:4px}
+  .risk-list{margin:0;padding:0;list-style:none}
+  .risk-item{border:1px solid #FECACA;border-radius:8px;padding:10px;margin-bottom:8px;background:#FEF2F2}
+  .risk-item strong{display:block;font-size:10px;color:#991B1B;margin-bottom:4px}
+  .risk-item p{font-size:9px;color:#7F1D1D;line-height:1.45;margin:0}
   .muted{color:#9CA3AF;font-size:10px}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
   .footer{margin-top:22px;padding-top:10px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center}
@@ -66,16 +70,11 @@ export function buildUnifiedReportHtml(ctx) {
     candidateName,
     puesto,
     curp,
-    assessmentName,
-    evaluationId,
+    instrumentLabel,
+    modulesAppliedLine,
     completedAt,
-    moduleLabels,
     moduleFragmentsHtml,
   } = ctx;
-
-  const pills = (moduleLabels || [])
-    .map((l) => `<span class="pill">${esc(l)}</span>`)
-    .join('');
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -93,11 +92,10 @@ export function buildUnifiedReportHtml(ctx) {
     <div class="meta-item"><label>Candidato</label><span>${esc(candidateName)}</span></div>
     <div class="meta-item"><label>Puesto evaluado</label><span>${esc(puesto)}</span></div>
     <div class="meta-item"><label>CURP</label><span>${esc(curp)}</span></div>
-    <div class="meta-item"><label>Instrumento</label><span>${esc(assessmentName)}</span></div>
-    <div class="meta-item"><label>ID de evaluación</label><span>${esc(evaluationId)}</span></div>
+    <div class="meta-item"><label>Instrumento</label><span>${esc(instrumentLabel || 'Mind24')}</span></div>
+    <div class="meta-item"><label>Módulos aplicados</label><span class="meta-line">${esc(modulesAppliedLine)}</span></div>
     <div class="meta-item"><label>Estatus</label><span class="status">Completado</span></div>
     <div class="meta-item"><label>Fecha de cierre</label><span>${esc(completedAt)}</span></div>
-    <div class="meta-item"><label>Módulos incluidos</label><div class="modules-pills">${pills || '<span class="muted">—</span>'}</div></div>
   </div>
 
   ${moduleFragmentsHtml}

@@ -87,6 +87,34 @@ function barWidth(val, maxVal) {
   return Math.round((Math.abs(Number(val) || 0) / m) * 100);
 }
 
+const PROFILE_SYNTHESIS = {
+  D: 'El candidato prioriza la velocidad y los resultados; es directo y asume riesgos.',
+  I: 'El candidato es persuasivo, sociable y prioriza las relaciones interpersonales.',
+  S: 'El candidato valora la estabilidad, la cooperación y un ritmo de trabajo constante.',
+  C: 'El candidato prioriza la precisión, las normas y decisiones basadas en datos y procedimiento.',
+};
+
+/** Dimensión DISC con mayor puntaje en `total`. */
+export function dominantDiscKey(total) {
+  let winner = CLEAVER_DISC_KEYS[0];
+  let max = Number(total[winner]) || 0;
+  for (const k of CLEAVER_DISC_KEYS) {
+    const v = Number(total[k]) || 0;
+    if (v > max) {
+      max = v;
+      winner = k;
+    }
+  }
+  return winner;
+}
+
+export function cleaverProfileSynthesis(total) {
+  const key = dominantDiscKey(total);
+  const meta = DISC_META[key];
+  const text = PROFILE_SYNTHESIS[key] || '';
+  return { key, label: meta.label, text };
+}
+
 export function extractCleaverScores(attempt) {
   const raw = attempt?.scores;
   if (!raw || typeof raw !== 'object') return null;
@@ -150,6 +178,7 @@ export function buildCleaverModuleFragment(ctx) {
   }).join('');
 
   const closed = submittedAt ? esc(submittedAt) : '—';
+  const synth = cleaverProfileSynthesis(total);
 
   return `
   <section class="module-block" id="mod-cleaver">
@@ -158,6 +187,12 @@ export function buildCleaverModuleFragment(ctx) {
       <div>
         <h2 class="module-title">Comportamiento (CLEAVER)</h2>
         <p class="module-sub">Perfil conductual DISC · Cierre: ${closed}</p>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Síntesis interpretativa del perfil</div>
+      <div class="synthesis-box">
+        <p class="interp"><strong>Dimensión predominante: ${esc(synth.label)} (${synth.key})</strong> — ${esc(synth.text)}</p>
       </div>
     </div>
     <div class="section">
