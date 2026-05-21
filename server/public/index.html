@@ -1663,40 +1663,22 @@ function crearEvalCandidateLabel(a){
   if(em)return em;
   return '—';
 }
-function crearEvalCandidateId(a){
-  const c=a.candidate;
-  return c&&c.id?String(c.id):'';
+function crearEvalAssignmentReportReady(a){
+  return String(a&&a.status||'')==='completed'&&!!(a&&a.id);
 }
-function crearEvalCleaverScoresFromAttempt(att){
-  if(!att||!att.scores||typeof att.scores!=='object') return null;
-  const raw=att.scores;
-  const inner=raw.scores&&typeof raw.scores==='object'?raw.scores:raw;
-  const total=inner.total||inner.Total;
-  if(!total||typeof total!=='object') return null;
-  return total;
-}
-function crearEvalCleaverReportReady(a){
-  const attempts=Array.isArray(a.attempts)?a.attempts:[];
-  return attempts.some(att=>{
-    const mk=String(att.moduleKey||'').toLowerCase();
-    if(mk!=='cleaver'&&mk!=='disc') return false;
-    if(String(att.status||'')!=='submitted') return false;
-    return !!crearEvalCleaverScoresFromAttempt(att);
-  });
-}
-async function downloadCleaverReportPdf(candidateId, label){
-  if(!candidateId){ alert('Candidato no identificado.'); return; }
+async function downloadAssignmentReportPdf(assignmentId, label){
+  if(!assignmentId){ alert('Asignación no identificada.'); return; }
   const btn=event&&event.target?event.target:null;
   if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
   try{
-    const res=await fetch('/api/reports/candidate/'+encodeURIComponent(candidateId)+'/pdf',{ credentials:'include' });
+    const res=await fetch('/api/reports/assignments/'+encodeURIComponent(assignmentId)+'/pdf',{ credentials:'include' });
     if(!res.ok){
       let msg='No se pudo generar el reporte.';
       try{ const j=await res.json(); if(j&&j.message) msg=String(j.message); }catch(_){}
       throw new Error(msg);
     }
     const blob=await res.blob();
-    let filename='Cleaver_reporte.pdf';
+    let filename='Mind24_Reporte.pdf';
     const cd=res.headers.get('Content-Disposition')||'';
     const m=/filename\*?=(?:UTF-8'')?["']?([^"';]+)/i.exec(cd);
     if(m&&m[1]) filename=decodeURIComponent(m[1].trim());
@@ -1712,21 +1694,21 @@ async function downloadCleaverReportPdf(candidateId, label){
   }catch(e){
     alert((e&&e.message)?String(e.message):'Error al descargar el PDF.');
   }finally{
-    if(btn){ btn.disabled=false; btn.textContent=label||'↓ PDF Cleaver'; }
+    if(btn){ btn.disabled=false; btn.textContent=label||'Descargar Reporte'; }
   }
 }
 function crearEvalReportesCell(tr, a){
   const tdx=document.createElement('td');
   tdx.style.padding='8px';
-  const cid=crearEvalCandidateId(a);
-  if(crearEvalCleaverReportReady(a)&&cid){
+  const aid=a&&a.id?String(a.id):'';
+  if(crearEvalAssignmentReportReady(a)&&aid){
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='card-action';
     btn.style.fontSize='12px';
-    btn.textContent='↓ PDF Cleaver';
-    btn.title='Descargar reporte psicométrico Cleaver';
-    btn.onclick=function(){ downloadCleaverReportPdf(cid,'↓ PDF Cleaver'); };
+    btn.textContent='Descargar Reporte';
+    btn.title='Descargar reporte consolidado PDF (todos los módulos completados)';
+    btn.onclick=function(){ downloadAssignmentReportPdf(aid,'Descargar Reporte'); };
     tdx.appendChild(btn);
   }else{
     tdx.textContent='—';

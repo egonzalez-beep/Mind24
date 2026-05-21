@@ -1,21 +1,20 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
-import { buildCleaverPdfForCandidate } from '../services/cleaverReport.service.js';
+import { buildUnifiedPdfForAssignment } from '../services/unifiedReport.service.js';
 
 const router = Router();
 
 router.use(requireAuth, requireRole('empresa_admin'), requireEmpresaPortal);
 
 /**
- * PDF ejecutivo Cleaver (descarga directa).
- * :id = candidateId
+ * PDF consolidado por asignación (todos los módulos completados).
  */
-router.get('/candidate/:candidateId/pdf', async (req, res, next) => {
+router.get('/assignments/:assignmentId/pdf', async (req, res, next) => {
   try {
-    const { buffer, filename, contentType } = await buildCleaverPdfForCandidate(
+    const { buffer, filename, contentType } = await buildUnifiedPdfForAssignment(
       req.session.userId,
-      req.params.candidateId,
+      req.params.assignmentId,
     );
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
