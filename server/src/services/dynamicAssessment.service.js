@@ -1,5 +1,9 @@
 import { prisma } from '../db/client.js';
 import { moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
+import {
+  buildCleaverAttemptScores,
+  scoreCleaverResponses,
+} from './cleaverScoring.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -267,17 +271,57 @@ export async function completeDynamicAttempt(userId, attemptId) {
   if (!selected.length && mk) selected = [mk];
   const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
 
+  const resolvedKey = resolveModuleKey(mk);
+  let attemptScores = null;
+  let interpretation = {
+    verdict: 'Módulo completado',
+    badge: '✓',
+    description: `Completaste el módulo ${mod?.title || mk}.`,
+  };
+
+  if (resolvedKey === 'cleaver') {
+    const cleaverRows = await prisma.candidateResponse.findMany({
+      where: { attemptId: attempt.id },
+      include: {
+        moreOption: true,
+        lessOption: true,
+        question: { select: { sortOrder: true } },
+      },
+    });
+    cleaverRows.sort((a, b) => a.question.sortOrder - b.question.sortOrder);
+    const cleaverResponses = cleaverRows;
+
+    const scoring = scoreCleaverResponses(
+      cleaverResponses.map((r) => ({
+        questionId: r.questionId,
+        moreOptionId: r.moreOptionId,
+        lessOptionId: r.lessOptionId,
+        moreOption: r.moreOption,
+        lessOption: r.lessOption,
+      })),
+    );
+
+    attemptScores = buildCleaverAttemptScores(scoring);
+    const { total } = scoring;
+    const dominant = ['D', 'I', 'S', 'C']
+      .map((k) => ({ k, v: total[k] }))
+      .sort((a, b) => b.v - a.v)[0];
+    interpretation = {
+      verdict: 'Perfil Cleaver calculado',
+      badge: '◈',
+      description: `Perfil total dominante: ${dominant.k} (${dominant.v >= 0 ? '+' : ''}${dominant.v}). Revisa el gráfico Más / Menos / Total.`,
+      cleaverProfile: dominant.k,
+    };
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
       where: { id: attempt.id },
       data: {
         status: 'submitted',
         submittedAt: new Date(),
-        interpretation: {
-          verdict: 'Módulo completado',
-          badge: '✓',
-          description: `Completaste el módulo ${mod?.title || mk}.`,
-        },
+        scores: attemptScores ?? undefined,
+        interpretation,
       },
     });
     await tx.assignment.update({
@@ -294,5 +338,7 @@ export async function completeDynamicAttempt(userId, attemptId) {
     moduleKey: mk,
     assignmentCompleted: allDone,
     message: 'Módulo enviado correctamente.',
+    scores: attemptScores?.scores ?? null,
+    interpretation,
   };
 }

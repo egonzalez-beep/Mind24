@@ -1,11 +1,14 @@
 /**
  * Instrumento Cleaver oficial — 24 tétradas (96 adjetivos).
- * Texto estandarizado; dimensiones DISC se asignan en sprint posterior.
+ * Dimensiones DISC según clave del manual Cleaver (español).
  */
+import { dimensionForCleaverWord } from './cleaverDiscKey.js';
+
 export const CLEAVER_TETRAD_COUNT = 24;
 
 function opt(text) {
-  return { text, metadata: { dimension: '' } };
+  const dimension = dimensionForCleaverWord(text);
+  return { text, metadata: { dimension } };
 }
 
 export const cleaverBlocks = [
@@ -216,5 +219,10 @@ if (cleaverBlocks.length !== CLEAVER_TETRAD_COUNT) {
 for (const block of cleaverBlocks) {
   if (!block.options || block.options.length !== 4) {
     throw new Error(`cleaverData: tétrada ${block.order} debe tener exactamente 4 opciones`);
+  }
+  for (const o of block.options) {
+    if (!o.metadata?.dimension) {
+      throw new Error(`cleaverData: falta dimension en tétrada ${block.order} — ${o.text}`);
+    }
   }
 }

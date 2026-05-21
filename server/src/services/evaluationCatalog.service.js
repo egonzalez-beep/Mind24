@@ -1,5 +1,8 @@
 import { prisma as defaultPrisma } from '../db/client.js';
 import { CLEAVER_TETRAD_COUNT, cleaverBlocks } from '../data/cleaverData.js';
+
+/** Incrementar cuando cambie la clave DISC o el banco Cleaver (fuerza resync en prod). */
+export const CLEAVER_CATALOG_VERSION = 2;
 import { MODULE_CATALOG, MIND24_MODULE_KEYS } from '../utils/moduleCatalog.js';
 
 const PLACEHOLDER_QUESTIONS = [
@@ -52,6 +55,17 @@ async function upsertModules(db) {
     });
     moduleIdByKey[key] = mod.id;
   }
+  const cleaverId = moduleIdByKey.cleaver;
+  if (cleaverId) {
+    const cat = MODULE_CATALOG.cleaver;
+    await db.evaluationModule.update({
+      where: { id: cleaverId },
+      data: {
+        description: `${cat.description} [catalog:v${CLEAVER_CATALOG_VERSION}]`,
+      },
+    });
+  }
+
   return moduleIdByKey;
 }
 
@@ -91,13 +105,45 @@ async function ensurePlaceholderQuestions(db, moduleIdByKey) {
   return created;
 }
 
+async function cleaverBankNeedsResync(db, moduleId) {
+  const expected = CLEAVER_TETRAD_COUNT;
+  const existing = await db.question.count({
+    where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
+  });
+  if (existing !== expected) return true;
+
+  const options = await db.questionOption.findMany({
+    where: {
+      question: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
+    },
+    select: { metadata: true, value: true },
+  });
+  if (options.length !== expected * 4) return true;
+
+  const versionRow = await db.evaluationModule.findUnique({
+    where: { id: moduleId },
+    select: { description: true },
+  });
+  const desc = String(versionRow?.description || '');
+  if (!desc.includes(`catalog:v${CLEAVER_CATALOG_VERSION}`)) return true;
+
+  return options.some((o) => {
+    const meta = o.metadata;
+    const dim =
+      meta && typeof meta === 'object' && !Array.isArray(meta)
+        ? String(meta.dimension || '').trim()
+        : '';
+    return !dim || !['D', 'I', 'S', 'C'].includes(dim.toUpperCase());
+  });
+}
+
 async function ensureCleaverQuestions(db, moduleId) {
   const expected = CLEAVER_TETRAD_COUNT;
   const existing = await db.question.count({
     where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
   });
 
-  if (existing === expected) {
+  if (existing === expected && !(await cleaverBankNeedsResync(db, moduleId))) {
     return { existing, created: 0, expected };
   }
 
