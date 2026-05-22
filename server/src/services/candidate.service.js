@@ -29,7 +29,7 @@ export async function createCandidateForOrg({
 
   const existing = await prisma.user.findUnique({
     where: { email: em },
-    include: { candidate: true },
+    include: { candidateProfile: true },
   });
 
   if (existing) {
@@ -55,7 +55,7 @@ export async function createCandidateForOrg({
         },
       });
 
-      let candidate = existing.candidate;
+      let candidate = existing.candidateProfile;
       if (!candidate) {
         candidate = await tx.candidate.create({
           data: {
