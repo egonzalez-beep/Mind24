@@ -8,19 +8,13 @@ import {
 
 /** Incrementar cuando cambie la clave DISC o el banco Cleaver (fuerza resync en prod). */
 export const CLEAVER_CATALOG_VERSION = 2;
-import { MODULE_CATALOG, MIND24_MODULE_KEYS } from '../utils/moduleCatalog.js';
+import {
+  MODULE_CATALOG,
+  MIND24_MODULE_KEYS,
+  isModuleActiveInDb,
+} from '../utils/moduleCatalog.js';
 
 const PLACEHOLDER_QUESTIONS = [
-  {
-    moduleKey: 'habilidades_especificas',
-    type: 'MULTIPLE_CHOICE',
-    text: '[Demo] Ante un cliente insatisfecho, ¿cuál es tu primer paso?',
-    options: [
-      { label: 'Escuchar con calma y pedir detalles', value: 'a' },
-      { label: 'Derivar de inmediato sin escuchar', value: 'b' },
-      { label: 'Ignorar el comentario', value: 'c' },
-    ],
-  },
   {
     moduleKey: 'entrevista_digital',
     type: 'AUDIO_RECORDING',
@@ -48,14 +42,14 @@ async function upsertModules(db) {
         description: cat.description,
         icon: cat.icon,
         sortOrder: i,
-        isActive: true,
+        isActive: isModuleActiveInDb(key),
       },
       update: {
         title: cat.label,
         description: cat.description,
         icon: cat.icon,
         sortOrder: i,
-        isActive: true,
+        isActive: isModuleActiveInDb(key),
       },
     });
     moduleIdByKey[key] = mod.id;
@@ -72,7 +66,9 @@ async function upsertModules(db) {
   }
 
   await db.evaluationModule.updateMany({
-    where: { key: { in: ['cognitivo', 'raven'] } },
+    where: {
+      key: { in: ['cognitivo', 'raven', 'mrr', 'habilidades_especificas'] },
+    },
     data: { isActive: false },
   });
 

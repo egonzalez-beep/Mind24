@@ -14,6 +14,7 @@ import {
   provisionAspenAdminPeer,
   isPioneerAspenAdminEmail,
 } from '../services/aspenAdmin.service.js';
+import { filterAssignableModuleKeys } from '../utils/moduleCatalog.js';
 
 const router = Router();
 
@@ -116,12 +117,21 @@ router.post('/assignments', async (req, res, next) => {
         selectedModules: z.array(z.string().min(1)).max(32).optional(),
       })
       .parse(req.body);
+    const modulesFiltered = selectedModules
+      ? filterAssignableModuleKeys(selectedModules)
+      : undefined;
+    if (selectedModules?.length && !modulesFiltered?.length) {
+      return res.status(400).json({
+        error: 'INVALID_MODULES',
+        message: 'Ningún módulo seleccionado está disponible para asignación.',
+      });
+    }
     const assignment = await createAssignment({
       organizationId: u.organizationId,
       candidateId,
       assessmentDefinitionId,
       assignedByUserId: u.id,
-      selectedModules,
+      selectedModules: modulesFiltered,
     });
     res.status(201).json({ assignment });
   } catch (e) {

@@ -1,6 +1,10 @@
 import { prisma } from '../db/client.js';
 import { mind24ShortAssignmentCode, normalizeAccessCodeInput } from '../utils/accessCode.js';
-import { moduleMetaForKey, resolveModuleKey } from '../utils/moduleCatalog.js';
+import {
+  isCandidateLobbyModuleKey,
+  moduleMetaForKey,
+  resolveModuleKey,
+} from '../utils/moduleCatalog.js';
 
 function readCompletedModules(assignment) {
   const raw = assignment.completedModules;
@@ -44,21 +48,23 @@ function modulesFromAssignment(assignment) {
     ];
   }
   const done = new Set(readCompletedModules(assignment));
-  return keys.map((key) => {
-    const resolved = moduleMetaForKey(key);
-    const storeKey = resolveModuleKey(key);
-    return {
-      key: storeKey,
-      label: resolved.label,
-      description: resolved.description || '',
-      icon: resolved.icon,
-      estimatedMinutes: resolved.estimatedMinutes,
-      estimatedTime: resolved.estimatedMinutes,
-      featured: !!resolved.featured,
-      assignmentId: assignment.id,
-      completed: done.has(storeKey) || done.has(key),
-    };
-  });
+  return keys
+    .map((key) => {
+      const resolved = moduleMetaForKey(key);
+      const storeKey = resolveModuleKey(key);
+      return {
+        key: storeKey,
+        label: resolved.label,
+        description: resolved.description || '',
+        icon: resolved.icon,
+        estimatedMinutes: resolved.estimatedMinutes,
+        estimatedTime: resolved.estimatedMinutes,
+        featured: !!resolved.featured,
+        assignmentId: assignment.id,
+        completed: done.has(storeKey) || done.has(key),
+      };
+    })
+    .filter((m) => isCandidateLobbyModuleKey(m.key));
 }
 
 function assignmentStillPending(assignment) {

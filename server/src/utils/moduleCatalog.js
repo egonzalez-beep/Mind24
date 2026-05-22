@@ -3,21 +3,33 @@ export const MIND24_MODULE_KEYS = [
   'honestidad',
   'cleaver',
   'terman',
-  'mrr',
-  'habilidades_especificas',
+  'sales_sjt',
   'entrevista_digital',
   'medida',
 ];
 
+/** Módulos que pueden asignarse y ejecutarse hoy. */
+export const ASSIGNABLE_MODULE_KEYS = ['honestidad', 'cleaver', 'terman'];
+
+export const DEFAULT_SELECTED_MODULES = [...ASSIGNABLE_MODULE_KEYS];
+
+/** Módulos retirados del catálogo (solo lectura histórica). */
+export const RETIRED_MODULE_KEYS = new Set(['mrr', 'habilidades_especificas']);
+
 /** Keys legacy (asignaciones antiguas) → catálogo actual. */
 const LEGACY_ALIASES = {
-  habilidades: 'habilidades_especificas',
+  habilidades: 'sales_sjt',
+  habilidades_especificas: 'sales_sjt',
   conocimientos: 'terman',
   cognitivo: 'terman',
   raven: 'terman',
   disc: 'cleaver',
-  ie: 'mrr',
   liderazgo: 'medida',
+};
+
+const RETIRED_LABELS = {
+  mrr: 'Personalidad MRR (retirado)',
+  habilidades_especificas: 'Habilidades específicas (retirado)',
 };
 
 export const MODULE_CATALOG = {
@@ -46,19 +58,13 @@ export const MODULE_CATALOG = {
     estimatedMinutes: null,
     sectionIds: ['principal'],
   },
-  mrr: {
-    label: 'Personalidad MRR',
-    description: 'Identifica líderes resilientes capaces de innovar bajo demanda.',
-    icon: '🌟',
-    estimatedMinutes: null,
-    sectionIds: ['principal'],
-    questionIdRange: [15, 22],
-  },
-  habilidades_especificas: {
-    label: 'Habilidades Específicas',
-    description: 'Evaluaciones de impacto para Ventas y Atención al Cliente.',
+  sales_sjt: {
+    label: 'Simulador de Escenarios Comerciales (SJT)',
+    description:
+      'Juicio situacional en ventas y atención al cliente. Banco oficial en preparación.',
     icon: '📊',
     estimatedMinutes: null,
+    comingSoon: true,
     sectionIds: ['principal'],
     questionIdRange: [23, 30],
   },
@@ -80,11 +86,55 @@ export const MODULE_CATALOG = {
   },
 };
 
-export const DEFAULT_SELECTED_MODULES = [...MIND24_MODULE_KEYS];
-
 export function resolveModuleKey(key) {
   const k = String(key || '').trim();
+  if (RETIRED_MODULE_KEYS.has(k)) return k;
   return LEGACY_ALIASES[k] || k;
+}
+
+export function isRetiredModuleKey(key) {
+  const rk = resolveModuleKey(key);
+  return RETIRED_MODULE_KEYS.has(rk);
+}
+
+export function isComingSoonModuleKey(key) {
+  const rk = resolveModuleKey(key);
+  const cat = MODULE_CATALOG[rk];
+  return Boolean(cat?.comingSoon);
+}
+
+export function isAssignableModuleKey(key) {
+  const rk = resolveModuleKey(key);
+  return ASSIGNABLE_MODULE_KEYS.includes(rk);
+}
+
+/** Filtra claves válidas para nuevas asignaciones. */
+export function filterAssignableModuleKeys(keys) {
+  if (!Array.isArray(keys)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const raw of keys) {
+    const rk = resolveModuleKey(String(raw));
+    if (!ASSIGNABLE_MODULE_KEYS.includes(rk) || seen.has(rk)) continue;
+    seen.add(rk);
+    out.push(rk);
+  }
+  return out;
+}
+
+/** Módulos visibles en lobby de candidato (asignables con motor activo). */
+export function isCandidateLobbyModuleKey(key) {
+  return isAssignableModuleKey(key);
+}
+
+/** Persistencia en BD: activo solo si el módulo puede ejecutarse. */
+export function isModuleActiveInDb(key) {
+  if (RETIRED_MODULE_KEYS.has(key)) return false;
+  const cat = MODULE_CATALOG[key];
+  if (!cat || cat.comingSoon) return false;
+  if (ASSIGNABLE_MODULE_KEYS.includes(key)) return true;
+  if (key === 'entrevista_digital' || key === 'medida') return true;
+  return false;
 }
 
 /** Único módulo que puede usar el instrumento JSON legacy (AssessmentDefinition.config). */
@@ -94,6 +144,17 @@ export function isLegacyJsonModule(moduleKey) {
 
 export function moduleMetaForKey(key) {
   const resolved = resolveModuleKey(key);
+  if (RETIRED_MODULE_KEYS.has(resolved)) {
+    return {
+      key: resolved,
+      label: RETIRED_LABELS[resolved] || resolved,
+      description: '',
+      icon: '◈',
+      estimatedMinutes: null,
+      retired: true,
+      sectionIds: [],
+    };
+  }
   const m = MODULE_CATALOG[resolved];
   if (m) return { key: resolved, ...m };
   return {
@@ -106,35 +167,35 @@ export function moduleMetaForKey(key) {
   };
 }
 
-/** Nombre corto para tablas del dashboard (ej. Cleaver, Honestidad). */
+/** Nombre corto para tablas del dashboard. */
 export const MODULE_TABLE_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Cleaver',
-  terman: 'Cognitivo Mind24',
-  mrr: 'MRR',
-  habilidades_especificas: 'Habilidades',
+  terman: 'Eval. Cognitiva Mind24',
+  sales_sjt: 'SJT Comercial',
   entrevista_digital: 'Entrevista',
   medida: 'A la medida',
 };
 
-/** Nombre amigable para reportes PDF (ej. Comportamiento, Honestidad). */
+/** Nombre amigable para reportes PDF. */
 export const MODULE_REPORT_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Comportamiento',
-  terman: 'Evaluación cognitiva analítica',
-  mrr: 'Personalidad MRR',
-  habilidades_especificas: 'Habilidades específicas',
+  terman: 'Evaluación Cognitiva Analítica Mind24',
+  sales_sjt: 'Simulador de Escenarios Comerciales (SJT)',
   entrevista_digital: 'Entrevista digital',
   medida: 'Módulo a la medida',
 };
 
 export function moduleTableLabel(key) {
   const rk = resolveModuleKey(key);
+  if (RETIRED_MODULE_KEYS.has(rk)) return RETIRED_LABELS[rk] || rk;
   return MODULE_TABLE_LABELS[rk] || moduleMetaForKey(rk).label;
 }
 
 export function moduleReportLabel(key) {
   const rk = resolveModuleKey(key);
+  if (RETIRED_MODULE_KEYS.has(rk)) return RETIRED_LABELS[rk] || rk;
   return MODULE_REPORT_LABELS[rk] || moduleMetaForKey(rk).label;
 }
 
@@ -154,6 +215,9 @@ export function moduleLabelMap() {
   }
   for (const [legacy, target] of Object.entries(LEGACY_ALIASES)) {
     out[legacy] = MODULE_CATALOG[target]?.label || legacy;
+  }
+  for (const [rk, label] of Object.entries(RETIRED_LABELS)) {
+    out[rk] = label;
   }
   return out;
 }
