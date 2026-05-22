@@ -6,52 +6,70 @@ import {
   resolveModuleKey,
 } from '../utils/moduleCatalog.js';
 
+const ASSIGNMENT_LOBBY_INCLUDE = {
+  assessmentDefinition: {
+    select: { id: true, name: true, key: true, version: true, config: true },
+  },
+  attempts: {
+    select: { moduleKey: true, status: true },
+  },
+};
+
 function readCompletedModules(assignment) {
   const raw = assignment.completedModules;
   if (!Array.isArray(raw)) return [];
-  return raw.map((x) => String(x));
+  return raw.map((x) => resolveModuleKey(String(x)));
 }
 
-function assertCandidateOrgAccess(user) {
-  if (user.organization?.blocked) {
-    const err = new Error('La organización está suspendida. Contacta a soporte.');
-    err.code = 'ORG_BLOCKED';
-    throw err;
+function submittedModuleKeys(assignment) {
+  const keys = new Set();
+  for (const att of assignment.attempts || []) {
+    if (att.status === 'submitted' && att.moduleKey) {
+      keys.add(resolveModuleKey(String(att.moduleKey)));
+    }
   }
-  if (user.organizationId && !user.organization?.empresaPortalEnabled) {
-    const err = new Error(
-      'Tu empresa no está habilitada en la plataforma. El administrador general debe registrar la empresa antes de que puedas acceder.',
-    );
-    err.code = 'EMPRESA_NOT_PROVISIONED';
-    throw err;
+  return keys;
+}
+
+function completedModuleKeys(assignment) {
+  const done = new Set(readCompletedModules(assignment));
+  for (const k of submittedModuleKeys(assignment)) done.add(k);
+  return done;
+}
+
+/** Solo módulos explícitamente asignados; nunca el catálogo completo ni dimensiones JSON legacy. */
+function assignedModuleKeys(assignment) {
+  const raw = assignment.selectedModules;
+  if (Array.isArray(raw) && raw.length) {
+    const keys = raw
+      .map((x) => resolveModuleKey(String(x)))
+      .filter((k) => isCandidateLobbyModuleKey(k));
+    return [...new Set(keys)];
   }
+  const inferred = new Set();
+  readCompletedModules(assignment).forEach((k) => {
+    if (isCandidateLobbyModuleKey(k)) inferred.add(k);
+  });
+  for (const att of assignment.attempts || []) {
+    if (
+      att.moduleKey &&
+      (att.status === 'submitted' || att.status === 'in_progress')
+    ) {
+      const rk = resolveModuleKey(String(att.moduleKey));
+      if (isCandidateLobbyModuleKey(rk)) inferred.add(rk);
+    }
+  }
+  return [...inferred];
 }
 
 function modulesFromAssignment(assignment) {
-  const raw = assignment.selectedModules;
-  let keys = [];
-  if (Array.isArray(raw) && raw.length) {
-    keys = raw.map((x) => String(x));
-  } else {
-    const dims = assignment.assessmentDefinition?.config?.dimensions;
-    if (Array.isArray(dims)) {
-      keys = dims.map((d) => d.id || d.label).filter(Boolean);
-    }
-  }
-  if (!keys.length && assignment.assessmentDefinition?.name) {
-    return [
-      {
-        key: assignment.assessmentDefinition.key || 'eval',
-        label: assignment.assessmentDefinition.name,
-        assignmentId: assignment.id,
-      },
-    ];
-  }
-  const done = new Set(readCompletedModules(assignment));
+  const keys = assignedModuleKeys(assignment);
+  if (!keys.length) return [];
+
+  const done = completedModuleKeys(assignment);
   return keys
-    .map((key) => {
-      const resolved = moduleMetaForKey(key);
-      const storeKey = resolveModuleKey(key);
+    .map((storeKey) => {
+      const resolved = moduleMetaForKey(storeKey);
       return {
         key: storeKey,
         label: resolved.label,
@@ -61,16 +79,25 @@ function modulesFromAssignment(assignment) {
         estimatedTime: resolved.estimatedMinutes,
         featured: !!resolved.featured,
         assignmentId: assignment.id,
-        completed: done.has(storeKey) || done.has(key),
+        completed: done.has(storeKey),
       };
     })
     .filter((m) => isCandidateLobbyModuleKey(m.key));
 }
 
 function assignmentStillPending(assignment) {
-  const keys = modulesFromAssignment(assignment).map((m) => m.key);
-  const done = new Set(readCompletedModules(assignment));
-  return keys.some((k) => !done.has(k));
+  const mods = modulesFromAssignment(assignment);
+  return mods.some((m) => !m.completed);
+}
+
+function isLobbyRelevantAssignment(assignment) {
+  const mods = modulesFromAssignment(assignment);
+  if (!mods.length) return false;
+  return mods.some((m) => !m.completed);
+}
+
+function lobbyModulesForAssignment(assignment) {
+  return modulesFromAssignment(assignment).filter((m) => !m.completed);
 }
 
 function mapAssignmentRow(a) {
@@ -120,9 +147,7 @@ export async function authenticateCandidateByAccess({ email, accessCode }) {
 
   const assignments = await prisma.assignment.findMany({
     where: { candidateId: user.candidateProfile.id },
-    include: {
-      assessmentDefinition: { select: { id: true, name: true, key: true, version: true, config: true } },
-    },
+    include: ASSIGNMENT_LOBBY_INCLUDE,
     orderBy: { createdAt: 'desc' },
   });
 
@@ -132,21 +157,18 @@ export async function authenticateCandidateByAccess({ email, accessCode }) {
   }
 
   const assignment = matched[0];
-  if (assignment.status === 'completed' && !assignmentStillPending(assignment)) {
+  if (!isLobbyRelevantAssignment(assignment)) {
     throw invalidAccessError();
   }
 
-  const pending = assignments.filter(
-    (a) => a.status !== 'completed' || assignmentStillPending(a),
-  );
-  const allMods = modulesFromAssignment(assignment);
-  const modules = allMods.filter((m) => !m.completed);
+  const pending = assignments.filter(isLobbyRelevantAssignment);
+  const modules = lobbyModulesForAssignment(assignment);
 
   return {
     user,
     assignmentId: assignment.id,
     accessCode: code,
-    modules: modules.length ? modules : allMods,
+    modules,
     assignments: pending.map(mapAssignmentRow),
   };
 }
@@ -166,23 +188,33 @@ export async function getCandidateLobbyForUser(userId) {
 
   const assignments = await prisma.assignment.findMany({
     where: { candidateId: user.candidateProfile.id },
-    include: {
-      assessmentDefinition: { select: { id: true, name: true, key: true, version: true, config: true } },
-    },
+    include: ASSIGNMENT_LOBBY_INCLUDE,
     orderBy: { createdAt: 'desc' },
   });
 
-  const pending = assignments.filter(
-    (a) => a.status !== 'completed' || assignmentStillPending(a),
-  );
-  const primary = pending[0] || null;
-  const allMods = primary ? modulesFromAssignment(primary) : [];
-  const openMods = allMods.filter((m) => !m.completed);
+  const active = assignments.filter(isLobbyRelevantAssignment);
+  const primary = active[0] || null;
+  const modules = primary ? lobbyModulesForAssignment(primary) : [];
 
   return {
     user,
     assignmentId: primary?.id ?? null,
-    modules: openMods.length ? openMods : allMods,
-    assignments: pending.map(mapAssignmentRow),
+    modules,
+    assignments: active.map(mapAssignmentRow),
   };
+}
+
+function assertCandidateOrgAccess(user) {
+  if (user.organization?.blocked) {
+    const err = new Error('La organización está suspendida. Contacta a soporte.');
+    err.code = 'ORG_BLOCKED';
+    throw err;
+  }
+  if (user.organizationId && !user.organization?.empresaPortalEnabled) {
+    const err = new Error(
+      'Tu empresa no está habilitada en la plataforma. El administrador general debe registrar la empresa antes de que puedas acceder.',
+    );
+    err.code = 'EMPRESA_NOT_PROVISIONED';
+    throw err;
+  }
 }

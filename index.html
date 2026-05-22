@@ -431,13 +431,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-mod-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;}
 .cev-mod-time{font-size:11px;font-weight:600;color:var(--slate-500);letter-spacing:.02em;white-space:nowrap;}
 .cev-mod-chip{background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;}
-.cev-success-overlay{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,17,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:m24fo .35s ease;}
-.cev-success-overlay.hidden{display:none!important;}
-.cev-success-dialog{position:relative;width:100%;max-width:420px;padding:40px 32px 28px;border-radius:24px;background:linear-gradient(165deg,#13081f 0%,#2e1067 52%,#1e1b4b 100%);border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 100px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.1);text-align:center;}
+.cev-success-overlay{position:fixed;inset:0;z-index:2600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,17,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:m24fo .35s ease;pointer-events:auto;}
+.cev-success-overlay.hidden{display:none!important;pointer-events:none!important;visibility:hidden;}
+.cev-success-dialog{position:relative;z-index:1;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:40px 32px 28px;border-radius:24px;background:linear-gradient(165deg,#13081f 0%,#2e1067 52%,#1e1b4b 100%);border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 100px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.1);text-align:center;pointer-events:auto;}
 .cev-success-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-size:20px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s;}
 .cev-success-x:hover{background:rgba(255,255,255,.14);}
 .cev-success-heading{font-size:22px;font-weight:800;color:#fff;margin:0 0 22px;letter-spacing:-.03em;}
-.cev-modal-access-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(1.85rem,5.5vw,2.65rem);font-weight:800;color:#E9D5FF;letter-spacing:.22em;margin:0 0 26px;line-height:1.2;}
+.cev-modal-access-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(1.85rem,5.5vw,2.65rem);font-weight:800;color:#E9D5FF;letter-spacing:.22em;margin:0 0 16px;line-height:1.2;user-select:text;-webkit-user-select:text;cursor:text;}
+.cev-success-speech{width:100%;min-height:120px;max-height:200px;overflow-y:auto;margin:0 0 18px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#F3F4F6;font-size:12px;font-weight:500;line-height:1.55;text-align:left;white-space:pre-wrap;user-select:text;-webkit-user-select:text;cursor:text;font-family:inherit;resize:vertical;}
+.cev-success-x,.cev-success-copy-btn,.cev-success-close-link{pointer-events:auto;position:relative;z-index:2;}
 .cev-success-copy-btn{width:100%;padding:14px 18px;border-radius:var(--r-sm);border:none;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1e1b4b;box-shadow:0 10px 32px rgba(250,204,21,.3);margin-bottom:8px;transition:transform .15s,box-shadow .15s;}
 .cev-success-copy-btn:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(250,204,21,.4);}
 .cev-success-close-link{display:block;width:100%;padding:10px;background:transparent;border:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
@@ -1346,6 +1348,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="cev-success-x" onclick="crearEvalCloseSuccessModal()" aria-label="Cerrar">×</button>
       <h2 id="cev-success-title" class="cev-success-heading">Evaluación Creada</h2>
       <div id="cev-modal-access-code" class="cev-modal-access-code" aria-live="polite">—</div>
+      <textarea id="cev-success-speech-preview" class="cev-success-speech" readonly aria-label="Mensaje de acceso para el candidato"></textarea>
       <button type="button" class="cev-success-copy-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
       <button type="button" class="cev-success-close-link" onclick="crearEvalCloseSuccessModal()">Cerrar</button>
     </div>
@@ -2173,6 +2176,7 @@ function mind24ResetUiBlockers(){
     el.style.pointerEvents='none';
     el.style.opacity='';
     el.style.transition='';
+    el.style.visibility='hidden';
   });
   window.__mind24FitnessModalOpen=false;
   document.body.style.overflow='';
@@ -2262,10 +2266,15 @@ function closeAllModals(){
   });
   window.__mind24FitnessModalOpen=false;
   const fit=document.getElementById('m24-fitness-modal');
-  if(fit){ fit.classList.add('hidden'); fit.style.pointerEvents='none'; }
-  crearEvalCloseSuccessModal();
-  document.body.style.overflow='';
-  document.body.style.pointerEvents='';
+  if(fit){ fit.classList.add('hidden'); fit.style.pointerEvents='none'; fit.style.visibility='hidden'; }
+  const cev=document.getElementById('cev-success-modal');
+  if(cev && !cev.classList.contains('hidden')) crearEvalCloseSuccessModal();
+  else if(cev){ cev.classList.add('hidden'); cev.style.pointerEvents='none'; cev.style.visibility='hidden'; }
+  const anyOpen=document.querySelector('.modal-overlay:not(.hidden),.m24-fitness-overlay:not(.hidden),.cev-success-overlay:not(.hidden)');
+  if(!anyOpen){
+    document.body.style.overflow='';
+    document.body.style.pointerEvents='';
+  }
 }
 function closeModalOnBg(e,id){ if(e.target.classList.contains('modal-overlay'))closeModal(id); }
 function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
@@ -2406,14 +2415,32 @@ function copyCrearEvalAccessMessage(){
 function crearEvalOpenSuccessModal(code){
   const el=document.getElementById('cev-modal-access-code');
   if(el) el.textContent=code;
+  const speechEl=document.getElementById('cev-success-speech-preview');
+  const clip=window.__CEV_ACCESS_CLIP;
+  if(speechEl){
+    if(clip&&clip.shortCode){
+      speechEl.value=crearEvalBuildAccessSpeech(clip.candidateName,clip.email,clip.shortCode);
+    }else{
+      speechEl.value='';
+    }
+  }
   const m=document.getElementById('cev-success-modal');
-  if(m){ m.classList.remove('hidden'); document.body.style.overflow='hidden'; }
+  if(m){
+    m.classList.remove('hidden');
+    m.style.pointerEvents='auto';
+    m.style.visibility='visible';
+    document.body.style.overflow='hidden';
+    document.body.style.pointerEvents='';
+  }
 }
 function crearEvalCloseSuccessModal(){
   const m=document.getElementById('cev-success-modal');
-  if(!m||m.classList.contains('hidden'))return;
+  if(!m)return;
   m.classList.add('hidden');
+  m.style.pointerEvents='none';
+  m.style.visibility='hidden';
   document.body.style.overflow='';
+  document.body.style.pointerEvents='';
   crearEvalResetNuevaFlow();
 }
 function crearEvalResetNuevaFlow(){
@@ -2423,6 +2450,8 @@ function crearEvalResetNuevaFlow(){
   if(sm) sm.classList.add('hidden');
   const codeEl=document.getElementById('cev-modal-access-code');
   if(codeEl) codeEl.textContent='—';
+  const speechEl=document.getElementById('cev-success-speech-preview');
+  if(speechEl) speechEl.value='';
   crearEvalHideApiBanner();
   const warn=document.getElementById('cev-mod-inline-warn');
   if(warn) warn.classList.add('hidden');
