@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { sjtSalesTotalTimeSeconds } from '../data/sjtSalesData.js';
 import { termanTotalTimeSeconds } from '../data/termanData.js';
 import {
   filterConfigByModule,
@@ -17,6 +18,7 @@ function getTimeLimitSec(config) {
 function resolveModuleTimeLimitSec(moduleKey, moduleConfig, meta) {
   const mk = resolveModuleKey(moduleKey);
   if (mk === 'terman') return termanTotalTimeSeconds();
+  if (mk === 'sales_sjt') return sjtSalesTotalTimeSeconds();
   const fromConfig = moduleConfig?.meta?.timeLimitSec;
   if (typeof fromConfig === 'number' && fromConfig > 0) return fromConfig;
   if (meta?.estimatedMinutes != null && meta.estimatedMinutes > 0) {

@@ -6,6 +6,10 @@ import {
   scoreCleaverResponses,
 } from './cleaverScoring.service.js';
 import {
+  buildSjtSalesAttemptScores,
+  scoreSjtSalesResponses,
+} from './sjtSalesScoring.service.js';
+import {
   buildTermanAttemptScores,
   scoreTermanResponses,
 } from './termanScoring.service.js';
@@ -14,18 +18,34 @@ const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
 };
 
-export function serializeQuestion(q) {
+function clientQuestionMetadata(metadata, moduleKey) {
+  if (!metadata || typeof metadata !== 'object') return null;
+  const rk = resolveModuleKey(moduleKey);
+  if (rk === 'sales_sjt') {
+    const { scenarioIndex } = metadata;
+    return scenarioIndex != null ? { scenarioIndex: Number(scenarioIndex) } : null;
+  }
+  return metadata;
+}
+
+function clientOptionMetadata(metadata, moduleKey) {
+  if (!metadata || typeof metadata !== 'object') return null;
+  if (resolveModuleKey(moduleKey) === 'sales_sjt') return null;
+  return metadata;
+}
+
+export function serializeQuestion(q, moduleKey = '') {
   return {
     id: q.id,
     type: q.type,
     text: q.text,
-    metadata: q.metadata ?? null,
+    metadata: clientQuestionMetadata(q.metadata, moduleKey),
     sortOrder: q.sortOrder,
     options: (q.options || []).map((o) => ({
       id: o.id,
       label: o.label,
       value: o.value,
-      metadata: o.metadata ?? null,
+      metadata: clientOptionMetadata(o.metadata, moduleKey),
       sortOrder: o.sortOrder,
     })),
   };
@@ -93,7 +113,7 @@ export async function getAttemptEnginePayload(userId, attemptId) {
     moduleTitle: mod.title,
     timeLimitSec: attempt.timeLimitSec,
     status: attempt.status,
-    questions: mod.questions.map(serializeQuestion),
+    questions: mod.questions.map((q) => serializeQuestion(q, attempt.moduleKey || '')),
     answeredQuestionIds: [...answered],
   };
 }
@@ -120,7 +140,7 @@ export function buildTermanSeriesPayload(questions) {
         questions: [],
       });
     }
-    bySeries.get(seriesId).questions.push(serializeQuestion(q));
+    bySeries.get(seriesId).questions.push(serializeQuestion(q, 'terman'));
   }
   return [...bySeries.values()]
     .sort((a, b) => a.seriesIndex - b.seriesIndex)
@@ -152,7 +172,7 @@ export async function buildDynamicStartPayload({
     timeLimitSec: timeLimitSec ?? 900,
     startedAt,
     resumed,
-    questions: mod.questions.map(serializeQuestion),
+    questions: mod.questions.map((q) => serializeQuestion(q, resolved)),
     answeredQuestionIds: [],
   };
 
@@ -160,6 +180,11 @@ export async function buildDynamicStartPayload({
     base.assessmentMode = 'terman';
     base.termanSeries = buildTermanSeriesPayload(mod.questions);
     base.totalSeries = base.termanSeries.length;
+  }
+
+  if (resolved === 'sales_sjt') {
+    base.assessmentMode = 'sales_sjt';
+    base.totalScenarios = mod.questions.length;
   }
 
   return base;
@@ -380,6 +405,26 @@ export async function completeDynamicAttempt(userId, attemptId) {
         topSeries ? `Serie más fuerte: ${topSeries.name}.` : ''
       } CI oficial en calibración.`,
       termanRawScore: scoring.rawScore,
+    };
+  }
+
+  if (resolvedKey === 'sales_sjt') {
+    const sjtRows = await prisma.candidateResponse.findMany({
+      where: { attemptId: attempt.id },
+      include: {
+        selectedOption: true,
+        question: { select: { metadata: true, sortOrder: true } },
+      },
+    });
+    const scoring = scoreSjtSalesResponses(sjtRows);
+    attemptScores = buildSjtSalesAttemptScores(scoring);
+    interpretation = {
+      verdict: 'SJT comercial calificado',
+      badge: '◈',
+      description: `Puntaje ${scoring.rawScore}/${scoring.maxPossible} (${scoring.percentScore}% · ${scoring.performanceLevel}). ${
+        scoring.strongestCompetence ? `Fortaleza: ${scoring.strongestCompetence}.` : ''
+      }`,
+      sjtPercentScore: scoring.percentScore,
     };
   }
 

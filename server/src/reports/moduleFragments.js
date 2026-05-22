@@ -14,6 +14,10 @@ import {
 } from './honestidadReport.fragment.js';
 import { buildGenericModuleFragment } from './genericModule.fragment.js';
 import {
+  buildSjtSalesModuleFragment,
+  extractSjtSalesScores,
+} from './fragments/sjtSalesReport.fragment.js';
+import {
   buildTermanModuleFragment,
   extractTermanScores,
 } from './fragments/termanReport.fragment.js';
@@ -44,6 +48,12 @@ export function buildModuleFragment(attempt) {
     const scores = extractTermanScores(attempt);
     if (!scores) return null;
     return buildTermanModuleFragment({ scores, submittedAt });
+  }
+
+  if (moduleKey === 'sales_sjt') {
+    const scores = extractSjtSalesScores(attempt);
+    if (!scores) return null;
+    return buildSjtSalesModuleFragment({ scores, submittedAt });
   }
 
   if (attempt.status !== 'submitted') return null;

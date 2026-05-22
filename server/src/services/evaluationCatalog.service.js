@@ -1,6 +1,11 @@
 import { prisma as defaultPrisma } from '../db/client.js';
 import { CLEAVER_TETRAD_COUNT, cleaverBlocks } from '../data/cleaverData.js';
 import {
+  SJT_SALES_CATALOG_VERSION,
+  sjtSalesQuestionCount,
+  sjtSalesQuestionsFlat,
+} from '../data/sjtSalesData.js';
+import {
   TERMAN_CATALOG_VERSION,
   termanQuestionCount,
   termanQuestionsFlat,
@@ -262,6 +267,74 @@ async function ensureTermanQuestions(db, moduleId) {
   return { existing, created: flat.length, expected };
 }
 
+async function sjtSalesBankNeedsResync(db, moduleId) {
+  const expected = sjtSalesQuestionCount();
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+  if (existing !== expected) return true;
+
+  const mod = await db.evaluationModule.findUnique({
+    where: { id: moduleId },
+    select: { description: true },
+  });
+  const desc = String(mod?.description || '');
+  return !desc.includes(`sales_sjt:v${SJT_SALES_CATALOG_VERSION}`);
+}
+
+async function ensureSalesSjtQuestions(db, moduleId) {
+  const expected = sjtSalesQuestionCount();
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+
+  if (existing === expected && !(await sjtSalesBankNeedsResync(db, moduleId))) {
+    return { existing, created: 0, expected };
+  }
+
+  if (existing > 0) {
+    await db.question.deleteMany({
+      where: { moduleId, type: 'MULTIPLE_CHOICE' },
+    });
+  }
+
+  const flat = sjtSalesQuestionsFlat();
+  for (const row of flat) {
+    await db.question.create({
+      data: {
+        moduleId,
+        type: 'MULTIPLE_CHOICE',
+        text: row.text,
+        metadata: {
+          scenarioId: row.scenarioId,
+          competence: row.competence,
+          scenarioIndex: row.scenarioIndex,
+          maxPoints: row.maxPoints,
+        },
+        sortOrder: row.sortOrder,
+        options: {
+          create: row.options.map((opt) => ({
+            label: opt.label,
+            value: String(opt.sortOrder),
+            sortOrder: opt.sortOrder,
+            metadata: { points: opt.points },
+          })),
+        },
+      },
+    });
+  }
+
+  const cat = MODULE_CATALOG.sales_sjt;
+  await db.evaluationModule.update({
+    where: { id: moduleId },
+    data: {
+      description: `${cat.description} [sales_sjt:v${SJT_SALES_CATALOG_VERSION}]`,
+    },
+  });
+
+  return { existing, created: flat.length, expected };
+}
+
 /**
  * Idempotente: asegura módulos del catálogo y preguntas mínimas (Cleaver, placeholders).
  * No borra usuarios, asignaciones ni intentos. Seguro en cada arranque de producción.
@@ -282,6 +355,12 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
     terman = await ensureTermanQuestions(db, termanModuleId);
   }
 
+  const salesSjtModuleId = moduleIdByKey.sales_sjt;
+  let salesSjt = { existing: 0, created: 0 };
+  if (salesSjtModuleId) {
+    salesSjt = await ensureSalesSjtQuestions(db, salesSjtModuleId);
+  }
+
   const cleaverCount = cleaverModuleId
     ? await db.question.count({
         where: { moduleId: cleaverModuleId, type: 'CLEAVER_MATRIX', isActive: true },
@@ -294,15 +373,24 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
       })
     : 0;
 
+  const salesSjtCount = salesSjtModuleId
+    ? await db.question.count({
+        where: { moduleId: salesSjtModuleId, type: 'MULTIPLE_CHOICE', isActive: true },
+      })
+    : 0;
+
   const summary = {
     modules: MIND24_MODULE_KEYS.length,
     cleaverQuestions: cleaverCount,
     cleaverExpected: CLEAVER_TETRAD_COUNT,
     termanQuestions: termanCount,
     termanExpected: termanQuestionCount(),
+    salesSjtQuestions: salesSjtCount,
+    salesSjtExpected: sjtSalesQuestionCount(),
     placeholdersCreated,
     cleaverSeeded: cleaver.created,
     termanSeeded: terman.created,
+    salesSjtSeeded: salesSjt.created,
   };
 
   console.log('[catalog] Evaluation catalog OK:', summary);
@@ -318,6 +406,14 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   if (termanCount < termanQuestionCount()) {
     const err = new Error(
       `TERMAN_INCOMPLETE: ${termanCount}/${termanQuestionCount()} ítems activos`,
+    );
+    console.error('[catalog]', err.message);
+    throw err;
+  }
+
+  if (salesSjtCount < sjtSalesQuestionCount()) {
+    const err = new Error(
+      `SALES_SJT_INCOMPLETE: ${salesSjtCount}/${sjtSalesQuestionCount()} escenarios activos`,
     );
     console.error('[catalog]', err.message);
     throw err;

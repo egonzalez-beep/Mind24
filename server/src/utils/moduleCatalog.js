@@ -9,7 +9,7 @@ export const MIND24_MODULE_KEYS = [
 ];
 
 /** Módulos que pueden asignarse y ejecutarse hoy. */
-export const ASSIGNABLE_MODULE_KEYS = ['honestidad', 'cleaver', 'terman'];
+export const ASSIGNABLE_MODULE_KEYS = ['honestidad', 'cleaver', 'terman', 'sales_sjt'];
 
 export const DEFAULT_SELECTED_MODULES = [...ASSIGNABLE_MODULE_KEYS];
 
@@ -61,12 +61,10 @@ export const MODULE_CATALOG = {
   sales_sjt: {
     label: 'Simulador de Escenarios Comerciales (SJT)',
     description:
-      'Juicio situacional en ventas y atención al cliente. Banco oficial en preparación.',
+      'Juicio situacional en ventas, negociación y atención a clientes. 10 escenarios con puntuación ponderada.',
     icon: '📊',
-    estimatedMinutes: null,
-    comingSoon: true,
+    estimatedMinutes: 30,
     sectionIds: ['principal'],
-    questionIdRange: [23, 30],
   },
   entrevista_digital: {
     label: 'Entrevista Digital',
