@@ -2905,9 +2905,15 @@ async function startAssignedModule(assignmentId, moduleKey){
       if(mkDyn==='cleaver'&&j.questions.some(function(q){ return q.type!=='CLEAVER_MATRIX'; })){
         throw new Error('Datos del módulo Cleaver inválidos. Vuelve al lobby e inténtalo de nuevo.');
       }
-      if(mkDyn==='terman'&&j.termanSeries&&j.termanSeries.length){
-        startTermanAssessment(j);
-        return;
+      if(mkDyn==='terman'){
+        if(!j.termanSeries||!j.termanSeries.length){
+          j.termanSeries=termanNormalizeSeriesFromPayload(j);
+        }
+        if(j.termanSeries&&j.termanSeries.length){
+          startTermanAssessment(j);
+          return;
+        }
+        throw new Error('El módulo Terman no tiene preguntas activas. Contacta al administrador.');
       }
       startDynamicAssessment(j);
       return;
@@ -3133,15 +3139,65 @@ window.TERMAN_CTX=null;
 
 const TERMAN_SHELL_HTML='<div class="terman-shell"><div id="termanIntroView" class="terman-intro-card"><div class="terman-series-badge" id="termanSeriesBadge">Sección 1 de 10</div><h2 id="termanSeriesTitle">Evaluación en curso</h2><p id="termanSeriesInstr">Responde con atención dentro del tiempo indicado.</p><p class="terman-progress" id="termanSeriesMeta">—</p><button type="button" class="btn-start" id="termanBtnStart">Iniciar sección →</button></div><div id="termanRunView" class="hidden"><div class="terman-timer-bar"><div><div class="terman-timer-label" id="termanTimerLabel">Tiempo restante — Sección 1/10</div><div class="terman-series-badge" id="termanRunBadge">Sección 1 / 10</div></div><div class="terman-timer-value" id="termanTimerDisplay">02:00</div></div><div class="terman-run-card terman-locked" id="termanQuestionsWrap"><div class="terman-q-list" id="termanQuestionsHost"></div></div><div class="eval-nav"><span class="q-note" id="termanNote">Responde antes de que termine el tiempo</span><button type="button" class="btn-next" id="termanBtnFinish">Finalizar sección →</button></div></div></div>';
 
+/** Construye series desde payload.termanSeries o, en su defecto, desde questions[].metadata */
+function termanNormalizeSeriesFromPayload(payload){
+  if(!payload) return [];
+  if(Array.isArray(payload.termanSeries)&&payload.termanSeries.length){
+    return payload.termanSeries.map(function(s,idx){
+      return {
+        seriesId:s.seriesId||('serie_'+(idx+1)),
+        name:s.name,
+        timeLimitSeconds:s.timeLimitSeconds||120,
+        instruction:s.instruction||'',
+        seriesIndex:s.seriesIndex!=null?s.seriesIndex:idx,
+        questions:Array.isArray(s.questions)?s.questions.slice():[],
+      };
+    }).sort(function(a,b){ return (a.seriesIndex||0)-(b.seriesIndex||0); });
+  }
+  const questions=Array.isArray(payload.questions)?payload.questions:[];
+  if(!questions.length) return [];
+  const map={};
+  const order=[];
+  questions.forEach(function(q){
+    const meta=(q&&q.metadata&&typeof q.metadata==='object')?q.metadata:{};
+    const sid=meta.seriesId||'serie_1';
+    if(!map[sid]){
+      map[sid]={
+        seriesId:sid,
+        name:meta.seriesName,
+        timeLimitSeconds:meta.seriesTimeLimitSeconds||120,
+        instruction:meta.seriesInstruction||'',
+        seriesIndex:meta.seriesIndex!=null?Number(meta.seriesIndex):order.length,
+        questions:[],
+      };
+      order.push(sid);
+    }
+    map[sid].questions.push(q);
+  });
+  return order.map(function(sid){ return map[sid]; })
+    .sort(function(a,b){ return (a.seriesIndex||0)-(b.seriesIndex||0); })
+    .map(function(s){
+      s.questions=s.questions.sort(function(a,b){ return (a.sortOrder||0)-(b.sortOrder||0); });
+      return s;
+    });
+}
+
 function termanMountShell(){
   const host=document.getElementById('scr-terman');
-  if(!host)return;
+  if(!host) return false;
   host.innerHTML=TERMAN_SHELL_HTML;
   host.setAttribute('aria-hidden','false');
   const btnStart=document.getElementById('termanBtnStart');
   const btnFinish=document.getElementById('termanBtnFinish');
   if(btnStart) btnStart.onclick=function(){ termanStartSeries(); };
   if(btnFinish) btnFinish.onclick=function(){ termanFinishSeries(); };
+  return true;
+}
+
+function termanActivateScreen(){
+  MIND24_EVAL_SCREENS.forEach(function(s){ s.classList.remove('active'); });
+  const host=document.getElementById('scr-terman');
+  if(host) host.classList.add('active');
 }
 
 function termanUnmountShell(){
@@ -3197,10 +3253,15 @@ function termanRenderQuestions(){
   const s=termanGetSeries();
   const ctx=window.TERMAN_CTX;
   const host=document.getElementById('termanQuestionsHost');
-  if(!s||!ctx||!host)return;
+  if(!s||!ctx||!host) return;
   host.innerHTML='';
+  const qs=s.questions||[];
+  if(!qs.length){
+    host.innerHTML='<p class="terman-q-text" style="text-align:center;color:rgba(255,255,255,.5)">No hay ítems en esta sección.</p>';
+    return;
+  }
   const letters=['A','B','C','D','E','F'];
-  (s.questions||[]).forEach(function(q,qi){
+  qs.forEach(function(q,qi){
     const item=document.createElement('div');
     item.className='terman-q-item';
     item.dataset.questionId=q.id;
@@ -3283,8 +3344,8 @@ async function termanAdvanceSeries(wasTimeout){
     }
     ctx.locked=false;
     ctx.secondsLeft=0;
+    termanActivateScreen();
     termanRenderIntro();
-    showScr('terman');
   }catch(e){
     alert((e&&e.message)?String(e.message):'Error al guardar la serie.');
     ctx.locked=false;
@@ -3313,16 +3374,18 @@ function termanStartSeries(){
   termanRenderQuestions();
   termanSyncTimerUI();
   termanClearTimer();
+  ctx.phase='run';
   ctx.timerInt=setInterval(function(){
-    if(!window.TERMAN_CTX||window.TERMAN_CTX.locked)return;
-    ctx.secondsLeft-=1;
+    const live=window.TERMAN_CTX;
+    if(!live||live.locked) return;
+    live.secondsLeft-=1;
     termanSyncTimerUI();
-    if(ctx.secondsLeft<=0){
+    if(live.secondsLeft<=0){
       termanClearTimer();
       termanAdvanceSeries(true);
     }
   },1000);
-  showScr('terman');
+  termanActivateScreen();
 }
 
 function termanFinishSeries(){
@@ -3332,36 +3395,51 @@ function termanFinishSeries(){
 }
 
 function startTermanAssessment(payload){
+  const series=termanNormalizeSeriesFromPayload(payload);
+  if(!series.length){
+    alert('No hay preguntas disponibles para este módulo.');
+    return;
+  }
+  if(!termanMountShell()){
+    alert('No se pudo iniciar la interfaz del módulo.');
+    return;
+  }
+
+  const first=series[0];
   window.TERMAN_CTX={
     attemptId:payload.attemptId,
     assignmentId:payload.assignmentId,
     moduleKey:payload.moduleKey,
     moduleTitle:payload.moduleTitle,
-    series:payload.termanSeries||[],
+    series:series,
     seriesIdx:0,
     drafts:{},
-    secondsLeft:0,
+    secondsLeft:first&&first.timeLimitSeconds?first.timeLimitSeconds:120,
     locked:false,
     timerInt:null,
+    phase:'intro',
   };
-  window.ATTEMPT_CTX={useApi:true,engine:'dynamic',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey};
+  window.ATTEMPT_CTX={useApi:true,engine:'terman',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey};
   mind24SyncEvalResultNav();
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
-  const titleEl=document.getElementById('eval-intro-title');
-  if(titleEl) titleEl.innerHTML='Evaluación<br>Mind24';
-  const sub=document.getElementById('introSub');
-  if(sub) sub.textContent='Completarás varias secciones con tiempo límite estricto por bloque.';
   const tag=document.getElementById('evalSecTag');
   if(tag) tag.textContent='◈ Evaluación Mind24';
+  const totalQ=series.reduce(function(n,s){ return n+(s.questions?s.questions.length:0); },0);
+  const prog=document.getElementById('evalProgLbl');
+  if(prog) prog.textContent='Sección 1 de '+series.length;
+  const pct=document.getElementById('evalProgPct');
+  if(pct) pct.textContent='0%';
+  const fill=document.getElementById('evalProgFill');
+  if(fill) fill.style.width='0%';
   const nq=document.getElementById('eval-meta-questions');
-  const totalQ=(payload.termanSeries||[]).reduce(function(n,s){return n+(s.questions?s.questions.length:0);},0);
   if(nq) nq.textContent=String(totalQ);
   const tm=document.getElementById('eval-meta-minutes');
   if(tm) tm.textContent=String(Math.round((payload.timeLimitSec||1800)/60));
+
   showView('evaluacion');
+  termanActivateScreen();
   termanRenderIntro();
-  showScr('terman');
 }
 
 function startDynamicAssessment(payload){
