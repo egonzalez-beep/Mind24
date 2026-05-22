@@ -90,7 +90,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .hero-ring-1{width:500px;height:500px;animation:ring-expand 8s ease-in-out infinite;}
 .hero-ring-2{width:700px;height:700px;animation:ring-expand 8s ease-in-out infinite;animation-delay:2.5s;}
 .hero-ring-3{width:900px;height:900px;animation:ring-expand 8s ease-in-out infinite;animation-delay:5s;}
-#heroCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none;}
 .hero-content{position:relative;z-index:1;max-width:880px;}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;background:rgba(124,58,237,.18);border:1px solid rgba(139,92,246,.4);border-radius:100px;font-size:13px;font-weight:600;color:var(--violet-light);margin-bottom:32px;animation:slideUp .7s ease forwards;backdrop-filter:blur(10px);}
 .hero-badge-dot{width:7px;height:7px;background:var(--violet-light);border-radius:50%;animation:pulse-purple 2.5s infinite;}
@@ -2234,6 +2234,7 @@ function openModal(id){
     m.style.pointerEvents='auto';
     m.style.visibility='visible';
     document.body.style.overflow='hidden';
+    document.body.style.pointerEvents='';
   }
 }
 function closeModal(id){
@@ -3244,7 +3245,7 @@ async function dynamicNextQ(){
       }else{
         document.getElementById('resBadge').textContent='✓ Módulo completado';
         document.getElementById('resScore').textContent='';
-        document.getElementById('resVerdict').textContent=(mkRes==='terman')?'Evaluación Cognitiva Analítica Mind24':((mkRes==='cleaver')?'Comportamiento (CLEAVER)':((mkRes==='honestidad')?'Batería de Honestidad (Mind24)':(ctx.moduleTitle||'Evaluación'))));
+        document.getElementById('resVerdict').textContent=(mkRes==='terman')?'Evaluación Cognitiva Analítica Mind24':((mkRes==='cleaver')?'Comportamiento (CLEAVER)':((mkRes==='honestidad')?'Batería de Honestidad (Mind24)':(ctx.moduleTitle||'Evaluación')));
         document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
         document.getElementById('compBars').innerHTML='';
         document.getElementById('flagsBox').classList.add('hidden');
