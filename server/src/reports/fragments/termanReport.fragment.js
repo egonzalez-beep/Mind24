@@ -63,14 +63,14 @@ export function buildTermanModuleFragment(ctx) {
     <div class="module-hd">
       <span class="module-icon">🧠</span>
       <div>
-        <h2 class="module-title">Inteligencia Analítica (Terman)</h2>
-        <p class="module-sub">Terman-Merrill · Cierre: ${closed}</p>
+        <h2 class="module-title">Evaluación Cognitiva Analítica Mind24</h2>
+        <p class="module-sub">10 series · 50 reactivos · Cierre: ${closed}</p>
       </div>
     </div>
     <div class="kpi-row">
       <div class="kpi-card">
         <div class="kpi-label">Puntaje bruto global</div>
-        <div class="kpi-value">${rawScore} <span style="font-size:12px;font-weight:600;color:#6B7280">/ ${totalQuestions}</span></div>
+        <div class="kpi-value">${rawScore} <span style="font-size:12px;font-weight:600;color:#6B7280">/ ${totalQuestions || 50}</span></div>
         <div class="kpi-badge">${percent.toFixed(1)}% aciertos</div>
       </div>
       <div class="kpi-card">

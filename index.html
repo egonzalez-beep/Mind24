@@ -1791,7 +1791,7 @@ function crearEvalAssessmentName(_a){
 const MIND24_MOD_TABLE_LABELS={
   honestidad:'Honestidad',
   cleaver:'Cleaver',
-  terman:'Terman',
+  terman:'Cognitivo Mind24',
   mrr:'MRR',
   habilidades_especificas:'Habilidades',
   entrevista_digital:'Entrevista',
@@ -1805,7 +1805,7 @@ function crearEvalModTableLabel(key){
 const MIND24_EVAL_MODULES=[
   {key:'honestidad',label:'Batería de Honestidad (Exclusivo Mind24)',description:'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',icon:'🛡️',featured:true},
   {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
-  {key:'terman',label:'Inteligencia Analítica (Terman)',description:'Test Terman-Merrill por series cronometradas: razonamiento, vocabulario y lógica.',icon:'🧠'},
+  {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'mrr',label:'Personalidad MRR',description:'Identifica líderes resilientes capaces de innovar bajo demanda.',icon:'🌟'},
   {key:'habilidades_especificas',label:'Habilidades Específicas',description:'Evaluaciones de impacto para Ventas y Atención al Cliente.',icon:'📊'},
   {key:'entrevista_digital',label:'Entrevista Digital',description:'Filtro asíncrono automatizado de preguntas clave sin intervención humana.',icon:'🎤'},
@@ -2913,7 +2913,7 @@ async function startAssignedModule(assignmentId, moduleKey){
           startTermanAssessment(j);
           return;
         }
-        throw new Error('El módulo Terman no tiene preguntas activas. Contacta al administrador.');
+        throw new Error('El módulo cognitivo no tiene preguntas activas. Contacta al administrador.');
       }
       startDynamicAssessment(j);
       return;
@@ -3332,8 +3332,8 @@ async function termanAdvanceSeries(wasTimeout){
       const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{method:'POST'});
       document.getElementById('resBadge').textContent='✓ Módulo completado';
       document.getElementById('resScore').textContent='';
-      document.getElementById('resVerdict').textContent=ctx.moduleTitle||'Terman';
-      document.getElementById('resDesc').textContent=out.message||'Inteligencia analítica registrada. Vuelve al lobby.';
+      document.getElementById('resVerdict').textContent='Evaluación Cognitiva Analítica Mind24';
+      document.getElementById('resDesc').textContent=out.message||'Evaluación registrada. Vuelve al lobby.';
       document.getElementById('compBars').innerHTML='';
       document.getElementById('flagsBox').classList.add('hidden');
       window.TERMAN_CTX=null;

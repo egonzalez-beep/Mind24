@@ -115,7 +115,7 @@ export function buildTermanSeriesPayload(questions) {
         seriesId,
         name: meta.seriesName || def?.name || seriesId,
         timeLimitSeconds: meta.seriesTimeLimitSeconds ?? def?.timeLimitSeconds ?? 120,
-        instruction: meta.seriesInstruction || def?.instruction || '',
+        instruction: meta.seriesInstruction || def?.instructions || def?.instruction || '',
         seriesIndex: meta.seriesIndex ?? 0,
         questions: [],
       });
@@ -374,7 +374,7 @@ export async function completeDynamicAttempt(userId, attemptId) {
     attemptScores = buildTermanAttemptScores(scoring);
     const topSeries = [...scoring.series].sort((a, b) => b.percent - a.percent)[0];
     interpretation = {
-      verdict: 'Terman calificado',
+      verdict: 'Evaluación cognitiva calificada',
       badge: '◈',
       description: `Puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos). ${
         topSeries ? `Serie más fuerte: ${topSeries.name}.` : ''

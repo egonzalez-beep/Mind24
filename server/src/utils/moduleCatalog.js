@@ -39,9 +39,9 @@ export const MODULE_CATALOG = {
     questionIdRange: [1, 7],
   },
   terman: {
-    label: 'Inteligencia Analítica (Terman)',
+    label: 'Evaluación Cognitiva Analítica Mind24',
     description:
-      'Test Terman-Merrill textual: razonamiento, vocabulario y lógica por series cronometradas.',
+      'Batería cognitiva corporativa Mind24: razonamiento, vocabulario y lógica en 10 bloques cronometrados.',
     icon: '🧠',
     estimatedMinutes: null,
     sectionIds: ['principal'],
@@ -110,7 +110,7 @@ export function moduleMetaForKey(key) {
 export const MODULE_TABLE_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Cleaver',
-  terman: 'Terman',
+  terman: 'Cognitivo Mind24',
   mrr: 'MRR',
   habilidades_especificas: 'Habilidades',
   entrevista_digital: 'Entrevista',
@@ -121,7 +121,7 @@ export const MODULE_TABLE_LABELS = {
 export const MODULE_REPORT_LABELS = {
   honestidad: 'Honestidad',
   cleaver: 'Comportamiento',
-  terman: 'Inteligencia analítica',
+  terman: 'Evaluación cognitiva analítica',
   mrr: 'Personalidad MRR',
   habilidades_especificas: 'Habilidades específicas',
   entrevista_digital: 'Entrevista digital',

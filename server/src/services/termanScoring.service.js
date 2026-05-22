@@ -1,4 +1,4 @@
-import { TERMAN_SERIES } from '../data/termanData.js';
+import { TERMAN_MAX_RAW_SCORE, TERMAN_SERIES } from '../data/termanData.js';
 
 /**
  * Califica intento Terman comparando opción seleccionada vs índice correcto en metadata.
@@ -40,8 +40,7 @@ export function scoreTermanResponses(rows) {
     }
   }
 
-  // Totales esperados del banco activo
-  const expectedTotal = TERMAN_SERIES.reduce((n, s) => n + s.questions.length, 0);
+  const expectedTotal = TERMAN_MAX_RAW_SCORE;
   if (totalQuestions < expectedTotal) {
     totalQuestions = expectedTotal;
   }
@@ -60,11 +59,12 @@ export function scoreTermanResponses(rows) {
     };
   });
 
+  const maxRaw = TERMAN_MAX_RAW_SCORE;
   const percentCorrect =
-    totalQuestions > 0 ? Math.round((rawScore / totalQuestions) * 1000) / 10 : 0;
+    maxRaw > 0 ? Math.round((rawScore / maxRaw) * 1000) / 10 : 0;
 
-  /** Placeholder CI — calibración oficial en sprint siguiente. */
-  const ciEstimate = Math.round(70 + (percentCorrect / 100) * 60);
+  /** CI preliminar escala 0–50 aciertos → ~70–130 (baremo oficial pendiente). */
+  const ciEstimate = Math.round(70 + (rawScore / maxRaw) * 60);
   const iqEstimate = ciEstimate;
 
   return {
@@ -75,7 +75,7 @@ export function scoreTermanResponses(rows) {
     iq: null,
     ciEstimate,
     iqEstimate,
-    ciNote: 'Coeficiente intelectual sujeto a tabla de baremos oficial (próxima calibración).',
+    ciNote: `Estimación preliminar sobre escala de ${maxRaw} reactivos (5 por serie). Baremo oficial en calibración.`,
     series,
   };
 }
