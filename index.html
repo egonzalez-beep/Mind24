@@ -3142,19 +3142,47 @@ async function dynamicPersistCurrent(){
   await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/responses',{method:'POST',body:JSON.stringify(body)});
 }
 
+function mind24RenderSjtCompleteResult(out){
+  const interp=out.interpretation||{};
+  const sc=out.scores||{};
+  const label=interp.profileLabel||interp.verdict||'Perfil comercial';
+  const desc=interp.profileDescription||interp.description||'';
+  document.getElementById('resBadge').textContent='✓ Módulo completado';
+  document.getElementById('resScore').textContent=(sc.rawScore!=null?String(sc.rawScore):'—')+' / '+(sc.maxPossible||50);
+  document.getElementById('resVerdict').textContent=label;
+  document.getElementById('resDesc').textContent=desc;
+  const bars=document.getElementById('compBars');
+  if(bars){
+    bars.innerHTML='';
+    const scenarios=Array.isArray(sc.scenarios)?sc.scenarios:[];
+    scenarios.forEach(function(s){
+      const pct=Number(s.percent)||0;
+      const col=pct>=80?'#059669':pct>=50?'#FCD34D':'#FCA5A5';
+      const shortName=(s.competence||'').split('(')[0].trim()||(s.competence||'');
+      bars.innerHTML+='<div class="comp-item"><div class="comp-lbl"><span class="comp-name">'+mind24EscHtml(shortName)+'</span><span class="comp-score" style="color:'+col+'">'+(Number(s.points)||0)+'/5</span></div><div class="comp-track"><div class="comp-fill" data-t="'+pct+'" style="width:0%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div>';
+    });
+    setTimeout(function(){document.querySelectorAll('#compBars .comp-fill[data-t]').forEach(function(b){setTimeout(function(){b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+  }
+  document.getElementById('flagsBox').classList.add('hidden');
+}
+
 async function dynamicNextQ(){
   try{
     await dynamicPersistCurrent();
     const ctx=window.DYNAMIC_CTX;
     if(ctx.idx>=ctx.questions.length-1){
       const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{method:'POST'});
-      document.getElementById('resBadge').textContent='✓ Módulo completado';
-      document.getElementById('resScore').textContent='';
       const mkRes=mind24ResolveModKey(ctx.moduleKey);
-      document.getElementById('resVerdict').textContent=(mkRes==='terman')?'Evaluación Cognitiva Analítica Mind24':((mkRes==='sales_sjt')?'Simulador de Escenarios Comerciales (SJT)':((mkRes==='cleaver')?'Comportamiento (CLEAVER)':((mkRes==='honestidad')?'Batería de Honestidad (Mind24)':(ctx.moduleTitle||'Evaluación'))));
-      document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
-      document.getElementById('compBars').innerHTML='';
-      document.getElementById('flagsBox').classList.add('hidden');
+      if(mkRes==='sales_sjt'){
+        mind24RenderSjtCompleteResult(out);
+      }else{
+        document.getElementById('resBadge').textContent='✓ Módulo completado';
+        document.getElementById('resScore').textContent='';
+        document.getElementById('resVerdict').textContent=(mkRes==='terman')?'Evaluación Cognitiva Analítica Mind24':((mkRes==='cleaver')?'Comportamiento (CLEAVER)':((mkRes==='honestidad')?'Batería de Honestidad (Mind24)':(ctx.moduleTitle||'Evaluación'))));
+        document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
+        document.getElementById('compBars').innerHTML='';
+        document.getElementById('flagsBox').classList.add('hidden');
+      }
       mind24SyncEvalResultNav();
       showScr('results');
       return;

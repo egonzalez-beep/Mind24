@@ -4,11 +4,52 @@ import {
   SJT_SALES_SCENARIOS,
 } from '../data/sjtSalesData.js';
 
-function performanceLevel(percent) {
-  if (percent >= 90) return 'Excelente';
-  if (percent >= 75) return 'Sólido';
-  if (percent >= 60) return 'En desarrollo';
-  return 'Requiere refuerzo';
+/** Perfiles comerciales oficiales según puntaje bruto (0–50). */
+export const SJT_SALES_PROFILE_TIERS = [
+  {
+    min: 42,
+    max: 50,
+    key: 'consultor_estrategico',
+    label: 'Consultor Estratégico',
+    description:
+      'Orientado a la creación de valor mutuo. Tiende a negociar basándose en datos y rentabilidad, priorizando la relación a largo plazo y manteniendo un alto estándar ético.',
+  },
+  {
+    min: 30,
+    max: 41,
+    key: 'ejecutivo_cierre_agil',
+    label: 'Ejecutivo de Cierre Ágil',
+    description:
+      'Orientado a resultados inmediatos y volumen. Muestra fuerte iniciativa para acelerar el ciclo de ventas. Podría priorizar concesiones comerciales bajo presión.',
+  },
+  {
+    min: 15,
+    max: 29,
+    key: 'especialista_fidelizacion',
+    label: 'Especialista en Fidelización',
+    description:
+      'Altamente empático y enfocado en el servicio al cliente. Excelente para mantener cuentas existentes, aunque podría mostrar cautela ante prospección en frío.',
+  },
+  {
+    min: 0,
+    max: 14,
+    key: 'asesor_operativo',
+    label: 'Asesor Operativo',
+    description:
+      'Perfil estructurado. Prefiere seguir flujos establecidos y permitir que el cliente guíe el ritmo de compra. Requiere acompañamiento para resolución de objeciones complejas.',
+  },
+];
+
+/**
+ * @param {number} rawScore Puntaje bruto 0–50
+ */
+export function resolveSjtSalesProfile(rawScore) {
+  const score = Math.max(
+    0,
+    Math.min(SJT_SALES_MAX_POINTS, Math.round(Number(rawScore) || 0)),
+  );
+  const tier = SJT_SALES_PROFILE_TIERS.find((t) => score >= t.min && score <= t.max);
+  return tier || SJT_SALES_PROFILE_TIERS[SJT_SALES_PROFILE_TIERS.length - 1];
 }
 
 /**
@@ -69,15 +110,18 @@ export function scoreSjtSalesResponses(rows) {
   const percentScore =
     maxPossible > 0 ? Math.round((rawScore / maxPossible) * 1000) / 10 : 0;
 
-  const strongest = [...scenarios].sort((a, b) => b.percent - a.percent)[0];
-  const weakest = [...scenarios].sort((a, b) => a.percent - b.percent)[0];
+  const profile = resolveSjtSalesProfile(rawScore);
+  const strongest = [...scenarios].sort((a, b) => b.points - a.points)[0];
+  const weakest = [...scenarios].sort((a, b) => a.points - b.points)[0];
 
   return {
     rawScore,
     maxPossible: maxPossible || SJT_SALES_MAX_POINTS,
     totalScenarios: expectedScenarios,
     percentScore,
-    performanceLevel: performanceLevel(percentScore),
+    profileKey: profile.key,
+    profileLabel: profile.label,
+    profileDescription: profile.description,
     scenarios,
     strongestCompetence: strongest?.competence || null,
     weakestCompetence: weakest?.competence || null,
@@ -92,7 +136,9 @@ export function buildSjtSalesAttemptScores(scoring) {
       maxPossible: scoring.maxPossible,
       totalScenarios: scoring.totalScenarios,
       percentScore: scoring.percentScore,
-      performanceLevel: scoring.performanceLevel,
+      profileKey: scoring.profileKey,
+      profileLabel: scoring.profileLabel,
+      profileDescription: scoring.profileDescription,
       scenarios: scoring.scenarios,
       strongestCompetence: scoring.strongestCompetence,
       weakestCompetence: scoring.weakestCompetence,

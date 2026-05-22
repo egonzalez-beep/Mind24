@@ -419,12 +419,15 @@ export async function completeDynamicAttempt(userId, attemptId) {
     const scoring = scoreSjtSalesResponses(sjtRows);
     attemptScores = buildSjtSalesAttemptScores(scoring);
     interpretation = {
-      verdict: 'SJT comercial calificado',
+      verdict: scoring.profileLabel,
       badge: '◈',
-      description: `Puntaje ${scoring.rawScore}/${scoring.maxPossible} (${scoring.percentScore}% · ${scoring.performanceLevel}). ${
-        scoring.strongestCompetence ? `Fortaleza: ${scoring.strongestCompetence}.` : ''
-      }`,
-      sjtPercentScore: scoring.percentScore,
+      description: scoring.profileDescription,
+      profileLabel: scoring.profileLabel,
+      profileDescription: scoring.profileDescription,
+      profileKey: scoring.profileKey,
+      global: scoring.percentScore,
+      sjtRawScore: scoring.rawScore,
+      sjtMaxScore: scoring.maxPossible,
     };
   }
 
