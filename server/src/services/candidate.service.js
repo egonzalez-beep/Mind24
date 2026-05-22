@@ -11,16 +11,70 @@ export async function assertEmpresaAdmin(userId) {
   return u;
 }
 
-export async function createCandidateForOrg({ organizationId, email, fullName, password, createdByUserId, curp }) {
+/**
+ * Find-or-create candidato por correo en la organización (reutiliza tras eliminar asignaciones).
+ */
+export async function createCandidateForOrg({
+  organizationId,
+  email,
+  fullName,
+  password,
+  createdByUserId: _createdByUserId,
+  curp,
+}) {
   const em = email.trim().toLowerCase();
-  const exists = await prisma.user.findUnique({ where: { email: em } });
-  if (exists) {
-    const err = new Error('EMAIL_IN_USE');
-    err.code = 'EMAIL_IN_USE';
-    throw err;
-  }
   const passwordHash = await hashPassword(password);
-  const curpNorm = curp != null && String(curp).trim() !== '' ? String(curp).trim().toUpperCase() : null;
+  const curpNorm =
+    curp != null && String(curp).trim() !== '' ? String(curp).trim().toUpperCase() : null;
+
+  const existing = await prisma.user.findUnique({
+    where: { email: em },
+    include: { candidate: true },
+  });
+
+  if (existing) {
+    if (existing.role !== 'candidato') {
+      const err = new Error('EMAIL_IN_USE');
+      err.code = 'EMAIL_IN_USE';
+      err.message = 'El correo ya está registrado con otro rol en la plataforma.';
+      throw err;
+    }
+    if (existing.organizationId !== organizationId) {
+      const err = new Error('EMAIL_IN_USE');
+      err.code = 'EMAIL_IN_USE';
+      err.message = 'El correo pertenece a otra organización.';
+      throw err;
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id: existing.id },
+        data: {
+          fullName: fullName.trim(),
+          passwordHash,
+        },
+      });
+
+      let candidate = existing.candidate;
+      if (!candidate) {
+        candidate = await tx.candidate.create({
+          data: {
+            organizationId,
+            userId: user.id,
+            curp: curpNorm,
+          },
+        });
+      } else if (curpNorm) {
+        candidate = await tx.candidate.update({
+          where: { id: candidate.id },
+          data: { curp: curpNorm },
+        });
+      }
+
+      return { user, candidate, reused: true };
+    });
+  }
+
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -38,7 +92,7 @@ export async function createCandidateForOrg({ organizationId, email, fullName, p
         curp: curpNorm,
       },
     });
-    return { user, candidate };
+    return { user, candidate, reused: false };
   });
 }
 

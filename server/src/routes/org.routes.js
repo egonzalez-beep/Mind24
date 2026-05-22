@@ -40,7 +40,7 @@ router.post('/candidates', async (req, res, next) => {
         curp: z.string().length(18).regex(/^[A-Za-z0-9]+$/).optional().nullable(),
       })
       .parse(req.body);
-    const { user, candidate } = await createCandidateForOrg({
+    const out = await createCandidateForOrg({
       organizationId: u.organizationId,
       email,
       fullName,
@@ -48,8 +48,10 @@ router.post('/candidates', async (req, res, next) => {
       createdByUserId: u.id,
       curp: curp ?? null,
     });
+    const { user, candidate } = out;
     res.status(201).json({
       candidate: { id: candidate.id, userId: user.id, email: user.email, fullName: user.fullName },
+      reused: Boolean(out.reused),
     });
   } catch (e) {
     next(e);
