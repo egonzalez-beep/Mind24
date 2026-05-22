@@ -1,4 +1,5 @@
 import { esc } from '../reportUtils.js';
+import { SJT_SALES_MAX_POINTS } from '../../data/sjtSalesData.js';
 import { resolveSjtSalesProfile } from '../../services/sjtSalesScoring.service.js';
 
 export function extractSjtSalesScores(attempt) {
@@ -20,7 +21,7 @@ export function buildSjtSalesModuleFragment(ctx) {
   const { scores, submittedAt } = ctx;
   const closed = submittedAt ? esc(submittedAt) : '—';
   const rawScore = Number(scores.rawScore) || 0;
-  const maxPossible = Number(scores.maxPossible) || 50;
+  const maxPossible = Number(scores.maxPossible) || SJT_SALES_MAX_POINTS;
   let profileLabel = scores.profileLabel || null;
   let profileDescription = scores.profileDescription || null;
   if (!profileLabel && scores.rawScore != null) {

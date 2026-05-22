@@ -1,21 +1,21 @@
 /**
  * Banco oficial — Simulador de Escenarios Comerciales (SJT) · clave: sales_sjt.
- * 10 escenarios · puntuación ponderada 0–5 por ítem (máx. 50 pts).
+ * 15 escenarios · puntuación ponderada 0–5 por ítem (máx. 75 pts).
  */
 
-export const SJT_SALES_CATALOG_VERSION = 1;
+export const SJT_SALES_CATALOG_VERSION = 2;
 
-export const SJT_SALES_MAX_POINTS = 50;
+export const SJT_SALES_MAX_POINTS = 75;
 
-export const SJT_SALES_SCENARIO_COUNT = 10;
+export const SJT_SALES_SCENARIO_COUNT = 15;
 
-/** Tiempo sugerido para completar los 10 escenarios (segundos). */
-export const SJT_SALES_TIME_LIMIT_SECONDS = 30 * 60;
+/** Tiempo sugerido para completar los 15 escenarios (segundos). */
+export const SJT_SALES_TIME_LIMIT_SECONDS = 45 * 60;
 
 export const SJT_SALES_SCENARIOS = [
   {
     scenarioId: 'sjt_sales_1',
-    competence: 'Manejo de Objeciones (Precio)',
+    competence: 'Manejo de Objeciones (Precio vs Valor)',
     text: "El prospecto te dice: 'Me encanta la plataforma, pero la competencia me ofrece algo casi igual por un 30% menos. ¿Pueden igualar el precio?' ¿Cuál es tu respuesta INMEDIATA?",
     options: [
       {
@@ -23,16 +23,16 @@ export const SJT_SALES_SCENARIOS = [
         points: 5,
       },
       {
-        text: 'Decirle que es imposible bajar el precio y que si no tienen presupuesto, no son nuestro cliente ideal.',
-        points: 3,
+        text: 'Indicar que por políticas internas los precios son fijos, y enviar el tarifario oficial para su revisión detallada.',
+        points: 0,
       },
       {
-        text: 'Pedirle unos minutos para hablar con tu gerente y ver si le pueden autorizar un 20% o 25% de descuento.',
+        text: 'Solicitar unos minutos para hablar con tu gerente y revisar si excepcionalmente le pueden autorizar un descuento para igualar la oferta.',
         points: 1,
       },
       {
-        text: 'Hablar mal de la competencia, resaltando que su tecnología es obsoleta y se va a arrepentir.',
-        points: 0,
+        text: 'Explicar que aunque existen opciones más económicas, la mayoría de clientes terminan valorando la estabilidad y acompañamiento postventa.',
+        points: 3,
       },
     ],
   },
@@ -42,16 +42,19 @@ export const SJT_SALES_SCENARIOS = [
     text: 'Tuviste una reunión excelente. Enviaste la propuesta... y el prospecto desapareció. Ha pasado una semana y no responde llamadas ni correos. ¿Qué haces?',
     options: [
       {
-        text: "Enviar un 'Break-up email': 'Asumo que esto ya no es prioridad. Cierro tu expediente por ahora. Búscame cuando estés listo.'",
+        text: "Enviar un 'Break-up email': 'Asumo que esto ya no es prioridad. Cierro tu expediente por ahora. Búscame cuando estés listo para avanzar.'",
         points: 5,
       },
-      { text: 'Pausar el contacto y esperar un mes completo para no parecer desesperado ni molestarlo.', points: 1 },
       {
-        text: 'Llamar directamente a su jefe o buscarlo en sus redes sociales personales para pedirle una respuesta.',
+        text: 'Programar un recordatorio en el CRM para intentar contactarlo nuevamente el próximo trimestre cuando haya nuevo presupuesto.',
         points: 0,
       },
       {
-        text: "Enviar un mensaje diciendo: '¿Tuviste oportunidad de revisarlo? Si firmas hoy te doy un mes gratis'.",
+        text: "Enviar un correo educado comentando: '¿Tuviste oportunidad de revisarlo? Quedo a tu entera disposición para cualquier duda.'",
+        points: 1,
+      },
+      {
+        text: 'Enviar un correo compartiendo un caso de éxito similar para reactivar la conversación con nuevo valor.',
         points: 3,
       },
     ],
@@ -61,103 +64,112 @@ export const SJT_SALES_SCENARIOS = [
     competence: 'Control del Ciclo de Venta',
     text: "El cliente te dice: 'Todo se ve perfecto, mándame la información al correo y yo lo reviso la próxima semana con mi equipo para avisarte.' ¿Cómo respondes?",
     options: [
-      { text: "'¡Claro que sí! Te mando la info y quedo a la espera de tus comentarios.'", points: 1 },
       {
-        text: "'Te la envío enseguida. Para no perseguirnos, ¿agendamos de una vez una llamada de 10 minutos el próximo jueves para resolver dudas?'",
+        text: 'Agradecer su tiempo, enviar la información de inmediato y solicitar que te confirme de recibido.',
+        points: 0,
+      },
+      {
+        text: "'Te la envío enseguida. Para no perseguirnos, ¿agendamos de una vez una breve llamada de 10 minutos el próximo jueves para resolver dudas?'",
         points: 5,
       },
-      { text: "'Si quieres te hago un descuento extra ahorita mismo si me firmas antes de colgar.'", points: 0 },
       {
-        text: "'Sinceramente, los clientes que dicen que lo van a revisar, nunca lo revisan. ¿Cuál es la verdadera duda hoy?'",
+        text: "'Se la envío con gusto. Estaré dándole seguimiento el lunes a primera hora para ver qué opinó su equipo.'",
+        points: 1,
+      },
+      {
+        text: "'Antes de enviarlo, ¿hay algún punto que todavía te genere duda para asegurarme de mandarte información alineada?'",
         points: 3,
       },
     ],
   },
   {
     scenarioId: 'sjt_sales_4',
-    competence: 'Ética y Urgencia (Zona Gris)',
-    text: 'Es el último día del mes y te falta una venta para cobrar tu bono. Un prospecto dice: \'Firmo hoy mismo si me prometes que el software hace [X función]\'. Sabes que esa función tardará 6 meses en salir. ¿Qué haces?',
+    competence: 'Ética y Expectativas (Zona Gris)',
+    text: "Un prospecto dice: 'Firmo hoy mismo si el software hace [X función]'. Sabes que esa función no existe y tardará 6 meses en salir. ¿Qué haces?",
     options: [
       {
-        text: 'Le prometes que sí lo hace. Cobras tu bono y dejas que el soporte maneje la queja cuando se dé cuenta.',
+        text: 'Indicar que esa función está mapeada en el plan anual de la empresa, sugiriendo que firme ahora para asegurar el precio actual.',
         points: 0,
       },
       {
-        text: 'Le dices que no lo hace y le sugieres que mejor no compre la plataforma para evitarle problemas.',
+        text: 'Le dices que actualmente no la tiene y le sugieres amablemente que reevalúe la compra para evitarle problemas operativos.',
         points: 1,
       },
       {
-        text: 'Le dices la verdad y le ofreces un descuento temporal por los primeros 6 meses hasta que la función esté lista.',
+        text: 'Hablarle con transparencia sobre el tiempo de desarrollo y ofrecerle una solución temporal manual o un descuento por los primeros meses.',
         points: 5,
       },
       {
-        text: "Le dices que la función 'está en fase beta oculta', evadiendo la respuesta directa para que firme rápido.",
-        points: 0,
+        text: "Mencionar que la función 'está en fase beta', enfocando la conversación en las herramientas que sí están disponibles para no perder el cierre.",
+        points: 3,
       },
     ],
   },
   {
     scenarioId: 'sjt_sales_5',
-    competence: 'Manejo de Gatekeepers',
-    text: "Haces una llamada en frío. La recepcionista dice: 'El Director está muy ocupado, envíe su portafolio a info@empresa.com y si le interesa, le llamamos.' ¿Qué haces?",
+    competence: 'Manejo de Gatekeepers (Recepción)',
+    text: "Haces una llamada en frío. La recepcionista dice: 'El Director está muy ocupado, envíe su portafolio a info@empresa.com y nosotros le llamamos.' ¿Qué haces?",
     options: [
       {
-        text: "Tratarla con respeto, explicarle el valor y preguntar: '¿Cuál sería el mejor momento o vía para que él vea esto sin quitarle tiempo?'",
+        text: "Tratarla con respeto, explicarle brevemente el valor y preguntar: '¿Cuál sería el mejor momento o vía para que él vea esto sin quitarle tiempo?'",
         points: 5,
       },
       {
-        text: 'Enviar el correo a info@empresa.com y poner un recordatorio para llamar el mes que viene.',
+        text: 'Acatar la instrucción, enviar el correo corporativo y documentar la interacción en el sistema para mantener el orden.',
+        points: 0,
+      },
+      {
+        text: 'Agradecerle su atención, enviar la información y programar una tarea para dar seguimiento con ella la próxima semana.',
         points: 1,
       },
       {
-        text: "Exigir con tono de autoridad que te comuniquen porque es una llamada 'agendada previamente' (mintiendo).",
-        points: 0,
+        text: 'Comentarle brevemente el motivo corporativo de la llamada y pedir orientación sobre el mejor canal para presentarlo correctamente.',
+        points: 3,
       },
-      { text: "Decirle: 'Es un tema urgente de facturación para él, pásamelo por favor'.", points: 3 },
     ],
   },
   {
     scenarioId: 'sjt_sales_6',
-    competence: 'Resolución de Conflictos',
+    competence: 'Resolución de Conflictos (Cliente VIP)',
     text: 'Un cliente VIP llama furioso porque su implementación lleva una semana de retraso y amenaza con cancelar el contrato. ¿Cuál es tu primera acción?',
     options: [
       {
-        text: 'Escucharlo sin interrumpir, validar su frustración, disculparte y presentarle un plan de acción inmediato con fechas exactas.',
+        text: 'Escuchar activamente, validar su frustración, disculparte y presentarle un plan de acción inmediato con fechas exactas.',
         points: 5,
       },
       {
-        text: 'Explicarle rápidamente que el retraso fue culpa del departamento de logística/sistemas para proteger tu relación con él.',
+        text: 'Solicitarle un correo formal con su queja para poder escalarlo oficialmente con el departamento de operaciones.',
         points: 0,
       },
       {
-        text: 'Ofrecerle un mes de servicio gratuito inmediatamente para calmarlo antes de revisar qué pasó.',
-        points: 3,
+        text: 'Ofrecerle un mes de servicio gratuito o una bonificación inmediata para calmar la tensión antes de revisar qué pasó internamente.',
+        points: 1,
       },
       {
-        text: 'Decirle que vas a escalar su caso con tu gerente de inmediato y pedirle que espere la llamada de un superior.',
-        points: 1,
+        text: 'Asegurarle que comprendes su molestia y que notificarás a tu gerente para que se ponga en contacto con él lo antes posible.',
+        points: 3,
       },
     ],
   },
   {
     scenarioId: 'sjt_sales_7',
     competence: 'Manejo de Expectativas (Scope Creep)',
-    text: "El cliente exige que se incluya una función adicional sin costo, argumentando que 'se lo prometieron verbalmente'. El contrato no lo incluye. ¿Cómo lo manejas?",
+    text: "El cliente exige que se incluya una función adicional sin costo, argumentando que 'alguien de ventas se lo prometió'. El contrato no lo incluye. ¿Cómo lo manejas?",
     options: [
       {
-        text: "Decirle firmemente: 'Lo siento, pero si no está en el contrato firmado, no podemos entregarlo. Son políticas de la empresa'.",
-        points: 1,
-      },
-      {
-        text: 'Comprender su confusión, revisar el contrato con él y ofrecerle un esquema de pago preferencial por esa función extra.',
-        points: 5,
-      },
-      {
-        text: 'Hablar con operaciones para que le den la función gratis y evitar que el cliente deje una mala reseña pública.',
+        text: 'Explicarle que por auditoría interna no es posible habilitar funciones que no estén estipuladas en el contrato firmado.',
         points: 0,
       },
       {
-        text: 'Decirle que lo vas a revisar, esperando que al pasar las semanas el cliente se olvide de esa petición.',
+        text: 'Comprender su confusión, revisar juntos el contrato y ofrecerle un esquema de pago preferencial para habilitar esa función.',
+        points: 5,
+      },
+      {
+        text: 'Escalar el caso con el área de operaciones solicitando que se le otorgue la función para evitar una mala reseña o la pérdida del cliente.',
+        points: 1,
+      },
+      {
+        text: 'Decirle que revisarás el caso con dirección, esperando ganar tiempo y que la urgencia del cliente por esa función disminuya.',
         points: 3,
       },
     ],
@@ -168,43 +180,43 @@ export const SJT_SALES_SCENARIOS = [
     text: 'La empresa aumentará precios un 15% el próximo mes. Debes comunicárselo a un cliente muy sensible al precio. ¿Cuál es la mejor estrategia?',
     options: [
       {
-        text: 'Llamarlo proactivamente, agradecer su lealtad, explicarle el valor del ajuste y darle un mes de gracia antes del cambio.',
+        text: 'Llamarlo proactivamente, agradecer su lealtad, explicarle cómo el ajuste garantiza el servicio y darle un mes de gracia antes del cambio.',
         points: 5,
       },
       {
-        text: 'Enviar un correo masivo estándar desde la cuenta genérica notificando el ajuste legalmente.',
-        points: 1,
+        text: 'Asegurarte de que el departamento de cobranza le envíe la notificación oficial por correo con los fundamentos legales del ajuste.',
+        points: 0,
       },
       {
-        text: 'Esperar a que le llegue la nueva factura y, si se queja, ofrecerle absorber el 5% del aumento para que no cancele.',
+        text: 'Contactarlo anticipadamente explicando el ajuste y revisar juntos alternativas para minimizar el impacto operativo.',
         points: 3,
       },
       {
-        text: 'Decirle en secreto que la economía está mal y te obligaron a subir el precio, pero que tú estás de su lado.',
-        points: 0,
+        text: 'Llamarlo para notificarle el cambio, enfatizando que es una directriz corporativa global en la que tú no tienes injerencia.',
+        points: 1,
       },
     ],
   },
   {
     scenarioId: 'sjt_sales_9',
-    competence: 'Manejo del Tiempo y Priorización',
-    text: 'Viernes 4:00 PM. Tienes 3 tareas urgentes: 1) Prospecto pide cotización, 2) Cliente reporta falla operativa crítica, 3) Gerente pide tu reporte. ¿En qué orden atiendes?',
+    competence: 'Priorización Operativa',
+    text: 'Viernes 4:00 PM. Tienes 3 urgencias: 1) Prospecto pide cotización, 2) Cliente reporta falla operativa crítica, 3) Gerente pide tu reporte semanal. ¿En qué orden atiendes?',
     options: [
       {
-        text: 'Primero el prospecto (ventas son prioridad), luego la falla del cliente, y al final el reporte del gerente.',
-        points: 3,
-      },
-      {
-        text: 'Primero el reporte del gerente, luego la falla del cliente, y dejas la cotización del prospecto para el lunes.',
+        text: 'Primero el prospecto (generación de ingresos), luego la falla del cliente, y al final el reporte del gerente.',
         points: 1,
       },
       {
-        text: 'Primero la falla del cliente (retención), luego la cotización (crecimiento), y negociar la entrega del reporte al final del día.',
+        text: 'Primero el reporte del gerente (cumplimiento interno), luego la falla del cliente, y dejas la cotización del prospecto para el lunes.',
+        points: 0,
+      },
+      {
+        text: 'Primero la falla del cliente (retención), luego la cotización (crecimiento), y negocias la entrega del reporte para el final del día.',
         points: 5,
       },
       {
-        text: 'Hacer las tres cosas al mismo tiempo a medias para que nadie se queje de falta de respuesta.',
-        points: 0,
+        text: 'Atiendes la falla del cliente y delegas la cotización a un compañero para poder terminar tu reporte a tiempo.',
+        points: 3,
       },
     ],
   },
@@ -214,19 +226,134 @@ export const SJT_SALES_SCENARIOS = [
     text: 'La plataforma sufre una caída masiva. Clientes exigen respuestas por WhatsApp y redes sociales. ¿Cómo procedes?',
     options: [
       {
-        text: 'Ignorar los mensajes temporalmente hasta que el equipo técnico resuelva el problema para dar una respuesta definitiva.',
-        points: 1,
+        text: 'Esperar a tener el diagnóstico técnico completo del área de IT antes de emitir cualquier comunicado, para no dar información errónea.',
+        points: 0,
       },
       {
-        text: 'Responder solo a las cuentas más grandes (Key Accounts) porque son las que dejan más dinero a la empresa.',
+        text: 'Responder prioritariamente a las cuentas clave (Key Accounts) para asegurar los contratos más grandes, pidiéndoles paciencia.',
         points: 3,
       },
       {
-        text: 'Enviar un mensaje de difusión empático confirmando que el equipo ya trabaja en ello, y comprometerse a dar una actualización en 60 minutos.',
+        text: 'Enviar un mensaje de difusión confirmando que el equipo trabaja en ello y comprometerse a dar una actualización en 60 minutos.',
         points: 5,
       },
       {
-        text: 'Decir a los clientes que fue un ataque cibernético externo (aunque sea falso) para quitarle la culpa a la empresa.',
+        text: 'Redirigir educadamente a los clientes hacia los canales oficiales de soporte técnico para que los especialistas manejen la contingencia.',
+        points: 1,
+      },
+    ],
+  },
+  {
+    scenarioId: 'sjt_sales_11',
+    competence: 'Prospección B2B (Cold Outreach)',
+    text: 'Vas a enviar un correo en frío a un Director General (CEO) para ofrecer tu software. ¿Cuál es el enfoque principal de tu mensaje?',
+    options: [
+      {
+        text: 'Un mensaje de 4 párrafos detallando la historia de tu empresa, todas las certificaciones que tienen y un PDF adjunto.',
+        points: 0,
+      },
+      {
+        text: 'Compartir brevemente cómo ayudaron a una empresa similar y preguntar si ese reto también existe hoy en su operación.',
+        points: 3,
+      },
+      {
+        text: 'Un mensaje corto (3-4 líneas) mencionando un problema específico de su industria y preguntando si es una prioridad resolverlo hoy.',
+        points: 5,
+      },
+      {
+        text: 'Un saludo cordial, una breve presentación tuya y una invitación abierta a tomar un café virtual cuando él tenga disponibilidad.',
+        points: 1,
+      },
+    ],
+  },
+  {
+    scenarioId: 'sjt_sales_12',
+    competence: 'Manejo de Competencia en Demo',
+    text: 'Durante una demostración, el cliente menciona que su proveedor actual hace exactamente lo mismo. ¿Cómo reaccionas?',
+    options: [
+      {
+        text: 'Continuar con la demostración según el guion establecido, mostrando todas las características para que él mismo note la diferencia.',
+        points: 0,
+      },
+      {
+        text: "Preguntar con genuina curiosidad: 'Si hacen exactamente lo mismo, ¿qué te motivó a tomar esta reunión con nosotros hoy?'",
+        points: 5,
+      },
+      {
+        text: 'Destacar inmediatamente las tres debilidades más conocidas del proveedor actual para desposicionarlo frente al cliente.',
+        points: 3,
+      },
+      {
+        text: 'Estar de acuerdo con él para generar empatía y decirle que nuestra principal ventaja competitiva será el servicio al cliente.',
+        points: 1,
+      },
+    ],
+  },
+  {
+    scenarioId: 'sjt_sales_13',
+    competence: 'Negociación con Compras (Procurement)',
+    text: 'El usuario final ya aprobó tu producto, pero el departamento de Compras te exige un 15% de descuento adicional o bloquean el contrato. ¿Qué haces?',
+    options: [
+      {
+        text: 'Aceptar el descuento para no entorpecer el proceso legal y asegurar que la venta se cierre este mismo mes.',
+        points: 3,
+      },
+      {
+        text: 'Solicitar al departamento legal de tu empresa que se ponga en contacto con ellos para revisar los términos del contrato.',
+        points: 0,
+      },
+      {
+        text: 'Avisarle al usuario final que su área de Compras está bloqueando el proyecto, esperando que él resuelva el problema internamente.',
+        points: 1,
+      },
+      {
+        text: "Intercambiar valor: 'Puedo revisar el descuento, pero a cambio necesitaríamos que el contrato se firme a 2 años en lugar de 1.'",
+        points: 5,
+      },
+    ],
+  },
+  {
+    scenarioId: 'sjt_sales_14',
+    competence: 'Venta Consultiva (Diagnóstico)',
+    text: "Un prospecto te pide directamente: 'Mándame una cotización para 50 licencias'. Tú no sabes para qué las va a usar. ¿Qué haces?",
+    options: [
+      {
+        text: 'Generar la cotización estándar inmediatamente y enviarla con un correo de seguimiento para demostrar rapidez y eficiencia.',
+        points: 0,
+      },
+      {
+        text: 'Enviar una cotización preliminar y proponer una breve llamada posterior para validar requerimientos.',
+        points: 3,
+      },
+      {
+        text: "Agradecer el interés y solicitar una llamada de 5 minutos: 'Para enviarte la cotización exacta, necesito entender qué problema buscan resolver.'",
+        points: 5,
+      },
+      {
+        text: 'Enviar una presentación corporativa general junto con la lista de precios públicos para que él mismo arme su presupuesto.',
+        points: 1,
+      },
+    ],
+  },
+  {
+    scenarioId: 'sjt_sales_15',
+    competence: 'Transición a Customer Success',
+    text: 'Acabas de cerrar un contrato grande. El cliente está emocionado. ¿Cuál es el siguiente paso inmediato?',
+    options: [
+      {
+        text: "Agendar una reunión de 'Kick-off' donde presentas formalmente al cliente con su Account Manager, asegurando una transición suave.",
+        points: 5,
+      },
+      {
+        text: 'Celebrar el cierre, enviar la factura y enfocarte de inmediato en buscar a tu próximo prospecto para llegar a la meta.',
+        points: 3,
+      },
+      {
+        text: 'Darle tu número personal de WhatsApp diciéndole que, sin importar lo que pase, tú siempre serás su contacto directo.',
+        points: 1,
+      },
+      {
+        text: 'Enviar un correo agradeciendo la confianza y copiar al equipo de soporte para que ellos se encarguen de los siguientes pasos operativos.',
         points: 0,
       },
     ],

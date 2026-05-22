@@ -4,27 +4,27 @@ import {
   SJT_SALES_SCENARIOS,
 } from '../data/sjtSalesData.js';
 
-/** Perfiles comerciales oficiales según puntaje bruto (0–50). */
+/** Perfiles comerciales oficiales según puntaje bruto (0–75). */
 export const SJT_SALES_PROFILE_TIERS = [
   {
-    min: 42,
-    max: 50,
+    min: 63,
+    max: 75,
     key: 'consultor_estrategico',
     label: 'Consultor Estratégico',
     description:
       'Orientado a la creación de valor mutuo. Tiende a negociar basándose en datos y rentabilidad, priorizando la relación a largo plazo y manteniendo un alto estándar ético.',
   },
   {
-    min: 30,
-    max: 41,
+    min: 45,
+    max: 62,
     key: 'ejecutivo_cierre_agil',
     label: 'Ejecutivo de Cierre Ágil',
     description:
       'Orientado a resultados inmediatos y volumen. Muestra fuerte iniciativa para acelerar el ciclo de ventas. Podría priorizar concesiones comerciales bajo presión.',
   },
   {
-    min: 15,
-    max: 29,
+    min: 22,
+    max: 44,
     key: 'especialista_fidelizacion',
     label: 'Especialista en Fidelización',
     description:
@@ -32,7 +32,7 @@ export const SJT_SALES_PROFILE_TIERS = [
   },
   {
     min: 0,
-    max: 14,
+    max: 21,
     key: 'asesor_operativo',
     label: 'Asesor Operativo',
     description:
@@ -41,7 +41,7 @@ export const SJT_SALES_PROFILE_TIERS = [
 ];
 
 /**
- * @param {number} rawScore Puntaje bruto 0–50
+ * @param {number} rawScore Puntaje bruto 0–75
  */
 export function resolveSjtSalesProfile(rawScore) {
   const score = Math.max(

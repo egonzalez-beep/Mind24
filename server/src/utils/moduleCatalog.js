@@ -61,7 +61,7 @@ export const MODULE_CATALOG = {
   sales_sjt: {
     label: 'Simulador de Escenarios Comerciales (SJT)',
     description:
-      'Juicio situacional en ventas, negociación y atención a clientes. 10 escenarios con puntuación ponderada.',
+      'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',
     icon: '📊',
     estimatedMinutes: 30,
     sectionIds: ['principal'],
