@@ -55,7 +55,7 @@ export function buildModuleFragment(attempt) {
   if (moduleKey === 'sales_sjt') {
     const scores = extractSjtSalesScores(attempt);
     if (!scores) return null;
-    return reliabilityHtml + buildSjtSalesModuleFragment({ scores, submittedAt });
+    return buildSjtSalesModuleFragment({ scores, submittedAt, attempt });
   }
 
   if (attempt.status !== 'submitted') return null;

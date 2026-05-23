@@ -12,7 +12,9 @@ export async function assertEmpresaAdmin(userId) {
 }
 
 /**
- * Find-or-create candidato por correo en la organización (reutiliza tras eliminar asignaciones).
+ * Find-or-create candidato por correo en la organización.
+ * Si el correo ya existe: reutiliza el registro maestro sin sobreescribir CURP, nombre ni contraseña.
+ * La nueva evaluación se crea vinculando una asignación aparte (POST /api/org/assignments).
  */
 export async function createCandidateForOrg({
   organizationId,
@@ -23,7 +25,6 @@ export async function createCandidateForOrg({
   curp,
 }) {
   const em = email.trim().toLowerCase();
-  const passwordHash = await hashPassword(password);
   const curpNorm =
     curp != null && String(curp).trim() !== '' ? String(curp).trim().toUpperCase() : null;
 
@@ -47,33 +48,22 @@ export async function createCandidateForOrg({
     }
 
     return prisma.$transaction(async (tx) => {
-      const user = await tx.user.update({
-        where: { id: existing.id },
-        data: {
-          fullName: fullName.trim(),
-          passwordHash,
-        },
-      });
-
       let candidate = existing.candidateProfile;
       if (!candidate) {
         candidate = await tx.candidate.create({
           data: {
             organizationId,
-            userId: user.id,
+            userId: existing.id,
             curp: curpNorm,
           },
         });
-      } else if (curpNorm) {
-        candidate = await tx.candidate.update({
-          where: { id: candidate.id },
-          data: { curp: curpNorm },
-        });
       }
 
-      return { user, candidate, reused: true };
+      return { user: existing, candidate, reused: true };
     });
   }
+
+  const passwordHash = await hashPassword(password);
 
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({

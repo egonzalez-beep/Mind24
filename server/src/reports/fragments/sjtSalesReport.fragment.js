@@ -1,20 +1,39 @@
 import { esc } from '../reportUtils.js';
 import { SJT_SALES_MAX_POINTS } from '../../data/sjtSalesData.js';
-import { resolveSjtSalesProfile } from '../../services/sjtSalesScoring.service.js';
+import {
+  computeSjtSalesMacroCompetencies,
+  resolveSjtSalesProfile,
+} from '../../services/sjtSalesScoring.service.js';
+import { extractReliabilityFromAttempt } from '../reliabilityAlert.fragment.js';
+
+export const SJT_PDF_SPEED_THRESHOLD_SEC = 3;
+
+export const SJT_UNRELIABLE_SPEED_ALERT_TEXT =
+  '⚠️ ALERTA DE CONFIABILIDAD: El candidato completó esta evaluación en un tiempo inusualmente bajo, sugiriendo respuestas aleatorias. Resultados no fiables.';
 
 export function extractSjtSalesScores(attempt) {
   const raw = attempt?.scores;
   if (!raw || typeof raw !== 'object') return null;
   const inner = raw.scores && typeof raw.scores === 'object' ? raw.scores : raw;
-  if (inner.rawScore == null && !inner.scenarios) return null;
+  if (inner.rawScore == null && !inner.scenarios && !inner.macroCompetencies) return null;
   return inner;
 }
 
-function competenceShortLabel(competence) {
-  const c = String(competence || '');
-  const paren = c.indexOf('(');
-  if (paren > 0) return c.slice(0, paren).trim();
-  return c || '—';
+function resolveMacroCompetencies(scores) {
+  if (Array.isArray(scores.macroCompetencies) && scores.macroCompetencies.length) {
+    return scores.macroCompetencies;
+  }
+  if (Array.isArray(scores.scenarios) && scores.scenarios.length) {
+    return computeSjtSalesMacroCompetencies(scores.scenarios);
+  }
+  return [];
+}
+
+function sjtAttemptSpeedUnreliable(attempt) {
+  const rel = extractReliabilityFromAttempt(attempt);
+  if (rel?.isUnreliableSpeed) return true;
+  const avg = rel?.avgSecondsPerQuestion;
+  return avg != null && Number(avg) < SJT_PDF_SPEED_THRESHOLD_SEC;
 }
 
 /** Análisis técnico fijo por perfil (interpretación para el cliente). */
@@ -33,45 +52,63 @@ function technicalAnalysisForProfile(scores) {
   );
 }
 
-function buildCompetenceBarsHtml(series) {
-  if (!series.length) {
-    return '<p class="muted">Sin desglose por competencia.</p>';
+function buildMacroAreaBarsHtml(macroSeries) {
+  if (!macroSeries.length) {
+    return '<p class="muted">Sin desglose por área comercial.</p>';
   }
-  const rows = series
-    .map((s) => {
-      const name = esc(competenceShortLabel(s.competence));
-      const pts = Number(s.points) || 0;
-      const max = Number(s.maxPoints) || 5;
-      const pct = max > 0 ? Math.round((pts / max) * 100) : 0;
+  const rows = macroSeries
+    .map((m) => {
+      const name = esc(m.label || m.key || '—');
+      const pct = Math.max(0, Math.min(100, Math.round(Number(m.percent) || 0)));
       const barColor =
         pct >= 80 ? '#059669' : pct >= 50 ? '#D97706' : '#DC2626';
+      const blocks = Math.max(1, Math.round(pct / 10));
+      const barChars = '█'.repeat(blocks) + '░'.repeat(10 - blocks);
       return `
-        <div class="sjt-bar-row">
-          <div class="sjt-bar-label">${name}</div>
-          <div class="sjt-bar-track">
-            <div class="sjt-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+        <div class="sjt-macro-row">
+          <div class="sjt-macro-label">${name}</div>
+          <div class="sjt-macro-bar-line" aria-hidden="true">
+            <span class="sjt-macro-blocks" style="color:${barColor}">${barChars}</span>
           </div>
-          <div class="sjt-bar-score">${pts}/${max}</div>
+          <div class="sjt-macro-pct" style="color:${barColor}">${pct}%</div>
         </div>`;
     })
     .join('');
 
   return `
-    <div class="sjt-bars-wrap">
+    <div class="sjt-macro-wrap">
       <style>
-        .sjt-bars-wrap{margin-top:8px}
-        .sjt-bar-row{display:grid;grid-template-columns:minmax(120px,34%) 1fr 48px;gap:10px;align-items:center;margin-bottom:10px;font-size:12px}
-        .sjt-bar-label{font-weight:600;color:#1E293B;line-height:1.3}
-        .sjt-bar-track{height:10px;background:#E2E8F0;border-radius:6px;overflow:hidden}
-        .sjt-bar-fill{height:100%;border-radius:6px;min-width:2px}
-        .sjt-bar-score{font-weight:700;color:#475569;text-align:right;font-variant-numeric:tabular-nums}
+        .sjt-macro-wrap{margin-top:8px}
+        .sjt-macro-row{display:grid;grid-template-columns:minmax(140px,38%) 1fr 52px;gap:10px;align-items:center;margin-bottom:12px;font-size:12px}
+        .sjt-macro-label{font-weight:700;color:#1E293B;line-height:1.35}
+        .sjt-macro-bar-line{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:1px;line-height:1}
+        .sjt-macro-blocks{white-space:nowrap}
+        .sjt-macro-pct{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
       </style>
       ${rows}
     </div>`;
 }
 
+function buildAlertsSectionHtml(attempt) {
+  if (!sjtAttemptSpeedUnreliable(attempt)) {
+    return `
+    <div class="section">
+      <div class="section-title">Alertas y banderas</div>
+      <p class="muted">Sin alertas de confiabilidad registradas para este intento.</p>
+    </div>`;
+  }
+  return `
+    <div class="section">
+      <div class="section-title">Alertas y banderas</div>
+      <div class="reliability-alert">${esc(SJT_UNRELIABLE_SPEED_ALERT_TEXT)}</div>
+    </div>`;
+}
+
+/**
+ * @param {{ scores: object, submittedAt?: string, attempt?: object }} ctx
+ */
 export function buildSjtSalesModuleFragment(ctx) {
-  const { scores, submittedAt } = ctx;
+  const { scores, submittedAt, attempt = null } = ctx;
   const closed = submittedAt ? esc(submittedAt) : '—';
   const rawScore = Number(scores.rawScore) || 0;
   const maxPossible = Number(scores.maxPossible) || SJT_SALES_MAX_POINTS;
@@ -90,9 +127,10 @@ export function buildSjtSalesModuleFragment(ctx) {
     profileDescription ||
     'Dictamen no disponible para este intento. Vuelva a calificar si el intento es reciente.';
 
-  const series = Array.isArray(scores.scenarios) ? scores.scenarios : [];
+  const macroSeries = resolveMacroCompetencies(scores);
   const technicalText = technicalAnalysisForProfile({ ...scores, profileKey });
-  const barsHtml = buildCompetenceBarsHtml(series);
+  const macroBarsHtml = buildMacroAreaBarsHtml(macroSeries);
+  const alertsHtml = buildAlertsSectionHtml(attempt);
 
   return `
   <section class="module-block" id="mod-sales-sjt">
@@ -113,6 +151,7 @@ export function buildSjtSalesModuleFragment(ctx) {
         <div class="kpi-value kpi-sm">${esc(profileLabel)}</div>
       </div>
     </div>
+    ${alertsHtml}
     <div class="section">
       <div class="section-title">Dictamen del perfil</div>
       <p class="interp"><strong>${esc(profileLabel)}.</strong> ${esc(profileDescription)}</p>
@@ -122,8 +161,8 @@ export function buildSjtSalesModuleFragment(ctx) {
       <p class="interp" style="line-height:1.65;text-align:justify">${esc(technicalText)}</p>
     </div>
     <div class="section">
-      <div class="section-title">Desempeño por competencia</div>
-      ${barsHtml}
+      <div class="section-title">Desempeño por área comercial</div>
+      ${macroBarsHtml}
     </div>
   </section>`;
 }

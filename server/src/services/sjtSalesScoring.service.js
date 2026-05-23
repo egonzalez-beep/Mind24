@@ -4,6 +4,30 @@ import {
   SJT_SALES_SCENARIOS,
 } from '../data/sjtSalesData.js';
 
+/** Macro-competencias comerciales (agrupan los 15 escenarios). */
+export const SJT_SALES_MACRO_GROUPS = [
+  {
+    key: 'prospeccion_apertura',
+    label: 'Prospección y Apertura',
+    scenarioIds: ['sjt_sales_2', 'sjt_sales_5', 'sjt_sales_11'],
+  },
+  {
+    key: 'negociacion_cierre',
+    label: 'Negociación y Cierre',
+    scenarioIds: ['sjt_sales_1', 'sjt_sales_3', 'sjt_sales_12', 'sjt_sales_13', 'sjt_sales_14'],
+  },
+  {
+    key: 'fidelizacion_retencion',
+    label: 'Fidelización y Retención',
+    scenarioIds: ['sjt_sales_7', 'sjt_sales_8', 'sjt_sales_15'],
+  },
+  {
+    key: 'etica_crisis',
+    label: 'Ética y Manejo de Crisis',
+    scenarioIds: ['sjt_sales_4', 'sjt_sales_6', 'sjt_sales_9', 'sjt_sales_10'],
+  },
+];
+
 /** Perfiles comerciales oficiales según puntaje bruto (0–75). */
 export const SJT_SALES_PROFILE_TIERS = [
   {
@@ -43,6 +67,42 @@ export const SJT_SALES_PROFILE_TIERS = [
 /**
  * @param {number} rawScore Puntaje bruto 0–75
  */
+/**
+ * Agrupa puntajes por escenario en las 4 macro-competencias.
+ * @param {Array<{ scenarioId: string, points?: number, maxPoints?: number }>} scenarios
+ */
+export function computeSjtSalesMacroCompetencies(scenarios) {
+  const byId = new Map();
+  for (const s of scenarios || []) {
+    if (!s?.scenarioId) continue;
+    byId.set(s.scenarioId, {
+      points: Number(s.points) || 0,
+      maxPoints: Number(s.maxPoints) || 5,
+    });
+  }
+
+  return SJT_SALES_MACRO_GROUPS.map((group) => {
+    let rawScore = 0;
+    let maxPossible = 0;
+    for (const scenarioId of group.scenarioIds) {
+      const row = byId.get(scenarioId);
+      if (!row) continue;
+      rawScore += row.points;
+      maxPossible += row.maxPoints;
+    }
+    const percent =
+      maxPossible > 0 ? Math.round((rawScore / maxPossible) * 1000) / 10 : 0;
+    return {
+      key: group.key,
+      label: group.label,
+      rawScore,
+      maxPossible,
+      percent,
+      scenarioIds: [...group.scenarioIds],
+    };
+  });
+}
+
 export function resolveSjtSalesProfile(rawScore) {
   const score = Math.max(
     0,
@@ -111,8 +171,9 @@ export function scoreSjtSalesResponses(rows) {
     maxPossible > 0 ? Math.round((rawScore / maxPossible) * 1000) / 10 : 0;
 
   const profile = resolveSjtSalesProfile(rawScore);
-  const strongest = [...scenarios].sort((a, b) => b.points - a.points)[0];
-  const weakest = [...scenarios].sort((a, b) => a.points - b.points)[0];
+  const macroCompetencies = computeSjtSalesMacroCompetencies(scenarios);
+  const strongestMacro = [...macroCompetencies].sort((a, b) => b.rawScore - a.rawScore)[0];
+  const weakestMacro = [...macroCompetencies].sort((a, b) => a.rawScore - b.rawScore)[0];
 
   return {
     rawScore,
@@ -123,8 +184,9 @@ export function scoreSjtSalesResponses(rows) {
     profileLabel: profile.label,
     profileDescription: profile.description,
     scenarios,
-    strongestCompetence: strongest?.competence || null,
-    weakestCompetence: weakest?.competence || null,
+    macroCompetencies,
+    strongestCompetence: strongestMacro?.label || null,
+    weakestCompetence: weakestMacro?.label || null,
   };
 }
 
@@ -140,6 +202,7 @@ export function buildSjtSalesAttemptScores(scoring) {
       profileLabel: scoring.profileLabel,
       profileDescription: scoring.profileDescription,
       scenarios: scoring.scenarios,
+      macroCompetencies: scoring.macroCompetencies,
       strongestCompetence: scoring.strongestCompetence,
       weakestCompetence: scoring.weakestCompetence,
     },
