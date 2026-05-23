@@ -57,6 +57,7 @@ const MASTER_STYLES = `
   .risk-item strong{display:block;font-size:10px;color:#991B1B;margin-bottom:4px}
   .risk-item p{font-size:9px;color:#7F1D1D;line-height:1.45;margin:0}
   .muted{color:#9CA3AF;font-size:10px}
+  .reliability-alert{padding:12px 14px;border:2px solid #DC2626;border-radius:8px;background:#FEF2F2;color:#991B1B;font-size:10px;font-weight:700;line-height:1.55;margin-bottom:14px}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
   .footer{margin-top:22px;padding-top:10px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center}
 `;

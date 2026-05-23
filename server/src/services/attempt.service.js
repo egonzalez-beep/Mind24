@@ -8,6 +8,10 @@ import {
   resolveModuleKey,
 } from '../utils/moduleCatalog.js';
 import { buildDynamicStartPayload, moduleHasDynamicQuestions } from './dynamicAssessment.service.js';
+import {
+  applyReliabilityToAttemptPayload,
+  computeAttemptSpeedReliability,
+} from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 
 function getTimeLimitSec(config) {
@@ -17,6 +21,7 @@ function getTimeLimitSec(config) {
 
 function resolveModuleTimeLimitSec(moduleKey, moduleConfig, meta) {
   const mk = resolveModuleKey(moduleKey);
+  if (mk === 'cleaver') return null;
   if (mk === 'terman') return termanTotalTimeSeconds();
   if (mk === 'sales_sjt') return sjtSalesTotalTimeSeconds();
   const fromConfig = moduleConfig?.meta?.timeLimitSec;
@@ -259,6 +264,21 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
   }
 
   const scored = scoreAssessment(moduleConfig, answers);
+  const questionCount = Object.keys(answers).length;
+  const reliability = computeAttemptSpeedReliability({
+    startedAt: attempt.startedAt,
+    submittedAt: new Date(),
+    questionCount,
+  });
+  const persisted = applyReliabilityToAttemptPayload(
+    {
+      global: scored.global,
+      dimensions: scored.dimensions,
+      meta: { ...(scored.meta || {}), moduleKey: mk || null },
+    },
+    scored.flags,
+    reliability,
+  );
 
   const assignment = attempt.assignment;
   const prevCompleted = readCompletedModules(assignment);
@@ -277,17 +297,13 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
         status: 'submitted',
         submittedAt: new Date(),
         responses: answers,
-        scores: {
-          global: scored.global,
-          dimensions: scored.dimensions,
-          meta: { ...(scored.meta || {}), moduleKey: mk || null },
-        },
+        scores: persisted.scores,
         interpretation: {
           verdict: scored.verdict,
           badge: scored.badge,
           description: scored.description,
         },
-        flags: scored.flags,
+        flags: persisted.flags,
       },
     });
     await tx.assignment.update({

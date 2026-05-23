@@ -21,6 +21,7 @@ import {
   buildTermanModuleFragment,
   extractTermanScores,
 } from './fragments/termanReport.fragment.js';
+import { buildSpeedReliabilityAlertHtml } from './reliabilityAlert.fragment.js';
 
 const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
 
@@ -31,29 +32,30 @@ const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
 export function buildModuleFragment(attempt) {
   const moduleKey = resolveModuleKey(attempt.moduleKey);
   const submittedAt = fmtDateMx(attempt.submittedAt);
+  const reliabilityHtml = buildSpeedReliabilityAlertHtml(attempt);
 
   if (CLEAVER_KEYS.has(moduleKey)) {
     const scores = extractCleaverScores(attempt);
     if (!scores) return null;
-    return buildCleaverModuleFragment({ scores, submittedAt });
+    return reliabilityHtml + buildCleaverModuleFragment({ scores, submittedAt });
   }
 
   if (moduleKey === 'honestidad') {
     const payload = extractHonestidadPayload(attempt);
     if (!payload) return null;
-    return buildHonestidadModuleFragment({ payload, submittedAt });
+    return reliabilityHtml + buildHonestidadModuleFragment({ payload, submittedAt });
   }
 
   if (moduleKey === 'terman') {
     const scores = extractTermanScores(attempt);
     if (!scores) return null;
-    return buildTermanModuleFragment({ scores, submittedAt });
+    return reliabilityHtml + buildTermanModuleFragment({ scores, submittedAt });
   }
 
   if (moduleKey === 'sales_sjt') {
     const scores = extractSjtSalesScores(attempt);
     if (!scores) return null;
-    return buildSjtSalesModuleFragment({ scores, submittedAt });
+    return reliabilityHtml + buildSjtSalesModuleFragment({ scores, submittedAt });
   }
 
   if (attempt.status !== 'submitted') return null;

@@ -532,6 +532,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .eval-prog-bg{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
 .eval-prog-fill{height:100%;background:var(--purple-gradient);border-radius:2px;transition:width .4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px rgba(139,92,246,.6);}
 .eval-timer-box{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-md);}
+.eval-timer-box.hidden{display:none!important;}
+.eval-timer-display.no-limit{font-size:13px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:0;}
+.eval-time-locked .dyn-mc-opt,.eval-time-locked .dyn-cleaver-wrap,.eval-time-locked .dyn-cleaver-row button,.eval-time-locked #dynBtnNext,.eval-time-locked #dynBtnPrev{pointer-events:none!important;opacity:.55;}
 .eval-timer-display{font-size:18px;font-weight:800;color:var(--white);letter-spacing:1px;font-variant-numeric:tabular-nums;}
 .eval-timer-display.warn{color:#FCD34D;}
 .eval-timer-display.danger{color:#F87171;animation:pulse-purple 1s infinite;}
@@ -2146,6 +2149,10 @@ function canAccessView(name){
   return true;
 }
 function mind24ResetUiBlockers(){
+  mind24StopEvalModuleTimer();
+  window.__MIND24_EVAL_TIMER_EXPIRED=false;
+  window.__MIND24_EVAL_FINISHING=false;
+  mind24LockDynamicEvalUI(false);
   mind24StopMediaStreams();
   termanClearTimer();
   termanUnmountShell();
@@ -3045,7 +3052,8 @@ async function startAssignedModule(assignmentId, moduleKey){
     const secsList=(cfg.sections||[]).map(function(s,i){
       return {key:s.id,nombre:'Sección '+(i+1),desc:'Continúa respondiendo con atención.'};
     });
-    window.ATTEMPT_CTX={useApi:true,engine:'legacy',attemptId:j.attemptId,assignmentId:j.assignmentId,moduleKey:j.moduleKey||moduleKey,flat,secsList,timeLimitSec:j.timeLimitSec||2700};
+    const legacyLimit=j.timeLimitSec!=null?Number(j.timeLimitSec):2700;
+    window.ATTEMPT_CTX={useApi:true,engine:'legacy',attemptId:j.attemptId,assignmentId:j.assignmentId,moduleKey:j.moduleKey||moduleKey,flat,secsList,timeLimitSec:legacyLimit>0?legacyLimit:null};
     mind24SyncEvalResultNav();
     const u=window.__MIND24_USER||{};
     ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
@@ -3224,6 +3232,7 @@ function loadDynamicQuestion(){
   const btnNext=document.getElementById('dynBtnNext');
   btnNext.textContent=(ctx.idx>=total-1)?'Finalizar ✓':'Siguiente →';
   requestAnimationFrame(function(){ renderDynamicQuestionUI(q); });
+  mind24EvalShellSync();
 }
 
 async function dynamicPersistCurrent(){
@@ -3267,20 +3276,7 @@ async function dynamicNextQ(){
     await dynamicPersistCurrent();
     const ctx=window.DYNAMIC_CTX;
     if(ctx.idx>=ctx.questions.length-1){
-      const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{method:'POST'});
-      const mkRes=mind24ResolveModKey(ctx.moduleKey);
-      if(mkRes==='sales_sjt'){
-        mind24RenderSjtCompleteResult(out);
-      }else{
-        document.getElementById('resBadge').textContent='✓ Módulo completado';
-        document.getElementById('resScore').textContent='';
-        document.getElementById('resVerdict').textContent=(mkRes==='terman')?'Evaluación Cognitiva Analítica Mind24':((mkRes==='cleaver')?'Comportamiento (CLEAVER)':((mkRes==='honestidad')?'Batería de Honestidad (Mind24)':(ctx.moduleTitle||'Evaluación')));
-        document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
-        document.getElementById('compBars').innerHTML='';
-        document.getElementById('flagsBox').classList.add('hidden');
-      }
-      mind24SyncEvalResultNav();
-      showScr('results');
+      await mind24FinishDynamicAttempt({timedOut:false});
       return;
     }
     ctx.idx++; loadDynamicQuestion();
@@ -3404,6 +3400,7 @@ function termanRenderIntro(){
   const n=(s.questions||[]).length;
   const meta=document.getElementById('termanSeriesMeta');
   if(meta) meta.textContent=n+' pregunta'+(n===1?'':'s')+' · '+termanFmtClock(s.timeLimitSeconds||120);
+  mind24EvalShellSync();
 }
 
 function termanRenderQuestions(){
@@ -3454,6 +3451,7 @@ function termanSyncTimerUI(){
   el.classList.remove('warn','danger');
   if(ctx.secondsLeft<=10)el.classList.add('danger');
   else if(ctx.secondsLeft<=30)el.classList.add('warn');
+  mind24EvalShellSync();
 }
 
 async function termanPersistSeries(){
@@ -3576,19 +3574,13 @@ function startTermanAssessment(payload){
     timerInt:null,
     phase:'intro',
   };
-  window.ATTEMPT_CTX={useApi:true,engine:'terman',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey};
+  const termanLimit=payload.timeLimitSec!=null?Number(payload.timeLimitSec):null;
+  window.ATTEMPT_CTX={useApi:true,engine:'terman',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey,timeLimitSec:termanLimit>0?termanLimit:null};
   mind24SyncEvalResultNav();
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
   const tag=document.getElementById('evalSecTag');
   if(tag) tag.textContent='◈ Evaluación Mind24';
-  const totalQ=series.reduce(function(n,s){ return n+(s.questions?s.questions.length:0); },0);
-  const prog=document.getElementById('evalProgLbl');
-  if(prog) prog.textContent='Sección 1 de '+series.length;
-  const pct=document.getElementById('evalProgPct');
-  if(pct) pct.textContent='0%';
-  const fill=document.getElementById('evalProgFill');
-  if(fill) fill.style.width='0%';
   const nq=document.getElementById('eval-meta-questions');
   if(nq) nq.textContent=String(totalQ);
   const tm=document.getElementById('eval-meta-minutes');
@@ -3597,9 +3589,15 @@ function startTermanAssessment(payload){
   showView('evaluacion');
   termanActivateScreen();
   termanRenderIntro();
+  mind24EvalShellSync();
 }
 
 function startDynamicAssessment(payload){
+  mind24StopEvalModuleTimer();
+  window.__MIND24_EVAL_TIMER_EXPIRED=false;
+  window.__MIND24_EVAL_FINISHING=false;
+  const limitRaw=payload.timeLimitSec!=null?Number(payload.timeLimitSec):null;
+  const limitSec=limitRaw!=null&&Number.isFinite(limitRaw)&&limitRaw>0?limitRaw:null;
   window.DYNAMIC_CTX={
     attemptId:payload.attemptId,
     assignmentId:payload.assignmentId,
@@ -3609,7 +3607,7 @@ function startDynamicAssessment(payload){
     idx:0,
     drafts:{},
   };
-  window.ATTEMPT_CTX={useApi:true,engine:'dynamic',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey};
+  window.ATTEMPT_CTX={useApi:true,engine:'dynamic',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey,timeLimitSec:limitSec};
   mind24SyncEvalResultNav();
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
@@ -3627,6 +3625,8 @@ function startDynamicAssessment(payload){
   const scrDyn=document.getElementById('scr-dynamic');
   if(scrDyn) scrDyn.classList.add('active');
   loadDynamicQuestion();
+  if(limitSec)mind24StartEvalModuleTimer(limitSec,mind24OnEvalModuleTimerExpired);
+  else mind24EvalShellSync();
 }
 
 
@@ -3636,6 +3636,167 @@ function mind24SyncEvalResultNav(){
   const landBtn=document.getElementById('btn-eval-back-landing');
   if(lobbyBtn) lobbyBtn.classList.toggle('hidden',!useApi);
   if(landBtn) landBtn.classList.toggle('hidden',!!useApi);
+}
+
+window.__MIND24_EVAL_TIMER=null;
+window.__MIND24_EVAL_TIMER_EXPIRED=false;
+
+function mind24FmtEvalClock(sec){
+  const s=Math.max(0,Math.floor(Number(sec)||0));
+  const m=Math.floor(s/60);
+  const r=s%60;
+  return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');
+}
+
+function mind24ResolveActiveTimeLimitSec(){
+  const mk=mind24ResolveModKey(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.moduleKey);
+  if(mk==='cleaver')return null;
+  const raw=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.timeLimitSec;
+  if(raw==null||raw===undefined)return null;
+  const n=Number(raw);
+  return Number.isFinite(n)&&n>0?n:null;
+}
+
+function mind24StopEvalModuleTimer(){
+  if(window.__MIND24_EVAL_TIMER&&window.__MIND24_EVAL_TIMER.intervalId){
+    clearInterval(window.__MIND24_EVAL_TIMER.intervalId);
+  }
+  window.__MIND24_EVAL_TIMER=null;
+}
+
+function mind24EvalShellSync(){
+  const progLbl=document.getElementById('evalProgLbl');
+  const progPct=document.getElementById('evalProgPct');
+  const progFill=document.getElementById('evalProgFill');
+  const timerBox=document.querySelector('.eval-timer-box');
+  const timerDisp=document.getElementById('evalTimer');
+  const timerLbl=document.querySelector('.eval-timer-label');
+
+  let current=0,total=1,prefix='Pregunta';
+  const engine=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.engine;
+
+  if(engine==='dynamic'&&window.DYNAMIC_CTX){
+    total=Math.max(1,(window.DYNAMIC_CTX.questions||[]).length);
+    current=window.DYNAMIC_CTX.idx||0;
+    const mk=mind24ResolveModKey(window.DYNAMIC_CTX.moduleKey);
+    if(mk==='sales_sjt')prefix='Escenario';
+  }else if(engine==='terman'&&window.TERMAN_CTX){
+    total=Math.max(1,(window.TERMAN_CTX.series||[]).length);
+    current=window.TERMAN_CTX.seriesIdx||0;
+    prefix='Sección';
+  }else{
+    total=Math.max(1,getTotal());
+    current=ES.globalIdx||0;
+  }
+
+  const pct=total>0?Math.round(((current+1)/total)*100):0;
+  if(progLbl)progLbl.textContent=prefix+' '+(current+1)+' de '+total;
+  if(progPct)progPct.textContent=pct+'%';
+  if(progFill)progFill.style.width=pct+'%';
+
+  if(engine==='terman'){
+    if(timerBox)timerBox.classList.add('hidden');
+    return;
+  }
+
+  const limitSec=mind24ResolveActiveTimeLimitSec();
+  const timerState=window.__MIND24_EVAL_TIMER;
+  if(limitSec==null){
+    if(timerBox)timerBox.classList.add('hidden');
+  }else{
+    if(timerBox)timerBox.classList.remove('hidden');
+    if(timerLbl)timerLbl.textContent='Tiempo restante';
+    if(timerDisp){
+      timerDisp.classList.remove('no-limit');
+      const left=timerState?timerState.secsLeft:limitSec;
+      timerDisp.textContent=mind24FmtEvalClock(left);
+      timerDisp.className='eval-timer-display';
+      if(left<=300)timerDisp.classList.add('warn');
+      if(left<=60)timerDisp.className='eval-timer-display danger';
+    }
+  }
+}
+
+function mind24LockDynamicEvalUI(lock){
+  const scr=document.getElementById('scr-dynamic');
+  if(scr)scr.classList.toggle('eval-time-locked',!!lock);
+  const btn=document.getElementById('dynBtnNext');
+  if(btn)btn.disabled=!!lock;
+}
+
+async function mind24FinishDynamicAttempt(opts){
+  opts=opts||{};
+  const ctx=window.DYNAMIC_CTX;
+  if(!ctx||window.__MIND24_EVAL_FINISHING)return;
+  window.__MIND24_EVAL_FINISHING=true;
+  mind24StopEvalModuleTimer();
+  mind24LockDynamicEvalUI(true);
+  const note=document.getElementById('dynNote');
+  if(note)note.textContent=opts.timedOut?'Tiempo agotado — enviando…':'Finalizando…';
+  try{
+    if(!opts.skipPersist){
+      const q=ctx.questions[ctx.idx];
+      const d=dynamicGetDraft(q&&q.id);
+      if(q&&dynamicDraftValid(q,d))await dynamicPersistCurrent();
+    }
+    const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{
+      method:'POST',
+      body:JSON.stringify({timedOut:!!opts.timedOut}),
+    });
+    const mkRes=mind24ResolveModKey(ctx.moduleKey);
+    if(mkRes==='sales_sjt')mind24RenderSjtCompleteResult(out);
+    else{
+      document.getElementById('resBadge').textContent='✓ Módulo completado';
+      document.getElementById('resScore').textContent='';
+      document.getElementById('resVerdict').textContent=ctx.moduleTitle||'Evaluación';
+      document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
+      document.getElementById('compBars').innerHTML='';
+      document.getElementById('flagsBox').classList.add('hidden');
+    }
+    mind24SyncEvalResultNav();
+    showScr('results');
+  }catch(e){
+    mind24LockDynamicEvalUI(false);
+    alert(e.message||'Error al finalizar');
+  }finally{
+    window.__MIND24_EVAL_FINISHING=false;
+    window.__MIND24_EVAL_TIMER_EXPIRED=false;
+  }
+}
+
+async function mind24OnEvalModuleTimerExpired(){
+  if(window.__MIND24_EVAL_TIMER_EXPIRED)return;
+  window.__MIND24_EVAL_TIMER_EXPIRED=true;
+  const engine=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.engine;
+  if(engine==='dynamic'&&window.DYNAMIC_CTX){
+    await mind24FinishDynamicAttempt({timedOut:true,skipPersist:false});
+    return;
+  }
+  if(engine==='legacy'){
+    finishEval();
+  }
+}
+
+function mind24StartEvalModuleTimer(limitSec,onExpire){
+  mind24StopEvalModuleTimer();
+  window.__MIND24_EVAL_TIMER_EXPIRED=false;
+  const limit=Number(limitSec);
+  if(!Number.isFinite(limit)||limit<=0){
+    mind24EvalShellSync();
+    return;
+  }
+  window.__MIND24_EVAL_TIMER={secsLeft:limit,limitSec:limit,onExpire:onExpire||mind24OnEvalModuleTimerExpired};
+  window.__MIND24_EVAL_TIMER.intervalId=setInterval(function(){
+    const t=window.__MIND24_EVAL_TIMER;
+    if(!t)return;
+    t.secsLeft-=1;
+    mind24EvalShellSync();
+    if(t.secsLeft<=0){
+      mind24StopEvalModuleTimer();
+      if(typeof t.onExpire==='function')t.onExpire();
+    }
+  },1000);
+  mind24EvalShellSync();
 }
 
 function renderServerResult(result){
@@ -3761,17 +3922,12 @@ async function iniciarEvaluacion(e){
   }
 }
 function resetEval(){
+  mind24StopEvalModuleTimer();
   const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
-  const initialSecs=useApi?(window.ATTEMPT_CTX.timeLimitSec||2700):2700;
+  const limit=useApi?mind24ResolveActiveTimeLimitSec():2700;
+  const initialSecs=limit||0;
   ES={candidato:ES.candidato,secIdx:0,locIdx:0,globalIdx:0,resp:{},timerInt:null,secs:initialSecs,terminado:false};
-  clearInterval(ES.timerInt);
-  const td=document.getElementById('evalTimer');
-  if(td){
-    const m=Math.floor(initialSecs/60),s=initialSecs%60;
-    td.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    td.className='eval-timer-display';
-  }
-  updateProg();
+  mind24EvalShellSync();
 }
 const MIND24_EVAL_SCREENS=(function(){
   return Array.prototype.slice.call(document.querySelectorAll('.eval-screen'));
@@ -3826,10 +3982,7 @@ function loadQ(){
   updateProg();
 }
 function updateProg(){
-  const total=getTotal(),pct=Math.round((ES.globalIdx/total)*100);
-  document.getElementById('evalProgFill').style.width=pct+'%';
-  document.getElementById('evalProgPct').textContent=pct+'%';
-  document.getElementById('evalProgLbl').textContent=`Pregunta ${ES.globalIdx+1} de ${total}`;
+  mind24EvalShellSync();
 }
 function selectOpt(id,idx){
   ES.resp[id]=idx;
@@ -3872,21 +4025,17 @@ function prevQ(){
   loadQ();
 }
 function startTimer(){
-  clearInterval(ES.timerInt);
-  ES.timerInt=setInterval(()=>{
-    ES.secs--;
-    const m=Math.floor(ES.secs/60),s=ES.secs%60;
-    const d=document.getElementById('evalTimer');
-    if(d){
-      d.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      if(ES.secs<=300)d.className='eval-timer-display warn';
-      if(ES.secs<=60)d.className='eval-timer-display danger';
-    }
-    if(ES.secs<=0){clearInterval(ES.timerInt);finishEval();}
-  },1000);
+  const limit=mind24ResolveActiveTimeLimitSec()||ES.secs||0;
+  if(!limit){
+    mind24EvalShellSync();
+    return;
+  }
+  ES.secs=limit;
+  mind24StartEvalModuleTimer(limit,function(){ finishEval(); });
 }
 function finishEval(){
-  clearInterval(ES.timerInt);ES.terminado=true;
+  mind24StopEvalModuleTimer();
+  ES.terminado=true;
   if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
     (async()=>{
       try{

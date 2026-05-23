@@ -96,7 +96,14 @@ router.post('/attempts/:attemptId/responses', async (req, res, next) => {
 
 router.post('/attempts/:attemptId/complete', async (req, res, next) => {
   try {
-    const out = await completeDynamicAttempt(req.session.userId, req.params.attemptId);
+    const { timedOut } = z
+      .object({ timedOut: z.boolean().optional() })
+      .parse(req.body ?? {});
+    const out = await completeDynamicAttempt(
+      req.session.userId,
+      req.params.attemptId,
+      { timedOut: !!timedOut },
+    );
     res.json(out);
   } catch (e) {
     next(e);

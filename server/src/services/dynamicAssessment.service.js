@@ -13,6 +13,10 @@ import {
   buildTermanAttemptScores,
   scoreTermanResponses,
 } from './termanScoring.service.js';
+import {
+  applyReliabilityToAttemptPayload,
+  computeAttemptSpeedReliability,
+} from './attemptReliability.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -299,7 +303,8 @@ function selectedModuleKeys(assignment) {
   return [];
 }
 
-export async function completeDynamicAttempt(userId, attemptId) {
+export async function completeDynamicAttempt(userId, attemptId, options = {}) {
+  const timedOut = !!options.timedOut;
   const attempt = await prisma.assessmentAttempt.findFirst({
     where: { id: attemptId, assignment: { candidate: { userId } } },
     include: {
@@ -322,7 +327,12 @@ export async function completeDynamicAttempt(userId, attemptId) {
   const mk = attempt.moduleKey || '';
   const resolvedKey = resolveModuleKey(mk);
 
-  if (resolvedKey !== 'terman') {
+  const questionCount =
+    resolvedKey === 'terman'
+      ? (mod?.questions || []).length
+      : (mod?.questions || []).length;
+
+  if (resolvedKey !== 'terman' && !timedOut) {
     const requiredIds = new Set((mod?.questions || []).map((q) => q.id));
     const answeredIds = new Set(attempt.candidateResponses.map((r) => r.questionId));
     for (const qid of requiredIds) {
@@ -334,6 +344,13 @@ export async function completeDynamicAttempt(userId, attemptId) {
       }
     }
   }
+
+  const submittedAt = new Date();
+  const reliability = computeAttemptSpeedReliability({
+    startedAt: attempt.startedAt,
+    submittedAt,
+    questionCount: questionCount || attempt.candidateResponses.length || 1,
+  });
   const assignment = attempt.assignment;
   const prevCompleted = readCompletedModules(assignment);
   const nextCompleted =
@@ -431,14 +448,31 @@ export async function completeDynamicAttempt(userId, attemptId) {
     };
   }
 
+  let persistedScores = attemptScores?.scores ?? null;
+  let persistedFlags = [];
+  if (attemptScores?.scores) {
+    const merged = applyReliabilityToAttemptPayload(
+      attemptScores.scores,
+      [],
+      reliability,
+    );
+    persistedScores = merged.scores;
+    persistedFlags = merged.flags;
+  } else if (reliability.isUnreliableSpeed) {
+    const merged = applyReliabilityToAttemptPayload(null, [], reliability);
+    persistedScores = merged.scores;
+    persistedFlags = merged.flags;
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
       where: { id: attempt.id },
       data: {
         status: 'submitted',
-        submittedAt: new Date(),
-        scores: attemptScores ?? undefined,
+        submittedAt,
+        scores: persistedScores ?? undefined,
         interpretation,
+        flags: persistedFlags.length ? persistedFlags : undefined,
       },
     });
     await tx.assignment.update({
