@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { assertOrganizationHasAssignmentCredits } from './organizationBilling.service.js';
 
 export async function createAssignment({
   organizationId,
@@ -8,17 +9,7 @@ export async function createAssignment({
   selectedModules,
 }) {
   return prisma.$transaction(async (tx) => {
-    const org = await tx.organization.findUnique({ where: { id: organizationId } });
-    if (!org || org.blocked) {
-      const err = new Error('ORG_BLOCKED');
-      err.code = 'ORG_BLOCKED';
-      throw err;
-    }
-    if (org.credits < 1) {
-      const err = new Error('NO_CREDITS');
-      err.code = 'NO_CREDITS';
-      throw err;
-    }
+    await assertOrganizationHasAssignmentCredits(tx, organizationId);
 
     const cand = await tx.candidate.findFirst({
       where: { id: candidateId, organizationId },
@@ -41,11 +32,6 @@ export async function createAssignment({
       err.code = 'DEFINITION_NOT_FOUND';
       throw err;
     }
-
-    await tx.organization.update({
-      where: { id: organizationId },
-      data: { credits: { decrement: 1 } },
-    });
 
     return tx.assignment.create({
       data: {
@@ -84,7 +70,7 @@ export async function listAssignmentsForOrg(organizationId, options = {}) {
 }
 
 /**
- * Elimina asignación e intentos (cascade). No restaura créditos.
+ * Elimina asignación e intentos (cascade). No restaura créditos ya cobrados al completar.
  */
 export async function deleteAssignmentForOrg(assignmentId, organizationId, options = {}) {
   const assignment = await prisma.assignment.findFirst({

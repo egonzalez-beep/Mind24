@@ -4,7 +4,7 @@ export const MIND24_MODULE_KEYS = [
   'cleaver',
   'terman',
   'sales_sjt',
-  'entrevista_digital',
+  'digital_interview',
   'medida',
 ];
 
@@ -25,6 +25,7 @@ const LEGACY_ALIASES = {
   raven: 'terman',
   disc: 'cleaver',
   liderazgo: 'medida',
+  entrevista_digital: 'digital_interview',
 };
 
 const RETIRED_LABELS = {
@@ -66,11 +67,13 @@ export const MODULE_CATALOG = {
     estimatedMinutes: 30,
     sectionIds: ['principal'],
   },
-  entrevista_digital: {
-    label: 'Entrevista Digital',
-    description: 'Filtro asíncrono automatizado de preguntas clave sin intervención humana.',
+  digital_interview: {
+    label: 'Entrevista Digital Estructurada',
+    description:
+      'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto (próxima fase).',
     icon: '🎤',
     estimatedMinutes: null,
+    comingSoon: true,
     sectionIds: ['principal'],
     questionIdRange: [31, 36],
   },
@@ -131,7 +134,7 @@ export function isModuleActiveInDb(key) {
   const cat = MODULE_CATALOG[key];
   if (!cat || cat.comingSoon) return false;
   if (ASSIGNABLE_MODULE_KEYS.includes(key)) return true;
-  if (key === 'entrevista_digital' || key === 'medida') return true;
+  if (key === 'medida') return true;
   return false;
 }
 
@@ -171,7 +174,7 @@ export const MODULE_TABLE_LABELS = {
   cleaver: 'Cleaver',
   terman: 'Eval. Cognitiva Mind24',
   sales_sjt: 'SJT Comercial',
-  entrevista_digital: 'Entrevista',
+  digital_interview: 'Entrevista',
   medida: 'A la medida',
 };
 
@@ -181,7 +184,7 @@ export const MODULE_REPORT_LABELS = {
   cleaver: 'Comportamiento',
   terman: 'Evaluación Cognitiva Analítica Mind24',
   sales_sjt: 'Simulador de Escenarios Comerciales (SJT)',
-  entrevista_digital: 'Entrevista digital',
+  digital_interview: 'Entrevista Digital Estructurada',
   medida: 'Módulo a la medida',
 };
 

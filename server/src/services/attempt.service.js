@@ -13,6 +13,7 @@ import {
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
+import { applyAssignmentCompletionUpdate } from './organizationBilling.service.js';
 
 function getTimeLimitSec(config) {
   const m = config?.meta?.timeLimitSec;
@@ -289,6 +290,8 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     selected = [mk];
   }
   const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
+  const organizationId = attempt.assignment.candidate.organizationId;
+  const previousAssignmentStatus = assignment.status;
 
   await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
@@ -306,12 +309,12 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
         flags: persisted.flags,
       },
     });
-    await tx.assignment.update({
-      where: { id: attempt.assignmentId },
-      data: {
-        completedModules: nextCompleted,
-        status: allDone ? 'completed' : 'in_progress',
-      },
+    await applyAssignmentCompletionUpdate(tx, {
+      assignmentId: attempt.assignmentId,
+      organizationId,
+      previousStatus: previousAssignmentStatus,
+      nextCompleted,
+      allDone,
     });
   });
 

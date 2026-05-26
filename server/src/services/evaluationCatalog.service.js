@@ -21,7 +21,7 @@ import {
 
 const PLACEHOLDER_QUESTIONS = [
   {
-    moduleKey: 'entrevista_digital',
+    moduleKey: 'digital_interview',
     type: 'AUDIO_RECORDING',
     text: '[Demo] Graba un audio de 30–60 segundos: ¿Por qué te interesa este puesto?',
     metadata: { maxDurationSec: 60, placeholder: 'Pulsa grabar cuando estés listo.' },
@@ -72,7 +72,7 @@ async function upsertModules(db) {
 
   await db.evaluationModule.updateMany({
     where: {
-      key: { in: ['cognitivo', 'raven', 'mrr', 'habilidades_especificas'] },
+      key: { in: ['cognitivo', 'raven', 'mrr', 'habilidades_especificas', 'entrevista_digital'] },
     },
     data: { isActive: false },
   });

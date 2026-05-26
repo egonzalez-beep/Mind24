@@ -1808,7 +1808,7 @@ const MIND24_MOD_TABLE_LABELS={
   cleaver:'Cleaver',
   terman:'Eval. Cognitiva Mind24',
   sales_sjt:'SJT Comercial',
-  entrevista_digital:'Entrevista',
+  digital_interview:'Entrevista',
   medida:'A la medida',
   mrr:'MRR (retirado)',
   habilidades_especificas:'Habilidades (retirado)'
@@ -1824,10 +1824,10 @@ const MIND24_EVAL_MODULES=[
   {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
   {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'sales_sjt',label:'Simulador de Escenarios Comerciales (SJT)',description:'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',icon:'📊'},
-  {key:'entrevista_digital',label:'Entrevista Digital',description:'Filtro asíncrono automatizado de preguntas clave sin intervención humana.',icon:'🎤',comingSoon:true},
+  {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto (próxima fase).',icon:'🎤',comingSoon:true},
   {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',comingSoon:true},
 ];
-const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida'};
+const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida',entrevista_digital:'digital_interview'};
 function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
 function mind24ResolveModKey(key){ return MIND24_LEGACY_MOD_KEYS[key]||key; }
 function mind24IsLegacyOnlyModule(key){ return mind24ResolveModKey(key)==='honestidad'; }

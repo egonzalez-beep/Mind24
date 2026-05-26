@@ -17,6 +17,7 @@ import {
   applyReliabilityToAttemptPayload,
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
+import { applyAssignmentCompletionUpdate } from './organizationBilling.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -308,7 +309,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   const attempt = await prisma.assessmentAttempt.findFirst({
     where: { id: attemptId, assignment: { candidate: { userId } } },
     include: {
-      assignment: true,
+      assignment: { include: { candidate: { select: { organizationId: true } } } },
       candidateResponses: true,
     },
   });
@@ -361,6 +362,8 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   if (!selected.length && resolvedKey) selected = [resolvedKey];
   const allDone =
     selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
+  const organizationId = assignment.candidate.organizationId;
+  const previousAssignmentStatus = assignment.status;
 
   let attemptScores = null;
   let interpretation = {
@@ -475,12 +478,12 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
         flags: persistedFlags.length ? persistedFlags : undefined,
       },
     });
-    await tx.assignment.update({
-      where: { id: assignment.id },
-      data: {
-        completedModules: nextCompleted,
-        status: allDone ? 'completed' : 'in_progress',
-      },
+    await applyAssignmentCompletionUpdate(tx, {
+      assignmentId: assignment.id,
+      organizationId,
+      previousStatus: previousAssignmentStatus,
+      nextCompleted,
+      allDone,
     });
   });
 
