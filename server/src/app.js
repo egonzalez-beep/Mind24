@@ -72,6 +72,11 @@ export function createApp() {
     res.sendFile(indexHtmlAbs);
   });
 
+  // Alias "login" para soportar redirección post-logout sin 404.
+  app.get('/login', (_req, res) => {
+    res.sendFile(indexHtmlAbs);
+  });
+
   app.use(errorHandler);
   return app;
 }

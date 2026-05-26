@@ -31,7 +31,7 @@ export const SJT_SALES_MACRO_GROUPS = [
 /** Perfiles comerciales oficiales según puntaje bruto (0–75). */
 export const SJT_SALES_PROFILE_TIERS = [
   {
-    min: 63,
+    min: 57,
     max: 75,
     key: 'consultor_estrategico',
     label: 'Consultor Estratégico',
@@ -39,16 +39,16 @@ export const SJT_SALES_PROFILE_TIERS = [
       'Orientado a la creación de valor mutuo. Tiende a negociar basándose en datos y rentabilidad, priorizando la relación a largo plazo y manteniendo un alto estándar ético.',
   },
   {
-    min: 45,
-    max: 62,
+    min: 42,
+    max: 56,
     key: 'ejecutivo_cierre_agil',
     label: 'Ejecutivo de Cierre Ágil',
     description:
       'Orientado a resultados inmediatos y volumen. Muestra fuerte iniciativa para acelerar el ciclo de ventas. Podría priorizar concesiones comerciales bajo presión.',
   },
   {
-    min: 22,
-    max: 44,
+    min: 27,
+    max: 41,
     key: 'especialista_fidelizacion',
     label: 'Especialista en Fidelización',
     description:
@@ -56,7 +56,7 @@ export const SJT_SALES_PROFILE_TIERS = [
   },
   {
     min: 0,
-    max: 21,
+    max: 26,
     key: 'asesor_operativo',
     label: 'Asesor Operativo',
     description:
