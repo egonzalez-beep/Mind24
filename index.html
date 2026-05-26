@@ -77,8 +77,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .btn-nav-empleado{padding:8px 18px;font-size:14px;font-weight:600;color:var(--white);background:var(--assess-gradient);border:none;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 4px 14px rgba(124,58,237,.35);}
 .btn-nav-empleado:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(124,58,237,.45);}
 
-/* HERO */
-.hero{min-height:100vh;padding:140px 24px 90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 45%,var(--d3) 100%);}
+/* HERO — título + CTA above the fold (incl. zoom ~120%) */
+.hero{min-height:100vh;min-height:100dvh;padding:72px 24px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 45%,var(--d3) 100%);box-sizing:border-box;}
 .hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.08) 1px,transparent 1px);background-size:56px 56px;animation:grid-pulse 4s ease-in-out infinite;}
 .hero-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.6),rgba(167,139,250,.8),rgba(139,92,246,.6),transparent);animation:scan-line 8s ease-in-out infinite;animation-delay:1s;}
@@ -91,22 +91,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .hero-ring-2{width:700px;height:700px;animation:ring-expand 8s ease-in-out infinite;animation-delay:2.5s;}
 .hero-ring-3{width:900px;height:900px;animation:ring-expand 8s ease-in-out infinite;animation-delay:5s;}
 #heroCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none;}
-.hero-content{position:relative;z-index:1;max-width:880px;}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;background:rgba(124,58,237,.18);border:1px solid rgba(139,92,246,.4);border-radius:100px;font-size:13px;font-weight:600;color:var(--violet-light);margin-bottom:32px;animation:slideUp .7s ease forwards;backdrop-filter:blur(10px);}
-.hero-badge-dot{width:7px;height:7px;background:var(--violet-light);border-radius:50%;animation:pulse-purple 2.5s infinite;}
-.hero-title{font-size:clamp(40px,6.5vw,84px);font-weight:900;line-height:1.05;letter-spacing:-2.5px;color:var(--white);margin-bottom:28px;animation:title-reveal .8s .15s ease both;}
+.hero-content{position:relative;z-index:1;max-width:880px;display:flex;flex-direction:column;align-items:center;gap:28px;}
+.hero-title{font-size:clamp(34px,5.2vw,72px);font-weight:900;line-height:1.06;letter-spacing:-2px;color:var(--white);margin:0;animation:title-reveal .8s .15s ease both;}
 .hero-title .highlight-purple{background:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 40%,#8B5CF6 70%,#7C3AED 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .hero-title .highlight-soft{color:rgba(255,255,255,.65);-webkit-text-fill-color:rgba(255,255,255,.65);}
-.hero-subtitle{font-size:clamp(16px,2vw,20px);color:rgba(255,255,255,.48);max-width:560px;margin:0 auto 52px;font-weight:400;line-height:1.75;animation:title-reveal .8s .3s ease both;}
-.hero-actions{display:flex;align-items:center;justify-content:center;animation:title-reveal .8s .45s ease both;}
+.hero-actions{display:flex;align-items:center;justify-content:center;margin:0;animation:title-reveal .8s .3s ease both;}
 .btn-hero-main{display:inline-flex;align-items:center;gap:10px;padding:18px 52px;font-size:17px;font-weight:700;color:var(--white);background:var(--purple-gradient);border:none;border-radius:var(--r-md);cursor:pointer;transition:var(--tr-fast);font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(124,58,237,.5),0 0 0 1px rgba(139,92,246,.3);position:relative;overflow:hidden;animation:pulse-purple 4s infinite;}
 .btn-hero-main::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);background-size:200% 100%;animation:shimmer 3s infinite;}
 .btn-hero-main:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(124,58,237,.65);}
 .btn-hero-main svg,.btn-hero-main span{position:relative;z-index:1;}
-.hero-scroll-indicator{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeIn 1s 1.2s ease both;}
-.hero-scroll-indicator span{font-size:10px;color:rgba(255,255,255,.22);font-weight:600;letter-spacing:2px;text-transform:uppercase;}
-.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(139,92,246,.6),transparent);animation:float 2.5s ease-in-out infinite;}
-
 /* SECTIONS */
 .dark-section-inner{position:relative;z-index:1;padding:100px 24px;}
 .section-header{text-align:center;max-width:600px;margin:0 auto 60px;}
@@ -700,7 +693,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   .metrics-grid{grid-template-columns:1fr 1fr;}
   .footer-inner{grid-template-columns:1fr 1fr;}
   .footer-bottom{flex-direction:column;gap:12px;text-align:center;}
-  .hero{padding-top:100px;}
+  .hero{padding:64px 20px 28px;}
+  .hero-content{gap:22px;}
+  .hero-title{font-size:clamp(30px,8vw,52px);}
   .sidebar{width:60px;}
   .sidebar-logo,.sidebar-section-label,.sidebar-item span:not(.si-icon),.si-badge,.sidebar-user-info{display:none;}
   .sidebar-item{justify-content:center;padding:10px;}
@@ -759,9 +754,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="hero-ring hero-ring-3"></div>
     </div>
     <div class="hero-content">
-      <div class="hero-badge"><div class="hero-badge-dot"></div>Plataforma SaaS de Bienestar Corporativo</div>
       <h1 class="hero-title">Psicometría e inteligencia<br><span class="highlight-purple">humana</span> para<br><span class="highlight-soft">equipos que crecen</span></h1>
-      <p class="hero-subtitle">MIND24 unifica el bienestar psicológico de tus empleados con evaluaciones psicométricas de precisión. Dos módulos, una sola plataforma enterprise.</p>
       <div class="hero-actions">
         <button class="btn-hero-main" onclick="openModal('modal-evaluacion')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -769,7 +762,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </button>
       </div>
     </div>
-    <div class="hero-scroll-indicator"><span>Scroll</span><div class="scroll-line"></div></div>
   </section>
 
   <div class="section-sep"></div>
