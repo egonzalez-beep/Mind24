@@ -512,6 +512,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @keyframes diPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5);}70%{box-shadow:0 0 0 10px rgba(239,68,68,0);}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}}
 .di-audio{margin-top:12px;width:100%;}
 .di-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;}
+.di-mic-copy{font-size:12px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.5;margin:8px 0 0;}
+.di-mic-err{font-size:12px;font-weight:700;color:#FCA5A5;line-height:1.45;margin:8px 0 0;padding:8px 10px;border-radius:10px;background:rgba(127,29,29,.3);border:1px solid rgba(252,165,165,.28);}
+.di-mic-err.hidden{display:none;}
 .di-hr-modal{position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;}
 .di-hr-modal.hidden{display:none!important;}
 .di-hr-card{width:100%;max-width:640px;background:#fff;border-radius:14px;box-shadow:0 24px 72px rgba(0,0,0,.35);padding:18px 18px 16px;}
@@ -1557,8 +1560,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="di-rec-row">
         <div class="di-live" id="di-live" style="display:none;">
           <span class="di-dot" aria-hidden="true"></span>
-          <span>Grabando</span>
-          <span id="di-time" style="font-variant-numeric:tabular-nums;">00:00</span>
+          <span>Grabando · Tiempo restante</span>
+          <span id="di-time" style="font-variant-numeric:tabular-nums;">03:00</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button type="button" class="di-btn" id="di-btn-start" onclick="digitalInterviewStartRecording()">
@@ -1570,6 +1573,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </button>
         </div>
       </div>
+      <p class="di-mic-copy">Por favor, permite el acceso a tu micrófono cuando el navegador te lo solicite.</p>
+      <p id="di-mic-err" class="di-mic-err hidden"></p>
       <audio id="di-audio" class="di-audio" controls style="display:none;"></audio>
       <div class="di-actions">
         <button type="button" class="di-btn" id="di-btn-retake" onclick="digitalInterviewRetake()" disabled>Volver a grabar</button>
@@ -2692,6 +2697,31 @@ async function registrarEval(){
 window.ATTEMPT_CTX={useApi:false};
 window.__MIND24_USER=null;
 window.__CAND_LOBBY=null;
+const MIND24_AUTH_TOKEN_KEY='mind24_token';
+const MIND24_AUTH_USER_KEY='mind24_user';
+
+function mind24PersistSessionUser(user){
+  try{
+    if(user){
+      localStorage.setItem(MIND24_AUTH_TOKEN_KEY,'session');
+      localStorage.setItem(MIND24_AUTH_USER_KEY,JSON.stringify(user));
+    }
+  }catch(_){}
+}
+
+function mind24ClearPersistedSession(){
+  try{
+    localStorage.removeItem(MIND24_AUTH_TOKEN_KEY);
+    localStorage.removeItem(MIND24_AUTH_USER_KEY);
+  }catch(_){}
+}
+
+function mind24ReadPersistedUser(){
+  try{
+    const raw=localStorage.getItem(MIND24_AUTH_USER_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(_){ return null; }
+}
 
 async function apiJson(url,opts={}){
   const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
@@ -2706,6 +2736,14 @@ async function apiJson(url,opts={}){
     const er=new Error(msg);
     if(j&&j.error)er.code=j.error;
     er.httpStatus=r.status;
+    if(r.status===401){
+      const safeAuthAttempt=url.includes('/api/auth/login')||url.includes('/api/auth/candidate-access');
+      window.__MIND24_USER=null;
+      mind24ClearPersistedSession();
+      if(!safeAuthAttempt){
+        setTimeout(function(){ window.location.assign('/login'); },0);
+      }
+    }
     throw er;
   }
   return j;
@@ -2726,6 +2764,7 @@ async function authLogout(){
   await mind24LogoutApi({reason:'authLogout'});
   mind24ClearAspenPasswordCache();
   window.__MIND24_USER=null;
+  mind24ClearPersistedSession();
   try{ delete window.__MIND24_DEFAULT_ASSESS_DEF_ID; }catch(_){}
   try{ delete window.__CEV_ACCESS_CLIP; }catch(_){}
   window.__CEV_FORM_LOCKED=false;
@@ -2766,6 +2805,8 @@ const DIGITAL_INTERVIEW_BLOCKS = [
     ],
   },
 ];
+const DIGITAL_INTERVIEW_MAX_SECONDS = 180;
+const DIGITAL_INTERVIEW_MIC_PERMISSION_ERROR = '⚠️ No podemos acceder a tu micrófono. Por favor, revisa los permisos de tu navegador (el ícono del candado en la barra de direcciones) y recarga la página para continuar.';
 
 window.__DI_CTX = null;
 
@@ -2782,10 +2823,15 @@ function digitalInterviewOpen(payload){
     chunks: [],
     ticking: null,
     startedAt: 0,
+    deadlineAt: 0,
+    remainingSec: DIGITAL_INTERVIEW_MAX_SECONDS,
+    hasMicPermission: null,
+    micDenied: false,
     audioObjUrl: null,
     audios: { bloque1:null, bloque2:null, bloque3:null },
     blobs: { bloque1:null, bloque2:null, bloque3:null },
   };
+  digitalInterviewPreflightMic();
   digitalInterviewRender();
   const shell=document.getElementById('di-wizard');
   if(shell) shell.classList.remove('hidden');
@@ -2821,6 +2867,8 @@ function digitalInterviewRender(){
   if(nextBtn){
     nextBtn.textContent = (idx===2) ? 'Finalizar y Enviar' : 'Siguiente Bloque';
   }
+  const timer=diEl('di-time');
+  if(timer) timer.textContent=diFmtClock(ctx.remainingSec||DIGITAL_INTERVIEW_MAX_SECONDS);
   digitalInterviewSyncUiState();
 }
 
@@ -2836,17 +2884,63 @@ function digitalInterviewSyncUiState(){
   const audio=diEl('di-audio');
   const btnRetake=diEl('di-btn-retake');
   const btnNext=diEl('di-btn-next');
+  const micErr=diEl('di-mic-err');
+  const blocked=ctx.micDenied===true || ctx.hasMicPermission===false;
 
-  if(btnStart) btnStart.disabled=isRecording;
+  if(btnStart) btnStart.disabled=isRecording||blocked;
   if(btnStop) btnStop.style.display=isRecording?'inline-flex':'none';
   if(live) live.style.display=isRecording?'flex':'none';
   if(audio) audio.style.display=hasBlob?'block':'none';
   if(btnRetake) btnRetake.disabled=!hasBlob || isRecording;
   if(btnNext) btnNext.disabled=!hasBlob || isRecording;
+  if(micErr){
+    if(blocked){
+      micErr.textContent=DIGITAL_INTERVIEW_MIC_PERMISSION_ERROR;
+      micErr.classList.remove('hidden');
+    }else{
+      micErr.textContent='';
+      micErr.classList.add('hidden');
+    }
+  }
+}
+
+async function digitalInterviewPreflightMic(){
+  const ctx=window.__DI_CTX; if(!ctx) return false;
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      ctx.hasMicPermission=false;
+      ctx.micDenied=true;
+      digitalInterviewSyncUiState();
+      return false;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ctx.hasMicPermission=true;
+    ctx.micDenied=false;
+    if(stream && stream.getTracks){ stream.getTracks().forEach((t)=>{ try{ t.stop(); }catch(_){ } }); }
+    digitalInterviewSyncUiState();
+    return true;
+  }catch(_e){
+    ctx.hasMicPermission=false;
+    ctx.micDenied=true;
+    digitalInterviewSyncUiState();
+    return false;
+  }
+}
+
+function digitalInterviewTickCountdown(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  const left=Math.max(0,Math.ceil((ctx.deadlineAt-Date.now())/1000));
+  ctx.remainingSec=left;
+  const el=diEl('di-time'); if(el) el.textContent=diFmtClock(left);
+  if(left<=0){
+    digitalInterviewStopRecording({auto:true});
+  }
 }
 
 async function digitalInterviewStartRecording(){
   const ctx=window.__DI_CTX; if(!ctx) return;
+  const ok = await digitalInterviewPreflightMic();
+  if(!ok) return;
   try{
     digitalInterviewCleanupRecording();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -2870,19 +2964,22 @@ async function digitalInterviewStartRecording(){
     };
     rec.start();
     ctx.startedAt = Date.now();
+    ctx.deadlineAt = ctx.startedAt + DIGITAL_INTERVIEW_MAX_SECONDS*1000;
+    ctx.remainingSec = DIGITAL_INTERVIEW_MAX_SECONDS;
     const timeEl=diEl('di-time');
-    if(timeEl) timeEl.textContent='00:00';
+    if(timeEl) timeEl.textContent=diFmtClock(ctx.remainingSec);
     ctx.ticking = setInterval(()=>{
-      const t=Math.floor((Date.now()-ctx.startedAt)/1000);
-      const el=diEl('di-time'); if(el) el.textContent=diFmtClock(t);
+      digitalInterviewTickCountdown();
     }, 250);
     digitalInterviewSyncUiState();
   }catch(e){
-    alert('No se pudo acceder al micrófono. Revisa permisos del navegador.');
+    ctx.hasMicPermission=false;
+    ctx.micDenied=true;
+    digitalInterviewSyncUiState();
   }
 }
 
-function digitalInterviewStopRecording(){
+function digitalInterviewStopRecording(_opts={}){
   const ctx=window.__DI_CTX; if(!ctx) return;
   if(ctx.recorder && ctx.recorder.state==='recording'){
     try{ ctx.recorder.stop(); }catch(_){}
@@ -2912,6 +3009,8 @@ function digitalInterviewRetake(){
   if(audio){ audio.pause(); audio.removeAttribute('src'); audio.load(); audio.style.display='none'; }
   if(ctx.audioObjUrl) try{ URL.revokeObjectURL(ctx.audioObjUrl); }catch(_){}
   ctx.audioObjUrl=null;
+  ctx.remainingSec=DIGITAL_INTERVIEW_MAX_SECONDS;
+  const t=diEl('di-time'); if(t) t.textContent=diFmtClock(ctx.remainingSec);
   digitalInterviewSyncUiState();
 }
 
@@ -2938,6 +3037,7 @@ async function digitalInterviewNext(){
     }
     if(idx<2){
       ctx.step++;
+      ctx.remainingSec=DIGITAL_INTERVIEW_MAX_SECONDS;
       digitalInterviewRender();
       // reset recorder UI for next block
       const audio=diEl('di-audio');
@@ -2998,6 +3098,7 @@ async function loginEmpresaAdmin(e){
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
+    mind24PersistSessionUser(data.user);
     mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
     showView('dash-admin');
@@ -3019,6 +3120,7 @@ async function loginEmpresaCrearEval(e){
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='empresa_admin'){ alert('Esta cuenta no es administrador de empresa.'); await mind24LogoutApi({reason:'empresa_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
+    mind24PersistSessionUser(data.user);
     mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
     showView('dash-crear-eval');
@@ -3041,6 +3143,7 @@ async function loginCandidato(e){
     const data=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     if(data.user.role!=='candidato'){ alert('Esta cuenta no es de candidato.'); await mind24LogoutApi({reason:'candidato_login_wrong_role',role:data.user.role}); return; }
     window.__MIND24_USER=data.user;
+    mind24PersistSessionUser(data.user);
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-candidato');
     await openCandidatoLobby();
@@ -3077,6 +3180,7 @@ async function loginSuperAdmin(e){
       return;
     }
     window.__MIND24_USER=user;
+    mind24PersistSessionUser(user);
     if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
     closeModal('modal-login-superadmin');
     const sd=document.getElementById('su-email-display'); if(sd)sd.textContent=user.email||String(email).trim();
@@ -3096,6 +3200,7 @@ async function loginSuperAdmin(e){
 async function superadminLogout(){
   await mind24LogoutApi({reason:'superadminLogout'});
   window.__MIND24_USER=null;
+  mind24ClearPersistedSession();
   showView('landing');
 }
 
@@ -4309,6 +4414,7 @@ async function iniciarEvaluacion(e){
       body:JSON.stringify({email,accessCode,fullName:nombre}),
     });
     window.__MIND24_USER=data.user;
+    mind24PersistSessionUser(data.user);
     renderCandidatoLobby(data.lobby,data.user);
     closeModal('modal-evaluacion');
     showView('dash-candidato');
@@ -4499,6 +4605,26 @@ function calcResults(){
 
 // ── Init ──
 if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
+;(async function mind24BootstrapSession(){
+  const marker=(function(){ try{ return localStorage.getItem(MIND24_AUTH_TOKEN_KEY); }catch(_){ return null; } })();
+  if(!marker){
+    const cached=mind24ReadPersistedUser();
+    if(cached) mind24ClearPersistedSession();
+    return;
+  }
+  try{
+    const me=await apiJson('/api/auth/me');
+    if(!me||!me.user){ mind24ClearPersistedSession(); return; }
+    window.__MIND24_USER=me.user;
+    mind24PersistSessionUser(me.user);
+    const role=String(me.user.role||'').toLowerCase();
+    if(role==='candidato'){ await openCandidatoLobby(); return; }
+    if(role==='empresa_admin'){ mind24RefreshEmpresaAdminDashboardChrome(); showView('dash-admin'); return; }
+    if(role==='master_admin'){ showView('dash-superadmin'); try{ await refreshSuperadminDashboard(); }catch(_){ } return; }
+  }catch(_e){
+    mind24ClearPersistedSession();
+  }
+})();
 </script>
 </body>
 </html>

@@ -48,12 +48,13 @@ export function createApp() {
       secret: env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
+      rolling: true,
       proxy: env.TRUST_PROXY,
       cookie: {
         httpOnly: true,
         secure: env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 8 * 60 * 60 * 1000,
       },
     }),
   );
