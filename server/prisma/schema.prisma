@@ -191,6 +191,8 @@ model AssessmentAttempt {
   timeLimitSec   Int?
   /// legacy JSON motor (honestidad demo) — convive con motor dinámico.
   responses      Json?
+  /// Resultados adicionales por módulo (ej. audios Entrevista Digital).
+  results        Json?
   scores         Json?
   interpretation Json?
   flags          Json?

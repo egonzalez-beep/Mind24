@@ -9,7 +9,13 @@ export const MIND24_MODULE_KEYS = [
 ];
 
 /** Módulos que pueden asignarse y ejecutarse hoy. */
-export const ASSIGNABLE_MODULE_KEYS = ['honestidad', 'cleaver', 'terman', 'sales_sjt'];
+export const ASSIGNABLE_MODULE_KEYS = [
+  'honestidad',
+  'cleaver',
+  'terman',
+  'sales_sjt',
+  'digital_interview',
+];
 
 export const DEFAULT_SELECTED_MODULES = [...ASSIGNABLE_MODULE_KEYS];
 
@@ -73,7 +79,7 @@ export const MODULE_CATALOG = {
       'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto (próxima fase).',
     icon: '🎤',
     estimatedMinutes: null,
-    comingSoon: true,
+    isActive: true,
     sectionIds: ['principal'],
     questionIdRange: [31, 36],
   },

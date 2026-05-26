@@ -483,6 +483,46 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cand-lobby-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;}
 .cand-lobby-out:hover{background:rgba(255,255,255,.08);}
 
+/* ───────────────────────────────────────────────────────────
+   Entrevista Digital Estructurada (Wizard candidato + modal RH)
+   ─────────────────────────────────────────────────────────── */
+.di-shell{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse 85% 55% at 50% -10%,rgba(124,58,237,.22),transparent 60%),linear-gradient(165deg,#0a0614 0%,#1a1035 42%,#120a22 100%);display:flex;align-items:center;justify-content:center;padding:22px;}
+.di-shell.hidden{display:none!important;}
+.di-card{width:100%;max-width:720px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 16px 64px rgba(0,0,0,.35);padding:20px 20px 18px;position:relative;}
+.di-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.di-step{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);}
+.di-close{background:transparent;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);font-size:12px;font-weight:700;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:inherit;}
+.di-close:hover{background:rgba(255,255,255,.08);}
+.di-title{font-size:24px;font-weight:900;letter-spacing:-.03em;color:#fff;line-height:1.15;margin:0 0 10px;}
+.di-desc{font-size:14px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.55;margin:0 0 14px;}
+.di-qs{margin:0 0 16px;padding-left:18px;color:rgba(255,255,255,.82);font-size:13px;font-weight:600;line-height:1.5;}
+.di-qs li{margin:8px 0;}
+.di-rec{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;}
+.di-rec-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.di-btn{display:inline-flex;align-items:center;gap:10px;border-radius:12px;padding:10px 14px;font-weight:800;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;transition:transform .08s ease,background .18s ease,border-color .18s ease;}
+.di-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.26);}
+.di-btn:active:not(:disabled){transform:translateY(1px);}
+.di-btn:disabled{opacity:.45;cursor:not-allowed;}
+.di-btn-primary{background:linear-gradient(135deg,#7C3AED,#5B21B6);border:none;}
+.di-btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#8B5CF6,#6D28D9);}
+.di-btn-danger{background:rgba(239,68,68,.12);border-color:rgba(248,113,113,.35);color:#FCA5A5;}
+.di-mic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:10px;background:rgba(239,68,68,.16);border:1px solid rgba(248,113,113,.35);color:#FCA5A5;font-size:14px;}
+.di-live{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.85);font-size:13px;font-weight:800;}
+.di-dot{width:10px;height:10px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 rgba(239,68,68,.5);animation:diPulse 1s infinite;}
+@keyframes diPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5);}70%{box-shadow:0 0 0 10px rgba(239,68,68,0);}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}}
+.di-audio{margin-top:12px;width:100%;}
+.di-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;}
+.di-hr-modal{position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;}
+.di-hr-modal.hidden{display:none!important;}
+.di-hr-card{width:100%;max-width:640px;background:#fff;border-radius:14px;box-shadow:0 24px 72px rgba(0,0,0,.35);padding:18px 18px 16px;}
+.di-hr-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.di-hr-hd h3{margin:0;font-size:18px;font-weight:900;letter-spacing:-.02em;color:#0F172A;}
+.di-hr-hd p{margin:4px 0 0;font-size:12px;color:#64748B;font-weight:600;line-height:1.4;}
+.di-hr-x{border:none;background:transparent;font-size:20px;cursor:pointer;color:#334155;line-height:1;}
+.di-hr-block{margin-top:14px;}
+.di-hr-label{font-size:12px;font-weight:900;color:#334155;margin-bottom:6px;}
+.di-hr-audio{width:100%;}
+
 
 .dyn-question-host{margin-top:8px;}
 .dyn-mc-list{display:flex;flex-direction:column;gap:10px;}
@@ -1501,6 +1541,68 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </main>
 </div>
+
+<!-- ════════════════════ DIGITAL INTERVIEW WIZARD (CANDIDATO) ════════════════════ -->
+<div id="di-wizard" class="di-shell hidden" role="dialog" aria-modal="true" aria-labelledby="di-title">
+  <div class="di-card">
+    <div class="di-top">
+      <div class="di-step" id="di-step">Paso 1 de 3</div>
+      <button type="button" class="di-close" onclick="digitalInterviewClose()">Volver al lobby</button>
+    </div>
+    <h1 class="di-title" id="di-title">—</h1>
+    <p class="di-desc" id="di-desc">—</p>
+    <ul class="di-qs" id="di-qs"></ul>
+
+    <div class="di-rec">
+      <div class="di-rec-row">
+        <div class="di-live" id="di-live" style="display:none;">
+          <span class="di-dot" aria-hidden="true"></span>
+          <span>Grabando</span>
+          <span id="di-time" style="font-variant-numeric:tabular-nums;">00:00</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button type="button" class="di-btn" id="di-btn-start" onclick="digitalInterviewStartRecording()">
+            <span class="di-mic" aria-hidden="true">🎙</span>
+            Iniciar Grabación
+          </button>
+          <button type="button" class="di-btn di-btn-danger" id="di-btn-stop" onclick="digitalInterviewStopRecording()" style="display:none;">
+            Detener
+          </button>
+        </div>
+      </div>
+      <audio id="di-audio" class="di-audio" controls style="display:none;"></audio>
+      <div class="di-actions">
+        <button type="button" class="di-btn" id="di-btn-retake" onclick="digitalInterviewRetake()" disabled>Volver a grabar</button>
+        <button type="button" class="di-btn di-btn-primary" id="di-btn-next" onclick="digitalInterviewNext()" disabled>Siguiente Bloque</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ DIGITAL INTERVIEW MODAL (RH) ════════════════════ -->
+<div id="di-hr-modal" class="di-hr-modal hidden" role="dialog" aria-modal="true" aria-labelledby="di-hr-title" onclick="if(event.target===this)digitalInterviewHrClose()">
+  <div class="di-hr-card">
+    <div class="di-hr-hd">
+      <div>
+        <h3 id="di-hr-title">Entrevista Digital Estructurada</h3>
+        <p>Reproduce los audios por bloque. No requiere recargar la página.</p>
+      </div>
+      <button class="di-hr-x" onclick="digitalInterviewHrClose()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="di-hr-block">
+      <div class="di-hr-label">Bloque 1: Entorno Personal y Logística</div>
+      <audio id="di-hr-a1" class="di-hr-audio" controls></audio>
+    </div>
+    <div class="di-hr-block">
+      <div class="di-hr-label">Bloque 2: Situación Económica y Documentación</div>
+      <audio id="di-hr-a2" class="di-hr-audio" controls></audio>
+    </div>
+    <div class="di-hr-block">
+      <div class="di-hr-label">Bloque 3: Trayectoria y Competencias</div>
+      <audio id="di-hr-a3" class="di-hr-audio" controls></audio>
+    </div>
+  </div>
+</div>
 <!-- ════════════════════ EVALUACIÓN SIMULATOR ════════════════════ -->
 <div id="view-evaluacion" class="hidden">
   <div class="eval-topbar">
@@ -1747,6 +1849,7 @@ function crearEvalReportesCell(tr, a){
   const tdx=document.createElement('td');
   tdx.style.padding='8px';
   const aid=a&&a.id?String(a.id):'';
+  const di = crearEvalFindDigitalInterviewAttempt(a);
   if(crearEvalAssignmentReportReady(a)&&aid){
     const btn=document.createElement('button');
     btn.type='button';
@@ -1756,11 +1859,46 @@ function crearEvalReportesCell(tr, a){
     btn.title='Descargar reporte consolidado PDF (todos los módulos completados)';
     btn.onclick=function(){ downloadAssignmentReportPdf(aid,'Descargar Reporte'); };
     tdx.appendChild(btn);
+    if(di && di.audios){
+      const b2=document.createElement('button');
+      b2.type='button';
+      b2.className='card-action';
+      b2.style.fontSize='12px';
+      b2.style.marginLeft='8px';
+      b2.textContent='Escuchar Entrevista';
+      b2.title='Reproducir audios del módulo Entrevista Digital Estructurada';
+      b2.onclick=function(){ digitalInterviewHrOpen(di.audios); };
+      tdx.appendChild(b2);
+    }
   }else{
     tdx.textContent='—';
     tdx.style.color='var(--slate-400)';
+    if(di && di.audios){
+      const b2=document.createElement('button');
+      b2.type='button';
+      b2.className='card-action';
+      b2.style.fontSize='12px';
+      b2.textContent='Escuchar Entrevista';
+      b2.title='Reproducir audios del módulo Entrevista Digital Estructurada';
+      b2.onclick=function(){ digitalInterviewHrOpen(di.audios); };
+      tdx.innerHTML='';
+      tdx.appendChild(b2);
+    }
   }
   tr.appendChild(tdx);
+}
+
+function crearEvalFindDigitalInterviewAttempt(a){
+  const atts=a&&a.attempts&&Array.isArray(a.attempts)?a.attempts:[];
+  for(let i=0;i<atts.length;i++){
+    const att=atts[i]||{};
+    const mk=mind24ResolveModKey(att.moduleKey);
+    if(mk!=='digital_interview') continue;
+    const r=att.results||{};
+    const aud=r&&r.audios?r.audios:null;
+    if(aud&&aud.bloque1&&aud.bloque2&&aud.bloque3) return { attempt:att, audios:aud };
+  }
+  return null;
 }
 async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel){
   if(!assignmentId) return;
@@ -1818,16 +1956,16 @@ function crearEvalModTableLabel(key){
   return MIND24_MOD_TABLE_LABELS[k]||k;
 }
 /** Catálogo corporativo Mind24 (sincronizado con server/src/utils/moduleCatalog.js) */
-const MIND24_ASSIGNABLE_KEYS=['honestidad','cleaver','terman','sales_sjt'];
+const MIND24_ASSIGNABLE_KEYS=['honestidad','cleaver','terman','sales_sjt','digital_interview'];
 const MIND24_EVAL_MODULES=[
   {key:'honestidad',label:'Batería de Honestidad (Exclusivo Mind24)',description:'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',icon:'🛡️',featured:true},
   {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
   {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'sales_sjt',label:'Simulador de Escenarios Comerciales (SJT)',description:'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',icon:'📊'},
-  {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto (próxima fase).',icon:'🎤',comingSoon:true},
+  {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
   {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',comingSoon:true},
 ];
-const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida'};
+const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida',entrevista_digital:'digital_interview'};
 function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
 function mind24ResolveModKey(key){ return MIND24_LEGACY_MOD_KEYS[key]||key; }
 function mind24IsLegacyOnlyModule(key){ return mind24ResolveModKey(key)==='honestidad'; }
@@ -2595,6 +2733,263 @@ async function authLogout(){
   window.location.assign('/login');
 }
 
+// ───────────────────────────────────────────────────────────
+// Entrevista Digital Estructurada (digital_interview) — Wizard candidato
+// ───────────────────────────────────────────────────────────
+const DIGITAL_INTERVIEW_BLOCKS = [
+  {
+    title: 'Bloque 1: Entorno Personal y Logística',
+    desc: 'Graba una nota de voz contándonos un poco sobre tu entorno actual y facilidades de traslado.',
+    questions: [
+      '¿Con quién vives y cómo es tu dinámica familiar?',
+      '¿Cuánto tiempo llevas viviendo en tu domicilio actual?',
+      '¿Cuáles son tus tiempos y facilidades de traslado hacia la zona de trabajo?',
+      '¿Tienes planes de viaje o compromisos próximos que requieran permisos de ausencia?',
+    ],
+  },
+  {
+    title: 'Bloque 2: Situación Económica y Documentación',
+    desc: 'Hablemos de tus expectativas y estatus administrativo. Graba tu respuesta.',
+    questions: [
+      '¿Cuál es tu expectativa económica mensual libre?',
+      '¿A cuánto ascienden tus gastos fijos mensuales y cuentas con deudas o créditos activos?',
+      '¿Cuentas con tu último comprobante de estudios y tu Constancia de Situación Fiscal actualizada, o hay algún documento pendiente?',
+    ],
+  },
+  {
+    title: 'Bloque 3: Trayectoria y Competencias',
+    desc: 'Queremos conocer tu experiencia reciente y cómo te relacionas con tus equipos.',
+    questions: [
+      'Platícanos de tu último empleo: ¿Cuáles eran tus actividades y qué era lo que más te gustaba?',
+      '¿Cuál fue el motivo real de tu salida y cómo era la dinámica con tus compañeros (hubo algún conflicto o tema pendiente)?',
+      'Menciona las 3 principales fortalezas o características laborales que mejor te definen.',
+    ],
+  },
+];
+
+window.__DI_CTX = null;
+
+function digitalInterviewOpen(payload){
+  const attemptId = payload && payload.attemptId ? String(payload.attemptId) : '';
+  const assignmentId = payload && payload.assignmentId ? String(payload.assignmentId) : '';
+  if(!attemptId || !assignmentId){ alert('No se pudo iniciar la Entrevista Digital.'); return; }
+  window.__DI_CTX = {
+    attemptId,
+    assignmentId,
+    step: 1,
+    stream: null,
+    recorder: null,
+    chunks: [],
+    ticking: null,
+    startedAt: 0,
+    audioObjUrl: null,
+    audios: { bloque1:null, bloque2:null, bloque3:null },
+    blobs: { bloque1:null, bloque2:null, bloque3:null },
+  };
+  digitalInterviewRender();
+  const shell=document.getElementById('di-wizard');
+  if(shell) shell.classList.remove('hidden');
+}
+
+function digitalInterviewClose(){
+  digitalInterviewCleanupRecording();
+  const shell=document.getElementById('di-wizard');
+  if(shell) shell.classList.add('hidden');
+  window.__DI_CTX=null;
+}
+
+function diEl(id){ return document.getElementById(id); }
+function diPad2(n){ return String(n).padStart(2,'0'); }
+function diFmtClock(sec){
+  const s=Math.max(0,Math.floor(Number(sec)||0));
+  const m=Math.floor(s/60), r=s%60;
+  return diPad2(m)+':'+diPad2(r);
+}
+
+function digitalInterviewRender(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  const idx=Math.max(0,Math.min(2,(ctx.step||1)-1));
+  const b=DIGITAL_INTERVIEW_BLOCKS[idx];
+  const stepEl=diEl('di-step'); if(stepEl) stepEl.textContent='Paso '+(idx+1)+' de 3';
+  const titleEl=diEl('di-title'); if(titleEl) titleEl.textContent=b.title;
+  const descEl=diEl('di-desc'); if(descEl) descEl.textContent=b.desc;
+  const qs=diEl('di-qs');
+  if(qs){
+    qs.innerHTML = b.questions.map((q)=>'<li>'+mind24EscHtml(q)+'</li>').join('');
+  }
+  const nextBtn=diEl('di-btn-next');
+  if(nextBtn){
+    nextBtn.textContent = (idx===2) ? 'Finalizar y Enviar' : 'Siguiente Bloque';
+  }
+  digitalInterviewSyncUiState();
+}
+
+function digitalInterviewSyncUiState(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  const idx=(ctx.step||1)-1;
+  const key = 'bloque'+(idx+1);
+  const hasBlob=!!ctx.blobs[key];
+  const isRecording=!!(ctx.recorder && ctx.recorder.state==='recording');
+  const btnStart=diEl('di-btn-start');
+  const btnStop=diEl('di-btn-stop');
+  const live=diEl('di-live');
+  const audio=diEl('di-audio');
+  const btnRetake=diEl('di-btn-retake');
+  const btnNext=diEl('di-btn-next');
+
+  if(btnStart) btnStart.disabled=isRecording;
+  if(btnStop) btnStop.style.display=isRecording?'inline-flex':'none';
+  if(live) live.style.display=isRecording?'flex':'none';
+  if(audio) audio.style.display=hasBlob?'block':'none';
+  if(btnRetake) btnRetake.disabled=!hasBlob || isRecording;
+  if(btnNext) btnNext.disabled=!hasBlob || isRecording;
+}
+
+async function digitalInterviewStartRecording(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  try{
+    digitalInterviewCleanupRecording();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ctx.stream = stream;
+    const rec = new MediaRecorder(stream);
+    ctx.recorder = rec;
+    ctx.chunks = [];
+    rec.ondataavailable = (ev) => { if(ev.data && ev.data.size>0) ctx.chunks.push(ev.data); };
+    rec.onstop = () => {
+      const blob = new Blob(ctx.chunks, { type: rec.mimeType || 'audio/webm' });
+      const idx=(ctx.step||1)-1;
+      const key='bloque'+(idx+1);
+      ctx.blobs[key]=blob;
+      const audio=diEl('di-audio');
+      if(audio){
+        if(ctx.audioObjUrl) try{ URL.revokeObjectURL(ctx.audioObjUrl); }catch(_){}
+        ctx.audioObjUrl = URL.createObjectURL(blob);
+        audio.src = ctx.audioObjUrl;
+      }
+      digitalInterviewSyncUiState();
+    };
+    rec.start();
+    ctx.startedAt = Date.now();
+    const timeEl=diEl('di-time');
+    if(timeEl) timeEl.textContent='00:00';
+    ctx.ticking = setInterval(()=>{
+      const t=Math.floor((Date.now()-ctx.startedAt)/1000);
+      const el=diEl('di-time'); if(el) el.textContent=diFmtClock(t);
+    }, 250);
+    digitalInterviewSyncUiState();
+  }catch(e){
+    alert('No se pudo acceder al micrófono. Revisa permisos del navegador.');
+  }
+}
+
+function digitalInterviewStopRecording(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  if(ctx.recorder && ctx.recorder.state==='recording'){
+    try{ ctx.recorder.stop(); }catch(_){}
+  }
+  if(ctx.ticking){ clearInterval(ctx.ticking); ctx.ticking=null; }
+  if(ctx.stream && ctx.stream.getTracks){ ctx.stream.getTracks().forEach(t=>{ try{ t.stop(); }catch(_){} }); }
+  ctx.stream=null;
+  digitalInterviewSyncUiState();
+}
+
+function digitalInterviewCleanupRecording(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  if(ctx.ticking){ clearInterval(ctx.ticking); ctx.ticking=null; }
+  if(ctx.recorder && ctx.recorder.state==='recording'){ try{ ctx.recorder.stop(); }catch(_){ } }
+  ctx.recorder=null;
+  if(ctx.stream && ctx.stream.getTracks){ ctx.stream.getTracks().forEach(t=>{ try{ t.stop(); }catch(_){} }); }
+  ctx.stream=null;
+}
+
+function digitalInterviewRetake(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  const idx=(ctx.step||1)-1;
+  const key='bloque'+(idx+1);
+  ctx.blobs[key]=null;
+  ctx.audios[key]=null;
+  const audio=diEl('di-audio');
+  if(audio){ audio.pause(); audio.removeAttribute('src'); audio.load(); audio.style.display='none'; }
+  if(ctx.audioObjUrl) try{ URL.revokeObjectURL(ctx.audioObjUrl); }catch(_){}
+  ctx.audioObjUrl=null;
+  digitalInterviewSyncUiState();
+}
+
+function diBlobToDataUrl(blob){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(String(r.result||''));
+    r.onerror=()=>reject(new Error('No se pudo leer el audio.'));
+    r.readAsDataURL(blob);
+  });
+}
+
+async function digitalInterviewNext(){
+  const ctx=window.__DI_CTX; if(!ctx) return;
+  const idx=(ctx.step||1)-1;
+  const key='bloque'+(idx+1);
+  const blob=ctx.blobs[key];
+  if(!blob){ return; }
+  const btn=diEl('di-btn-next');
+  if(btn){ btn.disabled=true; btn.textContent=(idx===2)?'Enviando…':'Procesando…'; }
+  try{
+    if(!ctx.audios[key]){
+      ctx.audios[key] = await diBlobToDataUrl(blob);
+    }
+    if(idx<2){
+      ctx.step++;
+      digitalInterviewRender();
+      // reset recorder UI for next block
+      const audio=diEl('di-audio');
+      if(audio){ audio.pause(); audio.removeAttribute('src'); audio.load(); audio.style.display='none'; }
+      if(ctx.audioObjUrl) try{ URL.revokeObjectURL(ctx.audioObjUrl); }catch(_){}
+      ctx.audioObjUrl=null;
+      digitalInterviewSyncUiState();
+      return;
+    }
+    // Finalizar: enviar 3 bloques en un solo payload
+    const audios = {
+      bloque1: ctx.audios.bloque1,
+      bloque2: ctx.audios.bloque2,
+      bloque3: ctx.audios.bloque3,
+    };
+    if(!audios.bloque1 || !audios.bloque2 || !audios.bloque3){
+      throw new Error('Faltan bloques de audio por completar.');
+    }
+    await apiJson('/api/evaluations/audio', {
+      method:'POST',
+      body: JSON.stringify({ attemptId: ctx.attemptId, audios }),
+    });
+    digitalInterviewClose();
+    await openCandidatoLobby();
+    alert('Entrevista enviada correctamente.');
+  }catch(e){
+    alert(e.message||'No se pudo enviar la entrevista.');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent=(idx===2)?'Finalizar y Enviar':'Siguiente Bloque'; }
+  }
+}
+
+// ───────────────────────────────────────────────────────────
+// Modal RH: reproducción audios
+// ───────────────────────────────────────────────────────────
+function digitalInterviewHrOpen(audios){
+  const m=document.getElementById('di-hr-modal');
+  if(!m) return;
+  const a1=diEl('di-hr-a1'), a2=diEl('di-hr-a2'), a3=diEl('di-hr-a3');
+  if(a1) a1.src = audios && audios.bloque1 ? String(audios.bloque1) : '';
+  if(a2) a2.src = audios && audios.bloque2 ? String(audios.bloque2) : '';
+  if(a3) a3.src = audios && audios.bloque3 ? String(audios.bloque3) : '';
+  m.classList.remove('hidden');
+}
+function digitalInterviewHrClose(){
+  const m=document.getElementById('di-hr-modal');
+  if(!m) return;
+  m.classList.add('hidden');
+  const a1=diEl('di-hr-a1'), a2=diEl('di-hr-a2'), a3=diEl('di-hr-a3');
+  [a1,a2,a3].forEach((a)=>{ if(a){ try{ a.pause(); }catch(_){ } a.removeAttribute('src'); a.load(); } });
+}
+
 async function loginEmpresaAdmin(e){
   e.preventDefault();
   const email=(document.getElementById('login-emp-email')||{}).value||'';
@@ -3026,6 +3421,15 @@ async function startAssignedModule(assignmentId, moduleKey){
       method:'POST',
       body:JSON.stringify({moduleKey}),
     });
+    const mkStart=mind24ResolveModKey(j.moduleKey||moduleKey);
+    if(mkStart==='digital_interview'){
+      digitalInterviewOpen({
+        attemptId: j.attemptId,
+        assignmentId: j.assignmentId||assignmentId,
+        moduleKey: mkStart,
+      });
+      return;
+    }
     if(j.engine==='dynamic'&&j.questions&&j.questions.length){
       const mkDyn=mind24ResolveModKey(j.moduleKey||moduleKey);
       if(mkDyn==='cleaver'&&j.questions.some(function(q){ return q.type!=='CLEAVER_MATRIX'; })){
