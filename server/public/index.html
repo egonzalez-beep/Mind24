@@ -2125,6 +2125,7 @@ async function refreshCrearEvalAssignmentsTables(){
 function crearEvalSidebarNav(which){
   const allowed=new Set(['nueva','mis','resultados']);
   if(!allowed.has(which))return;
+  try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY, String(which)); }catch(_){}
   if(which==='nueva') crearEvalResetNuevaFlow();
   else{
     const sm=document.getElementById('cev-success-modal');
@@ -2336,6 +2337,7 @@ function mind24ResetUiBlockers(){
 function showView(name) {
   if(!canAccessView(name))return;
   if(name!=='evaluacion') mind24ResetUiBlockers();
+  mind24PersistLastView(name);
   const t=mind24ViewEl(name);
   requestAnimationFrame(function(){
     MIND24_ALL_VIEW_ELS.forEach(function(el){ if(el!==t)el.classList.add('hidden'); });
@@ -2367,7 +2369,12 @@ function showView(name) {
     setTimeout(function(){
       mind24RefreshEmpresaAdminSessionMeta();
       mind24InitCrearEvalModules();
-      crearEvalSidebarNav('nueva');
+      let tab='nueva';
+      try{
+        const stored=localStorage.getItem(MIND24_ACTIVE_ADMIN_TAB_KEY);
+        if(stored) tab=String(stored);
+      }catch(_){}
+      crearEvalSidebarNav(tab);
     },0);
   }
   if(name==='evaluacion'){
@@ -2699,6 +2706,8 @@ window.__MIND24_USER=null;
 window.__CAND_LOBBY=null;
 const MIND24_AUTH_TOKEN_KEY='mind24_token';
 const MIND24_AUTH_USER_KEY='mind24_user';
+const MIND24_LAST_VIEW_KEY='mind24_last_view';
+const MIND24_ACTIVE_ADMIN_TAB_KEY='active_admin_tab';
 
 function mind24PersistSessionUser(user){
   try{
@@ -2721,6 +2730,29 @@ function mind24ReadPersistedUser(){
     const raw=localStorage.getItem(MIND24_AUTH_USER_KEY);
     return raw?JSON.parse(raw):null;
   }catch(_){ return null; }
+}
+
+function mind24PersistLastView(name){
+  try{
+    if(!name)return;
+    const allowed = [
+      'dash-admin',
+      'dash-crear-eval',
+      'dash-psicologo',
+      'dash-empleado',
+      'dash-candidato',
+      'dash-superadmin',
+    ];
+    if(allowed.indexOf(name)<0) return;
+    localStorage.setItem(MIND24_LAST_VIEW_KEY, String(name));
+  }catch(_){}
+}
+
+function mind24ReadLastView(){
+  try{
+    const v=localStorage.getItem(MIND24_LAST_VIEW_KEY);
+    return v?String(v):'';
+  }catch(_){ return ''; }
 }
 
 async function apiJson(url,opts={}){
@@ -4619,7 +4651,14 @@ if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
     mind24PersistSessionUser(me.user);
     const role=String(me.user.role||'').toLowerCase();
     if(role==='candidato'){ await openCandidatoLobby(); return; }
-    if(role==='empresa_admin'){ mind24RefreshEmpresaAdminDashboardChrome(); showView('dash-admin'); return; }
+    if(role==='empresa_admin'){
+      mind24RefreshEmpresaAdminDashboardChrome();
+      const last = mind24ReadLastView();
+      const ok = last && VIEWS_NEED_EMPRESA_ADMIN.has(last);
+      // Default UX: Mind24 Assess (dash-crear-eval) si no hay vista previa.
+      showView(ok ? last : 'dash-crear-eval');
+      return;
+    }
     if(role==='master_admin'){ showView('dash-superadmin'); try{ await refreshSuperadminDashboard(); }catch(_){ } return; }
   }catch(_e){
     mind24ClearPersistedSession();
