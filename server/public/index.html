@@ -256,7 +256,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mind24-credits-chip .m24-cc-val{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.15;}
 .aspen-pw-plain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:var(--slate-50);color:var(--primary);padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);word-break:break-all;display:inline-block;max-width:220px;}
 .aspen-pw-missing{font-size:12px;color:var(--slate-400);}
-.m24-fitness-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,6,20,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:m24fo .38s ease;}
+.m24-fitness-overlay{position:fixed;inset:0;z-index:2600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,6,20,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:m24fo .38s ease;}
 .m24-fitness-overlay.hidden{display:none!important;}
 @keyframes m24fo{from{opacity:0}to{opacity:1}}
 .m24-fitness-card{max-width:500px;width:100%;border-radius:26px;padding:44px 36px 40px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(168deg,#0f0720 0%,#1e1b4b 38%,#6d28d9 72%,#c026d3 100%);border:1px solid rgba(255,255,255,.22);box-shadow:0 48px 140px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14);}
@@ -1002,7 +1002,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button class="sidebar-item"><span class="si-icon">🗓</span><span>Agenda</span></button>
       <div class="sidebar-section-label">Análisis</div>
       <button class="sidebar-item"><span class="si-icon">📈</span><span>Reportes</span></button>
-      <button class="sidebar-item"><span class="si-icon">❤️</span><span>Bienestar</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <div class="sidebar-section-label">Empresa</div>
       <button class="sidebar-item"><span class="si-icon">⚙️</span><span>Configuración</span></button>
     </nav>
@@ -1312,7 +1312,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="sidebar-section-label">Reportes</div>
       <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="crearEvalOpenFitnessModal()"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1392,21 +1392,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <textarea id="cev-success-speech-preview" class="cev-success-speech" readonly aria-label="Mensaje de acceso para el candidato"></textarea>
       <button type="button" class="cev-success-copy-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
       <button type="button" class="cev-success-close-link" onclick="crearEvalCloseSuccessModal()">Cerrar</button>
-    </div>
-  </div>
-  <div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)crearEvalCloseFitnessModal()">
-    <div class="m24-fitness-card" onclick="event.stopPropagation()">
-      <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
-      <div class="m24-fitness-card-inner">
-        <div class="m24-fitness-kicker">Mind24 Care + Assess</div>
-        <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar Corporativo y Mindfulness.</h2>
-        <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 24px 0;padding-left:18px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.55;">
-          <li>Evaluaciones psicológicas para tus colaboradores.</li>
-          <li>Índices de bienestar.</li>
-          <li>Talleres y capacitaciones.</li>
-        </ul>
-        <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer">Contactar al área de ventas</a>
-      </div>
     </div>
   </div>
 </div>
@@ -1717,6 +1702,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
+<!-- Mind Fitness (fuera de vistas para que position:fixed no quede atrapado en .hidden) -->
+<div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)mind24CloseFitnessModal()">
+  <div class="m24-fitness-card" onclick="event.stopPropagation()">
+    <button type="button" class="m24-fitness-close" onclick="mind24CloseFitnessModal()" aria-label="Cerrar">×</button>
+    <div class="m24-fitness-card-inner">
+      <div class="m24-fitness-kicker">Mind24 Care + Assess</div>
+      <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar Corporativo y Mindfulness.</h2>
+      <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 24px 0;padding-left:18px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.55;">
+        <li>Evaluaciones psicológicas para tus colaboradores.</li>
+        <li>Índices de bienestar.</li>
+        <li>Talleres y capacitaciones.</li>
+      </ul>
+      <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer">Contactar al área de ventas</a>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
@@ -1806,24 +1808,67 @@ function crearEvalSyncSidebarActive(){
     b.classList.toggle('active', w===cur);
   });
 }
-function crearEvalCloseFitnessModal(){
-  window.__mind24FitnessModalOpen = false;
+const MIND24_FITNESS_WHATSAPP_URL='https://wa.me/524428339128';
+
+function mind24EnsureFitnessModalInBody(){
+  const modal=document.getElementById('m24-fitness-modal');
+  if(!modal) return null;
+  if(modal.parentElement!==document.body) document.body.appendChild(modal);
+  return modal;
+}
+
+function mind24OpenFitnessModal(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  window.__mind24FitnessModalOpen=true;
+  const modal=mind24EnsureFitnessModalInBody();
+  if(!modal){
+    console.error('[mind24] No se encontró #m24-fitness-modal en el DOM.');
+    return;
+  }
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden','false');
+  modal.style.display='flex';
+  modal.style.pointerEvents='auto';
+  modal.style.visibility='visible';
+  modal.style.opacity='1';
+  modal.style.zIndex='2600';
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+  document.body.style.pointerEvents='';
+  if(typeof crearEvalSyncSidebarActive==='function') crearEvalSyncSidebarActive();
+}
+
+function mind24CloseFitnessModal(){
+  window.__mind24FitnessModalOpen=false;
   const m=document.getElementById('m24-fitness-modal');
-  if(m)m.classList.add('hidden');
+  if(m){
+    m.classList.add('hidden');
+    m.setAttribute('aria-hidden','true');
+    m.style.display='';
+    m.style.pointerEvents='none';
+    m.style.visibility='hidden';
+    m.style.opacity='';
+  }
   const anyOv=document.querySelector('.modal-overlay:not(.hidden)');
   const cev=document.getElementById('cev-success-modal');
   const cevOpen=cev && !cev.classList.contains('hidden');
-  if(!anyOv && !cevOpen) document.body.style.overflow='';
+  if(!anyOv && !cevOpen){
+    document.body.style.overflow='';
+    document.documentElement.style.overflow='';
+    document.body.style.pointerEvents='';
+  }
 }
-function crearEvalOpenFitnessModal(){
-  window.__mind24FitnessModalOpen = true;
-  const modal=document.getElementById('m24-fitness-modal');
-  if(modal)modal.classList.remove('hidden');
-  document.body.style.overflow='hidden';
-  crearEvalSyncSidebarActive();
-}
+
+function crearEvalOpenFitnessModal(ev){ mind24OpenFitnessModal(ev); }
+function crearEvalCloseFitnessModal(){ mind24CloseFitnessModal(); }
+
+window.mind24OpenFitnessModal=mind24OpenFitnessModal;
+window.mind24CloseFitnessModal=mind24CloseFitnessModal;
+window.crearEvalOpenFitnessModal=crearEvalOpenFitnessModal;
+window.crearEvalCloseFitnessModal=crearEvalCloseFitnessModal;
 function crearEvalMapStatusPill(status){
   if(String(status)==='completed') return { label:'Aplicada', cls:'cev-status-pill cev-st-aplicada' };
+  if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-pendiente' };
   return { label:'Pendiente', cls:'cev-status-pill cev-st-pendiente' };
 }
 function crearEvalFmtDate(iso){
@@ -2511,8 +2556,9 @@ function closeAllModals(){
     m.style.visibility='hidden';
   });
   window.__mind24FitnessModalOpen=false;
+  if(window.__mind24FitnessModalOpen) mind24CloseFitnessModal();
   const fit=document.getElementById('m24-fitness-modal');
-  if(fit){ fit.classList.add('hidden'); fit.style.pointerEvents='none'; fit.style.visibility='hidden'; }
+  if(fit){ fit.classList.add('hidden'); fit.setAttribute('aria-hidden','true'); fit.style.pointerEvents='none'; fit.style.visibility='hidden'; fit.style.display=''; }
   const cev=document.getElementById('cev-success-modal');
   if(cev && !cev.classList.contains('hidden')) crearEvalCloseSuccessModal();
   else if(cev){ cev.classList.add('hidden'); cev.style.pointerEvents='none'; cev.style.visibility='hidden'; }
@@ -2527,6 +2573,16 @@ function showStep(showId,hideId){ const s=document.getElementById(showId),h=docu
 // ── Nav scroll ──
 window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNav'); const land=document.getElementById('view-landing'); if(!land.classList.contains('hidden'))nav.classList.toggle('scrolled',window.scrollY>20); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeAllModals(); });
+document.addEventListener('DOMContentLoaded',function(){
+  mind24EnsureFitnessModalInBody();
+  const wa=document.querySelector('#m24-fitness-modal .m24-fitness-cta');
+  if(wa) wa.setAttribute('href', MIND24_FITNESS_WHATSAPP_URL);
+  document.addEventListener('click',function(ev){
+    const btn=ev.target.closest('[data-mind24-action="open-fitness-modal"]');
+    if(!btn) return;
+    mind24OpenFitnessModal(ev);
+  });
+});
 // ── Sidebar ──
 document.querySelectorAll('.sidebar-item').forEach(item=>{ item.addEventListener('click',function(){ if(this.getAttribute('data-skip-sidebar-active')==='1')return; const p=this.closest('aside'); p.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); this.classList.add('active'); }); });
 // ── Canvas particles ──
@@ -2963,11 +3019,12 @@ function digitalInterviewOpen(payload){
   if(shell) shell.classList.remove('hidden');
 }
 
-function digitalInterviewClose(){
+async function digitalInterviewClose(){
   digitalInterviewCleanupRecording();
   const shell=document.getElementById('di-wizard');
   if(shell) shell.classList.add('hidden');
   window.__DI_CTX=null;
+  await openCandidatoLobby();
 }
 
 function diEl(id){ return document.getElementById(id); }
@@ -3620,13 +3677,18 @@ function renderCandidatoLobby(lobby, user) {
 }
 
 async function openCandidatoLobby() {
+  const box = document.getElementById('cand-lobby-modules');
+  const err = document.getElementById('cand-lobby-err');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  if (box) box.innerHTML = '<p class="cand-lobby-empty">Actualizando tus evaluaciones...</p>';
   try {
-    const j = await apiJson('/api/me/lobby');
+    const j = await apiJson('/api/me/lobby', { cache: 'no-store' });
     window.__MIND24_USER = j.user;
     renderCandidatoLobby(j.lobby, j.user);
     showView('dash-candidato');
   } catch (e) {
-    const err = document.getElementById('cand-lobby-err');
+    window.__CAND_LOBBY = { assignmentId: null, modules: [], assignments: [] };
+    if (box) box.innerHTML = '<p class="cand-lobby-empty">No tienes más evaluaciones asignadas.</p>';
     if (err) { err.textContent = e.message || 'No se pudo cargar el lobby.'; err.classList.remove('hidden'); }
     showView('dash-candidato');
   }
@@ -4605,9 +4667,8 @@ async function iniciarEvaluacion(e){
     });
     window.__MIND24_USER=data.user;
     mind24PersistSessionUser(data.user);
-    renderCandidatoLobby(data.lobby,data.user);
     closeModal('modal-evaluacion');
-    showView('dash-candidato');
+    await openCandidatoLobby();
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'){
       const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
