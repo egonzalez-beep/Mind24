@@ -155,6 +155,13 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     err.code = 'NOT_FOUND';
     throw err;
   }
+  if (assignment.status === 'archived') {
+    const err = new Error('ASSIGNMENT_ARCHIVED');
+    err.code = 'ASSIGNMENT_ARCHIVED';
+    err.message =
+      'Esta evaluación ya no está disponible. Usa la clave de acceso de tu evaluación más reciente.';
+    throw err;
+  }
 
   const completed = new Set(readCompletedModules(assignment));
   if (completed.has(mk)) {

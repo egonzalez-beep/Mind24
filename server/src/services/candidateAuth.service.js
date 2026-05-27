@@ -99,13 +99,15 @@ function modulesFromAssignment(assignment) {
 }
 
 function assignmentStillPending(assignment) {
-  if (String(assignment?.status || '').toLowerCase() === 'completed') return false;
+  const st = String(assignment?.status || '').toLowerCase();
+  if (st === 'completed' || st === 'archived') return false;
   const mods = modulesFromAssignment(assignment);
   return mods.some((m) => !m.completed);
 }
 
 function isLobbyRelevantAssignment(assignment) {
-  if (String(assignment?.status || '').toLowerCase() === 'completed') return false;
+  const st = String(assignment?.status || '').toLowerCase();
+  if (st === 'completed' || st === 'archived') return false;
   const mods = modulesFromAssignment(assignment);
   if (!mods.length) return false;
   return mods.some((m) => !m.completed);
@@ -113,7 +115,8 @@ function isLobbyRelevantAssignment(assignment) {
 
 /** Solo módulos genuinamente pendientes (nunca envía completados al cliente). */
 function lobbyModulesForAssignment(assignment) {
-  if (String(assignment?.status || '').toLowerCase() === 'completed') return [];
+  const st = String(assignment?.status || '').toLowerCase();
+  if (st === 'completed' || st === 'archived') return [];
   return modulesFromAssignment(assignment).filter((m) => !m.completed);
 }
 
@@ -163,7 +166,10 @@ export async function authenticateCandidateByAccess({ email, accessCode }) {
   assertCandidateOrgAccess(user);
 
   const assignments = await prisma.assignment.findMany({
-    where: { candidateId: user.candidateProfile.id },
+    where: {
+      candidateId: user.candidateProfile.id,
+      status: { not: 'archived' },
+    },
     include: ASSIGNMENT_LOBBY_INCLUDE,
     orderBy: { createdAt: 'desc' },
   });
@@ -204,7 +210,10 @@ export async function getCandidateLobbyForUser(userId) {
   assertCandidateOrgAccess(user);
 
   const assignments = await prisma.assignment.findMany({
-    where: { candidateId: user.candidateProfile.id },
+    where: {
+      candidateId: user.candidateProfile.id,
+      status: { not: 'archived' },
+    },
     include: ASSIGNMENT_LOBBY_INCLUDE,
     orderBy: { createdAt: 'desc' },
   });

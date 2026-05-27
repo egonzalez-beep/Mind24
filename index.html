@@ -1840,6 +1840,7 @@ function crearEvalOpenFitnessModal(){
 }
 function crearEvalMapStatusPill(status){
   if(String(status)==='completed') return { label:'Aplicada', cls:'cev-status-pill cev-st-aplicada' };
+  if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-pendiente' };
   return { label:'Pendiente', cls:'cev-status-pill cev-st-pendiente' };
 }
 function crearEvalFmtDate(iso){

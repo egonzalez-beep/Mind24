@@ -2,6 +2,23 @@ import { prisma } from '../db/client.js';
 import { assertOrganizationHasAssignmentCredits } from './organizationBilling.service.js';
 import { deleteDigitalInterviewAudioFiles } from '../utils/fileCleaner.js';
 
+/** Asignaciones abiertas que se archivan al registrar una evaluación nueva del mismo candidato. */
+const OPEN_ASSIGNMENT_STATUSES = ['pending', 'in_progress'];
+
+/**
+ * Archiva evaluaciones anteriores no terminadas del candidato (mismo correo / perfil).
+ * No toca asignaciones ya `completed` (historial HR).
+ */
+export async function archiveOpenAssignmentsForCandidate(tx, candidateId) {
+  await tx.assignment.updateMany({
+    where: {
+      candidateId,
+      status: { in: OPEN_ASSIGNMENT_STATUSES },
+    },
+    data: { status: 'archived' },
+  });
+}
+
 export async function createAssignment({
   organizationId,
   candidateId,
@@ -33,6 +50,8 @@ export async function createAssignment({
       err.code = 'DEFINITION_NOT_FOUND';
       throw err;
     }
+
+    await archiveOpenAssignmentsForCandidate(tx, candidateId);
 
     return tx.assignment.create({
       data: {

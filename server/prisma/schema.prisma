@@ -17,6 +17,8 @@ enum AssignmentStatus {
   pending
   in_progress
   completed
+  /// Asignación sustituida por una evaluación nueva del mismo candidato (no visible en lobby).
+  archived
 }
 
 enum AttemptStatus {
