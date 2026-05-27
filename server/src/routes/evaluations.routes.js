@@ -1,35 +1,86 @@
 import { Router } from 'express';
-import { z } from 'zod';
+import fs from 'fs';
+import path from 'path';
+import multer from 'multer';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { submitDigitalInterviewAudios } from '../services/digitalInterview.service.js';
+import { env } from '../config/env.js';
 
 const router = Router();
+const uploadsRootAbs = env.AUDIO_UPLOAD_DIR
+  ? path.resolve(env.AUDIO_UPLOAD_DIR)
+  : path.resolve(process.cwd(), 'public', 'uploads');
+const audiosDirAbs = path.join(uploadsRootAbs, 'audios');
+fs.mkdirSync(audiosDirAbs, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, audiosDirAbs),
+  filename: (req, file, cb) => {
+    const attemptId = String(req.body?.attemptId || 'attempt').replace(/[^a-zA-Z0-9_-]/g, '');
+    const userId = String(req.session?.userId || 'cand').replace(/[^a-zA-Z0-9_-]/g, '');
+    const ext = path.extname(file.originalname || '').toLowerCase() || '.webm';
+    const safeExt = ext && ext.length <= 8 ? ext : '.webm';
+    cb(null, `${Date.now()}-${userId}-${attemptId}-${file.fieldname}${safeExt}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 3,
+  },
+  fileFilter: (_req, file, cb) => {
+    const ok =
+      file.mimetype.startsWith('audio/') ||
+      /\.(webm|mp3|wav|m4a|ogg)$/i.test(file.originalname || '');
+    cb(ok ? null : new Error('INVALID_AUDIO_FILE'), ok);
+  },
+});
 
 router.use(requireAuth, requireRole('candidato'));
 
-router.post('/audio', async (req, res, next) => {
+router.post(
+  '/audio',
+  upload.fields([
+    { name: 'bloque1', maxCount: 1 },
+    { name: 'bloque2', maxCount: 1 },
+    { name: 'bloque3', maxCount: 1 },
+  ]),
+  async (req, res, next) => {
   try {
-    const parsed = z
-      .object({
-        attemptId: z.string().min(1),
-        audios: z.object({
-          bloque1: z.string().min(32).max(10_000_000),
-          bloque2: z.string().min(32).max(10_000_000),
-          bloque3: z.string().min(32).max(10_000_000),
-        }),
-      })
-      .parse(req.body);
+    const attemptId = String(req.body?.attemptId || '').trim();
+    if (!attemptId) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message = 'attemptId es requerido.';
+      throw err;
+    }
 
-    const out = await submitDigitalInterviewAudios(
-      req.session.userId,
-      parsed.attemptId,
-      parsed.audios,
-    );
+    const files = req.files || {};
+    const b1 = files.bloque1?.[0];
+    const b2 = files.bloque2?.[0];
+    const b3 = files.bloque3?.[0];
+    if (!b1 || !b2 || !b3) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message = 'Se requieren los 3 audios de bloques.';
+      throw err;
+    }
+
+    const audios = {
+      bloque1: `/uploads/audios/${path.basename(b1.filename)}`,
+      bloque2: `/uploads/audios/${path.basename(b2.filename)}`,
+      bloque3: `/uploads/audios/${path.basename(b3.filename)}`,
+    };
+
+    const out = await submitDigitalInterviewAudios(req.session.userId, attemptId, audios);
     res.json(out);
   } catch (e) {
     next(e);
   }
-});
+},
+);
 
 export default router;
 

@@ -34,4 +34,6 @@ export const env = {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
+  /** Optional persistent volume path for uploads (Railway). */
+  AUDIO_UPLOAD_DIR: (process.env.AUDIO_UPLOAD_DIR || '').trim(),
 };

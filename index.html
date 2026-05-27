@@ -2750,7 +2750,12 @@ function mind24ReadLastView(){
 async function apiJson(url,opts={}){
   const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
   const fullUrl=url.startsWith('http')?url:(base+url);
-  const r=await fetch(fullUrl,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opts));
+  const merged=Object.assign({credentials:'include'},opts||{});
+  const isFormData=typeof FormData!=='undefined' && merged.body instanceof FormData;
+  if(!isFormData){
+    merged.headers=Object.assign({'Content-Type':'application/json'},merged.headers||{});
+  }
+  const r=await fetch(fullUrl,merged);
   let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch{}
   if(!r.ok){
     let msg=(j&&j.message)||t||('HTTP '+r.status);
@@ -3047,6 +3052,14 @@ function diBlobToDataUrl(blob){
   });
 }
 
+function mind24ResolveAssetUrl(src){
+  if(!src) return '';
+  const raw=String(src);
+  if(/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+  const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
+  return base ? (base + raw) : raw;
+}
+
 async function digitalInterviewNext(){
   const ctx=window.__DI_CTX; if(!ctx) return;
   const idx=(ctx.step||1)-1;
@@ -3056,9 +3069,6 @@ async function digitalInterviewNext(){
   const btn=diEl('di-btn-next');
   if(btn){ btn.disabled=true; btn.textContent=(idx===2)?'Enviando…':'Procesando…'; }
   try{
-    if(!ctx.audios[key]){
-      ctx.audios[key] = await diBlobToDataUrl(blob);
-    }
     if(idx<2){
       ctx.step++;
       ctx.remainingSec=DIGITAL_INTERVIEW_MAX_SECONDS;
@@ -3071,18 +3081,18 @@ async function digitalInterviewNext(){
       digitalInterviewSyncUiState();
       return;
     }
-    // Finalizar: enviar 3 bloques en un solo payload
-    const audios = {
-      bloque1: ctx.audios.bloque1,
-      bloque2: ctx.audios.bloque2,
-      bloque3: ctx.audios.bloque3,
-    };
-    if(!audios.bloque1 || !audios.bloque2 || !audios.bloque3){
+    const b1=ctx.blobs.bloque1, b2=ctx.blobs.bloque2, b3=ctx.blobs.bloque3;
+    if(!b1 || !b2 || !b3){
       throw new Error('Faltan bloques de audio por completar.');
     }
+    const fd=new FormData();
+    fd.append('attemptId',String(ctx.attemptId));
+    fd.append('bloque1',b1,'bloque1.webm');
+    fd.append('bloque2',b2,'bloque2.webm');
+    fd.append('bloque3',b3,'bloque3.webm');
     await apiJson('/api/evaluations/audio', {
       method:'POST',
-      body: JSON.stringify({ attemptId: ctx.attemptId, audios }),
+      body: fd,
     });
     digitalInterviewClose();
     await openCandidatoLobby();
@@ -3101,9 +3111,9 @@ function digitalInterviewHrOpen(audios){
   const m=document.getElementById('di-hr-modal');
   if(!m) return;
   const a1=diEl('di-hr-a1'), a2=diEl('di-hr-a2'), a3=diEl('di-hr-a3');
-  if(a1) a1.src = audios && audios.bloque1 ? String(audios.bloque1) : '';
-  if(a2) a2.src = audios && audios.bloque2 ? String(audios.bloque2) : '';
-  if(a3) a3.src = audios && audios.bloque3 ? String(audios.bloque3) : '';
+  if(a1) a1.src = audios && audios.bloque1 ? mind24ResolveAssetUrl(audios.bloque1) : '';
+  if(a2) a2.src = audios && audios.bloque2 ? mind24ResolveAssetUrl(audios.bloque2) : '';
+  if(a3) a3.src = audios && audios.bloque3 ? mind24ResolveAssetUrl(audios.bloque3) : '';
   m.classList.remove('hidden');
 }
 function digitalInterviewHrClose(){

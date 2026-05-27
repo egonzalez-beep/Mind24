@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import session from 'express-session';
 import pgSession from 'connect-pg-simple';
 import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
@@ -13,6 +14,9 @@ import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtmlAbs = resolveIndexHtmlPath();
+const uploadsRootAbs = env.AUDIO_UPLOAD_DIR
+  ? path.resolve(env.AUDIO_UPLOAD_DIR)
+  : path.resolve(__dirname, '..', 'public', 'uploads');
 
 const PgStore = pgSession(session);
 
@@ -37,6 +41,8 @@ export function createApp() {
     }),
   );
   app.use(express.json({ limit: '400kb' }));
+  fs.mkdirSync(uploadsRootAbs, { recursive: true });
+  app.use('/uploads', express.static(uploadsRootAbs));
 
   app.use(
     session({
