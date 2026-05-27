@@ -11,12 +11,11 @@ import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
+import { resolveUploadsRootAbs } from './utils/uploadPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtmlAbs = resolveIndexHtmlPath();
-const uploadsRootAbs = env.AUDIO_UPLOAD_DIR
-  ? path.resolve(env.AUDIO_UPLOAD_DIR)
-  : path.resolve(__dirname, '..', 'public', 'uploads');
+const uploadsRootAbs = resolveUploadsRootAbs();
 
 const PgStore = pgSession(session);
 
@@ -42,7 +41,19 @@ export function createApp() {
   );
   app.use(express.json({ limit: '400kb' }));
   fs.mkdirSync(uploadsRootAbs, { recursive: true });
-  app.use('/uploads', express.static(uploadsRootAbs));
+  app.use(
+    '/uploads',
+    express.static(uploadsRootAbs, {
+      setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === '.webm') res.setHeader('Content-Type', 'audio/webm');
+        if (ext === '.mp3') res.setHeader('Content-Type', 'audio/mpeg');
+        if (ext === '.wav') res.setHeader('Content-Type', 'audio/wav');
+        if (ext === '.m4a') res.setHeader('Content-Type', 'audio/mp4');
+        if (ext === '.ogg') res.setHeader('Content-Type', 'audio/ogg');
+      },
+    }),
+  );
 
   app.use(
     session({

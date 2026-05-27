@@ -1,15 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { env } from '../config/env.js';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveUploadsRootAbs() {
-  // Must match app.js static mount (/uploads -> uploadsRootAbs)
-  if (env.AUDIO_UPLOAD_DIR) return path.resolve(env.AUDIO_UPLOAD_DIR);
-  return path.resolve(__dirname, '..', '..', 'public', 'uploads');
-}
+import { resolveUploadsRootAbs } from './uploadPaths.js';
 
 function safeUnlink(absPath) {
   return fs.unlink(absPath).catch((e) => {

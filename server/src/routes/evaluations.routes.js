@@ -4,13 +4,10 @@ import path from 'path';
 import multer from 'multer';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { submitDigitalInterviewAudios } from '../services/digitalInterview.service.js';
-import { env } from '../config/env.js';
+import { resolveAudiosDirAbs } from '../utils/uploadPaths.js';
 
 const router = Router();
-const uploadsRootAbs = env.AUDIO_UPLOAD_DIR
-  ? path.resolve(env.AUDIO_UPLOAD_DIR)
-  : path.resolve(process.cwd(), 'public', 'uploads');
-const audiosDirAbs = path.join(uploadsRootAbs, 'audios');
+const audiosDirAbs = resolveAudiosDirAbs();
 fs.mkdirSync(audiosDirAbs, { recursive: true });
 
 const storage = multer.diskStorage({

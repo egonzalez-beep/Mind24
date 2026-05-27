@@ -629,6 +629,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .terman-q-item:last-child{border-bottom:none;padding-bottom:0}
 .terman-q-text{font-size:15px;font-weight:700;color:var(--white);margin-bottom:12px;line-height:1.5}
 .terman-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.terman-q-single{display:flex;flex-direction:column;gap:12px}
+.terman-q-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.terman-q-counter{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase}
 .terman-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);text-align:left;font-size:13px;color:rgba(255,255,255,.85)}
 .terman-opt:hover{border-color:rgba(139,92,246,.45);background:rgba(124,58,237,.1)}
 .terman-opt.selected{border-color:var(--purple);background:rgba(124,58,237,.22);box-shadow:0 0 0 2px rgba(124,58,237,.2)}
@@ -3056,8 +3059,14 @@ function mind24ResolveAssetUrl(src){
   if(!src) return '';
   const raw=String(src);
   if(/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
-  const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).replace(/\/$/,''):'';
-  return base ? (base + raw) : raw;
+  const base=(typeof window!=='undefined'&&window.MIND24_API_BASE)?String(window.MIND24_API_BASE).trim():'';
+  if(!base) return raw;
+  try{
+    const origin=new URL(base,window.location.origin).origin;
+    return origin+raw;
+  }catch(_){
+    return raw;
+  }
 }
 
 async function digitalInterviewNext(){
@@ -3111,9 +3120,10 @@ function digitalInterviewHrOpen(audios){
   const m=document.getElementById('di-hr-modal');
   if(!m) return;
   const a1=diEl('di-hr-a1'), a2=diEl('di-hr-a2'), a3=diEl('di-hr-a3');
-  if(a1) a1.src = audios && audios.bloque1 ? mind24ResolveAssetUrl(audios.bloque1) : '';
-  if(a2) a2.src = audios && audios.bloque2 ? mind24ResolveAssetUrl(audios.bloque2) : '';
-  if(a3) a3.src = audios && audios.bloque3 ? mind24ResolveAssetUrl(audios.bloque3) : '';
+  const onErr=function(e){ console.error('Error al cargar archivo de audio:', e&&e.target&&e.target.error); };
+  if(a1){ a1.onerror=onErr; a1.src = audios && audios.bloque1 ? mind24ResolveAssetUrl(audios.bloque1) : ''; }
+  if(a2){ a2.onerror=onErr; a2.src = audios && audios.bloque2 ? mind24ResolveAssetUrl(audios.bloque2) : ''; }
+  if(a3){ a3.onerror=onErr; a3.src = audios && audios.bloque3 ? mind24ResolveAssetUrl(audios.bloque3) : ''; }
   m.classList.remove('hidden');
 }
 function digitalInterviewHrClose(){
@@ -3886,7 +3896,7 @@ function termanMountShell(){
   const btnStart=document.getElementById('termanBtnStart');
   const btnFinish=document.getElementById('termanBtnFinish');
   if(btnStart) btnStart.onclick=function(){ termanStartSeries(); };
-  if(btnFinish) btnFinish.onclick=function(){ termanFinishSeries(); };
+  if(btnFinish) btnFinish.onclick=function(){ termanNextQuestion(); };
   return true;
 }
 
@@ -3957,33 +3967,79 @@ function termanRenderQuestions(){
     host.innerHTML='<p class="terman-q-text" style="text-align:center;color:rgba(255,255,255,.5)">No hay ítems en esta sección.</p>';
     return;
   }
+  if(typeof ctx.seriesQIdx!=='number'||ctx.seriesQIdx<0) ctx.seriesQIdx=0;
+  if(ctx.seriesQIdx>=qs.length) ctx.seriesQIdx=qs.length-1;
   const letters=['A','B','C','D','E','F'];
-  qs.forEach(function(q,qi){
-    const item=document.createElement('div');
-    item.className='terman-q-item';
-    item.dataset.questionId=q.id;
-    const txt=document.createElement('p');
-    txt.className='terman-q-text';
-    txt.textContent=(qi+1)+'. '+q.text;
-    item.appendChild(txt);
-    const grid=document.createElement('div');
-    grid.className='terman-opt-grid';
-    const draft=(ctx.drafts&&ctx.drafts[q.id])||{};
-    (q.options||[]).forEach(function(opt,oi){
-      const row=document.createElement('div');
-      row.className='terman-opt'+(draft.selectedOptionId===opt.id?' selected':'');
-      row.innerHTML='<span class="terman-opt-letter">'+(letters[oi]||'?')+'</span><span>'+mind24EscHtml(opt.label)+'</span>';
-      row.onclick=function(){
-        if(ctx.locked)return;
-        ctx.drafts[q.id]={selectedOptionId:opt.id};
-        grid.querySelectorAll('.terman-opt').forEach(function(x){x.classList.remove('selected');});
-        row.classList.add('selected');
-      };
-      grid.appendChild(row);
-    });
-    item.appendChild(grid);
-    host.appendChild(item);
+  const q=qs[ctx.seriesQIdx];
+  if(!q)return;
+  const item=document.createElement('div');
+  item.className='terman-q-single';
+  item.dataset.questionId=q.id;
+  const head=document.createElement('div');
+  head.className='terman-q-head';
+  const counter=document.createElement('span');
+  counter.className='terman-q-counter';
+  counter.textContent='Pregunta '+(ctx.seriesQIdx+1)+' de '+qs.length;
+  const progress=document.createElement('span');
+  progress.className='terman-progress';
+  progress.textContent='Responde y avanza';
+  head.appendChild(counter);
+  head.appendChild(progress);
+  item.appendChild(head);
+  const txt=document.createElement('p');
+  txt.className='terman-q-text';
+  txt.textContent=q.text;
+  item.appendChild(txt);
+  const grid=document.createElement('div');
+  grid.className='terman-opt-grid';
+  const draft=(ctx.drafts&&ctx.drafts[q.id])||{};
+  (q.options||[]).forEach(function(opt,oi){
+    const row=document.createElement('div');
+    row.className='terman-opt'+(draft.selectedOptionId===opt.id?' selected':'');
+    row.innerHTML='<span class="terman-opt-letter">'+(letters[oi]||'?')+'</span><span>'+mind24EscHtml(opt.label)+'</span>';
+    row.onclick=function(){
+      if(ctx.locked)return;
+      ctx.drafts[q.id]={selectedOptionId:opt.id};
+      grid.querySelectorAll('.terman-opt').forEach(function(x){x.classList.remove('selected');});
+      row.classList.add('selected');
+      termanSyncAdvanceControls();
+    };
+    grid.appendChild(row);
   });
+  item.appendChild(grid);
+  host.appendChild(item);
+  termanSyncAdvanceControls();
+}
+
+function termanSyncAdvanceControls(){
+  const ctx=window.TERMAN_CTX;
+  const s=termanGetSeries();
+  const btn=document.getElementById('termanBtnFinish');
+  const note=document.getElementById('termanNote');
+  if(!ctx||!s||!btn||!note)return;
+  const qs=s.questions||[];
+  const q=qs[ctx.seriesQIdx];
+  const hasAns=!!(q&&ctx.drafts&&ctx.drafts[q.id]&&ctx.drafts[q.id].selectedOptionId);
+  const isLast=ctx.seriesQIdx>=qs.length-1;
+  btn.textContent=isLast?'Finalizar módulo':'Siguiente pregunta';
+  btn.disabled=!hasAns||ctx.locked;
+  note.textContent=hasAns?'✓ Respuesta registrada':'Responde para continuar';
+}
+
+function termanNextQuestion(){
+  const ctx=window.TERMAN_CTX;
+  const s=termanGetSeries();
+  if(!ctx||!s||ctx.locked)return;
+  const qs=s.questions||[];
+  const q=qs[ctx.seriesQIdx];
+  const hasAns=!!(q&&ctx.drafts&&ctx.drafts[q.id]&&ctx.drafts[q.id].selectedOptionId);
+  if(!hasAns)return;
+  if(ctx.seriesQIdx>=qs.length-1){
+    termanFinishSeries();
+    return;
+  }
+  ctx.seriesQIdx+=1;
+  termanRenderQuestions();
 }
 
 function termanSyncTimerUI(){
@@ -4068,6 +4124,7 @@ function termanStartSeries(){
   const wrap=document.getElementById('termanQuestionsWrap');
   if(wrap)wrap.classList.remove('terman-locked');
   ctx.locked=false;
+  ctx.seriesQIdx=0;
   ctx.secondsLeft=s.timeLimitSeconds||120;
   termanRenderQuestions();
   termanSyncTimerUI();
@@ -4111,6 +4168,7 @@ function startTermanAssessment(payload){
     moduleTitle:payload.moduleTitle,
     series:series,
     seriesIdx:0,
+    seriesQIdx:0,
     drafts:{},
     secondsLeft:first&&first.timeLimitSeconds?first.timeLimitSeconds:120,
     locked:false,
