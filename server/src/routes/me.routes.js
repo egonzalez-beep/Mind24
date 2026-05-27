@@ -16,6 +16,7 @@ router.use(requireAuth, requireRole('candidato'), requireEmpresaPortal);
 
 router.get('/lobby', async (req, res, next) => {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     const lobby = await getCandidateLobbyForUser(req.session.userId);
     res.json({
       user: {

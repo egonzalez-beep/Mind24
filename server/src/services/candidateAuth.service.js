@@ -23,12 +23,13 @@ function readCompletedModules(assignment) {
 
 function attemptLooksCompleted(att) {
   if (!att) return false;
-  if (att.status === 'submitted') return true;
+  if (att.status === 'submitted' || att.status === 'completed') return true;
   if (att.submittedAt) return true;
   const results = att.results;
   if (results && typeof results === 'object') {
     const status = String(results.status || '').trim().toUpperCase();
     if (status === 'COMPLETED' || status === 'SUBMITTED') return true;
+    if (results.submitted === true || results.completed === true) return true;
   }
   return false;
 }
@@ -65,7 +66,7 @@ function assignedModuleKeys(assignment) {
   for (const att of assignment.attempts || []) {
     if (
       att.moduleKey &&
-      (att.status === 'submitted' || att.status === 'in_progress')
+      (att.status === 'in_progress' || attemptLooksCompleted(att))
     ) {
       const rk = resolveModuleKey(String(att.moduleKey));
       if (isCandidateLobbyModuleKey(rk)) inferred.add(rk);
@@ -98,17 +99,21 @@ function modulesFromAssignment(assignment) {
 }
 
 function assignmentStillPending(assignment) {
+  if (String(assignment?.status || '').toLowerCase() === 'completed') return false;
   const mods = modulesFromAssignment(assignment);
   return mods.some((m) => !m.completed);
 }
 
 function isLobbyRelevantAssignment(assignment) {
+  if (String(assignment?.status || '').toLowerCase() === 'completed') return false;
   const mods = modulesFromAssignment(assignment);
   if (!mods.length) return false;
   return mods.some((m) => !m.completed);
 }
 
+/** Solo módulos genuinamente pendientes (nunca envía completados al cliente). */
 function lobbyModulesForAssignment(assignment) {
+  if (String(assignment?.status || '').toLowerCase() === 'completed') return [];
   return modulesFromAssignment(assignment).filter((m) => !m.completed);
 }
 

@@ -1394,21 +1394,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="cev-success-close-link" onclick="crearEvalCloseSuccessModal()">Cerrar</button>
     </div>
   </div>
-  <div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)crearEvalCloseFitnessModal()">
-    <div class="m24-fitness-card" onclick="event.stopPropagation()">
-      <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
-      <div class="m24-fitness-card-inner">
-        <div class="m24-fitness-kicker">Mind24 Care + Assess</div>
-        <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar Corporativo y Mindfulness.</h2>
-        <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 24px 0;padding-left:18px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.55;">
-          <li>Evaluaciones psicológicas para tus colaboradores.</li>
-          <li>Índices de bienestar.</li>
-          <li>Talleres y capacitaciones.</li>
-        </ul>
-        <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer">Contactar al área de ventas</a>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div id="view-access-denied" class="app-shell hidden">
@@ -1717,6 +1702,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
+<!-- Mind Fitness (fuera de vistas para que position:fixed no quede atrapado en .hidden) -->
+<div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)crearEvalCloseFitnessModal()">
+  <div class="m24-fitness-card" onclick="event.stopPropagation()">
+    <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
+    <div class="m24-fitness-card-inner">
+      <div class="m24-fitness-kicker">Mind24 Care + Assess</div>
+      <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar Corporativo y Mindfulness.</h2>
+      <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 24px 0;padding-left:18px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.55;">
+        <li>Evaluaciones psicológicas para tus colaboradores.</li>
+        <li>Índices de bienestar.</li>
+        <li>Talleres y capacitaciones.</li>
+      </ul>
+      <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer">Contactar al área de ventas</a>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
@@ -1809,7 +1811,13 @@ function crearEvalSyncSidebarActive(){
 function crearEvalCloseFitnessModal(){
   window.__mind24FitnessModalOpen = false;
   const m=document.getElementById('m24-fitness-modal');
-  if(m)m.classList.add('hidden');
+  if(m){
+    m.classList.add('hidden');
+    m.style.display='';
+    m.style.pointerEvents='none';
+    m.style.visibility='hidden';
+    m.style.opacity='';
+  }
   const anyOv=document.querySelector('.modal-overlay:not(.hidden)');
   const cev=document.getElementById('cev-success-modal');
   const cevOpen=cev && !cev.classList.contains('hidden');
@@ -1818,8 +1826,16 @@ function crearEvalCloseFitnessModal(){
 function crearEvalOpenFitnessModal(){
   window.__mind24FitnessModalOpen = true;
   const modal=document.getElementById('m24-fitness-modal');
-  if(modal)modal.classList.remove('hidden');
+  if(modal){
+    if(modal.parentElement!==document.body) document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    modal.style.display='flex';
+    modal.style.pointerEvents='auto';
+    modal.style.visibility='visible';
+    modal.style.opacity='1';
+  }
   document.body.style.overflow='hidden';
+  document.body.style.pointerEvents='';
   crearEvalSyncSidebarActive();
 }
 function crearEvalMapStatusPill(status){
@@ -2963,11 +2979,12 @@ function digitalInterviewOpen(payload){
   if(shell) shell.classList.remove('hidden');
 }
 
-function digitalInterviewClose(){
+async function digitalInterviewClose(){
   digitalInterviewCleanupRecording();
   const shell=document.getElementById('di-wizard');
   if(shell) shell.classList.add('hidden');
   window.__DI_CTX=null;
+  await openCandidatoLobby();
 }
 
 function diEl(id){ return document.getElementById(id); }
@@ -3620,13 +3637,18 @@ function renderCandidatoLobby(lobby, user) {
 }
 
 async function openCandidatoLobby() {
+  const box = document.getElementById('cand-lobby-modules');
+  const err = document.getElementById('cand-lobby-err');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  if (box) box.innerHTML = '<p class="cand-lobby-empty">Actualizando tus evaluaciones...</p>';
   try {
-    const j = await apiJson('/api/me/lobby');
+    const j = await apiJson('/api/me/lobby', { cache: 'no-store' });
     window.__MIND24_USER = j.user;
     renderCandidatoLobby(j.lobby, j.user);
     showView('dash-candidato');
   } catch (e) {
-    const err = document.getElementById('cand-lobby-err');
+    window.__CAND_LOBBY = { assignmentId: null, modules: [], assignments: [] };
+    if (box) box.innerHTML = '<p class="cand-lobby-empty">No tienes más evaluaciones asignadas.</p>';
     if (err) { err.textContent = e.message || 'No se pudo cargar el lobby.'; err.classList.remove('hidden'); }
     showView('dash-candidato');
   }
@@ -4605,9 +4627,8 @@ async function iniciarEvaluacion(e){
     });
     window.__MIND24_USER=data.user;
     mind24PersistSessionUser(data.user);
-    renderCandidatoLobby(data.lobby,data.user);
     closeModal('modal-evaluacion');
-    showView('dash-candidato');
+    await openCandidatoLobby();
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'){
       const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
