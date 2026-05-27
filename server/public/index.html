@@ -1360,7 +1360,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Correo</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
               <tbody id="cev-mis-assign-tbody"></tbody>
             </table>
           </div>
@@ -1376,7 +1376,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Instrumento</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Correo</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
               <tbody id="cev-res-assign-tbody"></tbody>
             </table>
           </div>
@@ -1811,6 +1811,65 @@ function crearEvalCandidateLabel(a){
   if(em)return em;
   return '—';
 }
+function crearEvalCandidateEmail(a){
+  const c=a&&a.candidate;
+  const u=c&&c.user;
+  const em=u&&(u.email||'').trim();
+  return em||'—';
+}
+function crearEvalCandidateCell(td, a){
+  const c=a&&a.candidate;
+  const u=c&&c.user;
+  const full=(u&&(u.fullName||'').trim())||'';
+  const email=(u&&(u.email||'').trim())||'';
+  let name='—', puesto='';
+  if(full){
+    const parts=full.split(' · ');
+    name=(parts[0]||'').trim()||'—';
+    puesto=(parts[1]||'').trim();
+  }else if(email){
+    name=email;
+  }
+  td.innerHTML='';
+  const top=document.createElement('div');
+  top.style.fontWeight='600';
+  top.style.fontSize='13px';
+  top.style.color='var(--primary)';
+  top.style.lineHeight='1.3';
+  top.textContent=name;
+  td.appendChild(top);
+  if(puesto){
+    const sub=document.createElement('div');
+    sub.style.fontSize='11px';
+    sub.style.color='var(--slate-500)';
+    sub.style.marginTop='2px';
+    sub.style.lineHeight='1.2';
+    sub.textContent=puesto;
+    td.appendChild(sub);
+  }
+}
+function crearEvalIconBtn(title, colorHex, svgPathD, onClick){
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.title=title;
+  btn.setAttribute('aria-label',title);
+  btn.style.width='30px';
+  btn.style.height='30px';
+  btn.style.border='1px solid var(--slate-200)';
+  btn.style.borderRadius='8px';
+  btn.style.background='#fff';
+  btn.style.display='inline-flex';
+  btn.style.alignItems='center';
+  btn.style.justifyContent='center';
+  btn.style.cursor='pointer';
+  btn.style.color=colorHex||'var(--slate-600)';
+  btn.style.transition='all .15s ease';
+  btn.onmouseenter=function(){ btn.style.background='var(--slate-100)'; btn.style.borderColor='var(--slate-300)'; };
+  btn.onmouseleave=function(){ btn.style.background='#fff'; btn.style.borderColor='var(--slate-200)'; };
+  if(onClick) btn.onclick=onClick;
+  btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+svgPathD+'"/></svg>';
+  return btn;
+}
 function crearEvalAssignmentReportReady(a){
   return String(a&&a.status||'')==='completed'&&!!(a&&a.id);
 }
@@ -1848,39 +1907,39 @@ async function downloadAssignmentReportPdf(assignmentId, label){
 function crearEvalReportesCell(tr, a){
   const tdx=document.createElement('td');
   tdx.style.padding='8px';
+  tdx.style.whiteSpace='nowrap';
+  tdx.style.display='flex';
+  tdx.style.gap='10px';
+  tdx.style.alignItems='center';
   const aid=a&&a.id?String(a.id):'';
   const di = crearEvalFindDigitalInterviewAttempt(a);
   if(crearEvalAssignmentReportReady(a)&&aid){
-    const btn=document.createElement('button');
-    btn.type='button';
-    btn.className='card-action';
-    btn.style.fontSize='12px';
-    btn.textContent='Descargar Reporte';
-    btn.title='Descargar reporte consolidado PDF (todos los módulos completados)';
-    btn.onclick=function(){ downloadAssignmentReportPdf(aid,'Descargar Reporte'); };
+    const btn=crearEvalIconBtn(
+      'Descargar Reporte',
+      '#334155',
+      'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',
+      function(){ downloadAssignmentReportPdf(aid,'Descargar Reporte'); },
+    );
     tdx.appendChild(btn);
     if(di && di.audios){
-      const b2=document.createElement('button');
-      b2.type='button';
-      b2.className='card-action';
-      b2.style.fontSize='12px';
-      b2.style.marginLeft='8px';
-      b2.textContent='Escuchar Entrevista';
-      b2.title='Reproducir audios del módulo Entrevista Digital Estructurada';
-      b2.onclick=function(){ digitalInterviewHrOpen(di.audios); };
+      const b2=crearEvalIconBtn(
+        'Escuchar Entrevista',
+        '#7C3AED',
+        'M14.5 2A8.5 8.5 0 0 1 23 10.5V12a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1.5a2 2 0 0 1 2-2h1 A6.5 6.5 0 0 0 8 8.5 M9 18a3 3 0 1 0 6 0 M4 12v-1.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2V12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2',
+        function(){ digitalInterviewHrOpen(di.audios); },
+      );
       tdx.appendChild(b2);
     }
   }else{
     tdx.textContent='—';
     tdx.style.color='var(--slate-400)';
     if(di && di.audios){
-      const b2=document.createElement('button');
-      b2.type='button';
-      b2.className='card-action';
-      b2.style.fontSize='12px';
-      b2.textContent='Escuchar Entrevista';
-      b2.title='Reproducir audios del módulo Entrevista Digital Estructurada';
-      b2.onclick=function(){ digitalInterviewHrOpen(di.audios); };
+      const b2=crearEvalIconBtn(
+        'Escuchar Entrevista',
+        '#7C3AED',
+        'M14.5 2A8.5 8.5 0 0 1 23 10.5V12a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1.5a2 2 0 0 1 2-2h1 A6.5 6.5 0 0 0 8 8.5 M9 18a3 3 0 1 0 6 0 M4 12v-1.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2V12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2',
+        function(){ digitalInterviewHrOpen(di.audios); },
+      );
       tdx.innerHTML='';
       tdx.appendChild(b2);
     }
@@ -1919,17 +1978,18 @@ async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel){
 function crearEvalAccionesCell(tr, a){
   const tdx=document.createElement('td');
   tdx.style.padding='8px';
+  tdx.style.whiteSpace='nowrap';
   const aid=a&&a.id?String(a.id):'';
   if(aid){
-    const btn=document.createElement('button');
-    btn.type='button';
-    btn.className='card-action';
-    btn.style.fontSize='12px';
-    btn.style.color='#B91C1C';
+    const btn=crearEvalIconBtn(
+      'Eliminar',
+      '#E11D48',
+      'M3 6h18 M8 6V4h8v2 M19 6l-1 14H6L5 6 M10 11v6 M14 11v6',
+      function(){ eliminarEvaluacionAsignacion(aid, crearEvalCandidateLabel(a)); },
+    );
     btn.style.borderColor='#FECACA';
-    btn.textContent='Eliminar';
-    btn.title='Eliminar asignación e intentos de la base de datos';
-    btn.onclick=function(){ eliminarEvaluacionAsignacion(aid, crearEvalCandidateLabel(a)); };
+    btn.onmouseenter=function(){ btn.style.background='#FFF1F2'; btn.style.borderColor='#FDA4AF'; };
+    btn.onmouseleave=function(){ btn.style.background='#fff'; btn.style.borderColor='#FECACA'; };
     tdx.appendChild(btn);
   }else{
     tdx.textContent='—';
@@ -2066,9 +2126,10 @@ async function refreshCrearEvalAssignmentsTables(){
           tr.appendChild(x);
         }
         tdText(crearEvalFmtDate(a.createdAt));
-        tdText(crearEvalCandidateLabel(a));
+        const tdCand=document.createElement('td'); tdCand.style.padding='8px';
+        crearEvalCandidateCell(tdCand,a); tr.appendChild(tdCand);
+        tdText(crearEvalCandidateEmail(a));
         tdText(crearEvalCandidateCurp(a), { mono:true });
-        tdText(crearEvalAssessmentName(a));
         tdText('', { mods:true });
         tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         const tdx=document.createElement('td'); tdx.style.padding='8px';
@@ -2100,9 +2161,10 @@ async function refreshCrearEvalAssignmentsTables(){
           tr.appendChild(x);
         }
         tdText(crearEvalFmtDate(fin));
-        tdText(crearEvalCandidateLabel(a));
+        const tdCand=document.createElement('td'); tdCand.style.padding='8px';
+        crearEvalCandidateCell(tdCand,a); tr.appendChild(tdCand);
+        tdText(crearEvalCandidateEmail(a));
         tdText(crearEvalCandidateCurp(a), { mono:true });
-        tdText(crearEvalAssessmentName(a));
         tdText('', { mods:true });
         tdText(mind24ShortAssignmentCode(a.id), { mono:true });
         tdText(globalTxt);
