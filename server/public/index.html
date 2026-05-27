@@ -4124,6 +4124,9 @@ function startTermanAssessment(payload){
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
   const tag=document.getElementById('evalSecTag');
   if(tag) tag.textContent='◈ Evaluación Mind24';
+  const totalQ = series.reduce(function(n, s){
+    return n + ((s && Array.isArray(s.questions)) ? s.questions.length : 0);
+  }, 0);
   const nq=document.getElementById('eval-meta-questions');
   if(nq) nq.textContent=String(totalQ);
   const tm=document.getElementById('eval-meta-minutes');
