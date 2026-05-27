@@ -1,5 +1,6 @@
 import { prisma } from '../db/client.js';
 import { assertOrganizationHasAssignmentCredits } from './organizationBilling.service.js';
+import { deleteDigitalInterviewAudioFiles } from '../utils/fileCleaner.js';
 
 export async function createAssignment({
   organizationId,
@@ -75,7 +76,11 @@ export async function listAssignmentsForOrg(organizationId, options = {}) {
 export async function deleteAssignmentForOrg(assignmentId, organizationId, options = {}) {
   const assignment = await prisma.assignment.findFirst({
     where: { id: assignmentId, candidate: { organizationId } },
-    select: { id: true, assignedByUserId: true },
+    select: {
+      id: true,
+      assignedByUserId: true,
+      attempts: { select: { results: true } },
+    },
   });
   if (!assignment) {
     const err = new Error('NOT_FOUND');
@@ -91,6 +96,13 @@ export async function deleteAssignmentForOrg(assignmentId, organizationId, optio
     err.message = 'No puedes eliminar evaluaciones creadas por otro administrador.';
     throw err;
   }
+
+  // Best-effort cleanup (ignore missing files)
+  for (const att of assignment.attempts || []) {
+    const audios = att?.results && typeof att.results === 'object' ? att.results.audios : null;
+    await deleteDigitalInterviewAudioFiles(audios);
+  }
+
   await prisma.assignment.delete({ where: { id: assignmentId } });
   return { deleted: true, id: assignmentId };
 }

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { prisma } from '../db/client.js';
 import { hashPassword } from './auth.service.js';
+import { deleteDigitalInterviewAudioFiles } from '../utils/fileCleaner.js';
 
 export function generateRandomPassword(len = 16) {
   return crypto.randomBytes(Math.ceil(len * 0.75)).toString('base64url').slice(0, len);
@@ -231,6 +232,18 @@ export async function createUserInOrganizationForMaster({
 }
 
 export async function deleteOrganizationById(id) {
+  // Best-effort cleanup of uploaded audios before cascading deletes.
+  const attempts = await prisma.assessmentAttempt.findMany({
+    where: {
+      assignment: { candidate: { organizationId: id } },
+    },
+    select: { results: true },
+    take: 20_000,
+  });
+  for (const att of attempts) {
+    const audios = att?.results && typeof att.results === 'object' ? att.results.audios : null;
+    await deleteDigitalInterviewAudioFiles(audios);
+  }
   await prisma.organization.delete({
     where: { id },
   });
