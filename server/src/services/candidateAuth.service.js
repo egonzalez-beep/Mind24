@@ -11,7 +11,7 @@ const ASSIGNMENT_LOBBY_INCLUDE = {
     select: { id: true, name: true, key: true, version: true, config: true },
   },
   attempts: {
-    select: { moduleKey: true, status: true },
+    select: { moduleKey: true, status: true, submittedAt: true, results: true },
   },
 };
 
@@ -21,10 +21,22 @@ function readCompletedModules(assignment) {
   return raw.map((x) => resolveModuleKey(String(x)));
 }
 
+function attemptLooksCompleted(att) {
+  if (!att) return false;
+  if (att.status === 'submitted') return true;
+  if (att.submittedAt) return true;
+  const results = att.results;
+  if (results && typeof results === 'object') {
+    const status = String(results.status || '').trim().toUpperCase();
+    if (status === 'COMPLETED' || status === 'SUBMITTED') return true;
+  }
+  return false;
+}
+
 function submittedModuleKeys(assignment) {
   const keys = new Set();
   for (const att of assignment.attempts || []) {
-    if (att.status === 'submitted' && att.moduleKey) {
+    if (attemptLooksCompleted(att) && att.moduleKey) {
       keys.add(resolveModuleKey(String(att.moduleKey)));
     }
   }

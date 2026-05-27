@@ -3483,13 +3483,14 @@ function renderCandidatoLobby(lobby, user) {
   const box = document.getElementById('cand-lobby-modules');
   const err = document.getElementById('cand-lobby-err');
   if (err) { err.classList.add('hidden'); err.textContent = ''; }
-  const mods = (lobby && lobby.modules) || [];
+  const modsRaw = (lobby && lobby.modules) || [];
+  const mods = modsRaw.filter(function(m){ return !m || !m.completed; });
   window.__CAND_LOBBY = lobby || { assignmentId: null, modules: [] };
   if (!box) return;
   box.innerHTML = '';
   const assignmentId = lobby && lobby.assignmentId;
   if (!mods.length) {
-    box.innerHTML = '<p class="cand-lobby-empty">No hay módulos pendientes. ¡Buen trabajo!</p>';
+    box.innerHTML = '<p class="cand-lobby-empty">No tienes más evaluaciones asignadas.</p>';
     return;
   }
   mods.forEach((m, i) => {
