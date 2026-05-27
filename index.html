@@ -256,7 +256,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mind24-credits-chip .m24-cc-val{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.15;}
 .aspen-pw-plain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:var(--slate-50);color:var(--primary);padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);word-break:break-all;display:inline-block;max-width:220px;}
 .aspen-pw-missing{font-size:12px;color:var(--slate-400);}
-.m24-fitness-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,6,20,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:m24fo .38s ease;}
+.m24-fitness-overlay{position:fixed;inset:0;z-index:2600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,6,20,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:m24fo .38s ease;}
 .m24-fitness-overlay.hidden{display:none!important;}
 @keyframes m24fo{from{opacity:0}to{opacity:1}}
 .m24-fitness-card{max-width:500px;width:100%;border-radius:26px;padding:44px 36px 40px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(168deg,#0f0720 0%,#1e1b4b 38%,#6d28d9 72%,#c026d3 100%);border:1px solid rgba(255,255,255,.22);box-shadow:0 48px 140px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14);}
@@ -1821,7 +1821,10 @@ function crearEvalCloseFitnessModal(){
   const anyOv=document.querySelector('.modal-overlay:not(.hidden)');
   const cev=document.getElementById('cev-success-modal');
   const cevOpen=cev && !cev.classList.contains('hidden');
-  if(!anyOv && !cevOpen) document.body.style.overflow='';
+  if(!anyOv && !cevOpen){
+    document.body.style.overflow='';
+    document.documentElement.style.overflow='';
+  }
 }
 function crearEvalOpenFitnessModal(){
   window.__mind24FitnessModalOpen = true;
@@ -1833,7 +1836,9 @@ function crearEvalOpenFitnessModal(){
     modal.style.pointerEvents='auto';
     modal.style.visibility='visible';
     modal.style.opacity='1';
+    modal.style.zIndex='2600';
   }
+  document.documentElement.style.overflow='hidden';
   document.body.style.overflow='hidden';
   document.body.style.pointerEvents='';
   crearEvalSyncSidebarActive();
