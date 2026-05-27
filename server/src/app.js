@@ -11,11 +11,12 @@ import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
-import { resolveUploadsRootAbs } from './utils/uploadPaths.js';
+import { getUploadStorageMeta, resolveUploadsRootAbs } from './utils/uploadPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtmlAbs = resolveIndexHtmlPath();
-const uploadsRootAbs = resolveUploadsRootAbs();
+const uploadStorage = getUploadStorageMeta();
+const uploadsRootAbs = uploadStorage.uploadsRootAbs;
 
 const PgStore = pgSession(session);
 
@@ -40,7 +41,10 @@ export function createApp() {
     }),
   );
   app.use(express.json({ limit: '400kb' }));
-  fs.mkdirSync(uploadsRootAbs, { recursive: true });
+  fs.mkdirSync(uploadStorage.audiosDirAbs, { recursive: true });
+  console.log(
+    `[uploads] persistent=${uploadStorage.persistent} source=${uploadStorage.source} root=${uploadsRootAbs} audios=${uploadStorage.audiosDirAbs}`,
+  );
   app.use(
     '/uploads',
     express.static(uploadsRootAbs, {

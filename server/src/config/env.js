@@ -34,6 +34,10 @@ export const env = {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
-  /** Optional persistent volume path for uploads (Railway). */
+  /**
+   * Ruta absoluta del volumen persistente para audios (Railway).
+   * Ej.: `/data/uploads` con volumen montado en `/data`.
+   * En producción, si se omite, se usa `/data/uploads`.
+   */
   AUDIO_UPLOAD_DIR: (process.env.AUDIO_UPLOAD_DIR || '').trim(),
 };

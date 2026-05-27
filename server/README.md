@@ -54,6 +54,7 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
    - `npx prisma migrate deploy && node src/server.js`  
    Así se aplican migraciones en cada arranque y luego levanta Express (escucha `process.env.PORT` que Railway inyecta).
 4. **Frontend (`index.html`)**: con *Root Directory* = `server`, el build a veces **no incluye** el directorio padre del repo. El `postinstall` ejecuta `scripts/sync-index-html.mjs` (copia `../index.html` → `server/public/index.html` cuando existe). En el repo se versiona **`server/public/index.html`** como respaldo para Railway; tras editar el `index.html` de la raíz, ejecuta `npm install` en `server` o `node scripts/sync-index-html.mjs` y commitea `public/index.html` si cambió. Opcional: variable **`FRONTEND_INDEX_PATH`** (ruta absoluta al HTML).
+5. **Volumen persistente (Entrevista Digital)**: crea un **Volume** en Railway, móntalo en `/data` y define `AUDIO_UPLOAD_DIR=/data/uploads`. Los `.webm` se guardan en `/data/uploads/audios` y se sirven vía `/uploads/audios/...`. Sin volumen, cada redeploy borra los archivos del contenedor. Verifica con `GET /api/health/uploads` (`persistent: true`, `uploadsRoot: "/data/uploads"`).
 
 ### Variables de entorno (servicio Node)
 
@@ -68,6 +69,7 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 | `PORT` | No | Railway la define sola; el código usa `process.env.PORT \|\| 3000`. |
 | `CLIENT_ORIGINS` | Opcional | Solo si el HTML se sirve desde otro dominio que no sea el del API (CORS con credenciales). Mismo dominio Railway → déjalo vacío. |
 | `TRUST_PROXY` | Opcional | En producción ya se confía en proxy por defecto; puedes forzar `1`. |
+| `AUDIO_UPLOAD_DIR` | Recomendada en prod | Ruta **absoluta** del volumen (ej. `/data/uploads`). Si se omite en producción, el servidor usa `/data/uploads` por defecto. |
 
 ### Postgres
 
@@ -79,6 +81,7 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 Sustituye `TU_DOMINIO` por el hostname público del servicio:
 
 - `https://TU_DOMINIO/api/health` → JSON `{ "ok": true, "db": "up" }` si Postgres responde.
+- `https://TU_DOMINIO/api/health/uploads` → confirma volumen (`persistent`, `uploadsRoot`, `writable`).
 - `https://TU_DOMINIO/` → `index.html` (mismo origen que `/api/*`, cookies de sesión válidas).
 
 ### Qué queda operativo tras el deploy

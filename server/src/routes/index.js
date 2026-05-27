@@ -2,7 +2,7 @@ import { Router } from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { prisma } from '../db/client.js';
-import { resolveUploadsRootAbs } from '../utils/uploadPaths.js';
+import { getUploadStorageMeta, resolveUploadsRootAbs } from '../utils/uploadPaths.js';
 import authRoutes from './auth.routes.js';
 import superadminRoutes from './superadmin.routes.js';
 import orgRoutes from './org.routes.js';
@@ -28,11 +28,14 @@ router.get('/health/uploads', async (req, res, next) => {
     await fs.mkdir(audiosDirAbs, { recursive: true });
     await fs.access(audiosDirAbs, fs.constants.R_OK | fs.constants.W_OK);
 
+    const meta = getUploadStorageMeta();
     const out = {
       ok: true,
       uploadsRoot: uploadsRootAbs,
       audiosDir: audiosDirAbs,
       writable: true,
+      storageSource: meta.source,
+      persistent: meta.persistent,
     };
 
     const filePath = req.query?.filePath ? String(req.query.filePath) : '';

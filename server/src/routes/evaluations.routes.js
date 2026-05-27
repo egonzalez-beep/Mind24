@@ -7,11 +7,17 @@ import { submitDigitalInterviewAudios } from '../services/digitalInterview.servi
 import { resolveAudiosDirAbs } from '../utils/uploadPaths.js';
 
 const router = Router();
-const audiosDirAbs = resolveAudiosDirAbs();
-fs.mkdirSync(audiosDirAbs, { recursive: true });
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, audiosDirAbs),
+  destination: (_req, _file, cb) => {
+    try {
+      const dir = resolveAudiosDirAbs();
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    } catch (err) {
+      cb(err);
+    }
+  },
   filename: (req, file, cb) => {
     const attemptId = String(req.body?.attemptId || 'attempt').replace(/[^a-zA-Z0-9_-]/g, '');
     const userId = String(req.session?.userId || 'cand').replace(/[^a-zA-Z0-9_-]/g, '');
