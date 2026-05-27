@@ -1020,7 +1020,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <span class="m24-cc-lbl">Créditos disponibles</span>
           <span class="m24-cc-val" id="dash-admin-credits-value">0</span>
         </div>
-        <button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button>
+        <button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button>
         <div class="s-avatar av-green" id="dash-admin-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div>
       </div>
     </div>
@@ -1310,7 +1310,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="sidebar-item active" data-cev-nav="nueva" onclick="crearEvalSidebarNav('nueva')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
       <button type="button" class="sidebar-item" data-cev-nav="mis" onclick="crearEvalSidebarNav('mis')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span><span class="si-badge" id="cev-nav-mis-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Reportes</div>
-      <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span></button>
+      <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="crearEvalOpenFitnessModal()"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
@@ -1320,7 +1320,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn" aria-label="Buscar">🔍</button><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
       <div id="cev-api-banner" class="cev-api-banner hidden" role="status"></div>
@@ -1398,10 +1398,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="m24-fitness-card" onclick="event.stopPropagation()">
       <button type="button" class="m24-fitness-close" onclick="crearEvalCloseFitnessModal()" aria-label="Cerrar">×</button>
       <div class="m24-fitness-card-inner">
-        <div class="m24-fitness-kicker">Mind Fitness</div>
-        <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar organizacional</h2>
-        <p class="m24-fitness-msg">Contacta a personal de ventas</p>
-        <button type="button" class="m24-fitness-cta" onclick="crearEvalCloseFitnessModal()">Entendido</button>
+        <div class="m24-fitness-kicker">Mind24 Care + Assess</div>
+        <h2 id="m24-fitness-title" class="m24-fitness-title">Bienestar Corporativo y Mindfulness.</h2>
+        <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 24px 0;padding-left:18px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.55;">
+          <li>Evaluaciones psicológicas para tus colaboradores.</li>
+          <li>Índices de bienestar.</li>
+          <li>Talleres y capacitaciones.</li>
+        </ul>
+        <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer">Contactar al área de ventas</a>
       </div>
     </div>
   </div>
@@ -1767,6 +1771,32 @@ function mind24SyncCrearEvalShell(){
 }
 window.__mind24FitnessModalOpen = false;
 window.__cevLastNav = 'nueva';
+const MIND24_RESULTS_LAST_VIEWED_KEY='last_viewed_results';
+function crearEvalReadLastViewedResultsAt(){
+  try{
+    const raw=localStorage.getItem(MIND24_RESULTS_LAST_VIEWED_KEY)||'';
+    if(!raw) return 0;
+    const ts=Date.parse(raw);
+    return Number.isFinite(ts)?ts:0;
+  }catch(_){ return 0; }
+}
+function crearEvalMarkResultsViewed(){
+  try{ localStorage.setItem(MIND24_RESULTS_LAST_VIEWED_KEY,new Date().toISOString()); }catch(_){}
+}
+function crearEvalRefreshResultadosBadge(rows){
+  const badge=document.getElementById('cev-nav-res-count');
+  if(!badge)return;
+  const viewedAt=crearEvalReadLastViewedResultsAt();
+  const completed=(rows||[]).filter(function(a){ return String(a&&a.status||'')==='completed'; });
+  const unseen=completed.filter(function(a){
+    const att=(a.attempts&&a.attempts[0])||null;
+    const fin=(att&&att.submittedAt)||a.updatedAt||a.createdAt;
+    const ts=Date.parse(fin||'');
+    return !viewedAt || !Number.isFinite(ts) || ts>viewedAt;
+  }).length;
+  badge.textContent=String(unseen);
+  badge.style.display=unseen>0?'inline-flex':'none';
+}
 function crearEvalSyncSidebarActive(){
   const root=document.getElementById('view-dash-crear-eval');
   if(!root)return;
@@ -2105,6 +2135,7 @@ async function refreshCrearEvalAssignmentsTables(){
   try{
     const j=await apiJson('/api/org/assignments');
     const rows=Array.isArray(j.assignments)?j.assignments:[];
+    crearEvalRefreshResultadosBadge(rows);
     if(cnt){
       cnt.textContent=String(rows.length);
       cnt.style.display=rows.length?'inline-flex':'none';
@@ -2182,6 +2213,7 @@ async function refreshCrearEvalAssignmentsTables(){
 function crearEvalSidebarNav(which){
   const allowed=new Set(['nueva','mis','resultados']);
   if(!allowed.has(which))return;
+  if(which==='resultados') crearEvalMarkResultsViewed();
   try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY, String(which)); }catch(_){}
   if(which==='nueva') crearEvalResetNuevaFlow();
   else{
