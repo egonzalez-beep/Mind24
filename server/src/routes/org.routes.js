@@ -8,6 +8,8 @@ import {
   deleteAssignmentForOrg,
   listAssignmentsForOrg,
 } from '../services/assignment.service.js';
+import { prisma } from '../db/client.js';
+import { assertOrganizationHasAssignmentCredits } from '../services/organizationBilling.service.js';
 import { listDefinitionsForOrg } from '../services/assessmentDefinition.service.js';
 import {
   listAspenAdminsInOrganization,
@@ -110,6 +112,7 @@ router.delete('/assignments/:assignmentId', async (req, res, next) => {
 router.post('/assignments', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
+    await assertOrganizationHasAssignmentCredits(prisma, u.organizationId);
     const { candidateId, assessmentDefinitionId, selectedModules } = z
       .object({
         candidateId: z.string().min(1),

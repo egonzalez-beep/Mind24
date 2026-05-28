@@ -363,7 +363,6 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   const allDone =
     selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
   const organizationId = assignment.candidate.organizationId;
-  const previousAssignmentStatus = assignment.status;
 
   let attemptScores = null;
   let interpretation = {
@@ -481,7 +480,6 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     await applyAssignmentCompletionUpdate(tx, {
       assignmentId: assignment.id,
       organizationId,
-      previousStatus: previousAssignmentStatus,
       nextCompleted,
       allDone,
     });

@@ -24,15 +24,7 @@ export async function assertOrganizationHasAssignmentCredits(tx, organizationId)
  * Descuenta 1 crédito cuando la asignación pasa a `completed` por primera vez.
  * Idempotente si la asignación ya estaba en `completed`.
  */
-export async function chargeOrganizationOnBatteryCompleted(
-  tx,
-  organizationId,
-  previousAssignmentStatus,
-) {
-  if (previousAssignmentStatus === 'completed') {
-    return { charged: false };
-  }
-
+export async function chargeOrganizationOnBatteryCompleted(tx, organizationId) {
   const result = await tx.organization.updateMany({
     where: { id: organizationId, credits: { gte: 1 } },
     data: { credits: { decrement: 1 } },
@@ -57,20 +49,38 @@ export async function applyAssignmentCompletionUpdate(
   {
     assignmentId,
     organizationId,
-    previousStatus,
     nextCompleted,
     allDone,
   },
 ) {
-  await tx.assignment.update({
-    where: { id: assignmentId },
+  if (!allDone) {
+    await tx.assignment.update({
+      where: { id: assignmentId },
+      data: {
+        completedModules: nextCompleted,
+        status: 'in_progress',
+      },
+    });
+    return;
+  }
+
+  // Claim de cobro atómico: solo el primer cierre completo marca y cobra.
+  const claimed = await tx.assignment.updateMany({
+    where: {
+      id: assignmentId,
+      creditDeducted: false,
+    },
     data: {
       completedModules: nextCompleted,
-      status: allDone ? 'completed' : 'in_progress',
+      status: 'completed',
+      creditDeducted: true,
     },
   });
 
-  if (allDone) {
-    await chargeOrganizationOnBatteryCompleted(tx, organizationId, previousStatus);
+  if (claimed.count === 0) {
+    return;
   }
+
+  await chargeOrganizationOnBatteryCompleted(tx, organizationId);
 }
+

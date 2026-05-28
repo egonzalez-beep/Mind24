@@ -53,7 +53,6 @@ export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
   const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
 
   const organizationId = assignment.candidate.organizationId;
-  const previousAssignmentStatus = assignment.status;
   const submittedAt = new Date();
 
   await prisma.$transaction(async (tx) => {
@@ -74,7 +73,6 @@ export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
     await applyAssignmentCompletionUpdate(tx, {
       assignmentId: assignment.id,
       organizationId,
-      previousStatus: previousAssignmentStatus,
       nextCompleted,
       allDone,
     });

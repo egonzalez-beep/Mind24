@@ -1,0 +1,2 @@
+ALTER TABLE "Assignment"
+ADD COLUMN IF NOT EXISTS "creditDeducted" BOOLEAN NOT NULL DEFAULT false;

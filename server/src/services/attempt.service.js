@@ -298,7 +298,6 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
   }
   const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
   const organizationId = attempt.assignment.candidate.organizationId;
-  const previousAssignmentStatus = assignment.status;
 
   await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
@@ -319,7 +318,6 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     await applyAssignmentCompletionUpdate(tx, {
       assignmentId: attempt.assignmentId,
       organizationId,
-      previousStatus: previousAssignmentStatus,
       nextCompleted,
       allDone,
     });

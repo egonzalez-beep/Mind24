@@ -122,6 +122,8 @@ model Assignment {
   selectedModules        Json?
   /// Keys de módulos ya enviados por el candidato.
   completedModules       Json?
+  /// Candado de facturación: true cuando ya se descontó el crédito por batería completada.
+  creditDeducted         Boolean            @default(false)
   status                 AssignmentStatus   @default(pending)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
