@@ -1,6 +1,6 @@
 import { prisma } from '../db/client.js';
 import { resolveModuleKey } from '../utils/moduleCatalog.js';
-import { applyAssignmentCompletionUpdate } from './organizationBilling.service.js';
+import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
 
 function readCompletedModules(assignment) {
   const raw = assignment.completedModules;
@@ -55,7 +55,9 @@ export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
   const organizationId = assignment.candidate.organizationId;
   const submittedAt = new Date();
 
-  await prisma.$transaction(async (tx) => {
+  console.log('[BILLING:digitalInterview] módulo:', mk, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
+
+  const billingResult = await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
       where: { id: attempt.id },
       data: {
@@ -70,13 +72,22 @@ export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
       },
     });
 
-    await applyAssignmentCompletionUpdate(tx, {
+    return applyAssignmentCompletionUpdate(tx, {
       assignmentId: assignment.id,
       organizationId,
       nextCompleted,
       allDone,
     });
   });
+
+  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
+  if (billingResult.claimed) {
+    try {
+      await chargeOrganizationCreditPostTx(organizationId);
+    } catch (chargeErr) {
+      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
+    }
+  }
 
   return { ok: true, assignmentCompleted: allDone };
 }

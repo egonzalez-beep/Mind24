@@ -17,7 +17,7 @@ import {
   applyReliabilityToAttemptPayload,
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
-import { applyAssignmentCompletionUpdate } from './organizationBilling.service.js';
+import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -364,6 +364,8 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
   const organizationId = assignment.candidate.organizationId;
 
+  console.log('[BILLING:completeDynamic] módulo:', resolvedKey, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
+
   let attemptScores = null;
   let interpretation = {
     verdict: 'Módulo completado',
@@ -466,7 +468,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     persistedFlags = merged.flags;
   }
 
-  await prisma.$transaction(async (tx) => {
+  const billingResult = await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
       where: { id: attempt.id },
       data: {
@@ -477,13 +479,22 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
         flags: persistedFlags.length ? persistedFlags : undefined,
       },
     });
-    await applyAssignmentCompletionUpdate(tx, {
+    return applyAssignmentCompletionUpdate(tx, {
       assignmentId: assignment.id,
       organizationId,
       nextCompleted,
       allDone,
     });
   });
+
+  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
+  if (billingResult.claimed) {
+    try {
+      await chargeOrganizationCreditPostTx(organizationId);
+    } catch (chargeErr) {
+      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
+    }
+  }
 
   return {
     ok: true,

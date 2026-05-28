@@ -13,7 +13,7 @@ import {
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
-import { applyAssignmentCompletionUpdate } from './organizationBilling.service.js';
+import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
 
 function getTimeLimitSec(config) {
   const m = config?.meta?.timeLimitSec;
@@ -289,17 +289,24 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
   );
 
   const assignment = attempt.assignment;
+  // Resolvemos las keys para que coincidan con las escritas por dynamicAssessment.service.js
+  const resolvedMk = resolveModuleKey(mk);
   const prevCompleted = readCompletedModules(assignment);
-  const nextCompleted = mk && !prevCompleted.includes(mk) ? [...prevCompleted, mk] : prevCompleted;
+  const nextCompleted =
+    resolvedMk && !prevCompleted.includes(resolvedMk)
+      ? [...prevCompleted, resolvedMk]
+      : prevCompleted;
 
-  let selected = selectedModuleKeys(assignment);
-  if (!selected.length && mk) {
-    selected = [mk];
+  let selected = selectedModuleKeys(assignment).map((k) => resolveModuleKey(k));
+  if (!selected.length && resolvedMk) {
+    selected = [resolvedMk];
   }
   const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
   const organizationId = attempt.assignment.candidate.organizationId;
 
-  await prisma.$transaction(async (tx) => {
+  console.log('[BILLING:submitAttempt] módulo:', resolvedMk, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
+
+  const billingResult = await prisma.$transaction(async (tx) => {
     await tx.assessmentAttempt.update({
       where: { id: attempt.id },
       data: {
@@ -315,7 +322,7 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
         flags: persisted.flags,
       },
     });
-    await applyAssignmentCompletionUpdate(tx, {
+    return applyAssignmentCompletionUpdate(tx, {
       assignmentId: attempt.assignmentId,
       organizationId,
       nextCompleted,
@@ -323,7 +330,16 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     });
   });
 
-  return { ...scored, moduleKey: mk || null, assignmentCompleted: allDone };
+  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
+  if (billingResult.claimed) {
+    try {
+      await chargeOrganizationCreditPostTx(organizationId);
+    } catch (chargeErr) {
+      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
+    }
+  }
+
+  return { ...scored, moduleKey: resolvedMk || null, assignmentCompleted: allDone };
 }
 
 export async function getAttemptResult(userId, attemptId) {
