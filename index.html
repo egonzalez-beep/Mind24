@@ -2358,8 +2358,10 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   if(h2) h2.textContent=g.text;
   if(lead) lead.textContent=g.lead;
   if(dateEl) dateEl.textContent=mind24FormatTopbarDateEs();
-  const credits=Number(u.adminCredits);
-  const num=Number.isNaN(credits)?0:credits;
+  // Créditos de facturación: usar orgCredits (Organization.credits) que es lo que el billing descuenta.
+  // adminCredits es un campo legacy del User; orgCredits viene del org al hacer /api/auth/me.
+  const rawCredits = u.orgCredits != null ? u.orgCredits : u.adminCredits;
+  const num = Number.isNaN(Number(rawCredits)) ? 0 : Number(rawCredits);
   if(chip&&val){
     val.textContent=String(num);
     chip.style.display='flex';

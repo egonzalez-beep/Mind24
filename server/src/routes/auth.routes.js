@@ -60,6 +60,17 @@ router.post('/login', loginRateLimiter, async (req, res, next) => {
     const user = await authenticateUser(email, password);
     await regenerateSession(req);
     Object.assign(req.session, toSessionPayload(user));
+
+    // Créditos de facturación viven en Organization.credits (no en User.adminCredits).
+    let orgCredits = 0;
+    if (user.organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: user.organizationId },
+        select: { credits: true },
+      });
+      orgCredits = org?.credits ?? 0;
+    }
+
     res.json({
       user: {
         id: user.id,
@@ -68,6 +79,7 @@ router.post('/login', loginRateLimiter, async (req, res, next) => {
         role: user.role,
         organizationId: user.organizationId,
         adminCredits: user.adminCredits ?? 0,
+        orgCredits,
         aspenPioneer: isPioneerAspenAdminEmail(user.email),
       },
     });
@@ -105,13 +117,20 @@ router.get('/me', async (req, res, next) => {
         role: true,
         organizationId: true,
         adminCredits: true,
+        organization: { select: { credits: true } },
       },
     });
     if (!u) {
       return res.status(401).json({ error: 'UNAUTHENTICATED', message: 'Sesión inválida.' });
     }
+    const orgCredits = u.organization?.credits ?? 0;
     res.json({
-      user: { ...u, adminCredits: u.adminCredits ?? 0, aspenPioneer: isPioneerAspenAdminEmail(u.email) },
+      user: {
+        ...u,
+        adminCredits: u.adminCredits ?? 0,
+        orgCredits,
+        aspenPioneer: isPioneerAspenAdminEmail(u.email),
+      },
     });
   } catch (e) {
     next(e);
