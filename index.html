@@ -403,6 +403,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
 .mod-toggle.mod-coming-soon{opacity:.72;cursor:default;border-style:dashed;}
 .mod-toggle.mod-coming-soon .mod-check{background:var(--slate-200);color:transparent;border-color:var(--slate-300);}
+.mod-toggle.mod-sales-hook{background:linear-gradient(135deg,#f8fafc,#eef2ff);border-color:#c7d2fe;cursor:pointer;}
+.mod-toggle.mod-sales-hook:hover{border-color:#94a3ff;background:linear-gradient(135deg,#f1f5f9,#e0e7ff);}
+.mod-toggle.mod-sales-hook .mod-check{border-color:#6366f1;background:#6366f1;color:#fff;}
 .mod-badge-soon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);background:rgba(124,58,237,.12);padding:4px 8px;border-radius:100px;flex-shrink:0;margin-left:8px;}
 .cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:0;align-items:start;}
 @media(min-width:721px){
@@ -1009,7 +1012,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green" id="dash-admin-av">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="dash-admin-name">Admin HR</div><div class="sidebar-user-role" id="dash-admin-role">Empresa</div></div></div>
       <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
-      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
     </div>
   </aside>
   <main class="main-content">
@@ -1157,7 +1159,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-purple">DS</div><div class="sidebar-user-info"><div class="sidebar-user-name">Dra. Soto</div><div class="sidebar-user-role">Psicóloga Clínica</div></div></div>
-      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
     </div>
   </aside>
   <main class="main-content">
@@ -1719,6 +1721,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
+<div id="m24-medida-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="m24-medida-title" onclick="if(event.target===this)mind24CloseMedidaModal()">
+  <div class="m24-fitness-card" style="max-width:520px;background:linear-gradient(165deg,#ffffff 0%,#f8fafc 100%);border:1px solid rgba(148,163,184,.28);box-shadow:0 26px 80px rgba(15,23,42,.18);" onclick="event.stopPropagation()">
+    <button type="button" class="m24-fitness-close" onclick="mind24CloseMedidaModal()" aria-label="Cerrar" style="background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.15);color:#0f172a;">×</button>
+    <div class="m24-fitness-card-inner" style="text-align:left;">
+      <div class="m24-fitness-kicker" style="color:#6366f1;">Mind24 Assess Premium</div>
+      <h2 id="m24-medida-title" class="m24-fitness-title" style="color:#0f172a;font-size:30px;text-shadow:none;">Módulos a la Medida y Onboarding Personalizado</h2>
+      <ul style="display:flex;flex-direction:column;gap:10px;margin:0 0 26px 0;padding-left:18px;color:#334155;font-size:15px;line-height:1.6;">
+        <li>Personaliza un módulo.</li>
+        <li>Integra tu onboarding.</li>
+        <li>Genera una batería personalizada.</li>
+      </ul>
+      <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#e2e8f0,#cbd5e1);color:#0f172a;box-shadow:none;">Contactar a ventas</a>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
@@ -1866,6 +1884,42 @@ window.mind24OpenFitnessModal=mind24OpenFitnessModal;
 window.mind24CloseFitnessModal=mind24CloseFitnessModal;
 window.crearEvalOpenFitnessModal=crearEvalOpenFitnessModal;
 window.crearEvalCloseFitnessModal=crearEvalCloseFitnessModal;
+function mind24EnsureMedidaModalInBody(){
+  const modal=document.getElementById('m24-medida-modal');
+  if(!modal) return null;
+  if(modal.parentElement!==document.body) document.body.appendChild(modal);
+  return modal;
+}
+function mind24OpenMedidaModal(){
+  const modal=mind24EnsureMedidaModalInBody();
+  if(!modal) return;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden','false');
+  modal.style.display='flex';
+  modal.style.pointerEvents='auto';
+  modal.style.visibility='visible';
+  modal.style.opacity='1';
+  modal.style.zIndex='2600';
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+}
+function mind24CloseMedidaModal(){
+  const modal=document.getElementById('m24-medida-modal');
+  if(!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden','true');
+  modal.style.display='';
+  modal.style.pointerEvents='none';
+  modal.style.visibility='hidden';
+  modal.style.opacity='';
+  const anyOpen=document.querySelector('.modal-overlay:not(.hidden),.m24-fitness-overlay:not(.hidden),.cev-success-overlay:not(.hidden)');
+  if(!anyOpen){
+    document.body.style.overflow='';
+    document.documentElement.style.overflow='';
+  }
+}
+window.mind24OpenMedidaModal=mind24OpenMedidaModal;
+window.mind24CloseMedidaModal=mind24CloseMedidaModal;
 function crearEvalMapStatusPill(status){
   if(String(status)==='completed') return { label:'Aplicada', cls:'cev-status-pill cev-st-aplicada' };
   if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-pendiente' };
@@ -2098,10 +2152,10 @@ const MIND24_EVAL_MODULES=[
   {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'sales_sjt',label:'Simulador de Escenarios Comerciales (SJT)',description:'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',icon:'📊'},
   {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
-  {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',comingSoon:true},
+  {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',salesHook:true},
 ];
 const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida',entrevista_digital:'digital_interview'};
-function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
+function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&!mod.salesHook&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
 function mind24ResolveModKey(key){ return MIND24_LEGACY_MOD_KEYS[key]||key; }
 function mind24IsLegacyOnlyModule(key){ return mind24ResolveModKey(key)==='honestidad'; }
 const MIND24_VIEW_EL_CACHE={};
@@ -2130,12 +2184,14 @@ function mind24InitCrearEvalModules(){
   MIND24_EVAL_MODULES.forEach(mod=>{
     const el=document.createElement('div');
     const soon=!!mod.comingSoon;
-    const sel=!soon&&mind24ModAssignable(mod);
-    el.className='mod-toggle'+(sel?' selected':'')+(mod.featured?' featured-mod':'')+(soon?' mod-coming-soon':'');
+    const salesHook=!!mod.salesHook;
+    const sel=!soon&&!salesHook&&mind24ModAssignable(mod);
+    el.className='mod-toggle'+(sel?' selected':'')+(mod.featured?' featured-mod':'')+(soon?' mod-coming-soon':'')+(salesHook?' mod-sales-hook':'');
     el.setAttribute('data-mod-key',mod.key);
     el.setAttribute('data-coming-soon',soon?'1':'0');
+    el.setAttribute('data-sales-hook',salesHook?'1':'0');
     el.onclick=function(){toggleMod(this);};
-    el.innerHTML='<div class="mod-left"><div class="mod-icon">'+mod.icon+'</div><div><div class="mod-name">'+mind24EscHtml(mod.label)+(soon?' <span class="mod-badge-soon">Próximamente</span>':'')+'</div><div class="mod-desc">'+mind24EscHtml(mod.description)+'</div></div></div><div class="mod-check">'+(sel?'✓':'')+'</div>';
+    el.innerHTML='<div class="mod-left"><div class="mod-icon">'+mod.icon+'</div><div><div class="mod-name">'+mind24EscHtml(mod.label)+'</div><div class="mod-desc">'+mind24EscHtml(mod.description)+'</div></div></div><div class="mod-check">'+(sel?'✓':(salesHook?'↗':''))+'</div>';
     list.appendChild(el);
   });
   crearEvalSyncModSummary();
@@ -2575,6 +2631,7 @@ window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNa
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeAllModals(); });
 document.addEventListener('DOMContentLoaded',function(){
   mind24EnsureFitnessModalInBody();
+  mind24EnsureMedidaModalInBody();
   const wa=document.querySelector('#m24-fitness-modal .m24-fitness-cta');
   if(wa) wa.setAttribute('href', MIND24_FITNESS_WHATSAPP_URL);
   document.addEventListener('click',function(ev){
@@ -2639,6 +2696,10 @@ function crearEvalSyncModSummary(){
 }
 function toggleMod(el){
   if(window.__CEV_FORM_LOCKED)return;
+  if(el.getAttribute('data-sales-hook')==='1'){
+    mind24OpenMedidaModal();
+    return;
+  }
   if(el.getAttribute('data-coming-soon')==='1')return;
   const sel=el.classList.toggle('selected');
   const ch=el.querySelector('.mod-check'), ic=el.querySelector('.mod-icon');
@@ -3296,7 +3357,8 @@ async function loginEmpresaAdmin(e){
     mind24PersistSessionUser(data.user);
     mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
-    showView('dash-admin');
+    try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY,'nueva'); }catch(_){}
+    showView('dash-crear-eval');
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
       const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
@@ -3318,6 +3380,7 @@ async function loginEmpresaCrearEval(e){
     mind24PersistSessionUser(data.user);
     mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
+    try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY,'nueva'); }catch(_){}
     showView('dash-crear-eval');
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
