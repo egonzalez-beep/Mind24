@@ -11,7 +11,7 @@ import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
-import { getUploadStorageMeta, resolveUploadsRootAbs } from './utils/uploadPaths.js';
+import { getUploadStorageMeta, resolveUploadsRootAbs, checkVolumePersistence } from './utils/uploadPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtmlAbs = resolveIndexHtmlPath();
@@ -45,6 +45,28 @@ export function createApp() {
   console.log(
     `[uploads] persistent=${uploadStorage.persistent} source=${uploadStorage.source} root=${uploadsRootAbs} audios=${uploadStorage.audiosDirAbs}`,
   );
+
+  // Verificación de persistencia del volumen. En Railway, si el volumen no está montado,
+  // el centinela no sobrevive entre deploys y el log advierte claramente.
+  const volCheck = checkVolumePersistence();
+  if (!volCheck.writable) {
+    console.error(
+      '[uploads] ⚠️  CRÍTICO: No se puede escribir en el directorio de audios:',
+      uploadStorage.audiosDirAbs,
+      '— Los archivos de entrevista digital NO se guardarán.',
+    );
+  } else if (!volCheck.likelySurvivesRestart) {
+    console.warn(
+      '[uploads] ⚠️  ADVERTENCIA DE VOLUMEN: El directorio de audios ES escribible pero NO hay evidencia de que sea un volumen persistente.',
+      '\n  → Si estás en Railway, monta un volumen en /data (Railway Dashboard → Service → Volumes).',
+      '\n  → Establece la variable de entorno AUDIO_UPLOAD_DIR=/data/uploads en el servicio.',
+      '\n  → Sentinela escrito en:', volCheck.sentinelPath,
+    );
+  } else {
+    console.log(
+      `[uploads] ✅ Volumen persistente confirmado. Centinela previo: ${volCheck.previousTimestamp}. Ruta: ${uploadStorage.audiosDirAbs}`,
+    );
+  }
   app.use(
     '/uploads',
     express.static(uploadsRootAbs, {

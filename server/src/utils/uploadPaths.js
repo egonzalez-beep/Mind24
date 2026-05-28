@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from '../config/env.js';
@@ -80,4 +81,47 @@ export function getUploadStorageMeta() {
     source,
     persistent: source !== 'dev_public_uploads',
   };
+}
+
+/**
+ * Verifica que el directorio de audios sea un volumen persistente escribiendo un archivo
+ * centinela con timestamp. Si ya existe (de un arranque anterior), el volumen sobrevivió.
+ *
+ * Retorna:
+ *   { writable, likelySurvivesRestart, sentinelPath, previousTimestamp }
+ */
+export function checkVolumePersistence() {
+  const audiosDirAbs = resolveAudiosDirAbs();
+  const sentinelPath = path.join(audiosDirAbs, '.volume_check');
+
+  let previousTimestamp = null;
+  let likelySurvivesRestart = false;
+
+  try {
+    fs.mkdirSync(audiosDirAbs, { recursive: true });
+  } catch (_) {
+    return { writable: false, likelySurvivesRestart: false, sentinelPath, previousTimestamp: null };
+  }
+
+  // Si el centinela ya existe, el filesystem sobrevivió al menos un restart.
+  try {
+    const existing = JSON.parse(fs.readFileSync(sentinelPath, 'utf8'));
+    previousTimestamp = existing.ts || null;
+    const ageMs = previousTimestamp ? Date.now() - new Date(previousTimestamp).getTime() : 0;
+    // Si el centinela tiene más de 60 s → sobrevivió al menos un reinicio real.
+    likelySurvivesRestart = ageMs > 60_000;
+  } catch (_) {
+    // No existía aún (primer arranque en este filesystem).
+  }
+
+  // Escribe/actualiza el centinela con el timestamp actual.
+  let writable = false;
+  try {
+    fs.writeFileSync(sentinelPath, JSON.stringify({ ts: new Date().toISOString() }), 'utf8');
+    writable = true;
+  } catch (_) {
+    // No se pudo escribir — el filesystem no tiene permisos o está lleno.
+  }
+
+  return { writable, likelySurvivesRestart, sentinelPath, previousTimestamp };
 }
