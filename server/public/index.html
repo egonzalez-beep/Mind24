@@ -2442,7 +2442,10 @@ async function refreshAspenAdminsList(){
         pwTd.appendChild(span);
       }
       tr.appendChild(pwTd);
-      td(String(a.adminCredits!=null?a.adminCredits:0));
+      // Cuota inicial asignada (adminCredits) y saldo real actual de su org (organization.credits)
+      const initQ = a.adminCredits!=null ? a.adminCredits : 0;
+      const liveQ = a.organization!=null && a.organization.credits!=null ? a.organization.credits : initQ;
+      td(String(initQ)+' (saldo: '+String(liveQ)+')');
       tb.appendChild(tr);
     });
   }catch(e){ console.warn('[aspen] list',e); }

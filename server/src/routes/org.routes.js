@@ -13,6 +13,7 @@ import { assertOrganizationHasAssignmentCredits } from '../services/organization
 import { listDefinitionsForOrg } from '../services/assessmentDefinition.service.js';
 import {
   listAspenAdminsInOrganization,
+  listAspenAdminPeers,
   provisionAspenAdminPeer,
   isPioneerAspenAdminEmail,
 } from '../services/aspenAdmin.service.js';
@@ -142,14 +143,16 @@ router.post('/assignments', async (req, res, next) => {
   }
 });
 
-/** Lista admins Aspen de la org (solo cuenta pionera admin@demo.mind24.com). */
+/** Lista admins Aspen peer (solo cuenta pionera admin@demo.mind24.com). */
 router.get('/aspen-admins', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     if (!isPioneerAspenAdminEmail(u.email)) {
       return res.status(403).json({ error: 'FORBIDDEN', message: 'No autorizado.' });
     }
-    const administrators = await listAspenAdminsInOrganization(u.organizationId);
+    // listAspenAdminPeers: admins con org propia (no comparten org con el pionero).
+    // Devuelve organization.credits real para que el panel muestre saldo live.
+    const administrators = await listAspenAdminPeers(u.id);
     res.json({ administrators });
   } catch (e) {
     next(e);

@@ -15,6 +15,39 @@ export function isPioneerAspenAdminEmail(email) {
   return Boolean(email && String(email).trim().toLowerCase() === pioneerEmailNormalized());
 }
 
+/**
+ * Lista los admins peer creados por el admin pionero.
+ * Se identifican por tener adminCredits >= 1 y no ser el pionero.
+ * Incluye los créditos REALES de su organización (Organization.credits).
+ */
+export async function listAspenAdminPeers(pioneerUserId) {
+  return prisma.user.findMany({
+    where: {
+      role: 'empresa_admin',
+      id: { not: pioneerUserId },
+      adminCredits: { gte: 1 },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      adminCredits: true,
+      createdAt: true,
+      organization: {
+        select: {
+          id: true,
+          credits: true,
+          name: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * @deprecated Usar listAspenAdminPeers(pioneerUserId) — mantiene backward compat para notificaciones.
+ */
 export async function listAspenAdminsInOrganization(organizationId) {
   return prisma.user.findMany({
     where: { organizationId, role: 'empresa_admin' },
@@ -30,7 +63,14 @@ export async function listAspenAdminsInOrganization(organizationId) {
 }
 
 /**
- * Crea otro empresa_admin en la misma org con contraseña aleatoria y saldo adminCredits inicial.
+ * Aprovisiona un admin peer con su propia Organization aislada.
+ *
+ * Aislamiento de tenants:
+ * - Crea una Organization nueva con credits = n y empresaPortalEnabled = true.
+ * - Crea el User vinculado a la nueva org (no a la del pionero).
+ * - adminCredits = n en el User se usa como referencia de cuota inicial asignada.
+ *
+ * Así cada cliente tiene su propio pool de créditos, candidatos y evaluaciones.
  */
 export async function provisionAspenAdminPeer({
   pioneerUserId,
@@ -67,25 +107,44 @@ export async function provisionAspenAdminPeer({
     err.code = 'EMAIL_IN_USE';
     throw err;
   }
+
   const plainPassword = generateRandomPassword(14);
   const passwordHash = await hashPassword(plainPassword);
   const fn = String(fullName).trim();
-  const user = await prisma.user.create({
-    data: {
-      email: em,
-      passwordHash,
-      fullName: fn,
-      role: 'empresa_admin',
-      organizationId: pioneer.organizationId,
-      adminCredits: n,
-    },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      adminCredits: true,
-      createdAt: true,
-    },
+
+  // Transacción atómica: org nueva + user vinculado a esa org.
+  const { organization, user } = await prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: {
+        name: fn,
+        credits: n,
+        empresaPortalEnabled: true,
+        blocked: false,
+      },
+    });
+
+    const newUser = await tx.user.create({
+      data: {
+        email: em,
+        passwordHash,
+        fullName: fn,
+        role: 'empresa_admin',
+        organizationId: org.id,    // Org propia — no comparte con el pionero
+        adminCredits: n,            // Cuota inicial de referencia (informativo)
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        adminCredits: true,
+        createdAt: true,
+      },
+    });
+
+    return { organization: org, user: newUser };
   });
-  return { user, generatedPassword: plainPassword };
+
+  console.log('[aspen] Admin peer provisionado:', em, '| org:', organization.id, '| credits:', n);
+
+  return { user, organization, generatedPassword: plainPassword };
 }
