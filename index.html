@@ -232,6 +232,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr-fast);margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;color:var(--slate-600);font-size:14px;font-weight:500;}
 .sidebar-item:hover{background:var(--purple-light);color:var(--purple-dark);}
 .sidebar-item.active{background:var(--purple-light);color:var(--purple-dark);font-weight:600;}
+.sidebar-item-cta-fitness{border:1px solid rgba(16,185,129,.35)!important;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(52,211,153,.06))!important;color:#065f46!important;font-weight:600!important;}
+.sidebar-item-cta-fitness:hover{border-color:rgba(16,185,129,.6)!important;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(52,211,153,.12))!important;box-shadow:0 2px 12px rgba(16,185,129,.15);}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
 .si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--slate-100);transition:var(--tr-fast);}
 .sidebar-item:hover .si-icon{background:rgba(124,58,237,.12);}
@@ -403,10 +405,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-toggle:not(.selected) .mod-check{background:none;color:transparent;border-color:var(--slate-300);}
 .mod-toggle.mod-coming-soon{opacity:.72;cursor:default;border-style:dashed;}
 .mod-toggle.mod-coming-soon .mod-check{background:var(--slate-200);color:transparent;border-color:var(--slate-300);}
-.mod-toggle.mod-sales-hook{background:linear-gradient(135deg,#f8fafc,#eef2ff);border-color:#c7d2fe;cursor:pointer;}
-.mod-toggle.mod-sales-hook:hover{border-color:#94a3ff;background:linear-gradient(135deg,#f1f5f9,#e0e7ff);}
-.mod-toggle.mod-sales-hook .mod-check{border-color:#6366f1;background:#6366f1;color:#fff;}
+.mod-toggle.mod-sales-hook{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7;cursor:pointer;}
+.mod-toggle.mod-sales-hook:hover{border-color:#34d399;background:linear-gradient(135deg,#d1fae5,#a7f3d0);box-shadow:0 4px 16px rgba(52,211,153,.18);}
+.mod-toggle.mod-sales-hook .mod-check{border-color:#059669;background:#059669;color:#fff;}
 .mod-badge-soon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);background:rgba(124,58,237,.12);padding:4px 8px;border-radius:100px;flex-shrink:0;margin-left:8px;}
+#cev-mis-assign-tbody tr:nth-child(odd),#cev-res-assign-tbody tr:nth-child(odd){background:#ffffff;}
+#cev-mis-assign-tbody tr:nth-child(even),#cev-res-assign-tbody tr:nth-child(even){background:#f8fafc;}
+#cev-mis-assign-tbody tr:hover,#cev-res-assign-tbody tr:hover{background:#eff6ff;}
 .cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:0;align-items:start;}
 @media(min-width:721px){
   .cev-main-grid{grid-template-columns:1fr 1fr;}
@@ -1005,7 +1010,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button class="sidebar-item"><span class="si-icon">🗓</span><span>Agenda</span></button>
       <div class="sidebar-section-label">Análisis</div>
       <button class="sidebar-item"><span class="si-icon">📈</span><span>Reportes</span></button>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <div class="sidebar-section-label">Empresa</div>
       <button class="sidebar-item"><span class="si-icon">⚙️</span><span>Configuración</span></button>
     </nav>
@@ -1314,11 +1319,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="sidebar-section-label">Reportes</div>
       <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
-      <button class="back-btn" onclick="showView('landing')" style="width:100%;margin-top:4px;">← Volver al inicio</button>
+      <button class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
     </div>
   </aside>
   <main class="main-content">
@@ -1722,17 +1727,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <div id="m24-medida-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="m24-medida-title" onclick="if(event.target===this)mind24CloseMedidaModal()">
-  <div class="m24-fitness-card" style="max-width:520px;background:linear-gradient(165deg,#ffffff 0%,#f8fafc 100%);border:1px solid rgba(148,163,184,.28);box-shadow:0 26px 80px rgba(15,23,42,.18);" onclick="event.stopPropagation()">
-    <button type="button" class="m24-fitness-close" onclick="mind24CloseMedidaModal()" aria-label="Cerrar" style="background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.15);color:#0f172a;">×</button>
+  <div class="m24-fitness-card" style="max-width:520px;background:linear-gradient(168deg,#022c22 0%,#064e3b 38%,#065f46 72%,#0d9488 100%);" onclick="event.stopPropagation()">
+    <button type="button" class="m24-fitness-close" onclick="mind24CloseMedidaModal()" aria-label="Cerrar">×</button>
     <div class="m24-fitness-card-inner" style="text-align:left;">
-      <div class="m24-fitness-kicker" style="color:#6366f1;">Mind24 Assess Premium</div>
-      <h2 id="m24-medida-title" class="m24-fitness-title" style="color:#0f172a;font-size:30px;text-shadow:none;">Módulos a la Medida y Onboarding Personalizado</h2>
-      <ul style="display:flex;flex-direction:column;gap:10px;margin:0 0 26px 0;padding-left:18px;color:#334155;font-size:15px;line-height:1.6;">
-        <li>Personaliza un módulo.</li>
-        <li>Integra tu onboarding.</li>
-        <li>Genera una batería personalizada.</li>
+      <div class="m24-fitness-kicker" style="color:rgba(110,231,183,.75);">Mind24 Assess Premium</div>
+      <h2 id="m24-medida-title" class="m24-fitness-title" style="font-size:28px;">Módulos a la Medida y Onboarding Personalizado</h2>
+      <ul class="m24-fitness-list" style="text-align:left;display:flex;flex-direction:column;gap:8px;margin:0 0 26px 0;padding-left:18px;color:rgba(255,255,255,.85);font-size:14px;line-height:1.55;">
+        <li>Personaliza un módulo para tu organización.</li>
+        <li>Integra tu proceso de onboarding corporativo.</li>
+        <li>Genera una batería de evaluación 100% a la medida.</li>
       </ul>
-      <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#e2e8f0,#cbd5e1);color:#0f172a;box-shadow:none;">Contactar a ventas</a>
+      <a class="m24-fitness-cta" href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#6ee7b7,#34d399);color:#022c22;box-shadow:0 12px 40px rgba(52,211,153,.38);">Contactar a ventas</a>
     </div>
   </div>
 </div>
@@ -2725,6 +2730,14 @@ function crearEvalShowApiBanner(kind, text){
   b.textContent=text||'';
   if(!text) b.classList.add('hidden');
 }
+function crearEvalShowApiBannerHtml(kind, html){
+  const b=document.getElementById('cev-api-banner');
+  if(!b)return;
+  b.classList.remove('hidden','ok','err');
+  if(html) b.classList.add(kind==='ok'?'ok':'err');
+  b.innerHTML=html||'';
+  if(!html) b.classList.add('hidden');
+}
 function crearEvalHideApiBanner(){
   const b=document.getElementById('cev-api-banner');
   if(!b)return;
@@ -2904,8 +2917,12 @@ async function registrarEval(){
     if(btn){ btn.disabled=true; btn.textContent='Evaluación creada'; }
   }catch(err){
     if(btn){ btn.disabled=false; btn.textContent='Crear Evaluación'; }
-    const msg=errMap[err.code]||(err.message||'No se pudo registrar la evaluación.');
-    crearEvalShowApiBanner('err',msg);
+    if(err.code==='NO_CREDITS'){
+      crearEvalShowApiBannerHtml('err','No tienes créditos en este momento. <a href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer" style="color:inherit;font-weight:800;text-decoration:underline;">Contacta a un ejecutivo de ventas</a> para solicitar nuevos créditos y seguir evaluando a tu talento.');
+    } else {
+      const msg=errMap[err.code]||(err.message||'No se pudo registrar la evaluación.');
+      crearEvalShowApiBanner('err',msg);
+    }
   }
 }
 
