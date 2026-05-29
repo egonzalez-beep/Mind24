@@ -165,9 +165,9 @@ export const TERMAN_SERIES = [
       },
       {
         id: 'cog_4_2',
-        text: 'El proveedor A entrega más rápido que el proveedor B. El proveedor C entrega más lento que el proveedor B. Por lo tanto, el proveedor A es el más rápido de los tres.',
+        text: 'Solo los proyectos con presupuesto aprobado pueden iniciar. El Proyecto Beta inició esta semana. Por lo tanto, el Proyecto Beta tiene calidad garantizada.',
         options: ['Verdadero', 'Falso', 'Insuficiente'],
-        correct: 0,
+        correct: 1,
       },
       {
         id: 'cog_4_3',
@@ -183,9 +183,9 @@ export const TERMAN_SERIES = [
       },
       {
         id: 'cog_4_5',
-        text: 'Todos los proyectos aprobados pasaron por auditoría. El Proyecto X no pasó por auditoría. Por lo tanto, el Proyecto X no está aprobado.',
+        text: 'Todos los contratos vigentes están firmados por el Director General. El contrato #45 está firmado por el Director General. Por lo tanto, el contrato #45 está vigente.',
         options: ['Verdadero', 'Falso', 'Insuficiente'],
-        correct: 0,
+        correct: 1,
       },
     ],
   },
