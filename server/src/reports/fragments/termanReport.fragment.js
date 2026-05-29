@@ -2,8 +2,7 @@ import { esc } from '../reportUtils.js';
 
 /**
  * Macro-categorías cognitivas Mind24.
- * Agrupan las 10 series en 3 dimensiones ejecutivas para facilitar
- * la lectura del reclutador.
+ * Agrupan las 10 series en 3 dimensiones ejecutivas.
  */
 const MACRO_CATEGORIES = {
   VERBAL: {
@@ -34,82 +33,88 @@ function getMacroForSeries(seriesId) {
 }
 
 /**
- * Radar chart SVG con 10 ejes (uno por serie).
- * Ejes coloreados por macro-categoría.
+ * Gráfica de barras horizontales SVG con eje X fijo 0-100%.
+ * Etiquetas de Y con espacio garantizado (no se truncan).
  */
-function buildTermanRadar(series) {
+function buildTermanHbarChart(series) {
   const N = series.length;
-  if (N < 3) return '';
+  if (!N) return '<p class="muted">Sin datos de series</p>';
 
-  const cx = 160, cy = 160, R = 105;
-  const toAngle = (i) => -Math.PI / 2 + ((2 * Math.PI) / N) * i;
+  // Layout constants (px)
+  const LABEL_W = 162;   // Y-axis label area (right-aligned)
+  const CHART_W = 272;   // bar area represents 0–100%
+  const VAL_W   = 40;    // value text area
+  const TOTAL_W = LABEL_W + CHART_W + VAL_W;  // 474
+  const TOP_PAD  = 26;   // room for X-axis scale labels
+  const BOT_PAD  = 18;
+  const ROW_H    = 24;
+  const BAR_H    = 12;
+  const TOTAL_H  = TOP_PAD + N * ROW_H + BOT_PAD;
 
-  // Grid polygons: 25 / 50 / 75 / 100
-  const gridPolygons = [25, 50, 75, 100]
-    .map((pct) => {
-      const r = (pct / 100) * R;
-      const pts = series
-        .map((_, i) => {
-          const a = toAngle(i);
-          return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
-        })
-        .join(' ');
-      const is50 = pct === 50;
-      return `<polygon points="${pts}" fill="${pct === 100 ? 'rgba(229,231,235,0.35)' : 'none'}" stroke="${is50 ? '#CBD5E1' : '#E5E7EB'}" stroke-width="${is50 ? 0.9 : 0.55}" stroke-dasharray="${is50 ? '3,2' : ''}"/>`;
+  // X grid positions (px) for 0, 25, 50, 75, 100%
+  const gx = [0, 25, 50, 75, 100].map((p) => LABEL_W + (p / 100) * CHART_W);
+
+  // X scale labels
+  const xLabels = [0, 25, 50, 75, 100]
+    .map((p, i) =>
+      `<text x="${gx[i].toFixed(1)}" y="${TOP_PAD - 8}" text-anchor="middle" font-size="7" fill="#9CA3AF" font-weight="600">${p}%</text>`,
+    )
+    .join('');
+
+  // Vertical grid lines (dashed except 0 and 100%)
+  const gridLines = gx
+    .map((x, i) => {
+      const is50 = i === 2;
+      return `<line x1="${x.toFixed(1)}" y1="${TOP_PAD - 4}" x2="${x.toFixed(1)}" y2="${(TOP_PAD + N * ROW_H).toFixed(1)}" stroke="${is50 ? '#CBD5E1' : '#E5E7EB'}" stroke-width="${is50 ? 0.9 : 0.5}" stroke-dasharray="${i === 0 || i === 4 ? '' : '3,2'}"/>`;
     })
     .join('');
 
-  // Axis lines colored by macro-category
-  const axisLines = series
+  // X-axis baseline
+  const baseline = `<line x1="${gx[0].toFixed(1)}" y1="${(TOP_PAD - 4).toFixed(1)}" x2="${gx[4].toFixed(1)}" y2="${(TOP_PAD - 4).toFixed(1)}" stroke="#D1D5DB" stroke-width="0.8"/>`;
+
+  // Rows
+  const rows = series
     .map((s, i) => {
-      const a = toAngle(i);
-      const cat = getMacroForSeries(s.seriesId || '');
-      return `<line x1="${cx}" y1="${cy}" x2="${(cx + R * Math.cos(a)).toFixed(1)}" y2="${(cy + R * Math.sin(a)).toFixed(1)}" stroke="${cat.color}" stroke-width="0.7" opacity="0.45"/>`;
+      const pct   = Math.min(100, Math.max(0, Number(s.percent) || 0));
+      const barW  = (pct / 100) * CHART_W;
+      const rowY  = TOP_PAD + i * ROW_H;
+      const barY  = rowY + (ROW_H - BAR_H) / 2;
+      const midY  = rowY + ROW_H / 2;
+      const cat   = getMacroForSeries(s.seriesId || '');
+      const name  = esc((s.name || s.seriesId || '').slice(0, 28));
+      const correct = Number(s.correct) || 0;
+      const total   = Number(s.total)   || 0;
+
+      // Alternate row background for readability
+      const rowBg = i % 2 === 0 ? '' :
+        `<rect x="0" y="${rowY}" width="${TOTAL_W}" height="${ROW_H}" fill="#F8FAFC"/>`;
+
+      return `${rowBg}
+<text x="${(LABEL_W - 6).toFixed(1)}" y="${midY.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="8" fill="#374151" font-weight="600">${name}</text>
+<rect x="${LABEL_W}" y="${barY.toFixed(1)}" width="${CHART_W}" height="${BAR_H}" rx="6" fill="#F1F5F9"/>
+${barW > 1 ? `<rect x="${LABEL_W}" y="${barY.toFixed(1)}" width="${barW.toFixed(1)}" height="${BAR_H}" rx="6" fill="${cat.color}"/>` : ''}
+<text x="${(LABEL_W + CHART_W + 6).toFixed(1)}" y="${midY.toFixed(1)}" dominant-baseline="middle" font-size="7.5" fill="${cat.color}" font-weight="800">${pct.toFixed(0)}%</text>
+<title>${name}: ${pct.toFixed(1)}% (${correct}/${total})</title>`;
     })
     .join('');
 
-  // Labels: abbreviated name + % value
-  const labels = series
-    .map((s, i) => {
-      const a = toAngle(i);
-      const lr = R + 28;
-      const lx = (cx + lr * Math.cos(a)).toFixed(1);
-      const baseY = cy + lr * Math.sin(a);
-      const cat = getMacroForSeries(s.seriesId || '');
-      const name = esc((s.name || s.seriesId || '').slice(0, 11));
-      const pct = Number(s.percent || 0);
-      return `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="6.5" fill="#374151" font-weight="600">${name}</text>
-<text x="${lx}" y="${(baseY + 5).toFixed(1)}" text-anchor="middle" font-size="6" fill="${cat.color}" font-weight="700">${pct.toFixed(0)}%</text>`;
+  // Category legend at bottom
+  const legendY = TOP_PAD + N * ROW_H + 6;
+  const legend  = Object.entries(MACRO_CATEGORIES)
+    .map(([, cat], i) => {
+      const lx = LABEL_W + i * 90;
+      return `<rect x="${lx}" y="${legendY}" width="8" height="8" rx="2" fill="${cat.color}"/>
+<text x="${lx + 11}" y="${legendY + 5}" font-size="7" fill="${cat.color}" font-weight="700">${esc(cat.label)}</text>`;
     })
     .join('');
 
-  // Data polygon
-  const dataPoints = series
-    .map((s, i) => {
-      const a = toAngle(i);
-      const pct = Math.min(100, Math.max(0, Number(s.percent) || 0));
-      const r = (pct / 100) * R;
-      return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
-    })
-    .join(' ');
-
-  // Dot markers colored by macro-category
-  const dots = series
-    .map((s, i) => {
-      const a = toAngle(i);
-      const pct = Math.min(100, Math.max(0, Number(s.percent) || 0));
-      const r = (pct / 100) * R;
-      const cat = getMacroForSeries(s.seriesId || '');
-      return `<circle cx="${(cx + r * Math.cos(a)).toFixed(1)}" cy="${(cy + r * Math.sin(a)).toFixed(1)}" r="3" fill="${cat.color}" stroke="white" stroke-width="1"/>`;
-    })
-    .join('');
-
-  return `<svg width="320" height="320" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-  ${gridPolygons}
-  ${axisLines}
-  ${labels}
-  <polygon points="${dataPoints}" fill="#7C3AED" fill-opacity="0.13" stroke="#7C3AED" stroke-width="1.8"/>
-  ${dots}
+  return `<svg width="${TOTAL_W}" height="${TOTAL_H}" viewBox="0 0 ${TOTAL_W} ${TOTAL_H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;">
+  <text x="0" y="10" font-size="7" fill="#9CA3AF" font-weight="600">Eje fijo 0–100% · Aciertos por serie</text>
+  ${xLabels}
+  ${gridLines}
+  ${baseline}
+  ${rows}
+  ${legend}
 </svg>`;
 }
 
@@ -167,37 +172,8 @@ export function buildTermanModuleFragment(ctx) {
     ? `Mayor rendimiento relativo en «${esc(strongest.name)}» (${(Number(strongest.percent) || 0).toFixed(1)}%). Esto sugiere una inclinación analítica hacia esta área cognitiva.`
     : 'Sin desglose por series disponible.';
 
-  // Radar + macro-cards
-  const radarSvg   = buildTermanRadar(series);
+  const hbarChart  = buildTermanHbarChart(series);
   const macroCards = buildMacroCards(series);
-
-  // Bar chart colored by macro-category (replaces the old uniform blue bars)
-  const maxPct = Math.max(...series.map((s) => Number(s.percent) || 0), 1);
-  const bars = series
-    .map((s) => {
-      const pct     = Number(s.percent) || 0;
-      const w       = Math.round((pct / maxPct) * 100);
-      const correct = Number(s.correct) || 0;
-      const total   = Number(s.total) || 0;
-      const cat     = getMacroForSeries(s.seriesId || '');
-      return `<div class="bar-row">
-  <div class="bar-label" style="font-size:9px;">${esc((s.name || s.seriesId || '').slice(0, 20))}</div>
-  <div class="bar-track"><div class="bar-fill pos" style="width:${w}%;background:${cat.color};"></div></div>
-  <div class="bar-val" style="color:${cat.color};font-weight:700;">${correct}/${total}</div>
-</div>`;
-    })
-    .join('');
-
-  // Category legend
-  const catLegend = Object.entries(MACRO_CATEGORIES)
-    .map(
-      ([, cat]) =>
-        `<div style="display:flex;align-items:center;gap:4px;">
-  <div style="width:9px;height:9px;border-radius:3px;background:${cat.color};"></div>
-  <span style="color:${cat.color};font-size:8px;font-weight:700;">${esc(cat.label)}</span>
-</div>`,
-    )
-    .join('');
 
   return `
   <section class="module-block" id="mod-terman">
@@ -231,21 +207,8 @@ export function buildTermanModuleFragment(ctx) {
       </div>
     </div>
     <div class="section">
-      <div class="section-title">Radar cognitivo · 10 dimensiones</div>
-      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
-        <div style="flex-shrink:0;">
-          ${radarSvg || '<p class="muted">Sin datos de series</p>'}
-        </div>
-        <div style="flex:1;min-width:170px;">
-          <div class="chart-box" style="margin-bottom:10px;">
-            <h3>Detalle por serie (aciertos / total)</h3>
-            ${bars || '<p class="muted">Sin datos de series</p>'}
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            ${catLegend}
-          </div>
-        </div>
-      </div>
+      <div class="section-title">Rendimiento por serie — eje fijo 0–100%</div>
+      ${hbarChart}
     </div>
   </section>`;
 }

@@ -42,44 +42,73 @@ function competencyNote(key, delta) {
 }
 
 function buildRadarSvg(total) {
-  const cx = 140;
-  const cy = 140;
-  const maxR = 88;
-  const scale = 24;
+  const cx = 140, cy = 140, maxR = 88, scale = 24;
   const angles = { D: -90, I: 0, S: 90, C: 180 };
+
   const pt = (key) => {
-    const v = Math.max(-scale, Math.min(scale, Number(total[key]) || 0));
-    const r = (v / scale) * maxR;
+    const v   = Math.max(-scale, Math.min(scale, Number(total[key]) || 0));
+    const r   = (v / scale) * maxR;
     const rad = (angles[key] * Math.PI) / 180;
     return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
   };
-  const pts = CLEAVER_DISC_KEYS.map((k) => pt(k));
+
+  const pts  = CLEAVER_DISC_KEYS.map((k) => pt(k));
   const poly = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  // Subtle concentric grids
   const grid = [0.25, 0.5, 0.75, 1]
     .map((f) => {
-      const r = maxR * f;
+      const r    = maxR * f;
       const gpts = CLEAVER_DISC_KEYS.map((k) => {
         const rad = (angles[k] * Math.PI) / 180;
-        return `${cx + r * Math.cos(rad)},${cy + r * Math.sin(rad)}`;
+        return `${(cx + r * Math.cos(rad)).toFixed(1)},${(cy + r * Math.sin(rad)).toFixed(1)}`;
       }).join(' ');
-      return `<polygon points="${gpts}" fill="none" stroke="#E5E7EB" stroke-width="1"/>`;
+      const is75 = f === 0.75;
+      return `<polygon points="${gpts}" fill="${f === 1 ? 'rgba(241,245,249,0.6)' : 'none'}" stroke="${is75 ? '#CBD5E1' : '#E5E7EB'}" stroke-width="${f === 1 ? 0.8 : 0.5}"/>`;
     })
     .join('');
+
+  // Colored axis lines + labels
   const axes = CLEAVER_DISC_KEYS.map((k) => {
     const rad = (angles[k] * Math.PI) / 180;
-    const x2 = cx + maxR * Math.cos(rad);
-    const y2 = cy + maxR * Math.sin(rad);
-    const lx = cx + (maxR + 22) * Math.cos(rad);
-    const ly = cy + (maxR + 22) * Math.sin(rad);
-    return `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#D1D5DB" stroke-width="1"/>
-      <text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="${DISC_META[k].color}">${k}</text>`;
+    const x2  = cx + maxR * Math.cos(rad);
+    const y2  = cy + maxR * Math.sin(rad);
+    const lx  = cx + (maxR + 24) * Math.cos(rad);
+    const ly  = cy + (maxR + 24) * Math.sin(rad);
+    const col = DISC_META[k].color;
+    return `<line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="0.8" opacity="0.4"/>
+<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.5" fill="${col}" opacity="0.3"/>
+<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="800" fill="${col}" filter="url(#diskLabelShadow)">${k}</text>`;
   }).join('');
+
+  // Per-dimension colored dot with outer ring
+  const dotMarkup = pts
+    .map(
+      (p, i) =>
+        `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7" fill="${DISC_META[CLEAVER_DISC_KEYS[i]].color}" opacity="0.18"/>
+<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="${DISC_META[CLEAVER_DISC_KEYS[i]].color}" stroke="white" stroke-width="1.5"/>`,
+    )
+    .join('');
+
   return `<svg viewBox="0 0 280 280" width="280" height="280" xmlns="http://www.w3.org/2000/svg">
-    ${grid}
-    ${axes}
-    <polygon points="${poly}" fill="rgba(124,58,237,0.25)" stroke="#7C3AED" stroke-width="2.5"/>
-    ${pts.map((p, i) => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${DISC_META[CLEAVER_DISC_KEYS[i]].color}"/>`).join('')}
-  </svg>`;
+  <defs>
+    <filter id="discPolyGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#7C3AED" flood-opacity="0.28"/>
+    </filter>
+    <filter id="diskLabelShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity="0.10"/>
+    </filter>
+    <radialGradient id="discBgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F5F3FF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="${cx}" cy="${cy}" r="${maxR}" fill="url(#discBgGrad)"/>
+  ${grid}
+  ${axes}
+  <polygon points="${poly}" fill="rgba(124,58,237,0.18)" stroke="#7C3AED" stroke-width="2" stroke-linejoin="round" filter="url(#discPolyGlow)"/>
+  ${dotMarkup}
+</svg>`;
 }
 
 function barWidth(val, maxVal) {
@@ -167,13 +196,29 @@ export function buildCleaverModuleFragment(ctx) {
   }).join('');
 
   const bars = CLEAVER_DISC_KEYS.map((k) => {
-    const m = DISC_META[k];
-    const w = barWidth(total[k], maxBar);
-    const sign = total[k] < 0 ? 'neg' : 'pos';
-    return `<div class="bar-row">
-      <div class="bar-label">${k} · ${m.label}</div>
-      <div class="bar-track"><div class="bar-fill ${sign}" style="width:${w}%;background:${m.color}"></div></div>
-      <div class="bar-val">${total[k]}</div>
+    const m    = DISC_META[k];
+    const w    = barWidth(total[k], maxBar);
+    const val  = total[k];
+    const isNeg = val < 0;
+    // Premium gradient fill: each DISC has its own accent gradient
+    const gradMap = {
+      D: 'linear-gradient(90deg,#6D28D9,#7C3AED)',
+      I: 'linear-gradient(90deg,#BE185D,#DB2777)',
+      S: 'linear-gradient(90deg,#047857,#059669)',
+      C: 'linear-gradient(90deg,#1D4ED8,#2563EB)',
+    };
+    const shadowMap = {
+      D: '0 2px 8px rgba(124,58,237,.30)',
+      I: '0 2px 8px rgba(219,39,119,.30)',
+      S: '0 2px 8px rgba(5,150,105,.30)',
+      C: '0 2px 8px rgba(37,99,235,.30)',
+    };
+    return `<div class="bar-row" style="margin-bottom:10px;">
+      <div class="bar-label" style="font-weight:700;color:#374151;">${k} · ${m.label}</div>
+      <div class="bar-track" style="background:#F1F5F9;border-radius:999px;height:11px;overflow:hidden;">
+        <div style="width:${w}%;height:100%;border-radius:999px;background:${gradMap[k]};box-shadow:${shadowMap[k]};${isNeg ? 'opacity:.55;' : ''}"></div>
+      </div>
+      <div class="bar-val" style="color:${m.color};font-weight:800;">${val > 0 ? '+' : ''}${val}</div>
     </div>`;
   }).join('');
 

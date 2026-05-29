@@ -56,37 +56,51 @@ function buildMacroAreaBarsHtml(macroSeries) {
   if (!macroSeries.length) {
     return '<p class="muted">Sin desglose por área comercial.</p>';
   }
+
   const rows = macroSeries
     .map((m) => {
       const name = esc(m.label || m.key || '—');
-      const pct = Math.max(0, Math.min(100, Math.round(Number(m.percent) || 0)));
-      const barColor =
-        pct >= 80 ? '#059669' : pct >= 50 ? '#D97706' : '#DC2626';
-      const blocks = Math.max(1, Math.round(pct / 10));
-      const barChars = '█'.repeat(blocks) + '░'.repeat(10 - blocks);
+      const pct  = Math.max(0, Math.min(100, Math.round(Number(m.percent) || 0)));
+      const isHigh = pct >= 75;
+      const isMid  = pct >= 50 && pct < 75;
+
+      const barColor  = isHigh ? '#059669' : isMid ? '#D97706' : '#DC2626';
+      const barGrad   = isHigh
+        ? 'linear-gradient(90deg,#059669 0%,#10B981 100%)'
+        : isMid
+          ? 'linear-gradient(90deg,#D97706 0%,#F59E0B 100%)'
+          : 'linear-gradient(90deg,#DC2626 0%,#EF4444 100%)';
+      const badgeBg   = isHigh ? '#D1FAE5' : isMid ? '#FEF3C7' : '#FEE2E2';
+      const shadow    = isHigh
+        ? '0 1px 6px rgba(5,150,105,.25)'
+        : isMid
+          ? '0 1px 6px rgba(217,119,6,.25)'
+          : '0 1px 6px rgba(220,38,38,.25)';
+
+      // If pct >= 60, print value inside the bar (white text); else print outside
+      const innerLabel = pct >= 60
+        ? `<span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:900;color:#fff;letter-spacing:.02em;">${pct}%</span>`
+        : '';
+      const outerLabel = pct < 60
+        ? `<span style="margin-left:6px;font-size:9px;font-weight:900;color:${barColor};white-space:nowrap;">${pct}%</span>`
+        : '';
+
       return `
-        <div class="sjt-macro-row">
-          <div class="sjt-macro-label">${name}</div>
-          <div class="sjt-macro-bar-line" aria-hidden="true">
-            <span class="sjt-macro-blocks" style="color:${barColor}">${barChars}</span>
-          </div>
-          <div class="sjt-macro-pct" style="color:${barColor}">${pct}%</div>
-        </div>`;
+<div style="margin-bottom:11px;">
+  <div style="margin-bottom:4px;font-size:10px;font-weight:700;color:#1E293B;">${name}</div>
+  <div style="display:flex;align-items:center;">
+    <div style="flex:1;height:14px;border-radius:999px;background:#F1F5F9;overflow:visible;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);">
+      <div style="position:absolute;top:0;left:0;height:100%;width:${pct}%;border-radius:999px;background:${barGrad};box-shadow:${shadow};overflow:hidden;">
+        ${innerLabel}
+      </div>
+    </div>
+    ${outerLabel}
+  </div>
+</div>`;
     })
     .join('');
 
-  return `
-    <div class="sjt-macro-wrap">
-      <style>
-        .sjt-macro-wrap{margin-top:8px}
-        .sjt-macro-row{display:grid;grid-template-columns:minmax(140px,38%) 1fr 52px;gap:10px;align-items:center;margin-bottom:12px;font-size:12px}
-        .sjt-macro-label{font-weight:700;color:#1E293B;line-height:1.35}
-        .sjt-macro-bar-line{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:1px;line-height:1}
-        .sjt-macro-blocks{white-space:nowrap}
-        .sjt-macro-pct{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
-      </style>
-      ${rows}
-    </div>`;
+  return `<div style="margin-top:10px;">${rows}</div>`;
 }
 
 function buildAlertsSectionHtml(attempt) {
