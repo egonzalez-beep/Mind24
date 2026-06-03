@@ -274,6 +274,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .m24-fitness-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;z-index:2;transition:background .15s;}
 .m24-fitness-close:hover{background:rgba(255,255,255,.16);}
 .cev-panel.hidden{display:none!important;}
+.cev-panel-table-card{margin-top:8px;}
 .cev-status-pill{display:inline-block;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:800;letter-spacing:.02em;}
 .cev-st-aplicada{background:linear-gradient(135deg,#d1fae5,#6ee7b7);color:#065f46;}
 .cev-st-pendiente{background:linear-gradient(135deg,#fef3c7,#fcd34d);color:#92400e;}
@@ -443,8 +444,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cev-modal-access-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(1.85rem,5.5vw,2.65rem);font-weight:800;color:#E9D5FF;letter-spacing:.22em;margin:0 0 16px;line-height:1.2;user-select:text;-webkit-user-select:text;cursor:text;}
 .cev-success-speech{width:100%;min-height:120px;max-height:200px;overflow-y:auto;margin:0 0 18px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#F3F4F6;font-size:12px;font-weight:500;line-height:1.55;text-align:left;white-space:pre-wrap;user-select:text;-webkit-user-select:text;cursor:text;font-family:inherit;resize:vertical;}
 .cev-success-x,.cev-success-copy-btn,.cev-success-close-link{pointer-events:auto;position:relative;z-index:2;}
-.cev-success-copy-btn{width:100%;padding:14px 18px;border-radius:var(--r-sm);border:none;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1e1b4b;box-shadow:0 10px 32px rgba(250,204,21,.3);margin-bottom:8px;transition:transform .15s,box-shadow .15s;}
-.cev-success-copy-btn:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(250,204,21,.4);}
+.cev-success-copy-btn{width:100%;padding:14px 18px;border-radius:var(--r-sm);border:1px solid rgba(24,24,27,.1);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:#FACC15;color:#18181B;box-shadow:none;margin-bottom:8px;transition:background .15s ease,transform .15s ease;}
+.cev-success-copy-btn:hover{background:#EAB308;transform:scale(1.02);box-shadow:none;}
+.cev-success-copy-btn:active{transform:scale(1);}
 .cev-success-close-link{display:block;width:100%;padding:10px;background:transparent;border:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 .cev-success-close-link:hover{color:rgba(255,255,255,.75);}
 .cev-td-mods{max-width:240px;white-space:normal;word-break:break-word;line-height:1.4;}
@@ -1360,11 +1362,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       </div>
       <div id="cev-panel-mis" class="cev-panel hidden">
-        <div style="margin-bottom:22px;">
-          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Mis evaluaciones</h2>
-          <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Listado de asignaciones creadas para tu organización. El estado refleja si el evaluado ya completó la prueba.</p>
-        </div>
-        <div class="card">
+        <div class="card cev-panel-table-card">
           <div class="card-header"><div><div class="card-title">Registros</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
@@ -1376,11 +1374,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="cev-panel-resultados" class="cev-panel hidden">
-        <div style="margin-bottom:22px;">
-          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--primary);margin-bottom:6px;">Resultados</h2>
-          <p style="font-size:14px;color:var(--slate-500);line-height:1.55;">Solo evaluaciones finalizadas por el evaluado. El detalle de puntuación se integrará en una siguiente versión.</p>
-        </div>
-        <div class="card">
+        <div class="card cev-panel-table-card">
           <div class="card-header"><div><div class="card-title">Completadas</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
           <div class="card-body" style="overflow-x:auto;">
             <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
