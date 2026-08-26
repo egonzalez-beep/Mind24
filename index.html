@@ -1011,6 +1011,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button class="sidebar-item active"><span class="si-icon">📊</span><span>Resumen</span></button>
       <button class="sidebar-item"><span class="si-icon">👥</span><span>Empleados</span><span class="si-badge">48</span></button>
       <button class="sidebar-item"><span class="si-icon">📋</span><span>Evaluaciones</span><span class="si-badge">12</span></button>
+      <button type="button" class="sidebar-item hidden" id="dash-admin-nav-crear-eval" data-skip-sidebar-active="1" onclick="showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Crear Evaluación</span></button>
       <button class="sidebar-item"><span class="si-icon">🗓</span><span>Agenda</span></button>
       <div class="sidebar-section-label">Análisis</div>
       <button class="sidebar-item"><span class="si-icon">📈</span><span>Reportes</span></button>
@@ -1323,6 +1324,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="sidebar-section-label">Reportes</div>
       <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
+      <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
     <div class="sidebar-footer">
@@ -2387,6 +2389,9 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   }
   if(cAv) cAv.textContent=ini;
   mind24SyncCrearEvalShell();
+  mind24UpdateAspenPioneerVisibility();
+  const dashCev=document.getElementById('dash-admin-nav-crear-eval');
+  if(dashCev) dashCev.classList.toggle('hidden', !mind24IsPioneerAspenAdmin());
 }
 async function mind24RefreshEmpresaAdminSessionMeta(){
   const u=window.__MIND24_USER;
@@ -2405,9 +2410,15 @@ function mind24IsPioneerAspenAdmin(){
   if(u&&u.aspenPioneer===true)return true;
   return Boolean(u&&String(u.email||'').trim().toLowerCase()==='admin@demo.mind24.com');
 }
+/** Vista por defecto tras login empresa: pionero Aspen → panel con alta de admins; resto → Crear Evaluación. */
+function mind24DefaultEmpresaAdminView(){
+  return mind24IsPioneerAspenAdmin() ? 'dash-admin' : 'dash-crear-eval';
+}
 function mind24UpdateAspenPioneerVisibility(){
   const w=document.getElementById('aspen-pioneer-wrap');
   if(w) w.classList.toggle('hidden', !mind24IsPioneerAspenAdmin());
+  const nav=document.getElementById('cev-nav-aspen-admin');
+  if(nav) nav.classList.toggle('hidden', !mind24IsPioneerAspenAdmin());
 }
 function toggleAspenAdminPanel(){
   const b=document.getElementById('aspen-panel-body');
@@ -3377,8 +3388,11 @@ async function loginEmpresaAdmin(e){
     mind24PersistSessionUser(data.user);
     mind24RefreshEmpresaAdminDashboardChrome();
     closeModal('modal-empresa');
-    try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY,'nueva'); }catch(_){}
-    showView('dash-crear-eval');
+    const target=mind24DefaultEmpresaAdminView();
+    if(target==='dash-crear-eval'){
+      try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY,'nueva'); }catch(_){}
+    }
+    showView(target);
   }catch(err){
     if(err.code==='EMPRESA_NOT_PROVISIONED'||err.code==='ORG_BLOCKED'||err.code==='MASTER_LOGIN_DISABLED'){
       const m=document.getElementById('access-denied-msg'); if(m)m.textContent=err.message||'Acceso denegado.';
@@ -4956,9 +4970,9 @@ if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
     if(role==='empresa_admin'){
       mind24RefreshEmpresaAdminDashboardChrome();
       const last = mind24ReadLastView();
+      const pioneerDefault = mind24DefaultEmpresaAdminView();
       const ok = last && VIEWS_NEED_EMPRESA_ADMIN.has(last);
-      // Default UX: Mind24 Assess (dash-crear-eval) si no hay vista previa.
-      showView(ok ? last : 'dash-crear-eval');
+      showView(ok ? last : pioneerDefault);
       return;
     }
     if(role==='master_admin'){ showView('dash-superadmin'); try{ await refreshSuperadminDashboard(); }catch(_){ } return; }
