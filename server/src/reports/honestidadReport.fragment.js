@@ -59,15 +59,27 @@ export function extractHonestidadPayload(attempt) {
   };
 }
 
+/** Prueba invalidada por patrón de negación máximo (negDir = 5). */
+export function isHonestidadPruebaInvalida(interpretation, meta) {
+  if (meta?.denialReliability === 'invalid') return true;
+  const v = String(interpretation?.verdict || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '');
+  return v.includes('invalida') || v.includes('no confiable');
+}
+
 /**
  * Componente visual: Semáforo horizontal + barra termómetro con zona de colores.
  * Verde ≥70% | Amarillo 60-69% | Rojo <60%
+ * @param {{ invalid?: boolean }} [opts] — fuerza rojo cuando la aplicación es inválida (negDir=5).
  */
-function buildVerdictSemaforo(globalScore, verdict) {
+function buildVerdictSemaforo(globalScore, verdict, opts = {}) {
   const pct = Math.min(100, Math.max(0, Number(globalScore) || 0));
-  const isGreen  = pct >= 70;
-  const isYellow = pct >= 60 && pct < 70;
-  const isRed    = pct < 60;
+  const forceInvalid = opts.invalid === true;
+  const isGreen  = !forceInvalid && pct >= 70;
+  const isYellow = !forceInvalid && pct >= 60 && pct < 70;
+  const isRed    = forceInvalid || pct < 60;
 
   const textColor = isGreen ? '#065F46' : isYellow ? '#92400E' : '#991B1B';
   const bgColor   = isGreen ? '#ECFDF5' : isYellow ? '#FFFBEB'  : '#FEF2F2';
@@ -244,8 +256,9 @@ export function buildHonestidadModuleFragment(ctx) {
   const verdict     = interpretation?.verdict     || '—';
   const badge       = interpretation?.badge       || '—';
   const description = interpretation?.description || '';
+  const pruebaInvalida = isHonestidadPruebaInvalida(interpretation, payload.meta);
 
-  const semaforoHtml = buildVerdictSemaforo(global, verdict);
+  const semaforoHtml = buildVerdictSemaforo(global, verdict, { invalid: pruebaInvalida });
   const radarHtml    = buildDimensionsRadar(dimensions);
 
   // Tabla de respaldo si el radar no puede renderizarse (<3 dims)

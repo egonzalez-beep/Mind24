@@ -505,12 +505,6 @@ export const defaultDemoAssessmentConfig = {
         when: { kind: 'calibration_errors_gt', value: 1 },
         messageTemplate: 'Atención reducida detectada: {{errCal}} errores en preguntas de verificación.',
       },
-      {
-        id: 'denial_pattern',
-        when: { kind: 'direct_denials_gte', value: 3 },
-        messageTemplate:
-          'Patrón de negación detectado: respuestas estadísticamente improbables sugieren posible manipulación de resultados.',
-      },
     ],
     verdictRules: [
       {

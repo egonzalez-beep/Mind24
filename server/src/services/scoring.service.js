@@ -113,6 +113,30 @@ function directDenials(config, answers) {
   return n;
 }
 
+/** Mensaje moderado cuando hay 3–4 negaciones absolutas en preguntas directas (d1–d5). */
+export const DENIAL_REVIEW_MESSAGE =
+  'Se identificaron respuestas que requieren revisión de consistencia. El resultado puede interpretarse, considerando esta observación junto con los demás elementos del proceso.';
+
+/** Mensaje de invalidez cuando las 5 directas son negaciones absolutas (d1–d5). */
+export const DENIAL_INVALID_MESSAGE =
+  'El patrón de respuestas reduce significativamente la confiabilidad de esta aplicación. Se recomienda realizar una nueva evaluación antes de emitir una conclusión.';
+
+/**
+ * Termómetro de confiabilidad por negaciones en preguntas directas (d1–d5).
+ * @param {number} negDir
+ * @returns {{ level: 'normal'|'review'|'invalid', flag: string|null, invalidates: boolean }}
+ */
+export function resolveDenialReliability(negDir) {
+  const n = Number(negDir) || 0;
+  if (n >= 5) {
+    return { level: 'invalid', flag: DENIAL_INVALID_MESSAGE, invalidates: true };
+  }
+  if (n >= 3) {
+    return { level: 'review', flag: DENIAL_REVIEW_MESSAGE, invalidates: false };
+  }
+  return { level: 'normal', flag: null, invalidates: false };
+}
+
 function evalMetric(node, ctx) {
   if (!node || typeof node !== 'object') return null;
   if (node.kind === 'dimensionAvg') return ctx.dimAvgs[node.id]?.avg ?? 0;
@@ -149,16 +173,19 @@ export function scoreAssessment(config, answers) {
 
   const ctx = { dimAvgs, global, errCal, negDir };
 
+  const denialReliability = resolveDenialReliability(negDir);
+
   const flags = [];
   for (const f of config.scoring?.flags || []) {
     const w = f.when;
     if (!w) continue;
+    if (w.kind === 'direct_denials_gte') continue;
     if (w.kind === 'calibration_errors_gt' && errCal > w.value) {
       flags.push(applyTemplate(f.messageTemplate, { errCal }));
     }
-    if (w.kind === 'direct_denials_gte' && negDir >= w.value) {
-      flags.push(applyTemplate(f.messageTemplate, { negDir }));
-    }
+  }
+  if (denialReliability.flag) {
+    flags.push(denialReliability.flag);
   }
 
   const rules = [...(config.scoring?.verdictRules || [])].sort((a, b) => (a.priority || 0) - (b.priority || 0));
@@ -187,6 +214,12 @@ export function scoreAssessment(config, answers) {
     }
   }
 
+  if (denialReliability.invalidates) {
+    verdict = 'Prueba Inválida';
+    badge = '⚠️ No Confiable';
+    description = DENIAL_INVALID_MESSAGE;
+  }
+
   const dimensionsOut = Object.fromEntries(
     Object.entries(dimAvgs).map(([id, v]) => [id, { label: v.label, avg: v.avg }]),
   );
@@ -198,6 +231,6 @@ export function scoreAssessment(config, answers) {
     description,
     dimensions: dimensionsOut,
     flags,
-    meta: { errCal, negDir },
+    meta: { errCal, negDir, denialReliability: denialReliability.level },
   };
 }

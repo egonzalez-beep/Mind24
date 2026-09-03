@@ -4658,7 +4658,8 @@ function mind24StartEvalModuleTimer(limitSec,onExpire){
 }
 
 function renderServerResult(result){
-  const badgeClass=(result.verdict||'').includes('Reservas')?'rb-res':((result.verdict||'').includes('No')?'rb-rep':'rb-apro');
+  const v=(result.verdict||'');
+  const badgeClass=v.includes('Reservas')?'rb-res':((v.includes('No')||v.includes('Inválida')||v.includes('Confiable'))?'rb-rep':'rb-apro');
   document.getElementById('resScore').textContent=(result.global!=null?result.global:'--')+'%';
   document.getElementById('resVerdict').textContent=result.verdict||'—';
   document.getElementById('resDesc').textContent=result.description||'';
@@ -4920,7 +4921,9 @@ function calcResults(){
   if(errCal>1)flags.push(`Atención reducida detectada: ${errCal} errores en preguntas de verificación.`);
   let negDir=0;
   BANCO.directas.forEach(p=>{if(resp[p.id]===1)negDir++;});
-  if(negDir>=3)flags.push('Patrón de negación detectado: respuestas estadísticamente improbables sugieren posible manipulación de resultados.');
+  const DENIAL_REVIEW_MSG='Se identificaron respuestas que requieren revisión de consistencia. El resultado puede interpretarse, considerando esta observación junto con los demás elementos del proceso.';
+  const DENIAL_INVALID_MSG='El patrón de respuestas reduce significativamente la confiabilidad de esta aplicación. Se recomienda realizar una nueva evaluación antes de emitir una conclusión.';
+  if(negDir>=3&&negDir<5)flags.push(DENIAL_REVIEW_MSG);
   const comps={
     honestidad:{nombre:'Honestidad',pts:['p9','p20','p25','p27','p32','p33','p34','p40'],sum:0,cnt:0,avg:0},
     etica:{nombre:'Ética Personal y Prof.',pts:['p2','p13','p17','p19','p21','p22','p23','p24','p38'],sum:0,cnt:0,avg:0},
@@ -4938,6 +4941,7 @@ function calcResults(){
   else if(global<50){veredicto='No Aprobatorio';badge='⚠️ No Aprobatorio';desc=`El puntaje global de ${global}% está por debajo del umbral mínimo requerido del 50%.`;bc='rb-rep';}
   else if(global<75){veredicto='Aprobatorio con Reservas';badge='📋 Con Reservas';desc=`Puntaje global: ${global}%. El candidato cumple requisitos mínimos. Se recomienda análisis adicional en áreas de riesgo.`;bc='rb-res';}
   else{veredicto='Aprobatorio';badge='✅ Aprobatorio';desc=`Excelente resultado. Puntaje global de ${global}% supera el umbral aprobatorio (75%). El candidato demuestra sólidos valores de honestidad e integridad.`;bc='rb-apro';}
+  if(negDir>=5){veredicto='Prueba Inválida';badge='⚠️ No Confiable';desc=DENIAL_INVALID_MSG;bc='rb-rep';flags.push(DENIAL_INVALID_MSG);}
   document.getElementById('resScore').textContent=global+'%';
   document.getElementById('resVerdict').textContent=veredicto;
   document.getElementById('resDesc').textContent=desc;
