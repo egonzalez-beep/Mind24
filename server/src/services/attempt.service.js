@@ -13,6 +13,7 @@ import {
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
+import { buildCandidateAttemptStatus } from '../utils/candidateAttemptResponse.js';
 import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
 
 function getTimeLimitSec(config) {
@@ -364,4 +365,18 @@ export async function getAttemptResult(userId, attemptId) {
     flags: attempt.flags,
     submittedAt: attempt.submittedAt,
   };
+}
+
+/** Estado de intento para candidato — sin datos psicométricos. */
+export async function getCandidateAttemptStatus(userId, attemptId) {
+  const attempt = await prisma.assessmentAttempt.findFirst({
+    where: { id: attemptId, assignment: { candidate: { userId } } },
+    include: { assignment: { include: { assessmentDefinition: { select: { name: true } } } } },
+  });
+  if (!attempt) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  return buildCandidateAttemptStatus(attempt);
 }

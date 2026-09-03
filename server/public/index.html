@@ -485,6 +485,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .cand-lobby-empty{padding:18px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9ca3af;font-size:14px;font-weight:600;text-align:center;}
 .cand-lobby-err{margin-top:18px;font-size:13px;font-weight:600;color:#fca5a5;text-align:center;}
 .cand-lobby-err.hidden{display:none;}
+.cand-lobby-success{margin:0 0 20px;padding:14px 16px;border-radius:12px;background:rgba(16,185,129,.12);border:1px solid rgba(110,231,183,.35);color:#a7f3d0;font-size:14px;font-weight:600;line-height:1.45;text-align:center;}
+.cand-lobby-success.hidden{display:none;}
 .cand-lobby-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;}
 .cand-lobby-out:hover{background:rgba(255,255,255,.08);}
 
@@ -1528,6 +1530,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="cand-lobby-inner">
       <h1 id="cand-lobby-h1" class="cand-lobby-h1">Hola.</h1>
       <p id="cand-lobby-sub" class="cand-lobby-sub">Selecciona el módulo con el que deseas comenzar hoy.</p>
+      <p id="cand-lobby-success" class="cand-lobby-success hidden" role="status"></p>
       <div id="cand-lobby-modules" class="cand-lobby-modules"></div>
       <p id="cand-lobby-err" class="cand-lobby-err hidden"></p>
     </div>
@@ -3346,9 +3349,8 @@ async function digitalInterviewNext(){
       method:'POST',
       body: fd,
     });
+    window.__CAND_LOBBY_SUCCESS_MSG='Entrevista enviada correctamente. Tus respuestas fueron registradas.';
     digitalInterviewClose();
-    await openCandidatoLobby();
-    alert('Entrevista enviada correctamente.');
   }catch(e){
     alert(e.message||'No se pudo enviar la entrevista.');
   }finally{
@@ -3728,6 +3730,7 @@ function renderCandidatoLobby(lobby, user) {
   const name = (u.fullName || u.email || 'Candidato').trim();
   const h1 = document.getElementById('cand-lobby-h1');
   if (h1) h1.textContent = 'Hola, ' + name + '.';
+  mind24RenderLobbySuccessBanner();
   const box = document.getElementById('cand-lobby-modules');
   const err = document.getElementById('cand-lobby-err');
   if (err) { err.classList.add('hidden'); err.textContent = ''; }
@@ -3809,6 +3812,37 @@ function mind24TeardownEvalView(){
 }
 async function candidatoReturnToLobby(){
   mind24TeardownEvalView();
+  await openCandidatoLobby();
+}
+
+function mind24RenderLobbySuccessBanner(){
+  const el=document.getElementById('cand-lobby-success');
+  const msg=window.__CAND_LOBBY_SUCCESS_MSG;
+  window.__CAND_LOBBY_SUCCESS_MSG=null;
+  if(!el)return;
+  if(msg){
+    el.textContent=msg;
+    el.classList.remove('hidden');
+  }else{
+    el.textContent='';
+    el.classList.add('hidden');
+  }
+}
+
+/** Tras enviar un módulo: sin resultados confidenciales; regreso al lobby con mensaje breve. */
+async function mind24CandidatoAfterModuleSubmit(opts){
+  opts=opts||{};
+  mind24StopEvalModuleTimer();
+  window.__MIND24_EVAL_FINISHING=false;
+  window.__MIND24_EVAL_TIMER_EXPIRED=false;
+  window.ATTEMPT_CTX=null;
+  if(typeof dynamicTeardown==='function')dynamicTeardown();
+  if(typeof termanUnmountShell==='function')termanUnmountShell();
+  window.TERMAN_CTX=null;
+  mind24TeardownEvalView();
+  window.__CAND_LOBBY_SUCCESS_MSG=opts.allDone
+    ?'Has completado todas las evaluaciones asignadas. Gracias por tu participación.'
+    :'Evaluación enviada correctamente. Tus respuestas fueron registradas.';
   await openCandidatoLobby();
 }
 
@@ -4338,16 +4372,9 @@ async function termanAdvanceSeries(wasTimeout){
     ctx.seriesIdx+=1;
     if(ctx.seriesIdx>=ctx.series.length){
       const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{method:'POST'});
-      document.getElementById('resBadge').textContent='✓ Módulo completado';
-      document.getElementById('resScore').textContent='';
-      document.getElementById('resVerdict').textContent='Evaluación Cognitiva Analítica Mind24';
-      document.getElementById('resDesc').textContent=out.message||'Evaluación registrada. Vuelve al lobby.';
-      document.getElementById('compBars').innerHTML='';
-      document.getElementById('flagsBox').classList.add('hidden');
       window.TERMAN_CTX=null;
       termanUnmountShell();
-      mind24SyncEvalResultNav();
-      showScr('results');
+      await mind24CandidatoAfterModuleSubmit({allDone:!!(out&&out.assignmentCompleted)});
       return;
     }
     ctx.locked=false;
@@ -4601,18 +4628,7 @@ async function mind24FinishDynamicAttempt(opts){
       method:'POST',
       body:JSON.stringify({timedOut:!!opts.timedOut}),
     });
-    const mkRes=mind24ResolveModKey(ctx.moduleKey);
-    if(mkRes==='sales_sjt')mind24RenderSjtCompleteResult(out);
-    else{
-      document.getElementById('resBadge').textContent='✓ Módulo completado';
-      document.getElementById('resScore').textContent='';
-      document.getElementById('resVerdict').textContent=ctx.moduleTitle||'Evaluación';
-      document.getElementById('resDesc').textContent=out.message||'Gracias. Puedes elegir otro módulo en el lobby.';
-      document.getElementById('compBars').innerHTML='';
-      document.getElementById('flagsBox').classList.add('hidden');
-    }
-    mind24SyncEvalResultNav();
-    showScr('results');
+    await mind24CandidatoAfterModuleSubmit({allDone:!!(out&&out.assignmentCompleted)});
   }catch(e){
     mind24LockDynamicEvalUI(false);
     alert(e.message||'Error al finalizar');
@@ -4899,20 +4915,16 @@ function finishEval(){
     (async()=>{
       try{
         const j=await apiJson('/api/me/attempts/'+encodeURIComponent(window.ATTEMPT_CTX.attemptId)+'/submit',{method:'POST',body:JSON.stringify({answers:ES.resp})});
-        renderServerResult(j.result);
-        mind24SyncEvalResultNav();
-        showScr('results');
-        setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
-        if(j.result&&j.result.assignmentCompleted){
-          const sub=document.getElementById('resDesc');
-          if(sub) sub.textContent=(sub.textContent||'')+' Has completado todos los módulos asignados.';
-        }
+        await mind24CandidatoAfterModuleSubmit({allDone:!!(j.result&&j.result.assignmentCompleted)});
       }catch(err){ alert(err.message||'Error al enviar'); }
     })();
     return;
   }
-  calcResults();showScr('results');
-  setTimeout(()=>{document.querySelectorAll('.comp-fill[data-t]').forEach(b=>{setTimeout(()=>{b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
+  (async function(){
+    window.ATTEMPT_CTX=null;
+    mind24TeardownEvalView();
+    await openCandidatoLobby();
+  })();
 }
 function calcResults(){
   const resp=ES.resp,flags=[];

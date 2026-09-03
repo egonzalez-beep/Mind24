@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 import { requireEmpresaPortal } from '../middleware/empresaPortal.middleware.js';
-import { listMyAssignments, startAttempt, submitAttempt, getAttemptResult } from '../services/attempt.service.js';
+import { listMyAssignments, startAttempt, submitAttempt, getCandidateAttemptStatus } from '../services/attempt.service.js';
 import { getCandidateLobbyForUser } from '../services/candidateAuth.service.js';
+import {
+  sanitizeCandidateSubmitResult,
+  sanitizeCandidateCompleteResult,
+} from '../utils/candidateAttemptResponse.js';
 import {
   getAttemptEnginePayload,
   saveCandidateResponse,
@@ -105,7 +109,7 @@ router.post('/attempts/:attemptId/complete', async (req, res, next) => {
       req.params.attemptId,
       { timedOut: !!timedOut },
     );
-    res.json(out);
+    res.json(sanitizeCandidateCompleteResult(out));
   } catch (e) {
     next(e);
   }
@@ -119,7 +123,7 @@ router.post('/attempts/:attemptId/submit', async (req, res, next) => {
       })
       .parse(req.body);
     const scored = await submitAttempt(req.session.userId, req.params.attemptId, answers);
-    res.json({ result: scored });
+    res.json({ result: sanitizeCandidateSubmitResult(scored) });
   } catch (e) {
     next(e);
   }
@@ -127,8 +131,8 @@ router.post('/attempts/:attemptId/submit', async (req, res, next) => {
 
 router.get('/attempts/:attemptId/result', async (req, res, next) => {
   try {
-    const result = await getAttemptResult(req.session.userId, req.params.attemptId);
-    res.json({ result });
+    const status = await getCandidateAttemptStatus(req.session.userId, req.params.attemptId);
+    res.json({ result: status });
   } catch (e) {
     next(e);
   }
