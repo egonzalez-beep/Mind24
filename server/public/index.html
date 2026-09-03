@@ -1684,28 +1684,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </div>
 
-  <!-- RESULTS -->
-  <div class="eval-screen" id="scr-results">
-    <div class="eval-result-wrap">
-      <div class="eval-result-hd">
-        <div class="result-badge" id="resBadge">Calculando...</div>
-        <div class="result-score" id="resScore">--</div>
-        <div class="result-verdict" id="resVerdict">Procesando resultados</div>
-        <p class="result-desc" id="resDesc"></p>
-      </div>
-      <div class="eval-comp-box">
-        <div class="eval-comp-title">📈 Desglose por Competencia</div>
-        <div id="compBars"></div>
-      </div>
-      <div class="eval-flags hidden" id="flagsBox">
-        <span class="flags-icon">⚠️</span>
-        <div class="flags-text"><strong>Observaciones del Sistema</strong><span id="flagsText"></span></div>
-      </div>
-      <div class="result-actions">
-        <button class="btn-r-primary" onclick="window.print()">Imprimir Reporte</button>
-        <button type="button" class="btn-r-secondary" id="btn-eval-back-lobby" onclick="candidatoReturnToLobby()">Volver al lobby</button>
-        <button type="button" class="btn-r-secondary hidden" id="btn-eval-back-landing" onclick="showView('landing')">Volver al inicio</button>
-      </div>
+  <!-- Envío (candidato — sin resultados confidenciales) -->
+  <div class="eval-screen" id="scr-submitting">
+    <div class="eval-result-wrap" style="text-align:center;padding:48px 24px;">
+      <div class="result-badge rb-apro" style="margin-bottom:16px;">Enviando evaluación</div>
+      <p class="result-desc" id="evalSubmittingMsg">Estamos guardando tus respuestas. Un momento…</p>
     </div>
   </div>
 </div>
@@ -3829,6 +3812,12 @@ function mind24RenderLobbySuccessBanner(){
   }
 }
 
+function mind24ShowEvalSubmitting(msg){
+  const el=document.getElementById('evalSubmittingMsg');
+  if(el) el.textContent=msg||'Estamos guardando tus respuestas. Un momento…';
+  showScr('submitting');
+}
+
 /** Tras enviar un módulo: sin resultados confidenciales; regreso al lobby con mensaje breve. */
 async function mind24CandidatoAfterModuleSubmit(opts){
   opts=opts||{};
@@ -3895,7 +3884,6 @@ async function startAssignedModule(assignmentId, moduleKey){
     });
     const legacyLimit=j.timeLimitSec!=null?Number(j.timeLimitSec):2700;
     window.ATTEMPT_CTX={useApi:true,engine:'legacy',attemptId:j.attemptId,assignmentId:j.assignmentId,moduleKey:j.moduleKey||moduleKey,flat,secsList,timeLimitSec:legacyLimit>0?legacyLimit:null};
-    mind24SyncEvalResultNav();
     const u=window.__MIND24_USER||{};
     ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
     const meta=cfg.meta||{};
@@ -4086,30 +4074,6 @@ async function dynamicPersistCurrent(){
   if(q.type==='OPEN_TEXT')body.textValue=d.textValue;
   if(q.type==='AUDIO_RECORDING')body.audioUrl=d.audioUrl;
   await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/responses',{method:'POST',body:JSON.stringify(body)});
-}
-
-function mind24RenderSjtCompleteResult(out){
-  const interp=out.interpretation||{};
-  const sc=out.scores||{};
-  const label=interp.profileLabel||interp.verdict||'Perfil comercial';
-  const desc=interp.profileDescription||interp.description||'';
-  document.getElementById('resBadge').textContent='✓ Módulo completado';
-  document.getElementById('resScore').textContent=(sc.rawScore!=null?String(sc.rawScore):'—')+' / '+(sc.maxPossible||75);
-  document.getElementById('resVerdict').textContent=label;
-  document.getElementById('resDesc').textContent=desc;
-  const bars=document.getElementById('compBars');
-  if(bars){
-    bars.innerHTML='';
-    const scenarios=Array.isArray(sc.scenarios)?sc.scenarios:[];
-    scenarios.forEach(function(s){
-      const pct=Number(s.percent)||0;
-      const col=pct>=80?'#059669':pct>=50?'#FCD34D':'#FCA5A5';
-      const shortName=(s.competence||'').split('(')[0].trim()||(s.competence||'');
-      bars.innerHTML+='<div class="comp-item"><div class="comp-lbl"><span class="comp-name">'+mind24EscHtml(shortName)+'</span><span class="comp-score" style="color:'+col+'">'+(Number(s.points)||0)+'/5</span></div><div class="comp-track"><div class="comp-fill" data-t="'+pct+'" style="width:0%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div>';
-    });
-    setTimeout(function(){document.querySelectorAll('#compBars .comp-fill[data-t]').forEach(function(b){setTimeout(function(){b.style.width=b.getAttribute('data-t')+'%';},100);});},200);
-  }
-  document.getElementById('flagsBox').classList.add('hidden');
 }
 
 async function dynamicNextQ(){
@@ -4371,6 +4335,7 @@ async function termanAdvanceSeries(wasTimeout){
     await termanPersistSeries();
     ctx.seriesIdx+=1;
     if(ctx.seriesIdx>=ctx.series.length){
+      mind24ShowEvalSubmitting('Finalizando evaluación cognitiva…');
       const out=await apiJson('/api/me/attempts/'+encodeURIComponent(ctx.attemptId)+'/complete',{method:'POST'});
       window.TERMAN_CTX=null;
       termanUnmountShell();
@@ -4458,7 +4423,6 @@ function startTermanAssessment(payload){
   };
   const termanLimit=payload.timeLimitSec!=null?Number(payload.timeLimitSec):null;
   window.ATTEMPT_CTX={useApi:true,engine:'terman',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey,timeLimitSec:termanLimit>0?termanLimit:null};
-  mind24SyncEvalResultNav();
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
   const tag=document.getElementById('evalSecTag');
@@ -4493,7 +4457,6 @@ function startDynamicAssessment(payload){
     drafts:{},
   };
   window.ATTEMPT_CTX={useApi:true,engine:'dynamic',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey,timeLimitSec:limitSec};
-  mind24SyncEvalResultNav();
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
   const titleEl=document.getElementById('eval-intro-title');
@@ -4514,14 +4477,6 @@ function startDynamicAssessment(payload){
   else mind24EvalShellSync();
 }
 
-
-function mind24SyncEvalResultNav(){
-  const useApi=window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi;
-  const lobbyBtn=document.getElementById('btn-eval-back-lobby');
-  const landBtn=document.getElementById('btn-eval-back-landing');
-  if(lobbyBtn) lobbyBtn.classList.toggle('hidden',!useApi);
-  if(landBtn) landBtn.classList.toggle('hidden',!!useApi);
-}
 
 window.__MIND24_EVAL_TIMER=null;
 window.__MIND24_EVAL_TIMER_EXPIRED=false;
@@ -4616,6 +4571,7 @@ async function mind24FinishDynamicAttempt(opts){
   window.__MIND24_EVAL_FINISHING=true;
   mind24StopEvalModuleTimer();
   mind24LockDynamicEvalUI(true);
+  mind24ShowEvalSubmitting('Finalizando evaluación…');
   const note=document.getElementById('dynNote');
   if(note)note.textContent=opts.timedOut?'Tiempo agotado — enviando…':'Finalizando…';
   try{
@@ -4631,6 +4587,8 @@ async function mind24FinishDynamicAttempt(opts){
     await mind24CandidatoAfterModuleSubmit({allDone:!!(out&&out.assignmentCompleted)});
   }catch(e){
     mind24LockDynamicEvalUI(false);
+    loadDynamicQuestion();
+    showScr('dynamic');
     alert(e.message||'Error al finalizar');
   }finally{
     window.__MIND24_EVAL_FINISHING=false;
@@ -4671,25 +4629,6 @@ function mind24StartEvalModuleTimer(limitSec,onExpire){
     }
   },1000);
   mind24EvalShellSync();
-}
-
-function renderServerResult(result){
-  const v=(result.verdict||'');
-  const badgeClass=v.includes('Reservas')?'rb-res':((v.includes('No')||v.includes('Inválida')||v.includes('Confiable'))?'rb-rep':'rb-apro');
-  document.getElementById('resScore').textContent=(result.global!=null?result.global:'--')+'%';
-  document.getElementById('resVerdict').textContent=result.verdict||'—';
-  document.getElementById('resDesc').textContent=result.description||'';
-  const be=document.getElementById('resBadge'); be.textContent=result.badge||'—'; be.className='result-badge '+badgeClass;
-  const bars=document.getElementById('compBars'); bars.innerHTML='';
-  const dims=result.dimensions||{};
-  Object.values(dims).forEach(d=>{
-    const avg=d.avg, col=avg>=75?'#A78BFA':avg>=50?'#FCD34D':'#FCA5A5';
-    bars.innerHTML+='<div class="comp-item"><div class="comp-lbl"><span class="comp-name">'+(d.label||'')+'</span><span class="comp-score" style="color:'+col+'">'+avg+'%</span></div><div class="comp-track"><div class="comp-fill" data-t="'+avg+'" style="width:0%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div>';
-  });
-  const flags=result.flags||[];
-  const fb=document.getElementById('flagsBox');
-  if(flags.length){ fb.classList.remove('hidden'); document.getElementById('flagsText').textContent=flags.join(' '); }
-  else{ fb.classList.add('hidden'); document.getElementById('flagsText').textContent=''; }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4808,6 +4747,7 @@ const MIND24_EVAL_SCREENS=(function(){
   return Array.prototype.slice.call(document.querySelectorAll('.eval-screen'));
 })();
 function showScr(name){
+  if(name==='results') return;
   const el=document.getElementById('scr-'+name);
   requestAnimationFrame(function(){
     MIND24_EVAL_SCREENS.forEach(function(s){ s.classList.remove('active'); });
@@ -4912,11 +4852,16 @@ function finishEval(){
   mind24StopEvalModuleTimer();
   ES.terminado=true;
   if(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.useApi){
+    mind24ShowEvalSubmitting();
     (async()=>{
       try{
         const j=await apiJson('/api/me/attempts/'+encodeURIComponent(window.ATTEMPT_CTX.attemptId)+'/submit',{method:'POST',body:JSON.stringify({answers:ES.resp})});
         await mind24CandidatoAfterModuleSubmit({allDone:!!(j.result&&j.result.assignmentCompleted)});
-      }catch(err){ alert(err.message||'Error al enviar'); }
+      }catch(err){
+        alert(err.message||'Error al enviar');
+        loadQ();
+        showScr('question');
+      }
     })();
     return;
   }
@@ -4926,47 +4871,6 @@ function finishEval(){
     await openCandidatoLobby();
   })();
 }
-function calcResults(){
-  const resp=ES.resp,flags=[];
-  let errCal=0;
-  BANCO.calibracion.forEach(p=>{if(resp[p.id]===undefined||resp[p.id]!==p.correcta)errCal++;});
-  if(errCal>1)flags.push(`Atención reducida detectada: ${errCal} errores en preguntas de verificación.`);
-  let negDir=0;
-  BANCO.directas.forEach(p=>{if(resp[p.id]===1)negDir++;});
-  const DENIAL_REVIEW_MSG='Se identificaron respuestas que requieren revisión de consistencia. El resultado puede interpretarse, considerando esta observación junto con los demás elementos del proceso.';
-  const DENIAL_INVALID_MSG='El patrón de respuestas reduce significativamente la confiabilidad de esta aplicación. Se recomienda realizar una nueva evaluación antes de emitir una conclusión.';
-  if(negDir>=3&&negDir<5)flags.push(DENIAL_REVIEW_MSG);
-  const comps={
-    honestidad:{nombre:'Honestidad',pts:['p9','p20','p25','p27','p32','p33','p34','p40'],sum:0,cnt:0,avg:0},
-    etica:{nombre:'Ética Personal y Prof.',pts:['p2','p13','p17','p19','p21','p22','p23','p24','p38'],sum:0,cnt:0,avg:0},
-    responsabilidad:{nombre:'Responsabilidad',pts:['p6','p10','p12','p15','p16','p29','p35','p36','p37'],sum:0,cnt:0,avg:0},
-    lealtad:{nombre:'Lealtad',pts:['p1','p3','p4','p7','p8','p28','p31','p39'],sum:0,cnt:0,avg:0},
-    integridad:{nombre:'Integridad',pts:['p5','p11','p14','p18','p26','p30'],sum:0,cnt:0,avg:0}
-  };
-  BANCO.principal.forEach(p=>{const r=resp[p.id];if(r!==undefined&&comps[p.comp]){comps[p.comp].sum+=p.puntajes[r];comps[p.comp].cnt++;}});
-  let total=0,cnt=0;
-  Object.values(comps).forEach(c=>{c.avg=c.cnt>0?Math.round(c.sum/c.cnt):0;total+=c.avg;cnt++;});
-  const global=Math.round(total/cnt);
-  const honPct=comps.honestidad.avg,etPct=comps.etica.avg;
-  let veredicto,badge,desc,bc;
-  if(honPct<70||etPct<70){veredicto='No Aprobatorio';badge='⚠️ No Aprobatorio';desc=`Puntaje global: ${global}%. Las competencias críticas de Honestidad (${honPct}%) y/o Ética (${etPct}%) están por debajo del umbral mínimo del 70%.`;bc='rb-rep';}
-  else if(global<50){veredicto='No Aprobatorio';badge='⚠️ No Aprobatorio';desc=`El puntaje global de ${global}% está por debajo del umbral mínimo requerido del 50%.`;bc='rb-rep';}
-  else if(global<75){veredicto='Aprobatorio con Reservas';badge='📋 Con Reservas';desc=`Puntaje global: ${global}%. El candidato cumple requisitos mínimos. Se recomienda análisis adicional en áreas de riesgo.`;bc='rb-res';}
-  else{veredicto='Aprobatorio';badge='✅ Aprobatorio';desc=`Excelente resultado. Puntaje global de ${global}% supera el umbral aprobatorio (75%). El candidato demuestra sólidos valores de honestidad e integridad.`;bc='rb-apro';}
-  if(negDir>=5){veredicto='Prueba Inválida';badge='⚠️ No Confiable';desc=DENIAL_INVALID_MSG;bc='rb-rep';flags.push(DENIAL_INVALID_MSG);}
-  document.getElementById('resScore').textContent=global+'%';
-  document.getElementById('resVerdict').textContent=veredicto;
-  document.getElementById('resDesc').textContent=desc;
-  const be=document.getElementById('resBadge'); be.textContent=badge; be.className='result-badge '+bc;
-  const bars=document.getElementById('compBars'); bars.innerHTML='';
-  Object.values(comps).forEach(c=>{
-    const col=c.avg>=75?'#A78BFA':c.avg>=50?'#FCD34D':'#FCA5A5';
-    bars.innerHTML+=`<div class="comp-item"><div class="comp-lbl"><span class="comp-name">${c.nombre}</span><span class="comp-score" style="color:${col}">${c.avg}%</span></div><div class="comp-track"><div class="comp-fill" data-t="${c.avg}" style="width:0%;background:linear-gradient(90deg,${col}99,${col})"></div></div></div>`;
-  });
-  if(flags.length>0){document.getElementById('flagsBox').classList.remove('hidden');document.getElementById('flagsText').textContent=flags.join(' ');}
-  window.EVAL_RESULT={global,veredicto,comps,flags,candidato:ES.candidato};
-}
-
 // ── Init ──
 if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
 ;(async function mind24BootstrapSession(){
