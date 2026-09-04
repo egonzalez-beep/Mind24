@@ -59,9 +59,11 @@ export function extractHonestidadPayload(attempt) {
   };
 }
 
-/** Prueba invalidada por patrón de negación máximo (negDir = 5). */
+/** Prueba invalidada por negación máxima (negDir = 5) o velocidad (< 2:00). */
 export function isHonestidadPruebaInvalida(interpretation, meta) {
   if (meta?.denialReliability === 'invalid') return true;
+  if (meta?.speedReliability === 'invalid') return true;
+  if (meta?.reliability?.speedReliability === 'invalid') return true;
   const v = String(interpretation?.verdict || '')
     .toLowerCase()
     .normalize('NFD')

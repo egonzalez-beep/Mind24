@@ -1,5 +1,9 @@
 import { esc } from './reportUtils.js';
-import { UNRELIABLE_SPEED_FLAG_TEXT } from '../services/attemptReliability.service.js';
+import { resolveModuleKey } from '../utils/moduleCatalog.js';
+import {
+  HONESTIDAD_SPEED_REVIEW_MESSAGE,
+  UNRELIABLE_SPEED_FLAG_TEXT,
+} from '../services/attemptReliability.service.js';
 
 export function extractReliabilityFromAttempt(attempt) {
   const scores = attempt?.scores;
@@ -15,7 +19,17 @@ export function extractReliabilityFromAttempt(attempt) {
 }
 
 export function buildSpeedReliabilityAlertHtml(attempt) {
+  const moduleKey = resolveModuleKey(attempt?.moduleKey);
   const rel = extractReliabilityFromAttempt(attempt);
+
+  if (moduleKey === 'honestidad') {
+    const level = rel?.speedReliability;
+    if (level === 'review') {
+      return `<div class="reliability-alert">${esc(HONESTIDAD_SPEED_REVIEW_MESSAGE)}</div>`;
+    }
+    return '';
+  }
+
   if (!rel?.isUnreliableSpeed) return '';
   return `<div class="reliability-alert">${esc(UNRELIABLE_SPEED_FLAG_TEXT)}</div>`;
 }

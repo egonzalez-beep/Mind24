@@ -9,8 +9,10 @@ import {
 } from '../utils/moduleCatalog.js';
 import { buildDynamicStartPayload, moduleHasDynamicQuestions } from './dynamicAssessment.service.js';
 import {
+  applyHonestidadSpeedReliabilityLayer,
   applyReliabilityToAttemptPayload,
   computeAttemptSpeedReliability,
+  computeHonestidadDurationReliability,
 } from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 import { buildCandidateAttemptStatus } from '../utils/candidateAttemptResponse.js';
@@ -274,24 +276,48 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
 
   const scored = scoreAssessment(moduleConfig, answers);
   const questionCount = Object.keys(answers).length;
-  const reliability = computeAttemptSpeedReliability({
-    startedAt: attempt.startedAt,
-    submittedAt: new Date(),
-    questionCount,
-  });
-  const persisted = applyReliabilityToAttemptPayload(
-    {
-      global: scored.global,
-      dimensions: scored.dimensions,
-      meta: { ...(scored.meta || {}), moduleKey: mk || null },
-    },
-    scored.flags,
-    reliability,
-  );
+  const submittedAt = new Date();
+  const resolvedMk = resolveModuleKey(mk);
+
+  let persisted;
+  let finalInterpretation;
+
+  if (resolvedMk === 'honestidad') {
+    const durationReliability = computeHonestidadDurationReliability({
+      startedAt: attempt.startedAt,
+      submittedAt,
+    });
+    const layered = applyHonestidadSpeedReliabilityLayer({
+      scored,
+      flags: scored.flags,
+      reliability: durationReliability,
+      moduleKey: mk || null,
+    });
+    persisted = { scores: layered.scores, flags: layered.flags };
+    finalInterpretation = layered.interpretation;
+  } else {
+    const reliability = computeAttemptSpeedReliability({
+      startedAt: attempt.startedAt,
+      submittedAt,
+      questionCount,
+    });
+    persisted = applyReliabilityToAttemptPayload(
+      {
+        global: scored.global,
+        dimensions: scored.dimensions,
+        meta: { ...(scored.meta || {}), moduleKey: mk || null },
+      },
+      scored.flags,
+      reliability,
+    );
+    finalInterpretation = {
+      verdict: scored.verdict,
+      badge: scored.badge,
+      description: scored.description,
+    };
+  }
 
   const assignment = attempt.assignment;
-  // Resolvemos las keys para que coincidan con las escritas por dynamicAssessment.service.js
-  const resolvedMk = resolveModuleKey(mk);
   const prevCompleted = readCompletedModules(assignment);
   const nextCompleted =
     resolvedMk && !prevCompleted.includes(resolvedMk)
@@ -312,14 +338,10 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
       where: { id: attempt.id },
       data: {
         status: 'submitted',
-        submittedAt: new Date(),
+        submittedAt,
         responses: answers,
         scores: persisted.scores,
-        interpretation: {
-          verdict: scored.verdict,
-          badge: scored.badge,
-          description: scored.description,
-        },
+        interpretation: finalInterpretation,
         flags: persisted.flags,
       },
     });
