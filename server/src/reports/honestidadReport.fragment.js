@@ -59,11 +59,13 @@ export function extractHonestidadPayload(attempt) {
   };
 }
 
-/** Prueba invalidada por negación máxima (negDir = 5) o velocidad (< 2:00). */
+/** Prueba invalidada por negación, calibración (5 errores) o velocidad (< 2:00). */
 export function isHonestidadPruebaInvalida(interpretation, meta) {
   if (meta?.denialReliability === 'invalid') return true;
+  if (meta?.calibrationReliability === 'invalid') return true;
   if (meta?.speedReliability === 'invalid') return true;
   if (meta?.reliability?.speedReliability === 'invalid') return true;
+  if (meta?.reliability?.calibrationReliability === 'invalid') return true;
   const v = String(interpretation?.verdict || '')
     .toLowerCase()
     .normalize('NFD')
@@ -74,14 +76,15 @@ export function isHonestidadPruebaInvalida(interpretation, meta) {
 /**
  * Componente visual: Semáforo horizontal + barra termómetro con zona de colores.
  * Verde ≥70% | Amarillo 60-69% | Rojo <60%
- * @param {{ invalid?: boolean }} [opts] — fuerza rojo cuando la aplicación es inválida (negDir=5).
+ * @param {{ invalid?: boolean, lowReliability?: boolean }} [opts]
  */
 function buildVerdictSemaforo(globalScore, verdict, opts = {}) {
   const pct = Math.min(100, Math.max(0, Number(globalScore) || 0));
   const forceInvalid = opts.invalid === true;
-  const isGreen  = !forceInvalid && pct >= 70;
-  const isYellow = !forceInvalid && pct >= 60 && pct < 70;
-  const isRed    = forceInvalid || pct < 60;
+  const forceLowRel = opts.lowReliability === true && !forceInvalid;
+  const isGreen  = !forceInvalid && !forceLowRel && pct >= 70;
+  const isYellow = !forceInvalid && (forceLowRel || (pct >= 60 && pct < 70));
+  const isRed    = forceInvalid || (!forceLowRel && pct < 60);
 
   const textColor = isGreen ? '#065F46' : isYellow ? '#92400E' : '#991B1B';
   const bgColor   = isGreen ? '#ECFDF5' : isYellow ? '#FFFBEB'  : '#FEF2F2';
@@ -259,8 +262,13 @@ export function buildHonestidadModuleFragment(ctx) {
   const badge       = interpretation?.badge       || '—';
   const description = interpretation?.description || '';
   const pruebaInvalida = isHonestidadPruebaInvalida(interpretation, payload.meta);
+  const calLowReliability =
+    payload.meta?.calibrationReliability === 'low_reliability' && !pruebaInvalida;
 
-  const semaforoHtml = buildVerdictSemaforo(global, verdict, { invalid: pruebaInvalida });
+  const semaforoHtml = buildVerdictSemaforo(global, verdict, {
+    invalid: pruebaInvalida,
+    lowReliability: calLowReliability,
+  });
   const radarHtml    = buildDimensionsRadar(dimensions);
 
   // Tabla de respaldo si el radar no puede renderizarse (<3 dims)

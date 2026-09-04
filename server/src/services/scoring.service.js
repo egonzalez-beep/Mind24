@@ -180,9 +180,7 @@ export function scoreAssessment(config, answers) {
     const w = f.when;
     if (!w) continue;
     if (w.kind === 'direct_denials_gte') continue;
-    if (w.kind === 'calibration_errors_gt' && errCal > w.value) {
-      flags.push(applyTemplate(f.messageTemplate, { errCal }));
-    }
+    if (w.kind === 'calibration_errors_gt') continue;
   }
   if (denialReliability.flag) {
     flags.push(denialReliability.flag);

@@ -5,6 +5,7 @@
 import { defaultDemoAssessmentConfig } from '../src/assessment/defaultDefinition.js';
 import { scoreAssessment } from '../src/services/scoring.service.js';
 import {
+  applyHonestidadCalibrationReliabilityLayer,
   applyHonestidadSpeedReliabilityLayer,
   computeHonestidadDurationReliability,
   HONESTIDAD_SPEED_REVIEW_MESSAGE,
@@ -32,10 +33,16 @@ function layerForElapsedSeconds(elapsedSeconds) {
   const startedAt = new Date('2026-01-01T12:00:00Z');
   const submittedAt = new Date(startedAt.getTime() + elapsedSeconds * 1000);
   const scored = scoreAssessment(defaultDemoAssessmentConfig, buildAnswers());
-  const reliability = computeHonestidadDurationReliability({ startedAt, submittedAt });
-  return applyHonestidadSpeedReliabilityLayer({
+  const cal = applyHonestidadCalibrationReliabilityLayer({
     scored,
     flags: scored.flags,
+    moduleKey: 'honestidad',
+  });
+  const reliability = computeHonestidadDurationReliability({ startedAt, submittedAt });
+  return applyHonestidadSpeedReliabilityLayer({
+    scored: cal.scores,
+    flags: cal.flags,
+    interpretation: cal.interpretation,
     reliability,
     moduleKey: 'honestidad',
   });

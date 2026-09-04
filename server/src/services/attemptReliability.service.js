@@ -16,6 +16,91 @@ export const HONESTIDAD_SPEED_REVIEW_MESSAGE =
 export const HONESTIDAD_SPEED_INVALID_MESSAGE =
   'El tiempo de aplicación reduce significativamente la confiabilidad de esta evaluación. Se recomienda realizar una nueva evaluación antes de emitir una conclusión.';
 
+export const HONESTIDAD_CALIBRATION_LOW_RELIABILITY_TEMPLATE =
+  'Se detectaron señales importantes de baja atención en las preguntas de verificación ({{errCal}} errores). El resultado es interpretable, pero requiere revisión antes de emitir una conclusión.';
+
+export const HONESTIDAD_CALIBRATION_INVALID_MESSAGE =
+  'El patrón de respuestas en las preguntas de verificación compromete la confiabilidad de esta aplicación. Se recomienda realizar una nueva evaluación antes de emitir una conclusión.';
+
+function applyReliabilityTemplate(tpl, vars) {
+  if (!tpl) return '';
+  return tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => (vars[k] !== undefined ? String(vars[k]) : ''));
+}
+
+export function honestidadCalibrationReviewMessage(errCal) {
+  return `Atención reducida detectada: ${errCal} errores en preguntas de verificación.`;
+}
+
+/**
+ * Termómetro de confiabilidad por calibración c1–c5 (Honestidad).
+ * @param {number} errCal
+ * @returns {'normal'|'review'|'low_reliability'|'invalid'}
+ */
+export function resolveHonestidadCalibrationReliability(errCal) {
+  const n = Math.max(0, Math.floor(Number(errCal) || 0));
+  if (n <= 1) return 'normal';
+  if (n === 2) return 'review';
+  if (n <= 4) return 'low_reliability';
+  return 'invalid';
+}
+
+/** @param {object|null|undefined} meta */
+export function isHonestidadPriorInvalid(meta) {
+  return meta?.denialReliability === 'invalid' || meta?.calibrationReliability === 'invalid';
+}
+
+/**
+ * Capa de confiabilidad por calibración (Honestidad) — no altera scores dimensionales.
+ * @param {{ scored: object, flags: string[]|null, moduleKey?: string|null }} params
+ */
+export function applyHonestidadCalibrationReliabilityLayer({ scored, flags, moduleKey }) {
+  const errCal = Number(scored.meta?.errCal) || 0;
+  const calibrationReliability = resolveHonestidadCalibrationReliability(errCal);
+  const nextFlags = Array.isArray(flags) ? [...flags] : [];
+
+  if (calibrationReliability === 'review') {
+    const msg = honestidadCalibrationReviewMessage(errCal);
+    if (!nextFlags.includes(msg)) nextFlags.push(msg);
+  } else if (calibrationReliability === 'low_reliability') {
+    const msg = applyReliabilityTemplate(HONESTIDAD_CALIBRATION_LOW_RELIABILITY_TEMPLATE, { errCal });
+    if (!nextFlags.includes(msg)) nextFlags.push(msg);
+  } else if (calibrationReliability === 'invalid') {
+    if (!nextFlags.includes(HONESTIDAD_CALIBRATION_INVALID_MESSAGE)) {
+      nextFlags.push(HONESTIDAD_CALIBRATION_INVALID_MESSAGE);
+    }
+  }
+
+  let interpretation = {
+    verdict: scored.verdict,
+    badge: scored.badge,
+    description: scored.description,
+  };
+  const denialInvalid = scored.meta?.denialReliability === 'invalid';
+  if (calibrationReliability === 'invalid' && !denialInvalid) {
+    interpretation = {
+      verdict: 'Prueba Inválida',
+      badge: '⚠️ No Confiable',
+      description: HONESTIDAD_CALIBRATION_INVALID_MESSAGE,
+    };
+  }
+
+  const scores = {
+    global: scored.global,
+    dimensions: scored.dimensions,
+    meta: {
+      ...(scored.meta || {}),
+      moduleKey: moduleKey ?? scored.meta?.moduleKey ?? null,
+      calibrationReliability,
+      reliability: {
+        errCal,
+        calibrationReliability,
+      },
+    },
+  };
+
+  return { scores, flags: nextFlags, interpretation };
+}
+
 /**
  * Termómetro de confiabilidad por duración total (Honestidad y Confianza).
  * @param {number} elapsedSeconds
@@ -55,9 +140,9 @@ export function computeHonestidadDurationReliability({ startedAt, submittedAt })
 
 /**
  * Capa de confiabilidad por velocidad (Honestidad) — no altera scores dimensionales.
- * @param {{ scored: object, flags: string[]|null, reliability: ReturnType<typeof computeHonestidadDurationReliability>, moduleKey?: string|null }} params
+ * @param {{ scored: object, flags: string[]|null, interpretation?: object, reliability: ReturnType<typeof computeHonestidadDurationReliability>, moduleKey?: string|null }} params
  */
-export function applyHonestidadSpeedReliabilityLayer({ scored, flags, reliability, moduleKey }) {
+export function applyHonestidadSpeedReliabilityLayer({ scored, flags, interpretation, reliability, moduleKey }) {
   const nextFlags = Array.isArray(flags) ? [...flags] : [];
   if (reliability.speedReliability === 'review') {
     const has = nextFlags.some((f) => f === HONESTIDAD_SPEED_REVIEW_MESSAGE);
@@ -67,19 +152,24 @@ export function applyHonestidadSpeedReliabilityLayer({ scored, flags, reliabilit
     if (!has) nextFlags.push(HONESTIDAD_SPEED_INVALID_MESSAGE);
   }
 
-  let interpretation = {
+  let nextInterpretation = interpretation || {
     verdict: scored.verdict,
     badge: scored.badge,
     description: scored.description,
   };
-  const denialInvalid = scored.meta?.denialReliability === 'invalid';
-  if (reliability.speedReliability === 'invalid' && !denialInvalid) {
-    interpretation = {
+  const priorInvalid = isHonestidadPriorInvalid(scored.meta);
+  if (reliability.speedReliability === 'invalid' && !priorInvalid) {
+    nextInterpretation = {
       verdict: 'Prueba Inválida',
       badge: '⚠️ No Confiable',
       description: HONESTIDAD_SPEED_INVALID_MESSAGE,
     };
   }
+
+  const priorReliability =
+    scored.meta?.reliability && typeof scored.meta.reliability === 'object'
+      ? scored.meta.reliability
+      : {};
 
   const scores = {
     global: scored.global,
@@ -89,6 +179,7 @@ export function applyHonestidadSpeedReliabilityLayer({ scored, flags, reliabilit
       moduleKey: moduleKey ?? scored.meta?.moduleKey ?? null,
       speedReliability: reliability.speedReliability,
       reliability: {
+        ...priorReliability,
         elapsedMs: reliability.elapsedMs,
         elapsedSeconds: reliability.elapsedSeconds,
         speedReliability: reliability.speedReliability,
@@ -96,7 +187,7 @@ export function applyHonestidadSpeedReliabilityLayer({ scored, flags, reliabilit
     },
   };
 
-  return { scores, flags: nextFlags, interpretation };
+  return { scores, flags: nextFlags, interpretation: nextInterpretation };
 }
 
 /**

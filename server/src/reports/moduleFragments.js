@@ -21,7 +21,7 @@ import {
   buildTermanModuleFragment,
   extractTermanScores,
 } from './fragments/termanReport.fragment.js';
-import { buildSpeedReliabilityAlertHtml } from './reliabilityAlert.fragment.js';
+import { buildHonestidadReliabilityAlertsHtml, buildSpeedReliabilityAlertHtml } from './reliabilityAlert.fragment.js';
 
 const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
 
@@ -43,7 +43,7 @@ export function buildModuleFragment(attempt) {
   if (moduleKey === 'honestidad') {
     const payload = extractHonestidadPayload(attempt);
     if (!payload) return null;
-    return reliabilityHtml + buildHonestidadModuleFragment({ payload, submittedAt });
+    return buildHonestidadReliabilityAlertsHtml(attempt) + buildHonestidadModuleFragment({ payload, submittedAt });
   }
 
   if (moduleKey === 'terman') {

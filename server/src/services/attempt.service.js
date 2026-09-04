@@ -9,6 +9,7 @@ import {
 } from '../utils/moduleCatalog.js';
 import { buildDynamicStartPayload, moduleHasDynamicQuestions } from './dynamicAssessment.service.js';
 import {
+  applyHonestidadCalibrationReliabilityLayer,
   applyHonestidadSpeedReliabilityLayer,
   applyReliabilityToAttemptPayload,
   computeAttemptSpeedReliability,
@@ -287,9 +288,15 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
       startedAt: attempt.startedAt,
       submittedAt,
     });
-    const layered = applyHonestidadSpeedReliabilityLayer({
+    const calLayered = applyHonestidadCalibrationReliabilityLayer({
       scored,
       flags: scored.flags,
+      moduleKey: mk || null,
+    });
+    const layered = applyHonestidadSpeedReliabilityLayer({
+      scored: calLayered.scores,
+      flags: calLayered.flags,
+      interpretation: calLayered.interpretation,
       reliability: durationReliability,
       moduleKey: mk || null,
     });
