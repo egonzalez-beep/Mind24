@@ -3694,25 +3694,38 @@ function buildFlatFromConfig(cfg){
   return flat;
 }
 
-/** Distribuye c1–c5 entre directas y principal (presentación; IDs y scoring intactos). */
-function mind24InterleaveHonestidadFlat(flat){
-  const cal=flat.filter(function(q){ return q.sectionId==='calibracion'; });
-  const rest=flat.filter(function(q){ return q.sectionId!=='calibracion'; });
-  if(cal.length<=1) return flat;
-  const nCal=cal.length;
-  const nRest=rest.length;
-  const total=nCal+nRest;
+/** Inserta ítems embed de forma uniforme en base (orden de presentación; IDs intactos). */
+function mind24InterleaveEmbedIntoBase(embed, base){
+  if(!embed.length) return base.slice();
+  if(embed.length===1) return [embed[0]].concat(base);
+  const nE=embed.length;
+  const nB=base.length;
+  const total=nE+nB;
   const positions=[];
-  for(let i=0;i<nCal;i++){
-    positions.push(Math.round(((i+1)*total)/(nCal+1))-1);
+  for(let i=0;i<nE;i++){
+    positions.push(Math.round(((i+1)*total)/(nE+1))-1);
   }
   const out=new Array(total);
-  let ri=0, ci=0;
+  let bi=0, ei=0;
   for(let pos=0;pos<total;pos++){
-    if(ci<nCal&&pos===positions[ci]) out[pos]=cal[ci++];
-    else out[pos]=rest[ri++];
+    if(ei<nE&&pos===positions[ei]) out[pos]=embed[ei++];
+    else out[pos]=base[bi++];
   }
   return out;
+}
+
+/** Distribuye c1–c5 y d1–d5 entre p1–p40 (presentación; IDs y scoring intactos). */
+function mind24InterleaveHonestidadFlat(flat){
+  const cal=flat.filter(function(q){ return q.sectionId==='calibracion'; });
+  const direct=flat.filter(function(q){ return q.sectionId==='directas'; });
+  const principal=flat.filter(function(q){ return q.sectionId==='principal'; });
+  const embed=[];
+  const n=Math.max(cal.length, direct.length);
+  for(let i=0;i<n;i++){
+    if(direct[i]) embed.push(direct[i]);
+    if(cal[i]) embed.push(cal[i]);
+  }
+  return mind24InterleaveEmbedIntoBase(embed, principal);
 }
 
 function mind24HonestidadUsesInterleavedFlat(){
@@ -4679,11 +4692,11 @@ const BANCO={
     {id:'c5',texto:'¿Cuál es el nombre del planeta en el que vivimos?',tipo:'Verificación',opciones:['Tierra','Marte','Venus','Júpiter'],correcta:0}
   ],
   directas:[
-    {id:'d1',texto:'¿Alguna vez has dicho una mentira, incluso si fue por una razón menor?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca he mentido.','No recuerdo haber mentido.','Solo en situaciones muy necesarias.'],puntajes:[100,0,25,50]},
-    {id:'d2',texto:'¿Te has llevado algo que no era tuyo, incluso si era de poco valor?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo por error.','No estoy seguro.'],puntajes:[100,0,50,25]},
-    {id:'d3',texto:'¿Alguna vez has ocultado información importante para evitar problemas?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, siempre soy completamente transparente.','Solo si no era grave.','Prefiero no responder.'],puntajes:[100,0,50,25]},
-    {id:'d4',texto:'¿Te has aprovechado alguna vez de la confianza de alguien?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo en situaciones justificadas.','No estoy seguro.'],puntajes:[100,0,50,25]},
-    {id:'d5',texto:'¿Alguna vez has tomado un atajo que sabías que era incorrecto, pero que te beneficiaba?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','Solo si no afectaba a otros.','Prefiero no decirlo.'],puntajes:[100,0,50,25]}
+    {id:'d1',texto:'¿Alguna vez has dicho una mentira, incluso si fue por una razón menor?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','No recuerdo haberlo hecho.','Solo en situaciones muy puntuales.'],puntajes:[100,0,25,50]},
+    {id:'d2',texto:'¿Alguna vez has cometido un error y preferido que nadie lo notara?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','No recuerdo haberlo hecho.','Solo en situaciones muy puntuales.'],puntajes:[100,0,25,50]},
+    {id:'d3',texto:'¿Alguna vez te has molestado por una crítica o comentario negativo sobre ti?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','No recuerdo haberlo hecho.','Solo en situaciones muy puntuales.'],puntajes:[100,0,25,50]},
+    {id:'d4',texto:'¿Alguna vez has perdido la paciencia con alguien y después consideraste que reaccionaste de más?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','No recuerdo haberlo hecho.','Solo en situaciones muy puntuales.'],puntajes:[100,0,25,50]},
+    {id:'d5',texto:'¿Alguna vez has incumplido una regla menor porque consideraste que no tendría consecuencias importantes?',tipo:'Honestidad Directa',opciones:['Sí, alguna vez.','No, nunca.','No recuerdo haberlo hecho.','Solo en situaciones muy puntuales.'],puntajes:[100,0,25,50]}
   ],
   principal:[
     {id:'p1',texto:'Imagina que estás en un supermercado y la cajera te da más cambio del que te corresponde. ¿Qué harías?',tipo:'Lealtad',opciones:['Devolverlo inmediatamente.','Guardar el dinero sin decir nada.','Guardarlo y donarlo a la caridad.','Pensarlo y quizás devolverlo después.'],puntajes:[100,0,50,75],comp:'lealtad'},
