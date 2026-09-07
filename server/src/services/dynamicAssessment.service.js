@@ -304,8 +304,22 @@ function selectedModuleKeys(assignment) {
   return [];
 }
 
+function diagComplete(attemptId, phase, extra = {}) {
+  console.log('[DIAG:complete]', attemptId, phase, extra);
+}
+
+function diagCompleteFail(attemptId, phase, err) {
+  console.error('[DIAG:complete]', attemptId, phase, {
+    code: err?.code || err?.name || 'UNKNOWN',
+    message: err?.message,
+    details: err?.details,
+    prismaCode: typeof err?.code === 'string' && err.code.startsWith('P') ? err.code : undefined,
+  });
+}
+
 export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   const timedOut = !!options.timedOut;
+  try {
   const attempt = await prisma.assessmentAttempt.findFirst({
     where: { id: attemptId, assignment: { candidate: { userId } } },
     include: {
@@ -327,6 +341,13 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   const mod = await getActiveModuleWithQuestions(attempt.moduleKey || '');
   const mk = attempt.moduleKey || '';
   const resolvedKey = resolveModuleKey(mk);
+  diagComplete(attemptId, 'loaded', {
+    rawModuleKey: mk,
+    resolvedKey,
+    status: attempt.status,
+    responseCount: attempt.candidateResponses?.length ?? 0,
+    timedOut,
+  });
 
   const questionCount =
     resolvedKey === 'terman'
@@ -374,6 +395,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   };
 
   if (resolvedKey === 'cleaver') {
+    diagComplete(attemptId, 'scoring:start', { module: 'cleaver' });
     const cleaverRows = await prisma.candidateResponse.findMany({
       where: { attemptId: attempt.id },
       include: {
@@ -385,15 +407,22 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     cleaverRows.sort((a, b) => a.question.sortOrder - b.question.sortOrder);
     const cleaverResponses = cleaverRows;
 
-    const scoring = scoreCleaverResponses(
-      cleaverResponses.map((r) => ({
-        questionId: r.questionId,
-        moreOptionId: r.moreOptionId,
-        lessOptionId: r.lessOptionId,
-        moreOption: r.moreOption,
-        lessOption: r.lessOption,
-      })),
-    );
+    let scoring;
+    try {
+      scoring = scoreCleaverResponses(
+        cleaverResponses.map((r) => ({
+          questionId: r.questionId,
+          moreOptionId: r.moreOptionId,
+          lessOptionId: r.lessOptionId,
+          moreOption: r.moreOption,
+          lessOption: r.lessOption,
+        })),
+      );
+    } catch (scoreErr) {
+      diagCompleteFail(attemptId, 'scoring:cleaver', scoreErr);
+      throw scoreErr;
+    }
+    diagComplete(attemptId, 'scoring:ok', { module: 'cleaver', tetradCount: scoring.tetradCount });
 
     attemptScores = buildCleaverAttemptScores(scoring);
     const { total } = scoring;
@@ -409,6 +438,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
   }
 
   if (resolvedKey === 'terman') {
+    diagComplete(attemptId, 'scoring:start', { module: 'terman' });
     const termanRows = await prisma.candidateResponse.findMany({
       where: { attemptId: attempt.id },
       include: {
@@ -416,7 +446,18 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
         question: { select: { metadata: true, sortOrder: true } },
       },
     });
-    const scoring = scoreTermanResponses(termanRows);
+    let scoring;
+    try {
+      scoring = scoreTermanResponses(termanRows);
+    } catch (scoreErr) {
+      diagCompleteFail(attemptId, 'scoring:terman', scoreErr);
+      throw scoreErr;
+    }
+    diagComplete(attemptId, 'scoring:ok', {
+      module: 'terman',
+      rawScore: scoring.rawScore,
+      responseRows: termanRows.length,
+    });
     attemptScores = buildTermanAttemptScores(scoring);
     const topSeries = [...scoring.series].sort((a, b) => b.percent - a.percent)[0];
     interpretation = {
@@ -468,24 +509,35 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     persistedFlags = merged.flags;
   }
 
-  const billingResult = await prisma.$transaction(async (tx) => {
-    await tx.assessmentAttempt.update({
-      where: { id: attempt.id },
-      data: {
-        status: 'submitted',
-        submittedAt,
-        scores: persistedScores ?? undefined,
-        interpretation,
-        flags: persistedFlags.length ? persistedFlags : undefined,
-      },
+  diagComplete(attemptId, 'tx:start', { allDone, hasPersistedScores: !!persistedScores });
+  let billingResult;
+  try {
+    billingResult = await prisma.$transaction(async (tx) => {
+      diagComplete(attemptId, 'tx:before-attempt-update');
+      await tx.assessmentAttempt.update({
+        where: { id: attempt.id },
+        data: {
+          status: 'submitted',
+          submittedAt,
+          scores: persistedScores ?? undefined,
+          interpretation,
+          flags: persistedFlags.length ? persistedFlags : undefined,
+        },
+      });
+      diagComplete(attemptId, 'tx:after-attempt-update');
+      const billing = await applyAssignmentCompletionUpdate(tx, {
+        assignmentId: assignment.id,
+        organizationId,
+        nextCompleted,
+        allDone,
+      });
+      diagComplete(attemptId, 'tx:after-applyAssignmentCompletionUpdate', billing);
+      return billing;
     });
-    return applyAssignmentCompletionUpdate(tx, {
-      assignmentId: assignment.id,
-      organizationId,
-      nextCompleted,
-      allDone,
-    });
-  });
+  } catch (txErr) {
+    diagCompleteFail(attemptId, 'tx:failed', txErr);
+    throw txErr;
+  }
 
   // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
   if (billingResult.claimed) {
@@ -496,6 +548,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     }
   }
 
+  diagComplete(attemptId, 'done', { assignmentCompleted: allDone, claimed: billingResult?.claimed });
   return {
     ok: true,
     moduleKey: mk,
@@ -504,4 +557,8 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     scores: attemptScores?.scores ?? null,
     interpretation,
   };
+  } catch (err) {
+    diagCompleteFail(attemptId, 'unhandled', err);
+    throw err;
+  }
 }

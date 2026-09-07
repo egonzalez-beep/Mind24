@@ -52,5 +52,14 @@ export function errorHandler(err, req, res, next) {
     console.error('[Mind24]', err.stack || err);
     payload.message = 'Error interno del servidor';
   }
+  if (String(req.originalUrl || '').includes('/attempts/') && String(req.originalUrl || '').includes('/complete')) {
+    console.error('[DIAG:http:complete]', {
+      status,
+      error: payload.error,
+      message: payload.message,
+      details: payload.details,
+      attemptId: req.params?.attemptId,
+    });
+  }
   res.status(status).json(payload);
 }
