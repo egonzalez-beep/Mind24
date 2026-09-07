@@ -4,6 +4,7 @@
  */
 import { defaultDemoAssessmentConfig } from '../src/assessment/defaultDefinition.js';
 import { scoreAssessment, resolveDenialReliability } from '../src/services/scoring.service.js';
+import { fillBestLikertAnswers } from './honestidadTestHelpers.mjs';
 
 const EXPECTED_PROMPTS = {
   d1: '¿Alguna vez has dicho una mentira, incluso si fue por una razón menor?',
@@ -56,11 +57,11 @@ function interleaveHonestidadFlat(flat) {
   return interleaveEmbedIntoBase(embed, principal);
 }
 
-function buildAnswers(negDirCount, errCalCount) {
+function buildAnswers(negDirCount, errCalCount, cfg) {
   const answers = {};
   for (let i = 1; i <= 5; i++) answers[`c${i}`] = i <= errCalCount ? 1 : 0;
   for (let i = 1; i <= 5; i++) answers[`d${i}`] = i <= negDirCount ? 1 : 0;
-  for (let i = 1; i <= 40; i++) answers[`p${i}`] = 0;
+  fillBestLikertAnswers(cfg, answers);
   return answers;
 }
 
@@ -117,9 +118,9 @@ else console.log('OK: d1–d5 distribuidas (primera en', firstD + ', última en'
 console.log('\nOrden visible:');
 console.log(ids.join(' → '));
 
-const baseline = scoreAssessment(cfg, buildAnswers(0, 0));
+const baseline = scoreAssessment(cfg, buildAnswers(0, 0, cfg));
 for (const negDir of [0, 2, 3, 4, 5]) {
-  const r = scoreAssessment(cfg, buildAnswers(negDir, 0));
+  const r = scoreAssessment(cfg, buildAnswers(negDir, 0, cfg));
   const level = resolveDenialReliability(negDir).level;
   if (r.meta.negDir !== negDir) fail(`negDir conteo ${negDir}`);
   if (r.meta.denialReliability !== level) fail(`denialReliability negDir=${negDir}`);

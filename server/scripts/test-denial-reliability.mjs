@@ -12,6 +12,7 @@ import {
   buildHonestidadModuleFragment,
   isHonestidadPruebaInvalida,
 } from '../src/reports/honestidadReport.fragment.js';
+import { fillBestLikertAnswers } from './honestidadTestHelpers.mjs';
 
 const DIRECT_IDS = ['d1', 'd2', 'd3', 'd4', 'd5'];
 const CAL_IDS = ['c1', 'c2', 'c3', 'c4', 'c5'];
@@ -23,7 +24,7 @@ function buildAnswers(negDirCount) {
   DIRECT_IDS.forEach((id, i) => {
     answers[id] = i < negDirCount ? 1 : 0;
   });
-  for (const id of LIKERT_IDS) answers[id] = 0;
+  fillBestLikertAnswers(defaultDemoAssessmentConfig, answers);
   return answers;
 }
 
