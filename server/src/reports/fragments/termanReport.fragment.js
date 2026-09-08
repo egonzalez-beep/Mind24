@@ -155,13 +155,6 @@ export function buildTermanModuleFragment(ctx) {
   const rawScore       = Number(scores.rawScore) || 0;
   const totalQuestions = Number(scores.totalQuestions) || 0;
   const percent        = Number(scores.percentCorrect) || 0;
-  const ciDisplay =
-    scores.ci != null
-      ? String(scores.ci)
-      : scores.ciEstimate != null
-        ? `~${scores.ciEstimate} (preliminar)`
-        : 'Por calibrar';
-  const ciNote = scores.ciNote || '';
 
   const series = Array.isArray(scores.series) ? scores.series : [];
 
@@ -191,9 +184,9 @@ export function buildTermanModuleFragment(ctx) {
         <div class="kpi-badge">${percent.toFixed(1)}% aciertos</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Coeficiente intelectual (CI)</div>
-        <div class="kpi-value kpi-sm">${esc(ciDisplay)}</div>
-        <div class="kpi-badge">${esc(ciNote)}</div>
+        <div class="kpi-label">Desempeño cognitivo</div>
+        <div class="kpi-value kpi-sm">${percent.toFixed(1)}%</div>
+        <div class="kpi-badge">Porcentaje global de aciertos</div>
       </div>
     </div>
     <div class="section">

@@ -63,7 +63,7 @@ export function scoreTermanResponses(rows) {
   const percentCorrect =
     maxRaw > 0 ? Math.round((rawScore / maxRaw) * 1000) / 10 : 0;
 
-  /** CI preliminar escala 0–50 aciertos → ~70–130 (baremo oficial pendiente). */
+  /** Transformación lineal interna histórica (no es CI ni debe mostrarse como tal). */
   const ciEstimate = Math.round(70 + (rawScore / maxRaw) * 60);
   const iqEstimate = ciEstimate;
 
@@ -98,5 +98,21 @@ export function buildTermanAttemptScores(scoring) {
       scoredAt: new Date().toISOString(),
       engine: 'terman',
     },
+  };
+}
+
+/**
+ * Interpretación visible para RH: desempeño y aciertos, sin presentar ciEstimate como CI.
+ */
+export function buildTermanHrInterpretation(scoring) {
+  const topSeries = [...(scoring.series || [])].sort(
+    (a, b) => (Number(b.percent) || 0) - (Number(a.percent) || 0),
+  )[0];
+  const seriesNote = topSeries?.name ? ` Serie más fuerte: ${topSeries.name}.` : '';
+  return {
+    verdict: 'Evaluación cognitiva calificada',
+    badge: '◈',
+    description: `Resultado de la evaluación cognitiva: puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos).${seriesNote}`,
+    termanRawScore: scoring.rawScore,
   };
 }

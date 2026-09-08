@@ -11,6 +11,7 @@ import {
 } from './sjtSalesScoring.service.js';
 import {
   buildTermanAttemptScores,
+  buildTermanHrInterpretation,
   scoreTermanResponses,
 } from './termanScoring.service.js';
 import {
@@ -23,6 +24,17 @@ const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
 };
 
+/** Campos operativos de serie que el motor Terman necesita en el cliente. La clave de acierto no sale. */
+const TERMAN_CLIENT_METADATA_KEYS = [
+  'seriesId',
+  'seriesName',
+  'seriesIndex',
+  'seriesTimeLimitSeconds',
+  'seriesInstruction',
+  'questionIndexInSeries',
+  'termanItemId',
+];
+
 function clientQuestionMetadata(metadata, moduleKey) {
   if (!metadata || typeof metadata !== 'object') return null;
   const rk = resolveModuleKey(moduleKey);
@@ -30,12 +42,20 @@ function clientQuestionMetadata(metadata, moduleKey) {
     const { scenarioIndex } = metadata;
     return scenarioIndex != null ? { scenarioIndex: Number(scenarioIndex) } : null;
   }
+  if (rk === 'terman') {
+    const out = {};
+    for (const key of TERMAN_CLIENT_METADATA_KEYS) {
+      if (metadata[key] !== undefined) out[key] = metadata[key];
+    }
+    return Object.keys(out).length ? out : null;
+  }
   return metadata;
 }
 
 function clientOptionMetadata(metadata, moduleKey) {
   if (!metadata || typeof metadata !== 'object') return null;
-  if (resolveModuleKey(moduleKey) === 'sales_sjt') return null;
+  const rk = resolveModuleKey(moduleKey);
+  if (rk === 'sales_sjt' || rk === 'terman') return null;
   return metadata;
 }
 
@@ -459,15 +479,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
       responseRows: termanRows.length,
     });
     attemptScores = buildTermanAttemptScores(scoring);
-    const topSeries = [...scoring.series].sort((a, b) => b.percent - a.percent)[0];
-    interpretation = {
-      verdict: 'Evaluación cognitiva calificada',
-      badge: '◈',
-      description: `Puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos). ${
-        topSeries ? `Serie más fuerte: ${topSeries.name}.` : ''
-      } CI oficial en calibración.`,
-      termanRawScore: scoring.rawScore,
-    };
+    interpretation = buildTermanHrInterpretation(scoring);
   }
 
   if (resolvedKey === 'sales_sjt') {
