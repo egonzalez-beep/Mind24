@@ -39,8 +39,8 @@ check(MODULE_CATALOG.cleaver.comingSoon === true, 'cleaver marcado comingSoon');
 check(isComingSoonModuleKey('cleaver') === true, 'isComingSoonModuleKey("cleaver")');
 check(isComingSoonModuleKey('disc') === true, 'alias legacy "disc" también resuelve a comingSoon');
 check(
-  cleaverBankValidation.summary.fullyVerified === false,
-  'el banco M/L sigue incompleto (justifica el cierre)',
+  cleaverBankValidation.summary.fullyVerified === true,
+  'la clave M/L ya está completa; comingSoon se mantiene hasta desplegar',
   cleaverBankValidation.summary,
 );
 

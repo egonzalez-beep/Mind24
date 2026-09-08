@@ -14,7 +14,7 @@ import { assertValidCleaverBank } from './cleaverBankValidation.js';
 export const CLEAVER_TETRAD_COUNT = 24;
 
 /** Incrementar cuando cambie la clave DISC o el banco Cleaver (sella el catálogo en prod). */
-export const CLEAVER_CATALOG_VERSION = 3;
+export const CLEAVER_CATALOG_VERSION = 4;
 
 /** Palabras por tétrada, en el orden del instrumento. */
 export const CLEAVER_TETRAD_WORDS = [

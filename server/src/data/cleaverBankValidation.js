@@ -15,6 +15,9 @@ import {
 
 export const CLEAVER_EXPECTED_TETRADS = 24;
 export const CLEAVER_OPTIONS_PER_TETRAD = 4;
+export const CLEAVER_EXPECTED_WORDS = CLEAVER_EXPECTED_TETRADS * CLEAVER_OPTIONS_PER_TETRAD;
+/** 96 palabras × 2 roles (MÁS y MENOS). */
+export const CLEAVER_EXPECTED_KEY_VALUES = CLEAVER_EXPECTED_WORDS * 2;
 
 const ROLE_FIELDS = ['dimensionMore', 'dimensionLess'];
 
@@ -61,9 +64,8 @@ export function validateCleaverOptionMetadata(metadata, label = 'opción') {
   const more = metadata.dimensionMore;
   const less = metadata.dimensionLess;
 
-  if (more === null && less === null) {
-    errors.push(`${label}: dimensionMore y dimensionLess no pueden ser null a la vez`);
-  }
+  // Una palabra puede no puntuar en ninguna columna: el bloque 6 "Deseoso" es
+  // así en la plantilla. No se valida `more`/`less` no-ambos-null.
 
   // `dimension` es un espejo de compatibilidad: solo válido cuando M y L coinciden.
   if (Object.prototype.hasOwnProperty.call(metadata, 'dimension')) {
@@ -99,6 +101,9 @@ export function validateCleaverBank(blocks) {
   const verifiedBlocks = [];
   const pendingBlocks = [];
   let optionCount = 0;
+  let keyValueCount = 0;
+  let nullMore = 0;
+  let nullLess = 0;
 
   if (!Array.isArray(blocks)) {
     return {
@@ -152,7 +157,17 @@ export function validateCleaverBank(blocks) {
       );
       errors.push(...optionErrors);
 
-      if (isPlainObject(option?.metadata)) statuses.add(option.metadata.keyStatus);
+      if (isPlainObject(option?.metadata)) {
+        statuses.add(option.metadata.keyStatus);
+        for (const field of ROLE_FIELDS) {
+          if (!isValidDimensionValue(option.metadata[field])) continue;
+          keyValueCount++;
+          if (option.metadata[field] === null) {
+            if (field === 'dimensionMore') nullMore++;
+            else nullLess++;
+          }
+        }
+      }
     }
 
     if (statuses.size > 1) {
@@ -182,9 +197,23 @@ export function validateCleaverBank(blocks) {
   verifiedBlocks.sort((a, b) => a - b);
   pendingBlocks.sort((a, b) => a - b);
 
+  // La clave está completa: cualquier hueco es un error, no una advertencia.
+  if (optionCount !== CLEAVER_EXPECTED_WORDS) {
+    errors.push(`banco Cleaver: se esperaban ${CLEAVER_EXPECTED_WORDS} palabras, hay ${optionCount}`);
+  }
+  if (keyValueCount !== CLEAVER_EXPECTED_KEY_VALUES) {
+    errors.push(
+      `banco Cleaver: se esperaban ${CLEAVER_EXPECTED_KEY_VALUES} valores M/L válidos, hay ${keyValueCount}`,
+    );
+  }
   if (pendingBlocks.length) {
-    warnings.push(
-      `clave M/L pendiente de verificación en ${pendingBlocks.length} tétrada(s): ${pendingBlocks.join(', ')}`,
+    errors.push(
+      `banco Cleaver: clave M/L sin verificar en ${pendingBlocks.length} tétrada(s): ${pendingBlocks.join(', ')}`,
+    );
+  }
+  if (verifiedBlocks.length !== CLEAVER_EXPECTED_TETRADS) {
+    errors.push(
+      `banco Cleaver: se esperaban ${CLEAVER_EXPECTED_TETRADS} tétradas ${CLEAVER_KEY_STATUS.VERIFIED}, hay ${verifiedBlocks.length}`,
     );
   }
 
@@ -195,12 +224,20 @@ export function validateCleaverBank(blocks) {
     summary: {
       blocks: blocks.length,
       options: optionCount,
+      keyValues: keyValueCount,
+      nullMore,
+      nullLess,
       verifiedBlocks,
       pendingBlocks,
       verifiedCount: verifiedBlocks.length,
       pendingCount: pendingBlocks.length,
-      /** true solo cuando las 24 tétradas tienen clave M/L verificada. */
-      fullyVerified: errors.length === 0 && pendingBlocks.length === 0,
+      /** true solo cuando las 24 tétradas tienen clave M/L verificada y completa. */
+      fullyVerified:
+        errors.length === 0 &&
+        pendingBlocks.length === 0 &&
+        verifiedBlocks.length === CLEAVER_EXPECTED_TETRADS &&
+        optionCount === CLEAVER_EXPECTED_WORDS &&
+        keyValueCount === CLEAVER_EXPECTED_KEY_VALUES,
     },
   };
 }

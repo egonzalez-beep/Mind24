@@ -55,9 +55,9 @@ export const MODULE_CATALOG = {
     sectionIds: ['principal'],
     questionIdRange: [1, 7],
     /**
-     * Cerrado a nuevas asignaciones: 23 de 24 tétradas tienen la clave DISC
-     * MÁS/MENOS sin verificar (`pending_ml` en cleaverDiscKey.js).
-     * Retirar cuando `cleaverBankValidation.summary.fullyVerified === true`.
+     * Cerrado a nuevas asignaciones hasta desplegar, sincronizar y probar la
+     * clave M/L completa (24/24 `verified_ml`). No retirar `comingSoon` en
+     * este cambio: primero --apply en producción y verificación funcional.
      */
     comingSoon: true,
     /** El motor sigue sirviendo los intentos ya generados; solo se cierra la puerta de entrada. */

@@ -54,8 +54,10 @@ function printBankSummary() {
   console.log('Banco canónico Cleaver:');
   console.log(`  tétradas:                 ${summary.blocks}`);
   console.log(`  opciones:                 ${summary.options}`);
-  console.log(`  clave M/L verificada:     ${summary.verifiedCount} bloque(s) → ${summary.verifiedBlocks.join(', ') || '—'}`);
+  console.log(`  clave M/L verificada:     ${summary.verifiedCount} bloque(s)`);
   console.log(`  clave M/L pendiente:      ${summary.pendingCount} bloque(s)`);
+  console.log(`  valores M/L:              ${summary.keyValues}`);
+  console.log(`  null MÁS / MENOS:         ${summary.nullMore} / ${summary.nullLess}`);
   console.log(`  banco 100% verificado:    ${summary.fullyVerified ? 'sí' : 'no'}`);
   if (warnings.length) {
     console.log('\nAdvertencias estructurales:');
@@ -183,14 +185,18 @@ async function runWithDatabase({ apply, dryRun }) {
       return;
     }
 
-    let written = 0;
-    for (const change of planned) {
-      await prisma.questionOption.update({
-        where: { id: change.optionId },
-        data: { metadata: change.to.metadata, value: change.to.value },
-      });
-      written++;
-    }
+    // Lote atómico: o se escriben las 96 opciones o ninguna. Evita dejar la
+    // clave a medio migrar si la conexión cae durante la corrida.
+    const written = (
+      await prisma.$transaction(
+        planned.map((change) =>
+          prisma.questionOption.update({
+            where: { id: change.optionId },
+            data: { metadata: change.to.metadata, value: change.to.value },
+          }),
+        ),
+      )
+    ).length;
 
     const stamp = `[catalog:v${CLEAVER_CATALOG_VERSION}]`;
     if (!String(mod.description || '').includes(stamp)) {
