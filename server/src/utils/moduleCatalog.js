@@ -55,12 +55,12 @@ export const MODULE_CATALOG = {
     sectionIds: ['principal'],
     questionIdRange: [1, 7],
     /**
-     * Cerrado a nuevas asignaciones hasta desplegar, sincronizar y probar la
-     * clave M/L completa (24/24 `verified_ml`). No retirar `comingSoon` en
-     * este cambio: primero --apply en producción y verificación funcional.
+     * Clave M/L completa (24/24 verified_ml). `comingSoon` permanece false
+     * para que el módulo sea asignable de nuevo. `runnableWhileComingSoon`
+     * no interviene mientras comingSoon sea false.
      */
-    comingSoon: true,
-    /** El motor sigue sirviendo los intentos ya generados; solo se cierra la puerta de entrada. */
+    comingSoon: false,
+    /** Conservado por si se vuelve a cerrar el módulo sin romper intentos en curso. */
     runnableWhileComingSoon: true,
   },
   terman: {

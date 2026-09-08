@@ -1,6 +1,6 @@
 /**
- * Verifica que Cleaver esté cerrado a NUEVAS asignaciones sin bloquear
- * intentos ya generados ni afectar a los demás módulos.
+ * Verifica que Cleaver vuelva a ser asignable tras retirar comingSoon,
+ * sin afectar a los demás módulos.
  * Ejecutar: node server/scripts/test-cleaver-module-gating.mjs
  */
 import {
@@ -32,39 +32,52 @@ function check(cond, msg, extra) {
 
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-console.log('\n=== Cleaver — cierre a nuevas asignaciones ===');
+console.log('\n=== Cleaver — reactivación como módulo asignable ===');
 
 console.log('\n[1] Estado declarado del catálogo');
-check(MODULE_CATALOG.cleaver.comingSoon === true, 'cleaver marcado comingSoon');
-check(isComingSoonModuleKey('cleaver') === true, 'isComingSoonModuleKey("cleaver")');
-check(isComingSoonModuleKey('disc') === true, 'alias legacy "disc" también resuelve a comingSoon');
+check(MODULE_CATALOG.cleaver.comingSoon === false, 'cleaver.comingSoon = false');
+check(isComingSoonModuleKey('cleaver') === false, 'isComingSoonModuleKey("cleaver") = false');
+check(isComingSoonModuleKey('disc') === false, 'alias "disc" tampoco está comingSoon');
 check(
   cleaverBankValidation.summary.fullyVerified === true,
-  'la clave M/L ya está completa; comingSoon se mantiene hasta desplegar',
+  'la clave M/L sigue 24/24 verified_ml',
   cleaverBankValidation.summary,
 );
 
-console.log('\n[2] Puerta de nuevas asignaciones cerrada');
-check(isOfferableModuleKey('cleaver') === false, 'cleaver no es ofertable');
-check(eq(filterAssignableModuleKeys(['cleaver']), []), 'filterAssignableModuleKeys(["cleaver"]) → []');
-check(eq(filterAssignableModuleKeys(['disc']), []), 'alias "disc" también se descarta');
+console.log('\n[2] Puerta de nuevas asignaciones abierta');
+check(isOfferableModuleKey('cleaver') === true, 'cleaver es ofertable');
+check(isOfferableModuleKey('disc') === true, 'alias "disc" es ofertable');
 check(
-  eq(filterAssignableModuleKeys(['honestidad', 'cleaver', 'terman']), ['honestidad', 'terman']),
-  'selección mixta conserva el resto y descarta cleaver',
+  eq(filterAssignableModuleKeys(['cleaver']), ['cleaver']),
+  'filterAssignableModuleKeys(["cleaver"]) → ["cleaver"]',
+);
+check(
+  eq(filterAssignableModuleKeys(['disc']), ['cleaver']),
+  'alias "disc" se resuelve a cleaver en nuevas asignaciones',
+);
+check(
+  eq(filterAssignableModuleKeys(['honestidad', 'cleaver', 'terman']), [
+    'honestidad',
+    'cleaver',
+    'terman',
+  ]),
+  'selección mixta incluye cleaver',
   filterAssignableModuleKeys(['honestidad', 'cleaver', 'terman']),
 );
+check(DEFAULT_SELECTED_MODULES.includes('cleaver'), 'DEFAULT_SELECTED_MODULES incluye cleaver');
 check(
-  !DEFAULT_SELECTED_MODULES.includes('cleaver'),
-  'DEFAULT_SELECTED_MODULES excluye cleaver',
-  DEFAULT_SELECTED_MODULES,
-);
-check(
-  eq(DEFAULT_SELECTED_MODULES, ['honestidad', 'terman', 'sales_sjt', 'digital_interview']),
-  'DEFAULT_SELECTED_MODULES conserva los otros 4',
+  eq(DEFAULT_SELECTED_MODULES, [
+    'honestidad',
+    'cleaver',
+    'terman',
+    'sales_sjt',
+    'digital_interview',
+  ]),
+  'DEFAULT_SELECTED_MODULES restaura los 5 módulos asignables',
   DEFAULT_SELECTED_MODULES,
 );
 
-console.log('\n[3] INVALID_MODULES responde 400, no 500');
+console.log('\n[3] INVALID_MODULES responde 400, no 500 (defensa intacta)');
 {
   let status = null;
   const res = {
@@ -84,16 +97,13 @@ console.log('\n[3] INVALID_MODULES responde 400, no 500');
   check(status === 400, 'errorHandler mapea INVALID_MODULES a 400', status);
 }
 
-console.log('\n[4] Intentos ya generados siguen operables');
-check(isModuleActiveInDb('cleaver') === true, 'el módulo sigue activo en BD (motor disponible)');
+console.log('\n[4] Motor y lobby operables');
+check(isModuleActiveInDb('cleaver') === true, 'el módulo sigue activo en BD');
 check(
   MODULE_CATALOG.cleaver.runnableWhileComingSoon === true,
-  'runnableWhileComingSoon declarado explícitamente',
+  'runnableWhileComingSoon se conserva (inerte con comingSoon=false)',
 );
-check(
-  isCandidateLobbyModuleKey('cleaver') === true,
-  'el lobby sigue mostrando cleaver para terminar intentos en curso',
-);
+check(isCandidateLobbyModuleKey('cleaver') === true, 'el lobby muestra cleaver');
 
 console.log('\n[5] Los demás módulos no cambian');
 for (const key of ['honestidad', 'terman', 'sales_sjt', 'digital_interview']) {
@@ -106,7 +116,7 @@ check(isOfferableModuleKey('medida') === false, 'medida sigue fuera de asignaci�
 check(isModuleActiveInDb('mrr') === false, 'módulo retirado sigue inactivo');
 check(
   eq(ASSIGNABLE_MODULE_KEYS, ['honestidad', 'cleaver', 'terman', 'sales_sjt', 'digital_interview']),
-  'ASSIGNABLE_MODULE_KEYS intacto (cleaver sigue ejecutable)',
+  'ASSIGNABLE_MODULE_KEYS intacto',
   ASSIGNABLE_MODULE_KEYS,
 );
 
