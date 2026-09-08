@@ -3,6 +3,7 @@ import { sjtSalesTotalTimeSeconds } from '../data/sjtSalesData.js';
 import { termanTotalTimeSeconds } from '../data/termanData.js';
 import {
   filterConfigByModule,
+  isComingSoonModuleKey,
   isLegacyJsonModule,
   moduleMetaForKey,
   resolveModuleKey,
@@ -132,6 +133,38 @@ async function resolveModuleStartPayload({
   throw err;
 }
 
+/**
+ * Intento en curso reanudable del módulo.
+ * `matchAliases` solo se activa para módulos `comingSoon`, donde un intento
+ * guardado con una key legacy (ej. `disc`) debe reconocerse como el mismo módulo.
+ */
+export function pickResumableAttempt(attempts, moduleKey, { matchAliases = false } = {}) {
+  const target = resolveModuleKey(String(moduleKey || ''));
+  const found = (attempts || []).find((a) => {
+    if (a?.status !== 'in_progress') return false;
+    const raw = String(a.moduleKey || '');
+    return matchAliases ? resolveModuleKey(raw) === target : raw === target;
+  });
+  return found ?? null;
+}
+
+/**
+ * Mientras un módulo esté `comingSoon` solo puede reanudarse un intento ya
+ * existente; nunca crearse uno nuevo. Función pura: no escribe en BD, así que
+ * al rechazar no puede quedar ninguna escritura parcial.
+ *
+ * @returns {object|null} intento reanudable, o null si el módulo admite creación
+ */
+export function resolveStartableAttempt(moduleKey, attempts) {
+  const comingSoon = isComingSoonModuleKey(moduleKey);
+  const resumable = pickResumableAttempt(attempts, moduleKey, { matchAliases: comingSoon });
+  if (resumable || !comingSoon) return resumable;
+
+  const err = new Error('Esta evaluación se encuentra temporalmente no disponible.');
+  err.code = 'MODULE_UNAVAILABLE';
+  throw err;
+}
+
 export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
   const cand = await prisma.candidate.findUnique({ where: { userId } });
   if (!cand) {
@@ -151,7 +184,7 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     where: { id: assignmentId, candidateId: cand.id },
     include: {
       assessmentDefinition: true,
-      attempts: { where: { status: 'in_progress', moduleKey: mk } },
+      attempts: { where: { status: 'in_progress' }, orderBy: { startedAt: 'asc' } },
     },
   });
   if (!assignment) {
@@ -181,12 +214,14 @@ export async function startAttempt(userId, assignmentId, { moduleKey } = {}) {
     throw err;
   }
 
+  // Antes de cualquier escritura: los módulos `comingSoon` solo permiten reanudar.
+  const existing = resolveStartableAttempt(mk, assignment.attempts);
+
   const fullConfig = assignment.assessmentDefinition.config;
   const moduleConfig = filterConfigByModule(fullConfig, mk);
   const meta = moduleMetaForKey(mk);
   const timeLimitSec = resolveModuleTimeLimitSec(mk, moduleConfig, meta);
 
-  const existing = assignment.attempts[0];
   if (existing) {
     return resolveModuleStartPayload({
       assignmentId: assignment.id,

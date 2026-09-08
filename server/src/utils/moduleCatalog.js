@@ -17,8 +17,6 @@ export const ASSIGNABLE_MODULE_KEYS = [
   'digital_interview',
 ];
 
-export const DEFAULT_SELECTED_MODULES = [...ASSIGNABLE_MODULE_KEYS];
-
 /** Módulos retirados del catálogo (solo lectura histórica). */
 export const RETIRED_MODULE_KEYS = new Set(['mrr', 'habilidades_especificas']);
 
@@ -56,6 +54,14 @@ export const MODULE_CATALOG = {
     estimatedMinutes: null,
     sectionIds: ['principal'],
     questionIdRange: [1, 7],
+    /**
+     * Cerrado a nuevas asignaciones: 23 de 24 tétradas tienen la clave DISC
+     * MÁS/MENOS sin verificar (`pending_ml` en cleaverDiscKey.js).
+     * Retirar cuando `cleaverBankValidation.summary.fullyVerified === true`.
+     */
+    comingSoon: true,
+    /** El motor sigue sirviendo los intentos ya generados; solo se cierra la puerta de entrada. */
+    runnableWhileComingSoon: true,
   },
   terman: {
     label: 'Evaluación Cognitiva Analítica Mind24',
@@ -110,9 +116,19 @@ export function isComingSoonModuleKey(key) {
   return Boolean(cat?.comingSoon);
 }
 
+/**
+ * Módulo con motor ejecutable. Incluye los `comingSoon` marcados como
+ * `runnableWhileComingSoon`, para no romper intentos ya generados.
+ */
 export function isAssignableModuleKey(key) {
   const rk = resolveModuleKey(key);
   return ASSIGNABLE_MODULE_KEYS.includes(rk);
+}
+
+/** Módulo ofertable en NUEVAS asignaciones (excluye `comingSoon`). */
+export function isOfferableModuleKey(key) {
+  const rk = resolveModuleKey(key);
+  return ASSIGNABLE_MODULE_KEYS.includes(rk) && !isComingSoonModuleKey(rk);
 }
 
 /** Filtra claves válidas para nuevas asignaciones. */
@@ -122,14 +138,20 @@ export function filterAssignableModuleKeys(keys) {
   const seen = new Set();
   for (const raw of keys) {
     const rk = resolveModuleKey(String(raw));
-    if (!ASSIGNABLE_MODULE_KEYS.includes(rk) || seen.has(rk)) continue;
+    if (!isOfferableModuleKey(rk) || seen.has(rk)) continue;
     seen.add(rk);
     out.push(rk);
   }
   return out;
 }
 
-/** Módulos visibles en lobby de candidato (asignables con motor activo). */
+export const DEFAULT_SELECTED_MODULES = ASSIGNABLE_MODULE_KEYS.filter((k) => isOfferableModuleKey(k));
+
+/**
+ * Módulos visibles en lobby de candidato.
+ * Intencionalmente NO excluye `comingSoon`: un candidato con un intento en curso
+ * debe poder terminarlo. La puerta a nuevas aplicaciones está en la asignación.
+ */
 export function isCandidateLobbyModuleKey(key) {
   return isAssignableModuleKey(key);
 }
@@ -138,7 +160,8 @@ export function isCandidateLobbyModuleKey(key) {
 export function isModuleActiveInDb(key) {
   if (RETIRED_MODULE_KEYS.has(key)) return false;
   const cat = MODULE_CATALOG[key];
-  if (!cat || cat.comingSoon) return false;
+  if (!cat) return false;
+  if (cat.comingSoon && !cat.runnableWhileComingSoon) return false;
   if (ASSIGNABLE_MODULE_KEYS.includes(key)) return true;
   if (key === 'medida') return true;
   return false;

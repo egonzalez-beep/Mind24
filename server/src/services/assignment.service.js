@@ -1,6 +1,7 @@
 import { prisma } from '../db/client.js';
 import { assertOrganizationHasAssignmentCredits } from './organizationBilling.service.js';
 import { deleteDigitalInterviewAudioFiles } from '../utils/fileCleaner.js';
+import { filterAssignableModuleKeys } from '../utils/moduleCatalog.js';
 
 /** Asignaciones abiertas que se archivan al registrar una evaluación nueva del mismo candidato. */
 const OPEN_ASSIGNMENT_STATUSES = ['pending', 'in_progress'];
@@ -26,6 +27,16 @@ export async function createAssignment({
   assignedByUserId,
   selectedModules,
 }) {
+  // Última línea de defensa: ningún módulo cerrado a nuevas asignaciones
+  // (`comingSoon`) puede persistirse, sea cual sea el caller.
+  const requested = Array.isArray(selectedModules) ? selectedModules : null;
+  const offerable = requested ? filterAssignableModuleKeys(requested) : null;
+  if (requested?.length && !offerable.length) {
+    const err = new Error('Ningún módulo seleccionado está disponible para asignación.');
+    err.code = 'INVALID_MODULES';
+    throw err;
+  }
+
   return prisma.$transaction(async (tx) => {
     await assertOrganizationHasAssignmentCredits(tx, organizationId);
 
@@ -59,10 +70,7 @@ export async function createAssignment({
         assessmentDefinitionId,
         assignedByUserId,
         status: 'pending',
-        selectedModules:
-          Array.isArray(selectedModules) && selectedModules.length > 0
-            ? selectedModules.map((s) => String(s))
-            : undefined,
+        selectedModules: offerable?.length ? offerable : undefined,
       },
     });
   });

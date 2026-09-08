@@ -1,8 +1,51 @@
 /**
- * Clave DISC oficial — Test Cleaver (William Cleaver / manual español).
- * Una dimensión fija por adjetivo; no alterar textos del instrumento.
+ * Clave DISC — Test Cleaver (manual español).
+ *
+ * El instrumento se califica con DOS claves independientes: la palabra elegida
+ * como MÁS y la elegida como MENOS pueden apuntar a escalas distintas, y una
+ * selección puede ser válida sin sumar a ninguna escala (`null`).
+ *
+ * `CLEAVER_ML_KEY` contiene únicamente los bloques cuya clave MÁS/MENOS está
+ * verificada contra plantillas de calificación. Los bloques ausentes se
+ * resuelven desde `CLEAVER_LEGACY_DIMENSIONS` (una sola dimensión por adjetivo,
+ * heredada del mapeo anterior) y quedan marcados `pending_ml`: no se inventa
+ * clave M/L para ellos.
+ *
+ * No alterar los textos del instrumento.
  */
-export const CLEAVER_DISC_DIMENSIONS = {
+
+export const CLEAVER_DISC_KEYS = ['D', 'I', 'S', 'C'];
+
+/** Esquema de metadata de opción soportado por el scorer M/L. */
+export const CLEAVER_KEY_SCHEMA = 'ml_v1';
+
+/** Estado de verificación psicométrica de la clave de un bloque. */
+export const CLEAVER_KEY_STATUS = {
+  VERIFIED: 'verified_ml',
+  PENDING: 'pending_ml',
+};
+
+export const CLEAVER_KEY_STATUSES = Object.values(CLEAVER_KEY_STATUS);
+
+/**
+ * Claves MÁS/MENOS verificadas, indexadas por número de bloque (tétrada).
+ * `null` = selección válida que no puntúa en esa escala.
+ */
+export const CLEAVER_ML_KEY = {
+  18: {
+    Conforme: { dimensionMore: null, dimensionLess: 'S' },
+    Confiable: { dimensionMore: 'I', dimensionLess: 'I' },
+    Pacífico: { dimensionMore: 'C', dimensionLess: 'C' },
+    Positivo: { dimensionMore: 'D', dimensionLess: 'D' },
+  },
+};
+
+/**
+ * Mapeo heredado de una dimensión por adjetivo. Se usa como clave M/L simétrica
+ * (`dimensionMore === dimensionLess`) para los bloques todavía sin verificar.
+ * Conservar como registro auditable del banco anterior.
+ */
+export const CLEAVER_LEGACY_DIMENSIONS = {
   Persuasivo: 'I',
   Gentil: 'S',
   Humilde: 'C',
@@ -100,12 +143,50 @@ export const CLEAVER_DISC_DIMENSIONS = {
   Devoto: 'C',
 };
 
-export const CLEAVER_DISC_KEYS = ['D', 'I', 'S', 'C'];
+/** Bloques con clave MÁS/MENOS verificada. */
+export function verifiedCleaverBlockOrders() {
+  return Object.keys(CLEAVER_ML_KEY)
+    .map((k) => Number(k))
+    .filter((n) => Number.isInteger(n))
+    .sort((a, b) => a - b);
+}
 
-export function dimensionForCleaverWord(text) {
-  const dim = CLEAVER_DISC_DIMENSIONS[text];
-  if (!dim || !CLEAVER_DISC_KEYS.includes(dim)) {
-    throw new Error(`Cleaver DISC key missing for word: ${text}`);
+export function isVerifiedCleaverBlock(blockOrder) {
+  return Object.prototype.hasOwnProperty.call(CLEAVER_ML_KEY, String(blockOrder));
+}
+
+/**
+ * Resuelve la clave MÁS/MENOS de un adjetivo dentro de una tétrada concreta.
+ * La clave real del instrumento es posicional, por eso requiere el bloque.
+ *
+ * @returns {{ dimensionMore: string|null, dimensionLess: string|null, keyStatus: string }}
+ */
+export function mlKeyForCleaverWord(blockOrder, text) {
+  const verifiedBlock = CLEAVER_ML_KEY[blockOrder];
+  const verified = verifiedBlock ? verifiedBlock[text] : undefined;
+
+  if (verified) {
+    return {
+      dimensionMore: verified.dimensionMore ?? null,
+      dimensionLess: verified.dimensionLess ?? null,
+      keyStatus: CLEAVER_KEY_STATUS.VERIFIED,
+    };
   }
-  return dim;
+
+  if (verifiedBlock) {
+    throw new Error(
+      `Cleaver: el bloque ${blockOrder} tiene clave M/L verificada pero falta la palabra "${text}"`,
+    );
+  }
+
+  const legacy = CLEAVER_LEGACY_DIMENSIONS[text];
+  if (!legacy || !CLEAVER_DISC_KEYS.includes(legacy)) {
+    throw new Error(`Cleaver: falta clave DISC para la palabra "${text}" (bloque ${blockOrder})`);
+  }
+
+  return {
+    dimensionMore: legacy,
+    dimensionLess: legacy,
+    keyStatus: CLEAVER_KEY_STATUS.PENDING,
+  };
 }

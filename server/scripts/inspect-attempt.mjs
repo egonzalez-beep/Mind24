@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import { resolveModuleKey } from '../src/utils/moduleCatalog.js';
-import { dimensionFromOption } from '../src/services/cleaverScoring.service.js';
+import { resolveOptionDimension } from '../src/services/cleaverScoring.service.js';
 import { CLEAVER_TETRAD_COUNT } from '../src/data/cleaverData.js';
 import { TERMAN_MAX_RAW_SCORE } from '../src/data/termanData.js';
 
@@ -33,26 +33,45 @@ const prisma = new PrismaClient();
 
 function auditCleaverResponses(rows) {
   const issues = [];
-  let missingDim = 0;
-  let sameMoreLess = 0;
+  const keySources = new Set();
+  let invalidMetadata = 0;
+  let unscoredMore = 0;
+  let unscoredLess = 0;
+  let sameOptionId = 0;
+
   for (const row of rows) {
-    const moreDim = dimensionFromOption(row.moreOption);
-    const lessDim = dimensionFromOption(row.lessOption);
-    if (!moreDim || !lessDim) {
-      missingDim++;
+    if (row.moreOptionId && row.moreOptionId === row.lessOptionId) {
+      sameOptionId++;
+      issues.push({ questionId: row.questionId, type: 'same_option_id', optionId: row.moreOptionId });
+      continue;
+    }
+    try {
+      const more = resolveOptionDimension(row.moreOption, 'more');
+      const less = resolveOptionDimension(row.lessOption, 'less');
+      keySources.add(more.source);
+      keySources.add(less.source);
+      if (!more.dimension) unscoredMore++;
+      if (!less.dimension) unscoredLess++;
+    } catch (err) {
+      invalidMetadata++;
       issues.push({
         questionId: row.questionId,
+        type: err.message,
         moreOptionId: row.moreOptionId,
         lessOptionId: row.lessOptionId,
-        moreDim,
-        lessDim,
+        details: err.details ?? null,
       });
-    } else if (moreDim === lessDim) {
-      sameMoreLess++;
-      issues.push({ questionId: row.questionId, moreDim, lessDim, type: 'same_more_less' });
     }
   }
-  return { missingDim, sameMoreLess, issues };
+
+  return {
+    invalidMetadata,
+    sameOptionId,
+    unscoredMore,
+    unscoredLess,
+    keySources: [...keySources].sort(),
+    issues,
+  };
 }
 
 function auditTermanResponses(rows) {
@@ -194,7 +213,7 @@ async function main() {
     };
   }
 
-  if (moduleAudit?.missingDim > 0 || moduleAudit?.sameMoreLess > 0) {
+  if (moduleAudit?.invalidMetadata > 0 || moduleAudit?.sameOptionId > 0) {
     report.inferredCompleteFailure = {
       hypothesis: 'VALIDATION_ERROR',
       cleaverIssues: moduleAudit,

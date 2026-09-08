@@ -1,5 +1,12 @@
 import { prisma as defaultPrisma } from '../db/client.js';
-import { CLEAVER_TETRAD_COUNT, cleaverBlocks } from '../data/cleaverData.js';
+import {
+  CLEAVER_CATALOG_VERSION,
+  CLEAVER_TETRAD_COUNT,
+  cleaverBankValidation,
+  cleaverBlockByOrder,
+  cleaverBlocks,
+  cleaverOptionMetadataEquals,
+} from '../data/cleaverData.js';
 import {
   SJT_SALES_CATALOG_VERSION,
   sjtSalesQuestionCount,
@@ -11,8 +18,7 @@ import {
   termanQuestionsFlat,
 } from '../data/termanData.js';
 
-/** Incrementar cuando cambie la clave DISC o el banco Cleaver (fuerza resync en prod). */
-export const CLEAVER_CATALOG_VERSION = 2;
+export { CLEAVER_CATALOG_VERSION };
 import {
   MODULE_CATALOG,
   MIND24_MODULE_KEYS,
@@ -116,54 +122,80 @@ async function ensurePlaceholderQuestions(db, moduleIdByKey) {
   return created;
 }
 
-async function cleaverBankNeedsResync(db, moduleId) {
-  const expected = CLEAVER_TETRAD_COUNT;
-  const existing = await db.question.count({
-    where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
-  });
-  if (existing !== expected) return true;
+/** Número de bloque declarado por una pregunta Cleaver persistida. */
+function cleaverQuestionOrder(question) {
+  const meta = question?.metadata;
+  const declared =
+    meta && typeof meta === 'object' && !Array.isArray(meta)
+      ? Number(meta.order ?? meta.blockNumber)
+      : Number.NaN;
+  if (Number.isInteger(declared) && declared >= 1 && declared <= CLEAVER_TETRAD_COUNT) {
+    return declared;
+  }
+  const bySortOrder = Number(question?.sortOrder) + 1;
+  return Number.isInteger(bySortOrder) ? bySortOrder : null;
+}
 
-  const options = await db.questionOption.findMany({
-    where: {
-      question: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
-    },
-    select: { metadata: true, value: true },
-  });
-  if (options.length !== expected * 4) return true;
-
-  const versionRow = await db.evaluationModule.findUnique({
-    where: { id: moduleId },
-    select: { description: true },
-  });
-  const desc = String(versionRow?.description || '');
-  if (!desc.includes(`catalog:v${CLEAVER_CATALOG_VERSION}`)) return true;
-
-  return options.some((o) => {
-    const meta = o.metadata;
-    const dim =
-      meta && typeof meta === 'object' && !Array.isArray(meta)
-        ? String(meta.dimension || '').trim()
-        : '';
-    return !dim || !['D', 'I', 'S', 'C'].includes(dim.toUpperCase());
+async function countCleaverResponses(db, moduleId) {
+  return db.candidateResponse.count({
+    where: { question: { moduleId, type: 'CLEAVER_MATRIX' } },
   });
 }
 
-async function ensureCleaverQuestions(db, moduleId) {
-  const expected = CLEAVER_TETRAD_COUNT;
-  const existing = await db.question.count({
-    where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
-  });
+/**
+ * Calcula (sin escribir) qué opciones Cleaver difieren de la clave M/L canónica.
+ * Se planifica el lote completo antes de tocar la BD para no dejar escrituras a medias.
+ */
+function planCleaverOptionSync(questions) {
+  const updates = [];
+  for (const question of questions) {
+    const order = cleaverQuestionOrder(question);
+    const block = cleaverBlockByOrder(order);
+    if (!block) {
+      return { ok: false, reason: `pregunta ${question.id} sin bloque canónico (order=${order})` };
+    }
+    if (question.options.length !== block.options.length) {
+      return {
+        ok: false,
+        reason: `tétrada ${order}: ${question.options.length} opciones persistidas, se esperaban ${block.options.length}`,
+      };
+    }
 
-  if (existing === expected && !(await cleaverBankNeedsResync(db, moduleId))) {
-    return { existing, created: 0, expected };
+    const canonicalByLabel = new Map(block.options.map((opt) => [opt.text, opt]));
+    for (const option of question.options) {
+      const canonical = canonicalByLabel.get(option.label);
+      if (!canonical) {
+        return { ok: false, reason: `tétrada ${order}: label "${option.label}" fuera del banco canónico` };
+      }
+      const sameMetadata = cleaverOptionMetadataEquals(option.metadata, canonical.metadata);
+      const sameValue = (option.value ?? '') === canonical.value;
+      if (sameMetadata && sameValue) continue;
+
+      updates.push({
+        optionId: option.id,
+        metadata: canonical.metadata,
+        value: canonical.value,
+      });
+    }
   }
+  return { ok: true, updates };
+}
 
-  if (existing > 0) {
-    await db.question.deleteMany({
-      where: { moduleId, type: 'CLEAVER_MATRIX' },
+/**
+ * Aplica el lote planificado. Solo escribe `metadata` y `value`: no borra
+ * preguntas, no recrea optionIds y no toca CandidateResponse.
+ */
+async function applyCleaverOptionSync(db, updates) {
+  for (const update of updates) {
+    await db.questionOption.update({
+      where: { id: update.optionId },
+      data: { metadata: update.metadata, value: update.value },
     });
   }
+  return updates.length;
+}
 
+async function createCleaverQuestions(db, moduleId) {
   for (let b = 0; b < cleaverBlocks.length; b++) {
     const block = cleaverBlocks[b];
     const order = block.order;
@@ -179,21 +211,67 @@ async function ensureCleaverQuestions(db, moduleId) {
         },
         sortOrder: b,
         options: {
-          create: block.options.map((opt, j) => {
-            const dimension = opt.metadata?.dimension ?? '';
-            return {
-              label: opt.text,
-              value: dimension,
-              metadata: { dimension },
-              sortOrder: j,
-            };
-          }),
+          create: block.options.map((opt, j) => ({
+            label: opt.text,
+            value: opt.value,
+            metadata: opt.metadata,
+            sortOrder: j,
+          })),
         },
       },
     });
   }
+  return cleaverBlocks.length;
+}
 
-  return { existing, created: cleaverBlocks.length, expected };
+/**
+ * Idempotente y no destructivo: si las 24 tétradas existen, solo sincroniza la
+ * metadata de sus opciones. Nunca borra preguntas que tengan respuestas.
+ */
+async function ensureCleaverQuestions(db, moduleId) {
+  const expected = CLEAVER_TETRAD_COUNT;
+  const questions = await db.question.findMany({
+    where: { moduleId, type: 'CLEAVER_MATRIX', isActive: true },
+    include: { options: { orderBy: { sortOrder: 'asc' } } },
+    orderBy: { sortOrder: 'asc' },
+  });
+  const existing = questions.length;
+
+  if (existing === expected) {
+    const plan = planCleaverOptionSync(questions);
+    if (plan.ok) {
+      const patched = await applyCleaverOptionSync(db, plan.updates);
+      if (patched) {
+        console.log(`[catalog] Cleaver: clave M/L sincronizada en ${patched} opción(es).`);
+      }
+      return { existing, created: 0, expected, patched };
+    }
+
+    const responses = await countCleaverResponses(db, moduleId);
+    if (responses > 0) {
+      console.warn(
+        `[catalog] Cleaver: banco divergente con ${responses} respuesta(s) histórica(s); no se recrea. Motivo: ${plan.reason}`,
+      );
+      return { existing, created: 0, expected, patched: 0, mismatch: plan.reason, responses };
+    }
+
+    console.warn(`[catalog] Cleaver: banco divergente sin respuestas; se regenera. Motivo: ${plan.reason}`);
+    await db.question.deleteMany({ where: { moduleId, type: 'CLEAVER_MATRIX' } });
+    return { existing, created: await createCleaverQuestions(db, moduleId), expected, patched: 0 };
+  }
+
+  if (existing > 0) {
+    const responses = await countCleaverResponses(db, moduleId);
+    if (responses > 0) {
+      console.warn(
+        `[catalog] Cleaver: ${existing}/${expected} tétradas activas con ${responses} respuesta(s) histórica(s); requiere migración manual.`,
+      );
+      return { existing, created: 0, expected, patched: 0, mismatch: 'count_mismatch', responses };
+    }
+    await db.question.deleteMany({ where: { moduleId, type: 'CLEAVER_MATRIX' } });
+  }
+
+  return { existing, created: await createCleaverQuestions(db, moduleId), expected, patched: 0 };
 }
 
 async function termanBankNeedsResync(db, moduleId) {
@@ -344,7 +422,7 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   const placeholdersCreated = await ensurePlaceholderQuestions(db, moduleIdByKey);
 
   const cleaverModuleId = moduleIdByKey.cleaver;
-  let cleaver = { existing: 0, created: 0 };
+  let cleaver = { existing: 0, created: 0, patched: 0 };
   if (cleaverModuleId) {
     cleaver = await ensureCleaverQuestions(db, cleaverModuleId);
   }
@@ -389,6 +467,10 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
     salesSjtExpected: sjtSalesQuestionCount(),
     placeholdersCreated,
     cleaverSeeded: cleaver.created,
+    cleaverOptionsPatched: cleaver.patched ?? 0,
+    cleaverKeyMismatch: cleaver.mismatch ?? null,
+    cleaverKeyVerifiedBlocks: cleaverBankValidation.summary.verifiedCount,
+    cleaverKeyPendingBlocks: cleaverBankValidation.summary.pendingBlocks,
     termanSeeded: terman.created,
     salesSjtSeeded: salesSjt.created,
   };

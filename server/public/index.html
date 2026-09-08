@@ -2139,7 +2139,7 @@ function crearEvalModTableLabel(key){
 const MIND24_ASSIGNABLE_KEYS=['honestidad','cleaver','terman','sales_sjt','digital_interview'];
 const MIND24_EVAL_MODULES=[
   {key:'honestidad',label:'Batería de Honestidad (Exclusivo Mind24)',description:'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',icon:'🛡️',featured:true},
-  {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
+  {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯',comingSoon:true},
   {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'sales_sjt',label:'Simulador de Escenarios Comerciales (SJT)',description:'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',icon:'📊'},
   {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
@@ -2695,7 +2695,7 @@ function crearEvalSyncModSummary(){
   const n=crearEvalCountSelectedModules();
   const te=document.getElementById('cev-mod-time-estimate');
   const mc=document.getElementById('mod-counter');
-  const total=MIND24_ASSIGNABLE_KEYS.length;
+  const total=MIND24_EVAL_MODULES.filter(mind24ModAssignable).length;
   if(te) te.classList.add('hidden');
   if(mc) mc.textContent=n+'/'+total+' activos';
 }
