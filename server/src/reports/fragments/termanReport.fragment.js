@@ -1,4 +1,5 @@
 import { esc } from '../reportUtils.js';
+import { formatTermanCompletenessText } from '../../services/termanScoring.service.js';
 
 /**
  * Macro-categorías cognitivas Mind24.
@@ -167,6 +168,13 @@ export function buildTermanModuleFragment(ctx) {
 
   const hbarChart  = buildTermanHbarChart(series);
   const macroCards = buildMacroCards(series);
+  const completenessHtml =
+    scores.answeredCount != null
+      ? `<div class="section">
+      <div class="section-title">Completitud de la aplicación</div>
+      <p class="interp">${esc(formatTermanCompletenessText(scores))}</p>
+    </div>`
+      : '';
 
   return `
   <section class="module-block" id="mod-terman">
@@ -189,6 +197,7 @@ export function buildTermanModuleFragment(ctx) {
         <div class="kpi-badge">Porcentaje global de aciertos</div>
       </div>
     </div>
+    ${completenessHtml}
     <div class="section">
       <div class="section-title">Síntesis de perfil analítico</div>
       <p class="interp">${synth}</p>

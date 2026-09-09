@@ -12,6 +12,7 @@ import {
 import {
   buildTermanAttemptScores,
   buildTermanHrInterpretation,
+  computeTermanCompleteness,
   scoreTermanResponses,
 } from './termanScoring.service.js';
 import {
@@ -469,6 +470,13 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     let scoring;
     try {
       scoring = scoreTermanResponses(termanRows);
+      Object.assign(
+        scoring,
+        computeTermanCompleteness(
+          (mod?.questions || []).map((q) => q.id),
+          termanRows,
+        ),
+      );
     } catch (scoreErr) {
       diagCompleteFail(attemptId, 'scoring:terman', scoreErr);
       throw scoreErr;
@@ -477,6 +485,8 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
       module: 'terman',
       rawScore: scoring.rawScore,
       responseRows: termanRows.length,
+      answeredCount: scoring.answeredCount,
+      unansweredCount: scoring.unansweredCount,
     });
     attemptScores = buildTermanAttemptScores(scoring);
     interpretation = buildTermanHrInterpretation(scoring);

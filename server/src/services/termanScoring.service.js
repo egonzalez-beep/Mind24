@@ -1,6 +1,50 @@
 import { TERMAN_MAX_RAW_SCORE, TERMAN_SERIES } from '../data/termanData.js';
 
 /**
+ * Conteo de reactivos respondidos vs omitidos (denominador fijo 50).
+ * @param {string[]} questionIds IDs del módulo activo en BD
+ * @param {Array<{ questionId: string, selectedOptionId: string|null }>} responseRows
+ */
+export function computeTermanCompleteness(questionIds, responseRows) {
+  const expectedTotal = TERMAN_MAX_RAW_SCORE;
+  const validIds = new Set((Array.isArray(questionIds) ? questionIds : []).filter(Boolean));
+  const answeredIds = new Set();
+  for (const row of responseRows || []) {
+    if (row?.selectedOptionId && row?.questionId) answeredIds.add(row.questionId);
+  }
+
+  let answeredCount = 0;
+  if (validIds.size > 0) {
+    for (const id of validIds) {
+      if (answeredIds.has(id)) answeredCount += 1;
+    }
+  } else {
+    answeredCount = Math.min(answeredIds.size, expectedTotal);
+  }
+
+  const unansweredCount = Math.max(0, expectedTotal - answeredCount);
+  const completionRate =
+    expectedTotal > 0 ? Math.round((answeredCount / expectedTotal) * 1000) / 10 : 0;
+
+  return { answeredCount, unansweredCount, completionRate, expectedTotal };
+}
+
+/** Texto informativo para RH/PDF (sin juicio de validez). */
+export function formatTermanCompletenessText(completeness) {
+  const total = Number(completeness?.expectedTotal) || TERMAN_MAX_RAW_SCORE;
+  const answered = Number(completeness?.answeredCount) || 0;
+  const unanswered =
+    completeness?.unansweredCount != null
+      ? Number(completeness.unansweredCount)
+      : Math.max(0, total - answered);
+  if (unanswered <= 0) {
+    return `${answered} de ${total} reactivos respondidos.`;
+  }
+  const noun = unanswered === 1 ? 'reactivo quedó' : 'reactivos quedaron';
+  return `${answered} de ${total} reactivos respondidos. ${unanswered} ${noun} sin respuesta.`;
+}
+
+/**
  * Califica intento Terman comparando opción seleccionada vs índice correcto en metadata.
  * @param {Array<{ questionId: string, selectedOptionId: string|null, question: object, selectedOption: object|null }>} rows
  */
@@ -93,6 +137,9 @@ export function buildTermanAttemptScores(scoring) {
       iqEstimate: scoring.iqEstimate,
       ciNote: scoring.ciNote,
       series: scoring.series,
+      answeredCount: scoring.answeredCount,
+      unansweredCount: scoring.unansweredCount,
+      completionRate: scoring.completionRate,
     },
     meta: {
       scoredAt: new Date().toISOString(),
@@ -109,10 +156,12 @@ export function buildTermanHrInterpretation(scoring) {
     (a, b) => (Number(b.percent) || 0) - (Number(a.percent) || 0),
   )[0];
   const seriesNote = topSeries?.name ? ` Serie más fuerte: ${topSeries.name}.` : '';
+  const completenessNote =
+    scoring.answeredCount != null ? ` ${formatTermanCompletenessText(scoring)}` : '';
   return {
     verdict: 'Evaluación cognitiva calificada',
     badge: '◈',
-    description: `Resultado de la evaluación cognitiva: puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos).${seriesNote}`,
+    description: `Resultado de la evaluación cognitiva: puntaje bruto ${scoring.rawScore}/${scoring.totalQuestions} (${scoring.percentCorrect}% aciertos).${seriesNote}${completenessNote}`,
     termanRawScore: scoring.rawScore,
   };
 }
