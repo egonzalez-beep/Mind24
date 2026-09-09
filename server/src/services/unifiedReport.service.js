@@ -9,6 +9,8 @@ import {
   formatModuleListSpanish,
 } from '../utils/moduleCatalog.js';
 import { buildUnifiedReportHtml } from '../reports/unifiedReport.template.js';
+import { buildModuleCoverSummaries } from '../reports/coverSummary.js';
+import { resolveMind24LogoDataUri } from '../reports/reportBranding.js';
 import {
   buildModuleFragment,
   orderAttemptsBySelection,
@@ -112,15 +114,19 @@ export async function buildUnifiedPdfForAssignment(adminUserId, assignmentId) {
   );
 
   const modulesAppliedLine = formatModuleListSpanish(moduleKeys, moduleReportLabel);
+  const moduleCoverSummaries = buildModuleCoverSummaries(orderedAttempts);
+  const logo = resolveMind24LogoDataUri();
 
   const html = buildUnifiedReportHtml({
     organizationName: assignment.candidate.organization?.name || 'Organización',
     candidateName: display.name,
     puesto: display.puesto,
     curp,
-    instrumentLabel: 'Mind24',
     modulesAppliedLine,
+    moduleCount: moduleCoverSummaries.length,
     completedAt,
+    moduleCoverSummaries,
+    logoDataUri: logo?.dataUri ?? null,
     moduleFragmentsHtml: fragments.join('\n'),
   });
 
