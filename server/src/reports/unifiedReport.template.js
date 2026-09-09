@@ -10,9 +10,6 @@ const MASTER_STYLES = `
   .page{padding:0}
   .cover-page{
     padding:32px 36px 28px;
-    min-height:277mm;
-    display:flex;
-    flex-direction:column;
     page-break-after:always;
     background:linear-gradient(165deg,#FAFAFF 0%,#fff 42%,#fff 100%);
     border-bottom:1px solid #E5E7EB;
@@ -20,7 +17,7 @@ const MASTER_STYLES = `
   .cover-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}
   .cover-logo-slot{flex:0 0 auto;width:180px;max-width:40%;min-height:40px;display:flex;align-items:center}
   .cover-logo-img{max-width:180px;max-height:40px;width:auto;height:auto;display:block;object-fit:contain}
-  .cover-logo-placeholder{width:148px;height:36px;border:1px dashed #E5E7EB;border-radius:8px;background:rgba(255,255,255,.6)}
+  .cover-logo-fallback{font-size:21px;font-weight:800;color:#4C1D95;letter-spacing:-.03em;line-height:1}
   .cover-brand-text{text-align:right;flex:1;min-width:0}
   .cover-product{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#7C3AED}
   .cover-title{font-size:22px;font-weight:800;color:#4C1D95;letter-spacing:-.03em;line-height:1.2;margin-top:6px}
@@ -36,19 +33,29 @@ const MASTER_STYLES = `
     border-radius:12px;
     background:#fff;
     box-shadow:0 1px 3px rgba(17,24,39,.04);
-    margin-bottom:24px;
+    margin-bottom:20px;
   }
   .cover-meta-item label{display:block;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9CA3AF;margin-bottom:3px}
   .cover-meta-item span{font-size:12px;font-weight:600;color:#111827;line-height:1.4}
   .cover-meta-item span.cover-meta-muted{color:#6B7280;font-weight:500}
   .cover-meta-item--wide{grid-column:1/-1}
   .cover-status{display:inline-block;padding:3px 10px;border-radius:999px;background:#D1FAE5;color:#065F46;font-size:9px;font-weight:700;letter-spacing:.04em}
-  .cover-battery{margin-top:auto;padding-top:8px}
+  .cover-battery{margin-top:0}
   .cover-battery-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #EDE9FE}
   .cover-section-icon{width:18px;height:18px;color:#7C3AED;flex-shrink:0}
   .cover-battery-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#5B21B6}
   .summary-grid{display:grid;gap:14px;width:100%}
-  .summary-grid--1{grid-template-columns:1fr;max-width:480px}
+  .summary-grid--1{grid-template-columns:1fr;width:100%}
+  .summary-grid--1 .summary-card{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 28px;
+    min-height:auto;
+    padding:18px 22px;
+  }
+  .summary-grid--1 .summary-card-title{grid-column:1/-1;margin-bottom:2px}
+  .summary-grid--1 .summary-kpi{margin-bottom:0}
+  .summary-grid--1 .summary-kpi:last-child{margin-top:0}
   .summary-grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
   .summary-grid--multi{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
   .summary-card{
@@ -153,7 +160,7 @@ function buildLogoSlotHtml(logoDataUri) {
   if (logoDataUri) {
     return `<img src="${logoDataUri}" alt="Mind24" class="cover-logo-img"/>`;
   }
-  return '<div class="cover-logo-placeholder" title="Logo Mind24"></div>';
+  return '<span class="cover-logo-fallback" aria-hidden="true">Mind24</span>';
 }
 
 function buildCoverPageHtml(ctx) {

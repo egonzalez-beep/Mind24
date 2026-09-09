@@ -191,7 +191,8 @@ for (const sc of scenarios) {
   check(/Reporte de Evaluación Psicométrica/.test(html), `${sc.name}: título`);
   check(/Resultados de la batería/.test(html), `${sc.name}: sección batería`);
   check(/page-break-after:always/.test(html), `${sc.name}: salto de página portada`);
-  check(/cover-logo-placeholder/.test(html), `${sc.name}: placeholder logo`);
+  check(/cover-logo-fallback/.test(html), `${sc.name}: fallback tipográfico logo`);
+  check(!/cover-logo-placeholder/.test(html), `${sc.name}: sin rectángulo punteado`);
   check(!/cover-meta-item.*CURP/s.test(html) || !sc.noCurp, `${sc.name}: CURP omitido si ausente`);
   if (sc.noCurp) check(!html.includes('LOPM850101'), `${sc.name}: sin CURP en HTML`);
   const outPath = path.join(OUT_DIR, `report-cover-${sc.name}.html`);
