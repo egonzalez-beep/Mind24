@@ -15,15 +15,72 @@ const RISK_MESSAGES = {
     'Indicadores de ambivalencia en compromiso institucional bajo presión o incentivos externos.',
 };
 
-function riskMessageForDimension(id, label) {
-  const key = String(id || '')
+const SVG_SHIELD = `<svg class="module-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+
+function normalizeKey(s) {
+  return String(s || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{M}/gu, '');
+}
+
+function riskMessageForDimension(id, label) {
+  const key = normalizeKey(id);
   if (RISK_MESSAGES[key]) return RISK_MESSAGES[key];
   if (key.includes('honest')) return RISK_MESSAGES.honestidad;
   if (key.includes('etic')) return RISK_MESSAGES.etica;
   return `La dimensión «${label}» presenta un puntaje por debajo del umbral de referencia; se recomienda profundizar en entrevista estructurada.`;
+}
+
+function stripLegacyEmoji(text) {
+  return String(text || '')
+    .replace(/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u, '')
+    .trim();
+}
+
+function formatElapsed(seconds) {
+  const sec = Math.max(0, Math.floor(Number(seconds) || 0));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/** @returns {'Normal'|'Revisar'|'Baja confiabilidad'|'No interpretable'|'—'} */
+export function reliabilityStateLabel(level) {
+  switch (level) {
+    case 'normal':
+      return 'Normal';
+    case 'review':
+      return 'Revisar';
+    case 'low_reliability':
+      return 'Baja confiabilidad';
+    case 'invalid':
+      return 'No interpretable';
+    default:
+      return '—';
+  }
+}
+
+function reliabilityStateClass(level) {
+  switch (level) {
+    case 'normal':
+      return 'hon-rel-pill hon-rel-normal';
+    case 'review':
+      return 'hon-rel-pill hon-rel-review';
+    case 'low_reliability':
+      return 'hon-rel-pill hon-rel-low';
+    case 'invalid':
+      return 'hon-rel-pill hon-rel-invalid';
+    default:
+      return 'hon-rel-pill hon-rel-muted';
+  }
+}
+
+function scoreBarColor(score) {
+  const n = Number(score) || 0;
+  if (n < RISK_THRESHOLD) return '#EF4444';
+  if (n >= 70) return '#10B981';
+  return '#F59E0B';
 }
 
 /** @returns {{ label: string, avg: number, message: string }[]} */
@@ -66,60 +123,203 @@ export function isHonestidadPruebaInvalida(interpretation, meta) {
   if (meta?.speedReliability === 'invalid') return true;
   if (meta?.reliability?.speedReliability === 'invalid') return true;
   if (meta?.reliability?.calibrationReliability === 'invalid') return true;
-  const v = String(interpretation?.verdict || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '');
+  const v = normalizeKey(interpretation?.verdict);
   return v.includes('invalida') || v.includes('no confiable');
 }
 
 /**
- * Componente visual: Semáforo horizontal + barra termómetro con zona de colores.
- * Verde ≥70% | Amarillo 60-69% | Rojo <60%
- * @param {{ invalid?: boolean, lowReliability?: boolean }} [opts]
+ * Estado visual del semáforo — coherente con veredicto real, no solo con el global.
+ * @returns {'pass'|'review'|'fail'|'invalid'}
+ */
+export function resolveHonestidadSemaforoState(verdict, opts = {}) {
+  if (opts.invalid === true) return 'invalid';
+  if (opts.lowReliability === true) return 'review';
+
+  const v = normalizeKey(verdict);
+  if (v.includes('invalida') || v.includes('no confiable')) return 'invalid';
+  if (v.includes('no aprobatorio')) return 'fail';
+  if (v.includes('reservas')) return 'review';
+  if (v.includes('aprobatorio')) return 'pass';
+  return 'review';
+}
+
+/**
+ * Semáforo + barra de posición global. La luz activa sigue el veredicto integrado.
  */
 function buildVerdictSemaforo(globalScore, verdict, opts = {}) {
   const pct = Math.min(100, Math.max(0, Number(globalScore) || 0));
-  const forceInvalid = opts.invalid === true;
-  const forceLowRel = opts.lowReliability === true && !forceInvalid;
-  const isGreen  = !forceInvalid && !forceLowRel && pct >= 70;
-  const isYellow = !forceInvalid && (forceLowRel || (pct >= 60 && pct < 70));
-  const isRed    = forceInvalid || (!forceLowRel && pct < 60);
+  const state = resolveHonestidadSemaforoState(verdict, opts);
+  const isGreen = state === 'pass';
+  const isYellow = state === 'review';
+  const isRed = state === 'fail' || state === 'invalid';
 
   const textColor = isGreen ? '#065F46' : isYellow ? '#92400E' : '#991B1B';
-  const bgColor   = isGreen ? '#ECFDF5' : isYellow ? '#FFFBEB'  : '#FEF2F2';
-  const bdColor   = isGreen ? '#6EE7B7' : isYellow ? '#FCD34D'  : '#FCA5A5';
+  const bgColor = isGreen ? '#ECFDF5' : isYellow ? '#FFFBEB' : '#FEF2F2';
+  const bdColor = isGreen ? '#6EE7B7' : isYellow ? '#FCD34D' : '#FCA5A5';
 
-  const redLit    = isRed    ? '#EF4444' : '#FECACA';
+  const redLit = isRed ? '#EF4444' : '#FECACA';
   const yellowLit = isYellow ? '#F59E0B' : '#FDE68A';
-  const greenLit  = isGreen  ? '#10B981' : '#A7F3D0';
+  const greenLit = isGreen ? '#10B981' : '#A7F3D0';
 
-  const redSh    = isRed    ? 'box-shadow:0 0 8px rgba(239,68,68,.6);'    : '';
-  const yellowSh = isYellow ? 'box-shadow:0 0 8px rgba(245,158,11,.6);'   : '';
-  const greenSh  = isGreen  ? 'box-shadow:0 0 8px rgba(16,185,129,.6);'   : '';
+  const redSh = isRed ? 'box-shadow:0 0 8px rgba(239,68,68,.6);' : '';
+  const yellowSh = isYellow ? 'box-shadow:0 0 8px rgba(245,158,11,.6);' : '';
+  const greenSh = isGreen ? 'box-shadow:0 0 8px rgba(16,185,129,.6);' : '';
 
   const markerPct = pct.toFixed(1);
 
   return `
-<div style="margin:12px 0 18px;padding:14px 16px;border-radius:12px;background:${bgColor};border:1.5px solid ${bdColor};">
+<div class="hon-semaforo" style="margin:0 0 14px;padding:14px 16px;border-radius:12px;background:${bgColor};border:1.5px solid ${bdColor};">
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
     <div style="display:flex;gap:10px;align-items:center;">
       <div style="width:22px;height:22px;border-radius:50%;background:${redLit};${redSh}"></div>
       <div style="width:22px;height:22px;border-radius:50%;background:${yellowLit};${yellowSh}"></div>
       <div style="width:22px;height:22px;border-radius:50%;background:${greenLit};${greenSh}"></div>
     </div>
-    <span style="font-size:13px;font-weight:800;color:${textColor};">${esc(verdict)}</span>
-    <span style="font-size:12px;font-weight:800;color:${textColor};margin-left:auto;">${markerPct}%</span>
+    <span style="font-size:10px;color:#6B7280;font-weight:600;margin-left:auto;">Posición global: ${markerPct}%</span>
   </div>
   <div style="position:relative;height:14px;border-radius:7px;overflow:hidden;background:linear-gradient(to right,#FCA5A5 0%,#FCA5A5 60%,#FDE68A 60%,#FDE68A 70%,#6EE7B7 70%,#6EE7B7 100%);">
     <div style="position:absolute;top:0;left:calc(${markerPct}% - 1.5px);width:3px;height:100%;background:#1F2937;border-radius:2px;"></div>
   </div>
   <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:8px;color:#6B7280;font-weight:600;">
-    <span>No Aprobatorio (&lt;60%)</span>
-    <span>Bajo Reservas (60–70%)</span>
-    <span>Aprobatorio (&gt;70%)</span>
+    <span>No Aprobatorio</span>
+    <span>Con reservas</span>
+    <span>Aprobatorio</span>
+  </div>
+  <p style="margin-top:8px;font-size:8px;color:#6B7280;line-height:1.45;">El semáforo refleja el veredicto integrado (dimensiones críticas, global y confiabilidad). La marca indica el índice global.</p>
+</div>`;
+}
+
+function buildExecutiveBlock(global, verdict, badge, pruebaInvalida) {
+  const badgeClean = stripLegacyEmoji(badge);
+  const verdictClass =
+    pruebaInvalida || normalizeKey(verdict).includes('no aprobatorio')
+      ? 'hon-verdict hon-verdict-fail'
+      : normalizeKey(verdict).includes('reservas')
+        ? 'hon-verdict hon-verdict-review'
+        : normalizeKey(verdict).includes('aprobatorio')
+          ? 'hon-verdict hon-verdict-pass'
+          : 'hon-verdict';
+
+  return `
+<div class="hon-exec">
+  <div class="hon-exec-main">
+    <div class="hon-exec-kpi">
+      <div class="hon-exec-label">Índice global</div>
+      <div class="hon-exec-value">${Number(global).toFixed(1)}%</div>
+    </div>
+    <div class="hon-exec-kpi">
+      <div class="hon-exec-label">Veredicto</div>
+      <div class="${verdictClass}">${esc(verdict)}</div>
+      ${badgeClean ? `<div class="hon-exec-badge">${esc(badgeClean)}</div>` : ''}
+    </div>
   </div>
 </div>`;
+}
+
+function extractReliabilityMeta(meta) {
+  const m = meta && typeof meta === 'object' ? meta : {};
+  const rel = m.reliability && typeof m.reliability === 'object' ? m.reliability : {};
+  return {
+    elapsedSeconds: m.elapsedSeconds ?? rel.elapsedSeconds ?? null,
+    errCal: m.errCal ?? rel.errCal ?? null,
+    negDir: m.negDir ?? rel.negDir ?? null,
+    speedReliability: m.speedReliability ?? rel.speedReliability ?? null,
+    calibrationReliability: m.calibrationReliability ?? rel.calibrationReliability ?? null,
+    denialReliability: m.denialReliability ?? rel.denialReliability ?? null,
+  };
+}
+
+function buildReliabilityPanel(meta) {
+  const rel = extractReliabilityMeta(meta);
+  const elapsed =
+    rel.elapsedSeconds != null && Number.isFinite(Number(rel.elapsedSeconds))
+      ? formatElapsed(rel.elapsedSeconds)
+      : '—';
+  const errCal = rel.errCal != null ? String(rel.errCal) : '—';
+  const negDir = rel.negDir != null ? String(rel.negDir) : '—';
+
+  const rows = [
+    { label: 'Tiempo total', value: elapsed },
+    { label: 'Calibración (errCal)', value: errCal },
+    { label: 'Negaciones directas (negDir)', value: negDir },
+    {
+      label: 'Velocidad',
+      value: reliabilityStateLabel(rel.speedReliability),
+      pillClass: reliabilityStateClass(rel.speedReliability),
+    },
+    {
+      label: 'Calibración',
+      value: reliabilityStateLabel(rel.calibrationReliability),
+      pillClass: reliabilityStateClass(rel.calibrationReliability),
+    },
+    {
+      label: 'Negación',
+      value: reliabilityStateLabel(rel.denialReliability),
+      pillClass: reliabilityStateClass(rel.denialReliability),
+    },
+  ];
+
+  const cells = rows
+    .map((r) => {
+      const valHtml = r.pillClass
+        ? `<span class="${r.pillClass}">${esc(r.value)}</span>`
+        : `<span class="hon-rel-value">${esc(r.value)}</span>`;
+      return `<div class="hon-rel-item"><span class="hon-rel-label">${esc(r.label)}</span>${valHtml}</div>`;
+    })
+    .join('');
+
+  return `<div class="hon-reliability">${cells}</div>`;
+}
+
+function findDimensionExtremes(dimensions) {
+  const entries = Object.entries(dimensions || {})
+    .map(([id, v]) => ({
+      id,
+      label: v?.label || id,
+      avg: Number(v?.avg),
+    }))
+    .filter((e) => Number.isFinite(e.avg));
+
+  if (!entries.length) return null;
+
+  let high = entries[0];
+  let low = entries[0];
+  for (const e of entries) {
+    if (e.avg > high.avg) high = e;
+    if (e.avg < low.avg) low = e;
+  }
+  if (high.id === low.id && entries.length === 1) return { high, low: null };
+  return { high, low };
+}
+
+function splitRadarLabel(text) {
+  const name = String(text || '');
+  if (name.length <= 16) return { line1: name, line2: '' };
+  const mid = Math.ceil(name.length / 2);
+  let split = name.lastIndexOf(' ', mid);
+  if (split < 4) split = name.indexOf(' ', mid);
+  if (split < 0) split = mid;
+  return { line1: name.slice(0, split).trim(), line2: name.slice(split).trim() };
+}
+
+function buildDimensionBars(dimensions) {
+  const entries = Object.entries(dimensions || {});
+  if (!entries.length) return '';
+
+  const rows = entries
+    .map(([id, v]) => {
+      const label = v?.label || id;
+      const score = Math.min(100, Math.max(0, Number(v?.avg) || 0));
+      const color = scoreBarColor(score);
+      return `<div class="bar-row hon-bar-row">
+  <div class="bar-label">${esc(label)}</div>
+  <div class="bar-track"><div class="bar-fill" style="width:${score.toFixed(1)}%;background:${color};"></div></div>
+  <div class="bar-val" style="color:${color};">${score.toFixed(0)}%</div>
+</div>`;
+    })
+    .join('');
+
+  return `<div class="hon-bars">${rows}</div>`;
 }
 
 /**
@@ -131,10 +331,11 @@ function buildDimensionsRadar(dimensions) {
   const N = entries.length;
   if (N < 3) return '';
 
-  const cx = 130, cy = 130, R = 95;
+  const cx = 130;
+  const cy = 130;
+  const R = 95;
   const toAngle = (i) => -Math.PI / 2 + ((2 * Math.PI) / N) * i;
 
-  // Grid polygons at 25 / 50 / 75 / 100 %
   const gridPolygons = [25, 50, 75, 100]
     .map((pct) => {
       const r = (pct / 100) * R;
@@ -149,7 +350,6 @@ function buildDimensionsRadar(dimensions) {
     })
     .join('');
 
-  // Axis lines
   const axisLines = entries
     .map((_, i) => {
       const a = toAngle(i);
@@ -157,22 +357,24 @@ function buildDimensionsRadar(dimensions) {
     })
     .join('');
 
-  // Labels + score annotations
   const labels = entries
     .map(([id, v], i) => {
       const a = toAngle(i);
-      const lr = R + 22;
+      const lr = R + 26;
       const lx = (cx + lr * Math.cos(a)).toFixed(1);
       const baseY = cy + lr * Math.sin(a);
       const score = Number(v?.avg || 0);
       const labelColor = score < RISK_THRESHOLD ? '#DC2626' : score >= 70 ? '#065F46' : '#92400E';
-      const name = esc((v?.label || id).slice(0, 13));
-      return `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#374151" font-weight="600">${name}</text>
-      <text x="${lx}" y="${(baseY + 6).toFixed(1)}" text-anchor="middle" font-size="7" fill="${labelColor}" font-weight="700">${score.toFixed(0)}%</text>`;
+      const { line1, line2 } = splitRadarLabel(v?.label || id);
+      const labelSvg = line2
+        ? `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="#374151" font-weight="600"><tspan x="${lx}" dy="0">${esc(line1)}</tspan><tspan x="${lx}" dy="8">${esc(line2)}</tspan></text>`
+        : `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="#374151" font-weight="600">${esc(line1)}</text>`;
+      const scoreY = line2 ? baseY + 12 : baseY + 6;
+      return `${labelSvg}
+      <text x="${lx}" y="${scoreY.toFixed(1)}" text-anchor="middle" font-size="7" fill="${labelColor}" font-weight="700">${score.toFixed(0)}%</text>`;
     })
     .join('');
 
-  // Data polygon
   const dataPoints = entries
     .map(([, v], i) => {
       const a = toAngle(i);
@@ -182,39 +384,22 @@ function buildDimensionsRadar(dimensions) {
     })
     .join(' ');
 
-  // Dot markers color-coded by risk
   const dots = entries
     .map(([, v], i) => {
       const a = toAngle(i);
       const score = Math.min(100, Math.max(0, Number(v?.avg) || 0));
       const r = (score / 100) * R;
-      const dotColor =
-        score < RISK_THRESHOLD ? '#EF4444' : score >= 70 ? '#10B981' : '#F59E0B';
+      const dotColor = scoreBarColor(score);
       return `<circle cx="${(cx + r * Math.cos(a)).toFixed(1)}" cy="${(cy + r * Math.sin(a)).toFixed(1)}" r="3.5" fill="${dotColor}" stroke="white" stroke-width="1.2"/>`;
     })
     .join('');
 
   const avgScore = entries.reduce((s, [, v]) => s + (Number(v?.avg) || 0), 0) / N;
-  const fillColor   = avgScore >= 70 ? '#10B981' : avgScore >= 60 ? '#F59E0B' : '#EF4444';
-  const strokeColor = avgScore >= 70 ? '#059669' : avgScore >= 60 ? '#D97706' : '#DC2626';
-
-  // Legend
-  const legend = entries
-    .map(([id, v]) => {
-      const score = Number(v?.avg || 0);
-      const dotColor =
-        score < RISK_THRESHOLD ? '#EF4444' : score >= 70 ? '#10B981' : '#F59E0B';
-      const name = esc((v?.label || id).slice(0, 20));
-      return `<div style="display:flex;align-items:center;gap:5px;font-size:9px;margin-bottom:5px;">
-  <div style="width:9px;height:9px;border-radius:50%;background:${dotColor};flex-shrink:0;"></div>
-  <span style="color:#374151;font-weight:600;flex:1;">${name}</span>
-  <span style="color:${dotColor};font-weight:800;min-width:30px;text-align:right;">${score.toFixed(1)}%</span>
-</div>`;
-    })
-    .join('');
+  const fillColor = scoreBarColor(avgScore);
+  const strokeColor = fillColor;
 
   return `
-<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+<div class="hon-radar-wrap">
   <svg width="260" height="260" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
     ${gridPolygons}
     ${axisLines}
@@ -222,15 +407,31 @@ function buildDimensionsRadar(dimensions) {
     <polygon points="${dataPoints}" fill="${fillColor}" fill-opacity="0.18" stroke="${strokeColor}" stroke-width="2"/>
     ${dots}
   </svg>
-  <div style="min-width:140px;padding-top:6px;">
-    ${legend}
-    <div style="margin-top:10px;padding:7px 9px;border-radius:8px;background:#F3F4F6;font-size:8px;color:#6B7280;line-height:1.7;">
-      <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EF4444;margin-right:5px;vertical-align:middle;"></span>Riesgo (&lt;${RISK_THRESHOLD}%)</div>
-      <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F59E0B;margin-right:5px;vertical-align:middle;"></span>Atención (${RISK_THRESHOLD}–69%)</div>
-      <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;margin-right:5px;vertical-align:middle;"></span>Óptimo (≥70%)</div>
-      <div style="margin-top:5px;border-top:1px solid #E5E7EB;padding-top:5px;">— — Línea punteada = umbral de riesgo (50%)</div>
-    </div>
-  </div>
+</div>`;
+}
+
+function buildExtremesNote(extremes) {
+  if (!extremes?.high) return '';
+  const high = `<span class="hon-extreme">${esc(extremes.high.label)} · ${extremes.high.avg.toFixed(0)}%</span>`;
+  if (!extremes.low || extremes.low.id === extremes.high.id) {
+    return `<p class="hon-extremes-note">Mayor puntaje: ${high}</p>`;
+  }
+  const low = `<span class="hon-extreme">${esc(extremes.low.label)} · ${extremes.low.avg.toFixed(0)}%</span>`;
+  return `<p class="hon-extremes-note">Mayor: ${high} · Menor: ${low}</p>`;
+}
+
+function buildAttentionSection(risks) {
+  if (!risks.length) return '';
+  const items = risks
+    .map(
+      (r) =>
+        `<li class="hon-attention-item"><strong>${esc(r.label)} · ${r.avg.toFixed(1)}%</strong><span>${esc(r.message)}</span></li>`,
+    )
+    .join('');
+  return `
+<div class="section">
+  <div class="section-title">Áreas de atención</div>
+  <ul class="hon-attention-list">${items}</ul>
 </div>`;
 }
 
@@ -239,87 +440,84 @@ function buildDimensionsRadar(dimensions) {
  */
 export function buildHonestidadModuleFragment(ctx) {
   const { payload, submittedAt } = ctx;
-  const { global, dimensions, interpretation, flags } = payload;
+  const { global, dimensions, interpretation, meta } = payload;
   const closed = submittedAt ? esc(submittedAt) : '—';
   const risks = collectHonestidadRiskAreas(dimensions, global);
 
-  const flagList =
-    flags.length > 0
-      ? `<ul class="flag-list">${flags.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>`
-      : '<p class="muted">Sin alertas automáticas registradas.</p>';
-
-  const riskSection =
-    risks.length > 0
-      ? `<ul class="risk-list">${risks
-          .map(
-            (r) =>
-              `<li class="risk-item"><strong>${esc(r.label)} · ${r.avg.toFixed(1)}%</strong><p>${esc(r.message)}</p></li>`,
-          )
-          .join('')}</ul>`
-      : '<p class="muted">No se detectaron focos rojos por debajo del umbral de referencia en las dimensiones evaluadas.</p>';
-
-  const verdict     = interpretation?.verdict     || '—';
-  const badge       = interpretation?.badge       || '—';
+  const verdict = interpretation?.verdict || '—';
+  const badge = interpretation?.badge || '';
   const description = interpretation?.description || '';
-  const pruebaInvalida = isHonestidadPruebaInvalida(interpretation, payload.meta);
+  const pruebaInvalida = isHonestidadPruebaInvalida(interpretation, meta);
   const calLowReliability =
-    payload.meta?.calibrationReliability === 'low_reliability' && !pruebaInvalida;
+    meta?.calibrationReliability === 'low_reliability' && !pruebaInvalida;
 
+  const executiveHtml = buildExecutiveBlock(global, verdict, badge, pruebaInvalida);
   const semaforoHtml = buildVerdictSemaforo(global, verdict, {
     invalid: pruebaInvalida,
     lowReliability: calLowReliability,
   });
-  const radarHtml    = buildDimensionsRadar(dimensions);
+  const reliabilityHtml = buildReliabilityPanel(meta);
+  const radarHtml = buildDimensionsRadar(dimensions);
+  const barsHtml = buildDimensionBars(dimensions);
+  const extremes = findDimensionExtremes(dimensions);
+  const extremesNote = buildExtremesNote(extremes);
+  const attentionHtml = buildAttentionSection(risks);
 
-  // Tabla de respaldo si el radar no puede renderizarse (<3 dims)
+  const invalidDisclaimer = pruebaInvalida
+    ? `<div class="hon-disclaimer">Esta aplicación no es interpretable por confiabilidad. El índice global no debe utilizarse como base de decisión; se recomienda una nueva evaluación.</div>`
+    : '';
+
+  const synthesisHtml =
+    description && !pruebaInvalida
+      ? `<div class="section hon-synthesis"><p class="interp">${esc(description)}</p></div>`
+      : pruebaInvalida && description
+        ? `<div class="section hon-synthesis"><p class="interp">${esc(description)}</p></div>`
+        : '';
+
   const dimRows = Object.entries(dimensions)
     .map(([id, v]) => {
       const label = v?.label || id;
-      const avg   = v?.avg != null ? Number(v.avg).toFixed(1) : '—';
+      const avg = v?.avg != null ? Number(v.avg).toFixed(1) : '—';
       return `<tr><td>${esc(label)}</td><td class="num strong">${avg}%</td></tr>`;
     })
     .join('');
 
+  const dimensionsBody =
+    radarHtml || barsHtml
+      ? `<div class="hon-dimensions">
+          ${radarHtml || ''}
+          ${barsHtml || ''}
+          ${extremesNote}
+        </div>`
+      : `<table>
+            <thead><tr><th>Dimensión</th><th>Promedio</th></tr></thead>
+            <tbody>${dimRows || '<tr><td colspan="2" class="muted">Sin desglose dimensional</td></tr>'}</tbody>
+           </table>`;
+
   return `
-  <section class="module-block" id="mod-honestidad">
+  <section class="module-block hon-module" id="mod-honestidad">
     <div class="module-hd">
-      <span class="module-icon">🛡️</span>
+      ${SVG_SHIELD}
       <div>
         <h2 class="module-title">Honestidad (Mind24)</h2>
         <p class="module-sub">Índice antifraude · Cierre: ${closed}</p>
       </div>
     </div>
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <div class="kpi-label">Índice global</div>
-        <div class="kpi-value">${Number(global).toFixed(1)}%</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Veredicto</div>
-        <div class="kpi-value kpi-sm">${esc(verdict)}</div>
-        <div class="kpi-badge">${esc(badge)}</div>
-      </div>
-    </div>
-    ${semaforoHtml}
-    ${description
-      ? `<div class="section"><div class="section-title">Síntesis interpretativa</div><p class="interp">${esc(description)}</p></div>`
-      : ''}
     <div class="section">
-      <div class="section-title">Áreas de riesgo / focos rojos</div>
-      ${riskSection}
+      <div class="section-title">Resultado ejecutivo</div>
+      ${executiveHtml}
+      ${semaforoHtml}
+      ${invalidDisclaimer}
     </div>
     <div class="section">
-      <div class="section-title">Dimensiones evaluadas</div>
-      ${radarHtml
-        ? radarHtml
-        : `<table>
-            <thead><tr><th>Dimensión</th><th>Promedio</th></tr></thead>
-            <tbody>${dimRows || '<tr><td colspan="2" class="muted">Sin desglose dimensional</td></tr>'}</tbody>
-           </table>`}
+      <div class="section-title">Confiabilidad de la aplicación</div>
+      ${reliabilityHtml}
     </div>
+    ${synthesisHtml}
     <div class="section">
-      <div class="section-title">Alertas y banderas</div>
-      ${flagList}
+      <div class="section-title">Dimensiones</div>
+      ${dimensionsBody}
     </div>
+    ${attentionHtml}
   </section>`;
 }
