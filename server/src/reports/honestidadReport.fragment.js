@@ -32,12 +32,6 @@ function riskMessageForDimension(id, label) {
   return `La dimensión «${label}» presenta un puntaje por debajo del umbral de referencia; se recomienda profundizar en entrevista estructurada.`;
 }
 
-function stripLegacyEmoji(text) {
-  return String(text || '')
-    .replace(/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u, '')
-    .trim();
-}
-
 function formatElapsed(seconds) {
   const sec = Math.max(0, Math.floor(Number(seconds) || 0));
   const m = Math.floor(sec / 60);
@@ -189,8 +183,7 @@ function buildVerdictSemaforo(globalScore, verdict, opts = {}) {
 </div>`;
 }
 
-function buildExecutiveBlock(global, verdict, badge, pruebaInvalida) {
-  const badgeClean = stripLegacyEmoji(badge);
+function buildExecutiveBlock(global, verdict, pruebaInvalida) {
   const verdictClass =
     pruebaInvalida || normalizeKey(verdict).includes('no aprobatorio')
       ? 'hon-verdict hon-verdict-fail'
@@ -210,7 +203,6 @@ function buildExecutiveBlock(global, verdict, badge, pruebaInvalida) {
     <div class="hon-exec-kpi">
       <div class="hon-exec-label">Veredicto</div>
       <div class="${verdictClass}">${esc(verdict)}</div>
-      ${badgeClean ? `<div class="hon-exec-badge">${esc(badgeClean)}</div>` : ''}
     </div>
   </div>
 </div>`;
@@ -240,8 +232,8 @@ function buildReliabilityPanel(meta) {
 
   const rows = [
     { label: 'Tiempo total', value: elapsed },
-    { label: 'Calibración (errCal)', value: errCal },
-    { label: 'Negaciones directas (negDir)', value: negDir },
+    { label: 'Calibración', value: errCal },
+    { label: 'Negaciones', value: negDir },
     {
       label: 'Velocidad',
       value: reliabilityStateLabel(rel.speedReliability),
@@ -292,14 +284,32 @@ function findDimensionExtremes(dimensions) {
   return { high, low };
 }
 
-function splitRadarLabel(text) {
+const RADAR_LABEL_LINES = {
+  etica: ['Ética Personal', 'y Profesional'],
+  'etica personal y profesional': ['Ética Personal', 'y Profesional'],
+};
+
+function splitRadarLabel(text, id) {
   const name = String(text || '');
-  if (name.length <= 16) return { line1: name, line2: '' };
+  const key = normalizeKey(id || name);
+  if (RADAR_LABEL_LINES[key]) {
+    const [line1, line2 = ''] = RADAR_LABEL_LINES[key];
+    return { line1, line2 };
+  }
+  if (name.length <= 14) return { line1: name, line2: '' };
   const mid = Math.ceil(name.length / 2);
   let split = name.lastIndexOf(' ', mid);
   if (split < 4) split = name.indexOf(' ', mid);
-  if (split < 0) split = mid;
+  if (split < 0) return { line1: name, line2: '' };
   return { line1: name.slice(0, split).trim(), line2: name.slice(split).trim() };
+}
+
+function dimensionBarLabel(id, label) {
+  const key = normalizeKey(id);
+  if (key === 'etica' || normalizeKey(label).includes('etica personal y prof')) {
+    return 'Ética Personal y Profesional';
+  }
+  return label || id;
 }
 
 function buildDimensionBars(dimensions) {
@@ -308,10 +318,10 @@ function buildDimensionBars(dimensions) {
 
   const rows = entries
     .map(([id, v]) => {
-      const label = v?.label || id;
+      const label = dimensionBarLabel(id, v?.label || id);
       const score = Math.min(100, Math.max(0, Number(v?.avg) || 0));
       const color = scoreBarColor(score);
-      return `<div class="bar-row hon-bar-row">
+      return `<div class="bar-row hon-bar-row" style="grid-template-columns:minmax(148px,1fr) 1.4fr 36px;">
   <div class="bar-label">${esc(label)}</div>
   <div class="bar-track"><div class="bar-fill" style="width:${score.toFixed(1)}%;background:${color};"></div></div>
   <div class="bar-val" style="color:${color};">${score.toFixed(0)}%</div>
@@ -331,9 +341,9 @@ function buildDimensionsRadar(dimensions) {
   const N = entries.length;
   if (N < 3) return '';
 
-  const cx = 130;
-  const cy = 130;
-  const R = 95;
+  const cx = 150;
+  const cy = 150;
+  const R = 88;
   const toAngle = (i) => -Math.PI / 2 + ((2 * Math.PI) / N) * i;
 
   const gridPolygons = [25, 50, 75, 100]
@@ -360,16 +370,18 @@ function buildDimensionsRadar(dimensions) {
   const labels = entries
     .map(([id, v], i) => {
       const a = toAngle(i);
-      const lr = R + 26;
+      const lr = R + 32;
       const lx = (cx + lr * Math.cos(a)).toFixed(1);
       const baseY = cy + lr * Math.sin(a);
       const score = Number(v?.avg || 0);
       const labelColor = score < RISK_THRESHOLD ? '#DC2626' : score >= 70 ? '#065F46' : '#92400E';
-      const { line1, line2 } = splitRadarLabel(v?.label || id);
+      const { line1, line2 } = splitRadarLabel(v?.label || id, id);
+      const anchor =
+        Math.abs(Math.cos(a)) < 0.15 ? 'middle' : Math.cos(a) > 0 ? 'start' : 'end';
       const labelSvg = line2
-        ? `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="#374151" font-weight="600"><tspan x="${lx}" dy="0">${esc(line1)}</tspan><tspan x="${lx}" dy="8">${esc(line2)}</tspan></text>`
-        : `<text x="${lx}" y="${(baseY - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="#374151" font-weight="600">${esc(line1)}</text>`;
-      const scoreY = line2 ? baseY + 12 : baseY + 6;
+        ? `<text x="${lx}" y="${(baseY - 5).toFixed(1)}" text-anchor="${anchor}" font-size="6.5" fill="#374151" font-weight="600"><tspan x="${lx}" dy="0">${esc(line1)}</tspan><tspan x="${lx}" dy="7">${esc(line2)}</tspan></text>`
+        : `<text x="${lx}" y="${(baseY - 2).toFixed(1)}" text-anchor="${anchor}" font-size="6.5" fill="#374151" font-weight="600">${esc(line1)}</text>`;
+      const scoreY = line2 ? baseY + 11 : baseY + 7;
       return `${labelSvg}
       <text x="${lx}" y="${scoreY.toFixed(1)}" text-anchor="middle" font-size="7" fill="${labelColor}" font-weight="700">${score.toFixed(0)}%</text>`;
     })
@@ -400,7 +412,7 @@ function buildDimensionsRadar(dimensions) {
 
   return `
 <div class="hon-radar-wrap">
-  <svg width="260" height="260" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+  <svg width="260" height="260" viewBox="-10 -10 320 320" overflow="visible" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;overflow:visible;">
     ${gridPolygons}
     ${axisLines}
     ${labels}
@@ -445,13 +457,12 @@ export function buildHonestidadModuleFragment(ctx) {
   const risks = collectHonestidadRiskAreas(dimensions, global);
 
   const verdict = interpretation?.verdict || '—';
-  const badge = interpretation?.badge || '';
   const description = interpretation?.description || '';
   const pruebaInvalida = isHonestidadPruebaInvalida(interpretation, meta);
   const calLowReliability =
     meta?.calibrationReliability === 'low_reliability' && !pruebaInvalida;
 
-  const executiveHtml = buildExecutiveBlock(global, verdict, badge, pruebaInvalida);
+  const executiveHtml = buildExecutiveBlock(global, verdict, pruebaInvalida);
   const semaforoHtml = buildVerdictSemaforo(global, verdict, {
     invalid: pruebaInvalida,
     lowReliability: calLowReliability,
