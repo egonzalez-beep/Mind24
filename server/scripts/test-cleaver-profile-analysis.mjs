@@ -224,6 +224,9 @@ check(html.includes('cle-exec'), 'PDF: bloque ejecutivo enterprise');
 check(html.includes('Resultado ejecutivo'), 'PDF: sección ejecutiva');
 check(!html.includes('module-icon">🎯'), 'PDF: sin emoji legacy');
 check(html.includes('Perfil neto'), 'PDF: terminología perfil neto');
+check(html.includes('cle-triad'), 'PDF: tríada M/L/T Fase 2');
+check(!html.includes('bajo presión'), 'PDF: sin copy legacy bajo presión');
+check(!html.includes('Vector de cambio conductual'), 'PDF: sin sección legacy vector');
 
 console.log('\n--- Scoring intacto ---');
 const baseline = scoreCleaverResponses([
