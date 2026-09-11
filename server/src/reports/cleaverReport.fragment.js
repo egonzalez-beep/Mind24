@@ -1,12 +1,19 @@
 import { CLEAVER_DISC_KEYS } from '../data/cleaverDiscKey.js';
+import {
+  analyzeCleaverProfile,
+  CLEAVER_DISC_META,
+  CLEAVER_NET_PROFILE_LABEL,
+  cleaverProfileSynthesis,
+  dominantDiscKey,
+  formatCleaverRankingLine,
+} from './cleaverProfileAnalysis.js';
 import { esc } from './reportUtils.js';
 
-const DISC_META = {
-  D: { label: 'Dominancia', sub: 'Empuje', color: '#7C3AED' },
-  I: { label: 'Influencia', sub: 'Conexión', color: '#DB2777' },
-  S: { label: 'Estabilidad', sub: 'Apoyo', color: '#059669' },
-  C: { label: 'Cumplimiento', sub: 'Control', color: '#2563EB' },
-};
+export { cleaverProfileSynthesis, dominantDiscKey };
+
+const DISC_META = CLEAVER_DISC_META;
+
+const SVG_TARGET = `<svg class="module-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
 
 function trendIcon(delta) {
   if (delta > 0) return { icon: '▲', label: 'Aumenta', cls: 'up' };
@@ -41,24 +48,83 @@ function competencyNote(key, delta) {
   return notes[key][bucket];
 }
 
+function formatDominantDisplay(group) {
+  if (!group?.keys?.length) return '—';
+  return group.keys
+    .map((k) => `${CLEAVER_DISC_META[k].label} (${k})`)
+    .join(' · ');
+}
+
+function formatSecondaryDisplay(analysis) {
+  if (analysis.isBalanced) return '—';
+  if (analysis.primary.tied) {
+    if (analysis.secondary) return formatDominantDisplay(analysis.secondary);
+    return '—';
+  }
+  if (!analysis.hasSecondary) return '—';
+  return formatDominantDisplay(analysis.secondary);
+}
+
+function buildExecutiveBlock(analysis) {
+  const statusPill = analysis.isBalanced
+    ? '<span class="cle-pill cle-pill-balanced">Perfil equilibrado</span>'
+    : analysis.isLowDifferentiation
+      ? '<span class="cle-pill cle-pill-balanced">Poco diferenciado</span>'
+      : analysis.primary.tied
+        ? '<span class="cle-pill cle-pill-tie">Co-dominancia</span>'
+        : analysis.hasSecondary && analysis.secondary?.tied
+          ? '<span class="cle-pill cle-pill-tie">Empate secundario</span>'
+          : '';
+
+  const rankingLine = formatCleaverRankingLine(analysis.ranking);
+
+  return `
+<div class="cle-exec">
+  <div class="cle-exec-head">
+    <div class="cle-exec-kpi cle-exec-kpi-primary">
+      <div class="cle-exec-label">${esc(CLEAVER_NET_PROFILE_LABEL)}</div>
+      <div class="cle-exec-code">${esc(analysis.profileCodeDisplay)}</div>
+    </div>
+    <div class="cle-exec-kpi">
+      <div class="cle-exec-label">Dimensión dominante</div>
+      <div class="cle-exec-value">${esc(formatDominantDisplay(analysis.primary))}</div>
+    </div>
+    <div class="cle-exec-kpi">
+      <div class="cle-exec-label">Dimensión secundaria</div>
+      <div class="cle-exec-value">${esc(formatSecondaryDisplay(analysis))}</div>
+    </div>
+  </div>
+  ${statusPill ? `<div class="cle-exec-status">${statusPill}</div>` : ''}
+  <div class="cle-exec-ranking">
+    <span class="cle-exec-label">Ranking DISC</span>
+    <span class="cle-exec-ranking-line">${esc(rankingLine)}</span>
+  </div>
+  <div class="cle-exec-synthesis">
+    <p class="interp">${esc(analysis.synthesis)}</p>
+  </div>
+</div>`;
+}
+
 function buildRadarSvg(total) {
-  const cx = 140, cy = 140, maxR = 88, scale = 24;
+  const cx = 140;
+  const cy = 140;
+  const maxR = 88;
+  const scale = 24;
   const angles = { D: -90, I: 0, S: 90, C: 180 };
 
   const pt = (key) => {
-    const v   = Math.max(-scale, Math.min(scale, Number(total[key]) || 0));
-    const r   = (v / scale) * maxR;
+    const v = Math.max(-scale, Math.min(scale, Number(total[key]) || 0));
+    const r = (v / scale) * maxR;
     const rad = (angles[key] * Math.PI) / 180;
     return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
   };
 
-  const pts  = CLEAVER_DISC_KEYS.map((k) => pt(k));
+  const pts = CLEAVER_DISC_KEYS.map((k) => pt(k));
   const poly = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
-  // Subtle concentric grids
   const grid = [0.25, 0.5, 0.75, 1]
     .map((f) => {
-      const r    = maxR * f;
+      const r = maxR * f;
       const gpts = CLEAVER_DISC_KEYS.map((k) => {
         const rad = (angles[k] * Math.PI) / 180;
         return `${(cx + r * Math.cos(rad)).toFixed(1)},${(cy + r * Math.sin(rad)).toFixed(1)}`;
@@ -68,20 +134,18 @@ function buildRadarSvg(total) {
     })
     .join('');
 
-  // Colored axis lines + labels
   const axes = CLEAVER_DISC_KEYS.map((k) => {
     const rad = (angles[k] * Math.PI) / 180;
-    const x2  = cx + maxR * Math.cos(rad);
-    const y2  = cy + maxR * Math.sin(rad);
-    const lx  = cx + (maxR + 24) * Math.cos(rad);
-    const ly  = cy + (maxR + 24) * Math.sin(rad);
+    const x2 = cx + maxR * Math.cos(rad);
+    const y2 = cy + maxR * Math.sin(rad);
+    const lx = cx + (maxR + 24) * Math.cos(rad);
+    const ly = cy + (maxR + 24) * Math.sin(rad);
     const col = DISC_META[k].color;
     return `<line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="0.8" opacity="0.4"/>
 <circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.5" fill="${col}" opacity="0.3"/>
 <text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="800" fill="${col}" filter="url(#diskLabelShadow)">${k}</text>`;
   }).join('');
 
-  // Per-dimension colored dot with outer ring
   const dotMarkup = pts
     .map(
       (p, i) =>
@@ -116,34 +180,6 @@ function barWidth(val, maxVal) {
   return Math.round((Math.abs(Number(val) || 0) / m) * 100);
 }
 
-const PROFILE_SYNTHESIS = {
-  D: 'El candidato prioriza la velocidad y los resultados; es directo y asume riesgos.',
-  I: 'El candidato es persuasivo, sociable y prioriza las relaciones interpersonales.',
-  S: 'El candidato valora la estabilidad, la cooperación y un ritmo de trabajo constante.',
-  C: 'El candidato prioriza la precisión, las normas y decisiones basadas en datos y procedimiento.',
-};
-
-/** Dimensión DISC con mayor puntaje en `total`. */
-export function dominantDiscKey(total) {
-  let winner = CLEAVER_DISC_KEYS[0];
-  let max = Number(total[winner]) || 0;
-  for (const k of CLEAVER_DISC_KEYS) {
-    const v = Number(total[k]) || 0;
-    if (v > max) {
-      max = v;
-      winner = k;
-    }
-  }
-  return winner;
-}
-
-export function cleaverProfileSynthesis(total) {
-  const key = dominantDiscKey(total);
-  const meta = DISC_META[key];
-  const text = PROFILE_SYNTHESIS[key] || '';
-  return { key, label: meta.label, text };
-}
-
 export function extractCleaverScores(attempt) {
   const raw = attempt?.scores;
   if (!raw || typeof raw !== 'object') return null;
@@ -169,6 +205,7 @@ export function extractCleaverScores(attempt) {
 export function buildCleaverModuleFragment(ctx) {
   const { scores, submittedAt } = ctx;
   const { most, least, total } = scores;
+  const analysis = analyzeCleaverProfile(total);
   const maxBar = Math.max(...CLEAVER_DISC_KEYS.map((k) => Math.abs(total[k])), 1);
 
   const metricsRows = CLEAVER_DISC_KEYS.map((k) => {
@@ -196,11 +233,10 @@ export function buildCleaverModuleFragment(ctx) {
   }).join('');
 
   const bars = CLEAVER_DISC_KEYS.map((k) => {
-    const m    = DISC_META[k];
-    const w    = barWidth(total[k], maxBar);
-    const val  = total[k];
+    const m = DISC_META[k];
+    const w = barWidth(total[k], maxBar);
+    const val = total[k];
     const isNeg = val < 0;
-    // Premium gradient fill: each DISC has its own accent gradient
     const gradMap = {
       D: 'linear-gradient(90deg,#6D28D9,#7C3AED)',
       I: 'linear-gradient(90deg,#BE185D,#DB2777)',
@@ -223,32 +259,30 @@ export function buildCleaverModuleFragment(ctx) {
   }).join('');
 
   const closed = submittedAt ? esc(submittedAt) : '—';
-  const synth = cleaverProfileSynthesis(total);
+  const executiveHtml = buildExecutiveBlock(analysis);
 
   return `
-  <section class="module-block" id="mod-cleaver">
+  <section class="module-block cle-module" id="mod-cleaver">
     <div class="module-hd">
-      <span class="module-icon">🎯</span>
+      ${SVG_TARGET}
       <div>
-        <h2 class="module-title">Comportamiento (CLEAVER)</h2>
-        <p class="module-sub">Perfil conductual DISC · Cierre: ${closed}</p>
+        <h2 class="module-title">Comportamiento (Cleaver)</h2>
+        <p class="module-sub">Perfil conductual DISC · ${esc(CLEAVER_NET_PROFILE_LABEL)} · Cierre: ${closed}</p>
       </div>
     </div>
     <div class="section">
-      <div class="section-title">Síntesis interpretativa del perfil</div>
-      <div class="synthesis-box">
-        <p class="interp"><strong>Dimensión predominante: ${esc(synth.label)} (${synth.key})</strong> — ${esc(synth.text)}</p>
-      </div>
+      <div class="section-title">Resultado ejecutivo</div>
+      ${executiveHtml}
     </div>
     <div class="section">
-      <div class="section-title">Perfil gráfico — intensidad relativa (Total = Más − Menos)</div>
+      <div class="section-title">Perfil gráfico — intensidad relativa (${esc(CLEAVER_NET_PROFILE_LABEL)} = Más − Menos)</div>
       <div class="charts">
         <div class="chart-box">
-          <h3>Perfil radar (Total DISC)</h3>
+          <h3>Perfil radar (${esc(CLEAVER_NET_PROFILE_LABEL)} DISC)</h3>
           ${buildRadarSvg(total)}
         </div>
         <div class="chart-box">
-          <h3>Barras de perfil total</h3>
+          <h3>Barras de perfil neto</h3>
           ${bars}
         </div>
       </div>

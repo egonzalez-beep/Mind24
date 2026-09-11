@@ -155,6 +155,20 @@ const MASTER_STYLES = `
   .hon-attention-item strong{display:block;font-size:9px;color:#991B1B;margin-bottom:3px}
   .hon-attention-item span{color:#7F1D1D}
   .hon-synthesis .interp{padding:10px 12px;border-radius:8px;background:#F5F3FF;border:1px solid #DDD6FE}
+  .cle-exec{border:1px solid #E5E7EB;border-radius:12px;padding:14px 16px;background:#fff;box-shadow:0 1px 2px rgba(17,24,39,.04);border-top:3px solid #7C3AED;margin-bottom:12px}
+  .cle-exec-head{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 16px;align-items:start}
+  .cle-exec-kpi-primary{grid-column:1/-1}
+  .cle-exec-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF}
+  .cle-exec-code{font-size:26px;font-weight:800;color:#4C1D95;margin-top:4px;line-height:1.1;letter-spacing:-.02em}
+  .cle-exec-value{font-size:12px;font-weight:700;color:#374151;margin-top:4px;line-height:1.35}
+  .cle-exec-status{margin:10px 0 4px}
+  .cle-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.03em}
+  .cle-pill-balanced{background:#EDE9FE;color:#5B21B6}
+  .cle-pill-tie{background:#FEF3C7;color:#92400E}
+  .cle-exec-ranking{margin-top:10px;padding-top:10px;border-top:1px solid #EDE9FE}
+  .cle-exec-ranking-line{display:block;font-size:10px;font-weight:700;color:#374151;margin-top:4px;line-height:1.5;font-variant-numeric:tabular-nums}
+  .cle-exec-synthesis{margin-top:12px;padding:12px 14px;border-radius:8px;background:#F5F3FF;border:1px solid #DDD6FE}
+  .cle-exec-synthesis .interp{font-size:10px;line-height:1.55;color:#374151}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
   .footer{margin-top:22px;padding-top:10px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center}
 `;
