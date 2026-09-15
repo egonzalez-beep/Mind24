@@ -108,10 +108,12 @@ check(/46 de 50 reactivos respondidos/.test(interpPartial.description), 'interpr
 check(/4 reactivos quedaron sin respuesta/.test(interpPartial.description), 'interpretación menciona omitidos');
 
 const htmlFull = buildTermanModuleFragment({ scores: full, submittedAt: '2026-09-08' });
-check(/Completitud de la aplicación/.test(htmlFull), 'PDF sección completitud');
-check(/50 de 50 reactivos respondidos/.test(htmlFull), 'PDF texto aplicación completa');
+check(/Resultado ejecutivo/.test(htmlFull), 'PDF sección ejecutiva');
+check(!/cog-pill-partial/.test(htmlFull), 'PDF completo: sin pill completitud');
+check(!/Completitud de la aplicación/.test(htmlFull), 'PDF completo: sin sección legacy completitud');
 
 const htmlPartial = buildTermanModuleFragment({ scores: partial, submittedAt: '2026-09-08' });
+check(/cog-pill-partial/.test(htmlPartial), 'PDF parcial: pill completitud');
 check(/46 de 50 reactivos respondidos/.test(htmlPartial), 'PDF texto aplicación incompleta');
 check(/4 reactivos quedaron sin respuesta/.test(htmlPartial), 'PDF menciona omitidos');
 

@@ -261,15 +261,16 @@ const html = buildTermanModuleFragment({
   submittedAt: '2026-09-08',
 });
 
-check(/Desempeño cognitivo/.test(html), 'PDF etiqueta Desempeño cognitivo');
-check(/Porcentaje global de aciertos/.test(html), 'PDF badge Porcentaje global de aciertos');
+check(!/Desempeño cognitivo/.test(html), 'PDF sin KPI duplicado Desempeño cognitivo');
 check(!containsIqLanguage(html), 'PDF no muestra CI / coeficiente intelectual / ciEstimate');
 check(!/999/.test(html), 'PDF no renderiza ciEstimate interno');
 check(!/777/.test(html), 'PDF no renderiza ci interno');
 check(!/preliminar/i.test(html), 'PDF no dice preliminar');
 check(!/Coeficiente intelectual/.test(html), 'PDF no usa label Coeficiente intelectual (CI)');
-check(/Puntaje bruto global/.test(html), 'PDF conserva puntaje bruto global');
-check(/kpi-value">50 /.test(html) && /\/ 50/.test(html), 'PDF muestra rawScore 50/50');
+check(/Resultado ejecutivo/.test(html), 'PDF bloque ejecutivo Enterprise');
+check(/cog-exec-code/.test(html) && /\/ 50/.test(html), 'PDF muestra rawScore 50/50');
+check(/Fortalezas relativas/.test(html), 'PDF lectura RH');
+check(/Agrupación descriptiva de series/.test(html), 'PDF agrupación descriptiva');
 
 if (failed) {
   console.log(`\nRESULTADO: ${failed} fallos, ${passed} ok\n`);
