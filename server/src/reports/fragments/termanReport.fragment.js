@@ -70,8 +70,41 @@ function buildDescriptiveGroups(analysis) {
 </div>`;
     })
     .join('');
-  return `<p class="cog-group-note">${esc(TERMAN_DESCRIPTIVE_GROUP_NOTE)}</p>
-<div class="cog-group-grid">${cards || '<p class="muted">Sin datos de agrupación.</p>'}</div>`;
+  return `<div class="cog-descriptive-block">
+<p class="cog-group-note">${esc(TERMAN_DESCRIPTIVE_GROUP_NOTE)}</p>
+<div class="cog-group-grid">${cards || '<p class="muted">Sin datos de agrupación.</p>'}</div>
+</div>`;
+}
+
+/** Parte nombres de serie en líneas cortas para labels SVG (sin abreviar). */
+function splitSeriesLabel(name, maxLineLen = 22) {
+  const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [''];
+  const lines = [];
+  let current = '';
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= maxLineLen) {
+      current = next;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function buildSeriesLabelSvg(x, y, lines) {
+  const lineHeight = 9;
+  if (lines.length === 1) {
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7.5" fill="#374151" font-weight="600">${esc(lines[0])}</text>`;
+  }
+  const startY = y - ((lines.length - 1) * lineHeight) / 2;
+  const tspans = lines
+    .map((line, i) => `<tspan x="${x.toFixed(1)}" dy="${i === 0 ? 0 : lineHeight}">${esc(line)}</tspan>`)
+    .join('');
+  return `<text x="${x.toFixed(1)}" y="${startY.toFixed(1)}" text-anchor="end" font-size="7.5" fill="#374151" font-weight="600">${tspans}</text>`;
 }
 
 /**
@@ -81,15 +114,23 @@ function buildSeriesChart(ranking) {
   const N = ranking.length;
   if (!N) return '<p class="muted">Sin datos de series</p>';
 
-  const LABEL_W = 148;
-  const CHART_W = 248;
-  const VAL_W = 72;
+  const LABEL_W = 178;
+  const CHART_W = 232;
+  const VAL_W = 68;
   const TOTAL_W = LABEL_W + CHART_W + VAL_W;
   const TOP_PAD = 26;
   const BOT_PAD = 14;
-  const ROW_H = 26;
+  const MIN_ROW_H = 26;
+  const LINE_H = 9;
   const BAR_H = 10;
-  const TOTAL_H = TOP_PAD + N * ROW_H + BOT_PAD;
+
+  const rowMeta = ranking.map((s) => {
+    const lines = splitSeriesLabel(s.name || s.seriesId || '');
+    const rowH = Math.max(MIN_ROW_H, 10 + lines.length * LINE_H);
+    return { lines, rowH };
+  });
+  const chartBodyH = rowMeta.reduce((sum, r) => sum + r.rowH, 0);
+  const TOTAL_H = TOP_PAD + chartBodyH + BOT_PAD;
 
   const gx = [0, 25, 50, 75, 100].map((p) => LABEL_W + (p / 100) * CHART_W);
   const xLabels = [0, 25, 50, 75, 100]
@@ -102,36 +143,38 @@ function buildSeriesChart(ranking) {
   const gridLines = gx
     .map((x, i) => {
       const is50 = i === 2;
-      return `<line x1="${x.toFixed(1)}" y1="${TOP_PAD - 4}" x2="${x.toFixed(1)}" y2="${(TOP_PAD + N * ROW_H).toFixed(1)}" stroke="${is50 ? '#CBD5E1' : '#E5E7EB'}" stroke-width="${is50 ? 0.9 : 0.5}" stroke-dasharray="${i === 0 || i === 4 ? '' : '3,2'}"/>`;
+      return `<line x1="${x.toFixed(1)}" y1="${TOP_PAD - 4}" x2="${x.toFixed(1)}" y2="${(TOP_PAD + chartBodyH).toFixed(1)}" stroke="${is50 ? '#CBD5E1' : '#E5E7EB'}" stroke-width="${is50 ? 0.9 : 0.5}" stroke-dasharray="${i === 0 || i === 4 ? '' : '3,2'}"/>`;
     })
     .join('');
 
   const baseline = `<line x1="${gx[0].toFixed(1)}" y1="${(TOP_PAD - 4).toFixed(1)}" x2="${gx[4].toFixed(1)}" y2="${(TOP_PAD - 4).toFixed(1)}" stroke="#D1D5DB" stroke-width="0.8"/>`;
 
+  let rowOffset = TOP_PAD;
   const rows = ranking
     .map((s, i) => {
       const pct = Math.min(100, Math.max(0, s.percent));
       const barW = (pct / 100) * CHART_W;
-      const rowY = TOP_PAD + i * ROW_H;
-      const barY = rowY + (ROW_H - BAR_H) / 2;
-      const midY = rowY + ROW_H / 2;
+      const { lines, rowH } = rowMeta[i];
+      const rowY = rowOffset;
+      rowOffset += rowH;
+      const barY = rowY + (rowH - BAR_H) / 2;
+      const midY = rowY + rowH / 2;
       const cat = getDescriptiveGroupForSeries(s.seriesId);
-      const name = esc((s.name || s.seriesId || '').slice(0, 24));
       const valText = `${pct.toFixed(0)}% · ${s.correct}/${s.total}`;
       const rowBg =
         i % 2 === 1
-          ? `<rect x="0" y="${rowY}" width="${TOTAL_W}" height="${ROW_H}" fill="#F8FAFC"/>`
+          ? `<rect x="0" y="${rowY}" width="${TOTAL_W}" height="${rowH}" fill="#F8FAFC"/>`
           : '';
 
       return `${rowBg}
-<text x="${(LABEL_W - 6).toFixed(1)}" y="${midY.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7.5" fill="#374151" font-weight="600">${name}</text>
+${buildSeriesLabelSvg(LABEL_W - 6, midY, lines)}
 <rect x="${LABEL_W}" y="${barY.toFixed(1)}" width="${CHART_W}" height="${BAR_H}" rx="5" fill="#F1F5F9"/>
 ${barW > 1 ? `<rect x="${LABEL_W}" y="${barY.toFixed(1)}" width="${barW.toFixed(1)}" height="${BAR_H}" rx="5" fill="${cat.color}"/>` : ''}
 <text x="${(LABEL_W + CHART_W + 4).toFixed(1)}" y="${midY.toFixed(1)}" dominant-baseline="middle" font-size="7" fill="${cat.color}" font-weight="700">${esc(valText)}</text>`;
     })
     .join('');
 
-  const legendY = TOP_PAD + N * ROW_H + 4;
+  const legendY = TOP_PAD + chartBodyH + 4;
   const legend = Object.values(
     ranking.reduce((acc, s) => {
       const cat = getDescriptiveGroupForSeries(s.seriesId);
@@ -211,7 +254,7 @@ export function buildTermanModuleFragment(ctx) {
       <div class="section-title">Lectura para recursos humanos</div>
       ${buildRhSection(analysis)}
     </div>
-    <div class="section">
+    <div class="section cog-descriptive-section">
       <div class="section-title">Agrupación descriptiva de series</div>
       ${buildDescriptiveGroups(analysis)}
     </div>

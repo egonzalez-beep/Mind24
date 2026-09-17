@@ -216,6 +216,15 @@ check(htmlGroups.includes('Agrupación descriptiva de series'), 'agrupación: t�
 check(htmlGroups.includes('afinidad temática'), 'agrupación: nota disclaimer');
 check(htmlGroups.includes('Verbal'), 'agrupación: Verbal');
 check(!htmlGroups.includes('Macro-categorías cognitivas'), 'agrupación: sin label legacy');
+check(htmlGroups.includes('cog-descriptive-section'), 'agrupación: sección paginación');
+check(htmlGroups.includes('cog-descriptive-block'), 'agrupación: bloque indivisible');
+
+console.log('\n--- gráfica: nombres completos ---');
+const htmlChart = fragment(buildScores());
+check(htmlChart.includes('Juicio Práctico y Resolución'), 'gráfica: nombre largo resolución');
+check(htmlChart.includes('Aritmética y Razonamiento Numérico'), 'gráfica: nombre largo aritmética');
+check(!htmlChart.includes('Resolu…'), 'gráfica: sin truncar resolución');
+check(!htmlChart.includes('Razonamient…'), 'gráfica: sin truncar aritmética');
 
 console.log('\n--- referencia técnica ---');
 const rank = rankTermanSeries(

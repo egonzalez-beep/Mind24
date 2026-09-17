@@ -233,9 +233,11 @@ const MASTER_STYLES = `
   .cog-rh-list li{margin-bottom:4px}
   .cog-rh-list li:last-child{margin-bottom:0}
   .cog-rh-empty{margin:0;font-size:9.5px;color:#6B7280;line-height:1.45}
-  .cog-group-note{font-size:8.5px;color:#6B7280;line-height:1.45;margin:0 0 10px}
-  .cog-group-grid{display:flex;gap:10px;flex-wrap:wrap}
-  .cog-group-card{flex:1;min-width:130px;border:1.5px solid;border-radius:10px;padding:11px 13px}
+  .cog-descriptive-section .section-title{break-after:avoid;page-break-after:avoid}
+  .cog-descriptive-block{break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .cog-group-note{font-size:8.5px;color:#6B7280;line-height:1.45;margin:0 0 10px;break-after:avoid;page-break-after:avoid}
+  .cog-group-grid{display:flex;gap:10px;flex-wrap:nowrap;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .cog-group-card{flex:1;min-width:0;border:1.5px solid;border-radius:10px;padding:11px 13px;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
   .cog-group-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px}
   .cog-group-value{font-size:20px;font-weight:900;margin-bottom:7px}
   .cog-group-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.7);overflow:hidden;margin-bottom:7px}
