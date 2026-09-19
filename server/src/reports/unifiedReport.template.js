@@ -273,6 +273,28 @@ const MASTER_STYLES = `
   .sjt-area-meta{font-size:9px;font-weight:700;color:#6B7280;font-variant-numeric:tabular-nums;white-space:nowrap}
   .sjt-area-bar{height:10px;border-radius:999px;background:#F1F5F9;overflow:hidden;border:1px solid #E5E7EB}
   .sjt-area-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#7C3AED 0%,#A78BFA 100%);min-width:0}
+  .sjt-exec-synthesis{margin-top:12px;padding:12px 14px;border-radius:8px;background:#FAF5FF;border:1px solid #E9D5FF}
+  .sjt-exec-synthesis .interp{font-size:10px;line-height:1.55;color:#374151;margin:0}
+  .sjt-rh-section .section-title{break-after:avoid;page-break-after:avoid}
+  .sjt-rh-block{break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .sjt-rh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .sjt-rh-card{border-radius:10px;padding:12px 14px;border:1px solid #E5E7EB;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .sjt-rh-strengths{background:#F0FDF4;border-color:#BBF7D0}
+  .sjt-rh-attention{background:#FFFBEB;border-color:#FDE68A}
+  .sjt-rh-card-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .sjt-rh-strengths .sjt-rh-card-title{color:#065F46}
+  .sjt-rh-attention .sjt-rh-card-title{color:#92400E}
+  .sjt-rh-list{margin:0;padding:0 0 0 14px;font-size:9.5px;line-height:1.5;color:#374151}
+  .sjt-rh-list li{margin-bottom:4px}
+  .sjt-rh-list li:last-child{margin-bottom:0}
+  .sjt-rh-empty{margin:0;font-size:9.5px;color:#6B7280;line-height:1.45}
+  .sjt-rh-profile{padding:12px 14px;border-radius:8px;background:#FAF5FF;border:1px solid #E9D5FF;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .sjt-rh-profile-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#5B21B6;margin-bottom:8px}
+  .sjt-rh-profile .interp{font-size:10px;line-height:1.55;color:#374151;margin:0}
+  .sjt-tech-section{margin-top:4px}
+  .sjt-tech{padding:10px 12px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .sjt-tech-table{width:100%;font-size:9px}
+  .sjt-tech-table th,.sjt-tech-table td{padding:4px 6px}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
   .footer{margin-top:22px;padding-top:10px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center}
 `;

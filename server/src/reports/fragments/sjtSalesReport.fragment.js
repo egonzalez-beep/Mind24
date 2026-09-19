@@ -6,6 +6,7 @@ import {
 } from '../../services/sjtSalesScoring.service.js';
 import { UNRELIABLE_SPEED_FLAG_TEXT } from '../../services/attemptReliability.service.js';
 import { extractReliabilityFromAttempt } from '../reliabilityAlert.fragment.js';
+import { analyzeSjtSales } from '../sjtSalesAnalysis.js';
 
 export const SJT_PROFILE_ASSIGNMENT_NOTE =
   'El perfil comercial se asigna a partir del puntaje global del SJT.';
@@ -41,14 +42,7 @@ function resolveMacroCompetencies(scores) {
   return [];
 }
 
-function resolvePercentScore(scores, rawScore, maxPossible) {
-  const stored = Number(scores.percentScore);
-  if (Number.isFinite(stored)) return stored;
-  if (maxPossible > 0) return Math.round((rawScore / maxPossible) * 1000) / 10;
-  return 0;
-}
-
-function buildExecutiveBlock(scores, profileLabel, percentScore, rawScore, maxPossible, speedUnreliable) {
+function buildExecutiveBlock(analysis, speedUnreliable) {
   const reliabilityPill = speedUnreliable
     ? `<div class="sjt-exec-status"><span class="sjt-pill sjt-pill-reliability">${esc(UNRELIABLE_SPEED_FLAG_TEXT)}</span></div>`
     : '';
@@ -57,41 +51,62 @@ function buildExecutiveBlock(scores, profileLabel, percentScore, rawScore, maxPo
   <div class="sjt-exec-head">
     <div class="sjt-exec-kpi sjt-exec-kpi-primary">
       <div class="sjt-exec-label">Puntaje bruto global</div>
-      <div class="sjt-exec-code">${rawScore} <span class="sjt-exec-denom">/ ${maxPossible}</span></div>
+      <div class="sjt-exec-code">${analysis.rawScore} <span class="sjt-exec-denom">/ ${analysis.maxPossible}</span></div>
     </div>
     <div class="sjt-exec-kpi">
       <div class="sjt-exec-label">% del máximo posible</div>
-      <div class="sjt-exec-value">${percentScore.toFixed(1)}%</div>
+      <div class="sjt-exec-value">${analysis.percentOfMax.toFixed(1)}%</div>
     </div>
     <div class="sjt-exec-kpi sjt-exec-kpi-profile">
       <div class="sjt-exec-label">Perfil comercial asignado</div>
-      <div class="sjt-exec-profile">${esc(profileLabel)}</div>
+      <div class="sjt-exec-profile">${esc(analysis.profileLabel)}</div>
     </div>
   </div>
   ${reliabilityPill}
   <p class="sjt-exec-note">${esc(SJT_PROFILE_ASSIGNMENT_NOTE)}</p>
-</div>`;
-}
-
-function buildProfileReading(profileLabel, profileDescription) {
-  return `<div class="section sjt-profile-section">
-  <div class="section-title">Lectura del perfil comercial</div>
-  <div class="sjt-profile-reading">
-    <p class="interp"><strong>${esc(profileLabel)}.</strong> ${esc(profileDescription)}</p>
+  <div class="sjt-exec-synthesis">
+    <p class="interp">${esc(analysis.comparativeSynthesis)}</p>
   </div>
 </div>`;
 }
 
-function buildMacroAreaBarsHtml(macroSeries) {
-  if (!macroSeries.length) {
+function buildRhList(items, cls) {
+  if (!items.length) return `<p class="sjt-rh-empty">No aplica con los datos disponibles.</p>`;
+  return `<ul class="sjt-rh-list ${cls}">${items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+}
+
+function buildRhSection(analysis) {
+  const uniformNote = analysis.uniformRhMessage
+    ? `<p class="sjt-rh-empty">${esc(analysis.uniformRhMessage)}</p>`
+    : null;
+
+  return `<div class="section sjt-rh-section">
+  <div class="section-title">Lectura para recursos humanos</div>
+  <div class="sjt-rh-block">
+    <div class="sjt-rh-grid">
+      <div class="sjt-rh-card sjt-rh-strengths">
+        <div class="sjt-rh-card-title">Fortalezas relativas</div>
+        ${uniformNote ?? buildRhList(analysis.strengths, 'sjt-rh-strength-list')}
+      </div>
+      <div class="sjt-rh-card sjt-rh-attention">
+        <div class="sjt-rh-card-title">Puntos de atención</div>
+        ${uniformNote ?? buildRhList(analysis.attention, 'sjt-rh-attention-list')}
+      </div>
+    </div>
+    <div class="sjt-rh-profile">
+      <div class="sjt-rh-profile-title">Lectura ampliada del perfil comercial</div>
+      <p class="interp"><strong>${esc(analysis.profileLabel)}.</strong> ${esc(analysis.profileDescription)}</p>
+    </div>
+  </div>
+</div>`;
+}
+
+function buildMacroAreaBarsHtml(ranking) {
+  if (!ranking.length) {
     return '<p class="muted">Sin desglose por área situacional.</p>';
   }
 
-  const sorted = [...macroSeries].sort(
-    (a, b) => (Number(b.percent) || 0) - (Number(a.percent) || 0),
-  );
-
-  const rows = sorted
+  const rows = ranking
     .map((m) => {
       const name = esc(m.label || m.key || '—');
       const raw = Number(m.rawScore) || 0;
@@ -115,30 +130,39 @@ function buildMacroAreaBarsHtml(macroSeries) {
 <div class="sjt-areas-block">${rows}</div>`;
 }
 
+function buildTechnicalTable(ranking) {
+  if (!ranking.length) {
+    return '<p class="muted">Sin desglose por área situacional.</p>';
+  }
+  const rows = ranking
+    .map(
+      (m) => `<tr>
+      <td>${esc(m.label)}</td>
+      <td class="num">${m.rawScore}</td>
+      <td class="num">${m.maxPossible}</td>
+      <td class="num strong">${Number(m.percent).toFixed(1)}%</td>
+    </tr>`,
+    )
+    .join('');
+  return `<table class="sjt-tech-table">
+    <thead><tr><th>Área</th><th>Puntos</th><th>Máximo</th><th>%</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 /**
  * @param {{ scores: object, submittedAt?: string, attempt?: object }} ctx
  */
 export function buildSjtSalesModuleFragment(ctx) {
   const { scores, submittedAt, attempt = null } = ctx;
   const closed = submittedAt ? esc(submittedAt) : '—';
-  const rawScore = Number(scores.rawScore) || 0;
-  const maxPossible = Number(scores.maxPossible) || SJT_SALES_MAX_POINTS;
-  let profileLabel = scores.profileLabel || null;
-  let profileDescription = scores.profileDescription || null;
-  if (!profileLabel && scores.rawScore != null) {
-    const legacy = resolveSjtSalesProfile(scores.rawScore);
-    profileLabel = legacy.label;
-    profileDescription = legacy.description;
-  }
-  profileLabel = profileLabel || '—';
-  profileDescription =
-    profileDescription ||
-    'Descripción no disponible para este intento. Vuelva a calificar si el intento es reciente.';
-
-  const percentScore = resolvePercentScore(scores, rawScore, maxPossible);
+  const scoresForAnalysis = {
+    ...scores,
+    macroCompetencies: resolveMacroCompetencies(scores),
+  };
+  const analysis = analyzeSjtSales(scoresForAnalysis);
   const speedUnreliable = sjtSpeedUnreliable(scores, attempt);
-  const macroSeries = resolveMacroCompetencies(scores);
-  const macroBarsHtml = buildMacroAreaBarsHtml(macroSeries);
+  const macroBarsHtml = buildMacroAreaBarsHtml(analysis.ranking);
 
   return `
   <section class="module-block sjt-module" id="mod-sales-sjt">
@@ -151,12 +175,16 @@ export function buildSjtSalesModuleFragment(ctx) {
     </div>
     <div class="section">
       <div class="section-title">Resultado ejecutivo</div>
-      ${buildExecutiveBlock(scores, profileLabel, percentScore, rawScore, maxPossible, speedUnreliable)}
+      ${buildExecutiveBlock(analysis, speedUnreliable)}
     </div>
-    ${buildProfileReading(profileLabel, profileDescription)}
     <div class="section sjt-areas-section">
       <div class="section-title">Resultado por área situacional</div>
       ${macroBarsHtml}
+    </div>
+    ${buildRhSection(analysis)}
+    <div class="section sjt-tech-section">
+      <div class="section-title section-title-muted">Referencia técnica</div>
+      <div class="sjt-tech">${buildTechnicalTable(analysis.ranking)}</div>
     </div>
   </section>`;
 }
