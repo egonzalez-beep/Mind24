@@ -169,6 +169,18 @@ const scenarios = [
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
+const soloCogHtml = buildSampleHtml(buildModuleCoverSummaries([termanFull]), 'solo-cognitiva-qa');
+const cogModuleSlice = (() => {
+  const start = soloCogHtml.indexOf('id="mod-terman"');
+  if (start < 0) return '';
+  const end = soloCogHtml.indexOf('</section>', start);
+  return end > start ? soloCogHtml.slice(start, end) : '';
+})();
+check(cogModuleSlice.includes('Agrupación descriptiva de series'), 'Cognitiva: agrupación descriptiva');
+check(!cogModuleSlice.includes('Referencia técnica'), 'Cognitiva: sin referencia técnica');
+check(!cogModuleSlice.includes('cog-tech-table'), 'Cognitiva: sin tabla duplicada');
+check(soloCogHtml.includes('page-break-before:avoid'), 'consolidado: regla anti-footer huérfano');
+
 for (const sc of scenarios) {
   const summaries = buildModuleCoverSummaries(sc.attempts);
   let html = buildSampleHtml(summaries, sc.name);

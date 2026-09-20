@@ -199,26 +199,6 @@ ${barW > 1 ? `<rect x="${LABEL_W}" y="${barY.toFixed(1)}" width="${barW.toFixed(
 </svg></div>`;
 }
 
-function buildTechnicalTable(ranking) {
-  if (!ranking.length) {
-    return '<p class="muted">Sin desglose por series.</p>';
-  }
-  const rows = ranking
-    .map(
-      (s) => `<tr>
-      <td>${esc(s.name)}</td>
-      <td class="num">${s.correct}</td>
-      <td class="num">${s.total}</td>
-      <td class="num strong">${s.percent.toFixed(1)}%</td>
-    </tr>`,
-    )
-    .join('');
-  return `<table class="cog-tech-table">
-    <thead><tr><th>Serie</th><th>Aciertos</th><th>Total</th><th>%</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-}
-
 export function extractTermanScores(attempt) {
   const raw = attempt?.scores;
   if (!raw || typeof raw !== 'object') return null;
@@ -257,10 +237,6 @@ export function buildTermanModuleFragment(ctx) {
     <div class="section cog-descriptive-section">
       <div class="section-title">Agrupación descriptiva de series</div>
       ${buildDescriptiveGroups(analysis)}
-    </div>
-    <div class="section cog-tech-section">
-      <div class="section-title section-title-muted">Referencia técnica</div>
-      <div class="cog-tech">${buildTechnicalTable(analysis.ranking)}</div>
     </div>
   </section>`;
 }

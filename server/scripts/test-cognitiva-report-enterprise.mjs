@@ -226,7 +226,7 @@ check(htmlChart.includes('Aritmética y Razonamiento Numérico'), 'gráfica: nom
 check(!htmlChart.includes('Resolu…'), 'gráfica: sin truncar resolución');
 check(!htmlChart.includes('Razonamient…'), 'gráfica: sin truncar aritmética');
 
-console.log('\n--- referencia técnica ---');
+console.log('\n--- sin referencia técnica (redundante con gráfica) ---');
 const rank = rankTermanSeries(
   baseSeries({
     byId: {
@@ -237,8 +237,9 @@ const rank = rankTermanSeries(
 );
 check(rank[0].percent >= rank[rank.length - 1].percent, 'ranking: orden desc');
 const htmlTech = fragment(buildScores());
-check(htmlTech.includes('Referencia técnica'), 'tabla: sección');
-check(htmlTech.includes('cog-tech-table'), 'tabla: markup');
+check(!htmlTech.includes('Referencia técnica'), 'PDF: sin referencia técnica Cognitiva');
+check(!htmlTech.includes('cog-tech-table'), 'PDF: sin tabla técnica duplicada');
+check(htmlTech.includes('Rendimiento por serie'), 'PDF: conserva gráfica por serie');
 
 console.log('\n--- scoring intacto ---');
 const rows = [
