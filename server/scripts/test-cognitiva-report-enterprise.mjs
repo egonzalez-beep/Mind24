@@ -217,7 +217,7 @@ check(htmlGroups.includes('afinidad temática'), 'agrupación: nota disclaimer')
 check(htmlGroups.includes('Verbal'), 'agrupación: Verbal');
 check(!htmlGroups.includes('Macro-categorías cognitivas'), 'agrupación: sin label legacy');
 check(htmlGroups.includes('cog-descriptive-section'), 'agrupación: sección paginación');
-check(htmlGroups.includes('cog-descriptive-block'), 'agrupación: bloque indivisible');
+check(htmlGroups.includes('cog-descriptive-block'), 'agrupación: contenedor descriptivo');
 
 console.log('\n--- gráfica: nombres completos ---');
 const htmlChart = fragment(buildScores());
