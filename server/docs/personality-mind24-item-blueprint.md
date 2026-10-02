@@ -201,14 +201,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a mantenerse activo, iniciar acciones oportunamente y conservar ritmo de trabajo con empuje. |
+| **Definición operacional** | Tendencia a mantenerse activo, iniciar acciones oportunamente y conservar un ritmo de trabajo con empuje cuando existen tareas o necesidades por atender. |
 | **Facetas** | A. Nivel de actividad · B. Inicio de acción · C. Ritmo y empuje |
-| **Indicadores conductuales** | Inicia tareas sin demora excesiva; mantiene ritmo; se mantiene en movimiento productivo. |
-| **Qué mide** | Actividad e iniciativa en tareas propias. |
-| **Qué NO mide** | Persistencia ante obstáculos, liderazgo, autonomía decisional, impulsividad. |
-| **Fronteras** | Iniciar ≠ decidir sin supervisión. Ritmo ≠ energía infinita clínica. |
+| **Indicadores conductuales** | Mantiene actividad con carga disponible; inicia con claridad suficiente; enlaza actividades con continuidad moderada. |
+| **Qué mide** | Tendencia conductual hacia activación y movimiento laboral (no productividad real). |
+| **Qué NO mide** | Liderazgo, autonomía, persistencia, adaptabilidad, impulsividad, horas trabajadas, rapidez cognitiva. |
+| **Fronteras** | Dinamismo ≠ avanzar sin validación (autonomía). ≠ conducir otros (liderazgo). ≠ sostener meta ante obstáculo (persistencia). Iniciar con claridad ≠ actuar sin evaluar. |
 | **Riesgo deseabilidad social** | **medium-high** |
-| **Estrategia de redacción** | Arranque y ritmo; evitar «hyperactivo». |
+| **Estrategia de redacción** | **Neutralidad valorativa**; trade-off arrancar vs preparar / ritmo vs pausa; sin «proactivo/rápido». |
 
 ---
 
@@ -441,6 +441,8 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 2.9 | 2026-10-02 | Revisión final pm24_052/056 · CONTENT BASELINE v1 APPROVED dim. 7 (pm24_049–pm24_056 congelados hasta pilotaje) |
 | 3.0 | 2026-10-02 | Piloto 8 ítems dim. 8 Regulación bajo presión (draft, revisión humana pendiente) |
 | 3.1 | 2026-10-02 | Revisión final pm24_057/059/060/061 · CONTENT BASELINE v1 APPROVED dim. 8 (pm24_057–pm24_064 congelados hasta pilotaje) |
+| 3.2 | 2026-10-02 | Piloto 8 ítems dim. 9 Dinamismo e iniciativa (draft, revisión humana pendiente) |
+| 3.3 | 2026-10-02 | Revisión final pm24_065/068/069 · CONTENT BASELINE v1 APPROVED dim. 9 (pm24_065–pm24_072 congelados hasta pilotaje) |
 
 ---
 
@@ -1935,3 +1937,223 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 **Checklist neutralidad (8 ítems):** molestia/frustración no penalizada (**060** reconoce lo ocurrido presente); sin «no me afecta»; persistencia **060/061 cerrados**; adaptabilidad **no**; dinamismo **063** residual; clínico **no**; baja puntuable plausible (**062**, repasar error en **061**).
 
 **Revisión v3.1:** **057/059/060/061** cerraron solapamiento pausa, Orden, persistencia y «calma».
+
+---
+
+# Piloto dimensión 9 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 9 — Dinamismo e iniciativa laboral: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v3.3 (pm24_065, pm24_068, pm24_069)
+
+| ID | Cambio | Objetivo de frontera | Deseabilidad | Contaminación residual |
+|----|--------|----------------------|--------------|------------------------|
+| pm24_065 | Transición rápida post-actividad → mantenerse activo con opciones no urgentes vs esperar prioridad | Nivel de actividad ≠ ritmo 071 | medium | logro_persistencia (baja) · solapamiento 066 en pilotaje |
+| pm24_068 | «Más de lo necesario» → primer paso práctico antes de afinar enfoque | Inicio ≠ juicio sobre preparación | medium | orden_precision |
+| pm24_069 | «Poco después» → parte definida con detalles menores pendientes | Inicio ≠ rapidez | medium | adaptabilidad_cambio (baja — incertidumbre menor) |
+
+## Validación de facetas (bloque completo)
+
+| Faceta | IDs | Núcleo |
+|--------|-----|--------|
+| A | 065, 066, 067 | Activo con opciones no urgentes · continuidad con varias tareas · ratos sin actividad inmediata |
+| B | 068, 069, 070 | Preparación→acción · parte definida · instrucciones/información suficientes |
+| C | 071, 072 | Enlace entre partes · pausa entre tareas (inverso) |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Nivel de actividad | 3 | pm24_065, pm24_066, pm24_067 |
+| B. Inicio de acción | 3 | pm24_068, pm24_069, pm24_070 |
+| C. Ritmo y empuje | 2 | pm24_071, pm24_072 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_072`)
+
+## Nota de frontera (dimensión 9)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Autonomía** | Inicia con instrucciones/claridad; no «sin pedir permiso». |
+| **Liderazgo** | Actividad individual; sin coordinar a otros. |
+| **Logro/persistencia** | Sin «hasta terminar» ni sostener meta ante obstáculo. |
+| **Adaptabilidad** | Sin cambiar método por cambio de contexto. |
+| **Regulación bajo presión** | Sin presión, crítica ni frustración como foco. |
+
+---
+
+### pm24_065
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando durante la jornada hay varias actividades disponibles y ninguna requiere atención inmediata, suelo mantenerme atendiendo alguna de ellas en lugar de esperar a que surja algo prioritario. |
+| **Faceta** | A. Nivel de actividad |
+| **Direction** | direct |
+| **Indicador** | Actividad con opciones disponibles vs esperar prioridad clara |
+| **Justificación** | Trade-off activo/esperar; distinto de 071 (enlace entre partes). |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (baja) |
+| **NO autonomía** | — |
+| **NO liderazgo** | — |
+| **NO persistencia** | Cambia de actividad, no insiste en meta. |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_066
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Durante periodos con varias tareas disponibles, suelo mantenerme atendiendo alguna de ellas en lugar de dejar espacios largos entre actividades. |
+| **Faceta** | A. Nivel de actividad |
+| **Direction** | direct |
+| **Indicador** | Actividad sostenida con carga disponible |
+| **Justificación** | Espacios largos vs atender alguna; ritmo moderado posible. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO autonomía** | — |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_067
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando en la jornada aparecen ratos sin una actividad inmediata, suelo pasarme a algo pendiente que pueda atender en ese momento. |
+| **Faceta** | A. Nivel de actividad |
+| **Direction** | direct |
+| **Indicador** | Ocupa ratos libres con pendientes atendibles |
+| **Justificación** | Movimiento funcional vs espera pasiva; no buscar trabajo ajeno. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (baja — iniciativa con pendiente) |
+| **NO autonomía** | Pendiente ya identificado, no decidir sin supervisión. |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_068
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando ya entiendo lo necesario para empezar una tarea, suelo dar un primer paso práctico antes de seguir afinando cómo la abordaré. |
+| **Faceta** | B. Inicio de acción |
+| **Direction** | direct |
+| **Indicador** | Primer paso práctico vs seguir afinando enfoque |
+| **Justificación** | Ambos estilos funcionales; sin «preparación innecesaria». |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (afinar enfoque) |
+| **NO autonomía** | Claridad dada, no decidir solo. |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_069
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una tarea puede ponerse en marcha con la información disponible, suelo iniciar la parte que ya está definida aunque queden detalles menores por precisar. |
+| **Faceta** | B. Inicio de acción |
+| **Direction** | direct |
+| **Indicador** | Inicia parte definida vs esperar todos los detalles |
+| **Justificación** | Suficiente claridad; no velocidad ni impulsividad. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | adaptabilidad_cambio (baja — detalles por precisar) |
+| **NO autonomía** | Instrucciones recibidas. |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_070
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando me indican qué hacer y no falta información clave, suelo empezar a ejecutarlo en lugar de posponer el inicio. |
+| **Faceta** | B. Inicio de acción |
+| **Direction** | direct |
+| **Indicador** | Ejecuta con información clave vs posponer |
+| **Justificación** | Distinto de 068 (preparación) y 069 (poco después); foco en posponer. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (baja — esperar más datos) |
+| **NO autonomía** | Indicación recibida; no validación decisional. |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_071
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando termino una parte de mi trabajo, suelo enlazar con la siguiente sin necesitar una pausa larga entre ambas. |
+| **Faceta** | C. Ritmo y empuje |
+| **Direction** | direct |
+| **Indicador** | Continuidad entre partes del trabajo |
+| **Justificación** | Pausa larga vs enlace; par con **072** inverso. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (enlazar tareas) |
+| **NO autonomía** | — |
+| **NO liderazgo** | — |
+| **NO persistencia** | Ritmo entre partes, no meta única. |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_072
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando termino una tarea, suelo tomarme un tiempo antes de comenzar la siguiente aunque ya sepa qué sigue. |
+| **Faceta** | C. Ritmo y empuje |
+| **Direction** | inverse |
+| **Indicador** | Transición pausada entre tareas |
+| **Justificación** | Ritmo reflexivo plausible; no «me cuesta trabajar». |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO autonomía** | — |
+| **NO liderazgo** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+## Autocrítica del piloto dimensión 9 (post v3.3)
+
+**Candidatos más débiles (residual):**
+
+1. **pm24_065 vs pm24_066** — Ambos hablan de varias tareas/actividades disponibles; **065** enfatiza esperar prioridad vs **066** espacios largos. Correlación posible en pilotaje; distinción conceptual aceptada en baseline.
+
+2. **pm24_069** — «Detalles menores por precisar» puede rozar **adaptabilidad** ante incertidumbre; anclado en inicio de parte definida, no tolerancia al cambio.
+
+**Frontera 071/072 vs persistencia:** **071** enlaza *partes* del trabajo (ritmo); **072** pausa entre *tareas*; no «hasta terminar».
+
+**Checklist neutralidad (8 ítems):** ritmo alto ≠ mejor empleado (**072** equilibra); pausa legítima; sin actuar sin pensar (B exige claridad); autonomía/persistencia/liderazgo/productividad **no** primarios.
+
+**Revisión v3.3:** **065/068/069** cerraron solapamiento con **071**, rapidez y juicio valorativo sobre preparación.
