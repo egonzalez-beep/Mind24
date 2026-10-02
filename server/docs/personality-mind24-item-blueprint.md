@@ -126,14 +126,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a presentar argumentos de forma convincente y adaptar el mensaje para favorecer aceptación o acción. |
-| **Facetas** | A. Argumentación persuasiva · B. Adaptación del mensaje · C. Influencia sobre decisiones |
-| **Indicadores conductuales** | Explica beneficios; ajusta tono/contenido al interlocutor; busca acuerdo fundamentado. |
-| **Qué mide** | Persuasión interpersonal orientada al trabajo. |
-| **Qué NO mide** | Sociabilidad, autoridad formal, liderazgo, volumen de conversación. |
-| **Fronteras** | Persuadir ≠ dirigir. Adaptar mensaje ≠ adaptabilidad al cambio organizacional. |
+| **Definición operacional** | Tendencia a involucrarse en intercambios donde hay que presentar ideas, construir argumentos, adaptar el mensaje y favorecer que otros reconsideren, acepten o actúen a partir de una propuesta. |
+| **Facetas** | A. Argumentación persuasiva · B. Adaptación del mensaje · C. Movilización de opiniones o decisiones |
+| **Indicadores conductuales** | Expone razones/beneficios; reformula según interlocutor; explora acuerdo; se involucra ante posturas distintas (sin medir extroversión). |
+| **Qué mide** | Influencia sobre opiniones/decisiones en contexto laboral. |
+| **Qué NO mide** | Simpatía, hablar mucho, liderazgo, autoridad, calma en conflicto, capacidad cognitiva/verbal. |
+| **Fronteras** | Influencia ≠ sociabilidad. Persuadir ≠ dirigir. Adaptar mensaje ≠ adaptabilidad organizacional. Desacuerdo → qué hace con el argumento, no regulación emocional. |
 | **Riesgo deseabilidad social** | **high** |
-| **Estrategia de redacción** | Situaciones de convencimiento laboral genéricas; evitar «manipular». |
+| **Estrategia de redacción** | **Neutralidad valorativa**; trade-offs seguir argumentando / dejar tema; evitar «soy persuasivo». |
 
 ---
 
@@ -429,6 +429,9 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 1.7 | 2026-10-02 | Piloto 8 ítems dim. 3 Autonomía (draft, revisión humana pendiente) |
 | 1.8 | 2026-10-02 | Revisión final dim. 3 · Faceta A autogestión · reescritura 017/018/019/022 |
 | 1.9 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 3 (pm24_017–pm24_024 congelados hasta pilotaje) |
+| 2.0 | 2026-10-02 | Piloto 8 ítems dim. 4 Influencia (draft, revisión humana pendiente) |
+| 2.1 | 2026-10-02 | Revisión final pm24_025/026/031 |
+| 2.2 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 4 (pm24_025–pm24_032 congelados hasta pilotaje) |
 
 ---
 
@@ -839,3 +842,216 @@ Tendencia a organizar y continuar el propio trabajo con lineamientos suficientes
 - **pm24_017** / **pm24_019**: par autogestión vs seguimiento frecuente.
 - **pm24_018** mejoró con «explorar antes de pedir apoyo».
 - **pm24_022** reorientado a cerrar elección, no rigidez.
+
+---
+
+# Piloto dimensión 4 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 4 — Influencia y persuasión interpersonal: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v2.1 (025, 026, 031)
+
+| ID | Deseabilidad | Ideal evidente | Contaminación residual |
+|----|--------------|----------------|------------------------|
+| pm24_025 | medium | no | logro_persistencia (propuesta de trabajo) |
+| pm24_026 | medium | no | — |
+| pm24_031 | medium | no | liderazgo (baja — «conclusión») |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Argumentación persuasiva | 3 | pm24_025, pm24_026, pm24_027 |
+| B. Adaptación del mensaje | 3 | pm24_028, pm24_029, pm24_030 |
+| C. Movilización de opiniones o decisiones | 2 | pm24_031, pm24_032 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_032`)
+
+## Nota de frontera (dimensión 4)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Sociabilidad y colaboración** | No miden integración, amistad ni volumen de contacto; el foco es mover opinión/aceptación. |
+| **Liderazgo y equipos** | Sin coordinar, asignar ni dirigir; persuasión entre pares. |
+| **Regulación bajo presión** | Desacuerdo presente solo como contexto; no calma ni tolerancia emocional al conflicto. |
+| **Dinamismo e iniciativa** | No ritmo ni arranque de tareas. |
+| **Adaptabilidad al cambio** | Adaptación del mensaje = forma de comunicar una idea, no repriorizar trabajo. |
+
+---
+
+### pm24_025
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una propuesta de trabajo genera opiniones distintas, suelo exponer las razones por las que considero que puede funcionar. |
+| **Faceta** | A. Argumentación persuasiva |
+| **Direction** | direct |
+| **Indicador** | Expone razones a favor de una propuesta ante opiniones distintas |
+| **Justificación** | Argumentación anclada en propuesta laboral; no involucrarse en conversación genérica. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (propuesta/resultado) |
+| **NO sociabilidad** | Razones sobre propuesta, no gusto por conversar. |
+| **NO liderazgo** | No conduce al grupo. |
+| **NO regulacion_presion** | No manejo emocional. |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+### pm24_026
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando quiero que una idea sea tomada en cuenta, suelo desarrollar los argumentos que la respaldan en lugar de limitarme a plantearla. |
+| **Faceta** | A. Argumentación persuasiva |
+| **Direction** | direct |
+| **Indicador** | Desarrolla argumentos vs limitarse a plantear la idea |
+| **Justificación** | Trade-off plantear / desarrollar argumentos; neutralidad valorativa. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | influencia (redundante) |
+| **NO sociabilidad** | Persuadir, no integrar. |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | — |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+### pm24_027
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando alguien expresa una postura distinta sobre un tema de trabajo, suelo explicar los motivos de mi punto de vista. |
+| **Faceta** | A. Argumentación persuasiva |
+| **Direction** | direct |
+| **Indicador** | Desarrolla motivos de la propia postura ante discrepancia |
+| **Justificación** | Respuesta argumentativa a postura distinta; no «ganar» ni imponer. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | regulacion_presion (baja — solo contexto de desacuerdo) |
+| **NO sociabilidad** | — |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | Foco en argumento, no en calma. |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+### pm24_028
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando alguien no está convencido de una propuesta, suelo buscar otra manera de explicarle sus ventajas. |
+| **Faceta** | B. Adaptación del mensaje |
+| **Direction** | direct |
+| **Indicador** | Cambia forma de explicar ventajas ante falta de convicción |
+| **Justificación** | Adaptación del mensaje; trade-off con aceptar desacuerdo y seguir. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | adaptabilidad_cambio (baja — solo comunicación) |
+| **NO sociabilidad** | — |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | — |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | No cambia método de trabajo, solo explicación. |
+
+---
+
+### pm24_029
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando noto que la otra persona no entendió lo que planteo, suelo reformular mi explicación antes de insistir con las mismas palabras. |
+| **Faceta** | B. Adaptación del mensaje |
+| **Direction** | direct |
+| **Indicador** | Reformula antes de repetir igual |
+| **Justificación** | Ajuste comunicativo según comprensión del interlocutor. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad (empatía comunicativa) |
+| **NO sociabilidad** | Objetivo comprensión para influir, no vínculo. |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | — |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+### pm24_030
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Según con quién hable, suelo destacar distintos aspectos de una misma propuesta. |
+| **Faceta** | B. Adaptación del mensaje |
+| **Direction** | direct |
+| **Indicador** | Enfatiza aspectos distintos según interlocutor |
+| **Justificación** | Adaptación al receptor; alternativa: mismo guion para todos. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | influencia_persuasion (faceta A/B solapamiento) |
+| **NO sociabilidad** | — |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | — |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | Mensaje, no prioridades de trabajo. |
+
+---
+
+### pm24_031
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una propuesta queda sin una decisión clara, suelo aportar argumentos para ayudar a que la conversación avance hacia una conclusión. |
+| **Faceta** | C. Movilización de opiniones o decisiones |
+| **Direction** | direct |
+| **Indicador** | Aporta argumentos para avanzar hacia conclusión/decisión |
+| **Justificación** | Influencia orientada a decisión, no armonía social ni negociación genérica. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | liderazgo_equipos (baja — empujar conclusión) |
+| **NO sociabilidad** | Conclusión de propuesta, no integración interpersonal. |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | — |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+### pm24_032
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una persona mantiene una opinión diferente después de escuchar mi punto, suelo dejar el tema ahí en lugar de buscar otro argumento. |
+| **Faceta** | C. Movilización de opiniones o decisiones |
+| **Direction** | inverse |
+| **Indicador** | Deja el tema tras desacuerdo persistente (menor esfuerzo persuasivo) |
+| **Justificación** | Inverso neutral; alternativa seguir argumentando es legítima. |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | regulacion_presion (evitar conflicto — baja si foco en argumento) |
+| **NO sociabilidad** | No evita personas, deja tema. |
+| **NO liderazgo** | — |
+| **NO regulacion_presion** | No describe ansiedad; deja de insistir argumentativamente. |
+| **NO dinamismo** | — |
+| **NO adaptabilidad** | — |
+
+---
+
+## Autocrítica del piloto dimensión 4 (post v2.1)
+
+**Candidatos más débiles:**
+
+1. **pm24_025** vs **pm24_027** — Ambos argumentan ante posturas distintas (propuesta vs tema de trabajo). Vigilar redundancia percibida en pilotaje.
+
+2. **pm24_031** — «Avance hacia una conclusión» puede leerse como **liderazgo** ligero o facilitación de reunión; ideal evidente: no. **Vigilar** correlación con liderazgo.
+
+**¿Gusto por hablar/extroversión?** Tras v2.1, **no** de forma primaria; el bloque ancla en propuesta, idea y decisión.
+
+**Otros puntos:**
+
+- **pm24_026** mejoró con trade-off plantear vs desarrollar argumentos.
+- **pm24_032** par con **pm24_028** / **pm24_031** (seguir argumentando vs dejar tema / empujar conclusión).
