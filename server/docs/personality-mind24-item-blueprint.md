@@ -23,6 +23,58 @@ Documento de especificación psicométrica y desarrollo. **No define reglas de s
 
 ---
 
+## Principio de neutralidad valorativa y control de deseabilidad social
+
+**Obligatorio para dimensiones 1–10.**
+
+### Principio de neutralidad valorativa
+
+Los reactivos **no** deben redactarse como conducta laboral «correcta» frente a conducta «incorrecta». El candidato no debería identificar de inmediato qué respuesta lo hace parecer un «mejor empleado».
+
+Siempre que sea posible, el ítem debe presentar **una forma de trabajar** frente a **otra forma también razonable** (trade-off, preferencia, ritmo distinto). El scoring interno asigna la tendencia; no se comprueba si el candidato conoce la respuesta socialmente deseable.
+
+### Pregunta de control obligatoria
+
+Antes de aprobar cualquier reactivo:
+
+> «Si yo fuera candidato e intentara verme bien, ¿sería demasiado evidente qué respuesta debería marcar?»
+
+Si la respuesta es **sí** → **reescribir**.
+
+### Redacción preferida vs evitar
+
+| Preferir | Evitar (revisar por riesgo) |
+|----------|-----------------------------|
+| Lenguaje neutral, conductas concretas | Moralizar («correctamente», «abandono», «irresponsable») |
+| Decisiones cotidianas, preferencias de trabajo | «Perfectamente», «nunca fallo», «error grave» |
+| Trade-offs donde ambas alternativas son funcionales | Confesiones caricaturescas en inversos |
+| Situaciones laborales plausibles | «Importante» solo para hacer obvia la respuesta ideal |
+
+**No es forced-choice:** la escala sigue siendo frecuencia 1–5. La neutralidad se logra solo mediante redacción.
+
+### Ejemplos de estilo
+
+| No deseado | Mejor |
+|------------|-------|
+| Pasar a la siguiente sin comprobar detalles importantes | Cuando considero que una tarea ya cumple con lo necesario, prefiero avanzar a la siguiente actividad en lugar de hacer una revisión adicional |
+| Dejo de insistir y no la retomo | Después de varios intentos sin avance, suelo dejar esa tarea en pausa y concentrarme temporalmente en otras actividades |
+| Reviso donde un error afectaría la calidad | Antes de cerrar una tarea, suelo dedicar un momento adicional a revisar los puntos que considero más relevantes |
+
+### Checklist de aprobación (todos los reactivos)
+
+1. ¿Mide una sola dimensión principal?
+2. ¿Mide una faceta concreta?
+3. ¿Describe una conducta reconocible?
+4. ¿Puede responderla una variedad amplia de puestos?
+5. ¿La respuesta ideal es demasiado evidente?
+6. ¿La alternativa menos puntuable sigue siendo laboralmente plausible?
+7. ¿Evita moralizar la conducta?
+8. ¿Evita absolutos?
+9. ¿Evita doble pregunta?
+10. ¿Evita contaminación con otras dimensiones?
+
+---
+
 ## Dimensión 1 — Orientación al logro y persistencia (`logro_persistencia`)
 
 | Campo | Contenido |
@@ -34,7 +86,7 @@ Documento de especificación psicométrica y desarrollo. **No define reglas de s
 | **Qué NO mide** | Energía/ritmo (dinamismo), decidir solo (autonomía), dirigir otros (liderazgo), cumplir reglas (apego normas). |
 | **Fronteras** | Persistencia ≠ cambiar de método (adaptabilidad). Cierre ≠ orden/detalle (orden y precisión). |
 | **Riesgo deseabilidad social** | **high** |
-| **Estrategia de redacción** | Conductas situacionales («cuando… entonces…»); evitar adjetivos morales (responsable, proactivo); un inverso solo si discrimina sin confundir constructos. |
+| **Estrategia de redacción** | Conductas situacionales; **principio de neutralidad valorativa**; inversos como preferencia plausible, no confesión. |
 
 **Distinción crítica:** Persistencia = seguir intentando ante obstáculos. Cierre = terminar y verificar lo iniciado.
 
@@ -51,7 +103,7 @@ Documento de especificación psicométrica y desarrollo. **No define reglas de s
 | **Qué NO mide** | Reglas externas (apego normas), honestidad, perfeccionismo clínico, velocidad. |
 | **Fronteras** | Orden personal ≠ obediencia procedimental. Revisión ≠ persistencia ante obstáculos (aunque comparten «terminar bien»). |
 | **Riesgo deseabilidad social** | **medium-high** |
-| **Estrategia de redacción** | Enfatizar *cómo* organiza/revisa, no *qué tan bueno* es; evitar «perfecto». |
+| **Estrategia de redacción** | Enfatizar *cómo* organiza/revisa; pares revisión vs avanzar; **neutralidad valorativa**. |
 
 ---
 
@@ -179,7 +231,7 @@ Documento de especificación psicométrica y desarrollo. **No define reglas de s
 
 Estado: **draft** · No `production` · No sync BD.
 
-**Dimensión 1 — Orientación al logro y persistencia: CONTENT BASELINE v1 APPROVED**
+**Dimensión 1 — Orientación al logro y persistencia: CONTENT BASELINE v1 APPROVED** (pm24_005/pm24_006 ajustados en pasada de neutralidad valorativa v1.5; revalidación humana pendiente)
 
 ## Distribución
 
@@ -257,7 +309,7 @@ Estado: **draft** · No `production` · No sync BD.
 
 | Campo | Valor |
 |-------|-------|
-| **Texto** | Si una tarea importante requiere más intentos de los previstos, sigo trabajándola aunque el avance sea más lento de lo esperado. |
+| **Texto** | Si una tarea requiere más intentos de los previstos, suelo mantener el trabajo en ella aunque avance más lento de lo que tenía previsto. |
 | **Dimensión** | logro_persistencia |
 | **Faceta** | B. Persistencia ante obstáculos |
 | **Direction** | direct |
@@ -272,14 +324,14 @@ Estado: **draft** · No `production` · No sync BD.
 
 | Campo | Valor |
 |-------|-------|
-| **Texto** | Cuando una tarea sigue atascada después de varios intentos, suelo dejar de insistir y no retomarla por un tiempo. |
+| **Texto** | Después de varios intentos sin avance en una tarea, suelo dejarla en pausa y concentrarme temporalmente en otras actividades. |
 | **Dimensión** | logro_persistencia |
 | **Faceta** | B. Persistencia ante obstáculos |
 | **Direction** | inverse |
-| **Indicador** | Reduce insistencia y posterga retoma tras bloqueo |
-| **Justificación** | Inverso claro de persistencia sin priorización ni «tareas manejables». |
-| **Contaminación residual** | adaptabilidad (cambiar de tarea por bloqueo) |
-| **Deseabilidad** | medium |
+| **Indicador** | Pausa la tarea bloqueada y redirige foco a otras actividades |
+| **Justificación** | Inverso de persistencia como preferencia laboral plausible (pausa vs insistir), no confesión de abandono. |
+| **Contaminación residual** | adaptabilidad_cambio (cambio temporal de foco) |
+| **Deseabilidad** | medium (post v1.5) |
 
 ---
 
@@ -328,6 +380,42 @@ Estado: **draft** · No `production` · No sync BD.
 
 ---
 
+## Auditoría de neutralidad valorativa — pm24_001–pm24_016 (v1.5)
+
+Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (sí/no), acción (conservar/reescribir).
+
+| itemId | Dimensión / faceta | Deseabilidad | Ideal evidente | Acción | Razón breve |
+|--------|-------------------|--------------|----------------|--------|-------------|
+| pm24_001 | logro / Enfoque metas | medium | no | conservar | Priorización situacional; alternativa plausible (atender otro pendiente primero). |
+| pm24_002 | logro / Enfoque metas | medium | no | conservar | Chequeo de avance; no moraliza. |
+| pm24_003 | logro / Enfoque metas | medium | no | conservar | Recuperar foco; conducta neutral. |
+| pm24_004 | logro / Persistencia | medium | no | conservar | Reintentos vs posponer; marco situacional. |
+| pm24_005 | logro / Persistencia | medium-high | sí | **reescribir** | «Importante» + persistir sonaba a empleado modelo. |
+| pm24_006 | logro / Persistencia (inv.) | high | sí | **reescribir** | «Dejar de insistir / no retomar» = confesión indeseable. |
+| pm24_007 | logro / Conclusión | medium-high | no | conservar | Seguimiento de relacionados; alternativa: pasar a otro trabajo. |
+| pm24_008 | logro / Conclusión | medium | no | conservar | Retoma tras interrupción; plausible no retomar pronto. |
+| pm24_009 | orden / Organización | medium | no | conservar | Secuencia propia antes de ejecutar. |
+| pm24_010 | orden / Organización | medium | no | **reescribir** (v1.6) | Trade-off organizar durante el proceso vs al terminar; microajuste final aprobado. |
+| pm24_011 | orden / Organización | medium | no | conservar | Ordenar pasos; trade-off con empezar directo. |
+| pm24_012 | orden / Detalle | medium | no | conservar | Detección de inconsistencias; habilidad, no moral. |
+| pm24_013 | orden / Detalle | medium-high | sí | **reescribir** | «Correctamente» e «importante» moralizaban. |
+| pm24_014 | orden / Detalle | medium | no | conservar | Detalle con impacto; no afirma «error». |
+| pm24_015 | orden / Revisión | medium-high | sí | **reescribir** | «Sensibles de lo que entrego» sonaba a calidad/obvio. |
+| pm24_016 | orden / Revisión (inv.) | high | sí | **reescribir** | Tiempo/errores = confesión; reemplazado por trade-off avanzar vs revisar. |
+
+### Reescrituras v1.5 (detalle)
+
+| ID | Texto anterior | Texto propuesto | Neutralidad | Constructo |
+|----|----------------|-----------------|-------------|------------|
+| pm24_005 | Si una tarea **importante** requiere… sigo trabajándola… | Si una tarea requiere más intentos… **suelo mantener el trabajo en ella** aunque avance más lento… | Quita carga valorativa de «importante»; describe preferencia de sostener vs cambiar ritmo | Persistencia ante obstáculos |
+| pm24_006 | …dejar de insistir y no retomarla… | …dejarla en **pausa** y concentrarme temporalmente en otras actividades | Pausa vs insistir, no abandono | Persistencia (inverso) |
+| pm24_013 | …**importante** para continuar **correctamente** | …que **necesito** para seguir con lo que estoy haciendo | Operativo, sin juicio de corrección | Atención al detalle |
+| pm24_015 | …compruebo aspectos **más sensibles** de lo que entrego | …**momento adicional** a revisar puntos **más relevantes** | Revisión sin errores/calidad implícita | Revisión y calidad |
+| pm24_016 | Cuando el tiempo aprieta, entrego sin repasar… **errores** | Cuando considero que cumple lo necesario, **prefiero avanzar**… en lugar de **revisión adicional** | Par legítimo agilidad vs repaso | Revisión (inverso) |
+| pm24_010 (v1.6) | Guardo documentación… encuentre **rápido** | …**mantenerlos organizados** en lugar de ordenarlos **hasta que termino** | Dos estilos plausibles de organización | Organización |
+
+---
+
 ## Control de versión
 
 | Versión doc | Fecha | Notas |
@@ -335,3 +423,200 @@ Estado: **draft** · No `production` · No sync BD.
 | 1.1 | 2026-10-02 | Matriz 10 dimensiones + piloto 8 ítems dim. 1 (draft) |
 | 1.2 | 2026-10-02 | Revisión fina dim. 1 — reducción de contaminación |
 | 1.3 | 2026-10-02 | Microajustes pm24_003/pm24_004 · CONTENT BASELINE v1 APPROVED |
+| 1.4 | 2026-10-02 | Piloto 8 ítems dim. 2 Orden y precisión (draft, revisión humana pendiente) |
+| 1.5 | 2026-10-02 | Principio neutralidad valorativa · auditoría 16 ítems · reescritura 005/006/013/015/016 |
+| 1.6 | 2026-10-02 | Microajuste pm24_010 · CONTENT BASELINE v1 APPROVED dim. 2 |
+
+---
+
+# Piloto dimensión 2 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD.
+
+**Dimensión 2 — Orden y precisión: CONTENT BASELINE v1 APPROVED**
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Organización del trabajo | 3 | pm24_009, pm24_010, pm24_011 |
+| B. Atención al detalle | 3 | pm24_012, pm24_013, pm24_014 |
+| C. Revisión y control de calidad | 2 | pm24_015, pm24_016 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_016`)
+
+## Nota de frontera (dimensión 2)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Apego a normas y procesos** | No se mencionan procedimientos, políticas, auditorías ni estándares impuestos; el control es autogestionado («lo que entrego», «mi secuencia»). |
+| **Orientación al logro / persistencia** | No miden priorizar metas, insistir ante obstáculos ni retomar tareas hasta cerrarlas; la revisión es calidad del producto, no conclusión de pendientes. |
+| **Autonomía y decisión** | No miden decidir sin supervisión ni confianza al elegir; organizar o detectar errores no implica independencia decisional. |
+
+---
+
+### pm24_009
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Antes de abordar varios pendientes del mismo trabajo, defino el orden en que los iré atendiendo. |
+| **Dimensión** | orden_precision |
+| **Faceta** | A. Organización del trabajo |
+| **Direction** | direct |
+| **Indicador** | Define secuencia de atención entre pendientes vinculados antes de ejecutar |
+| **Justificación** | Método personal de estructuración; distinto de priorizar por resultado (logro) o de ordenar pasos dentro de una sola tarea (011). |
+| **Contaminación residual** | logro_persistencia (varios pendientes) |
+| **Deseabilidad** | medium |
+| **Observaciones** | «Del mismo trabajo» acota contexto y reduce lectura como repriorización por meta. |
+| **NO apego_normas** | No hay referencia a procedimiento o checklist oficial. |
+| **NO logro_persistencia** | Orden de ejecución, no contribución al resultado ni cierre. |
+| **NO autonomia_decision** | No describe decidir sin consultar. |
+
+---
+
+### pm24_010
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Mientras trabajo con varios archivos o materiales, suelo dedicar algo de tiempo a mantenerlos organizados en lugar de ordenarlos hasta que termino. |
+| **Dimensión** | orden_precision |
+| **Faceta** | A. Organización del trabajo |
+| **Direction** | direct |
+| **Indicador** | Organiza materiales/archivos durante el trabajo vs posponer orden al cierre |
+| **Justificación** | Preferencia entre dos estilos laborales plausibles; mide método de organización en curso, no localización rápida como virtud. |
+| **Contaminación residual** | dinamismo_iniciativa (baja — tiempo dedicado a orden vs avance) |
+| **Deseabilidad** | medium (post v1.6) |
+| **Observaciones** | Alineado a neutralidad valorativa; par implícito mantener orden en proceso / ordenar al final. |
+| **NO apego_normas** | No archiva por norma documental corporativa. |
+| **NO logro_persistencia** | No mide terminar tareas ni metas. |
+| **NO autonomia_decision** | No implica criterio decisional. |
+
+---
+
+### pm24_011
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una tarea implica varios pasos, los ordeno antes de comenzar a ejecutarlos. |
+| **Dimensión** | orden_precision |
+| **Faceta** | A. Organización del trabajo |
+| **Direction** | direct |
+| **Indicador** | Secuencia pasos internos de una tarea antes de la ejecución |
+| **Justificación** | Estructura el flujo de trabajo en una sola tarea; complementa 009 (entre pendientes) sin duplicar. |
+| **Contaminación residual** | logro_persistencia (planificar antes de actuar) |
+| **Deseabilidad** | medium |
+| **Observaciones** | Formulación paralela a estándar dim. 1 («Cuando… antes de…»). |
+| **NO apego_normas** | Orden propio, no SOP externo. |
+| **NO logro_persistencia** | No afirma completar ni persistir. |
+| **NO autonomia_decision** | Organización operativa, no decisión estratégica. |
+
+---
+
+### pm24_012
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Al contrastar partes de un mismo trabajo, detecto cuando los datos o las cifras no cuadran entre sí. |
+| **Dimensión** | orden_precision |
+| **Faceta** | B. Atención al detalle |
+| **Direction** | direct |
+| **Indicador** | Detecta inconsistencias numéricas o de datos entre secciones |
+| **Justificación** | Atención a detalle funcional; «contrastar» enfatiza detección, no el acto final de entregar. |
+| **Contaminación residual** | orden_precision faceta C (revisión) — mismo acto, distinto foco (detectar vs cerrar) |
+| **Deseabilidad** | medium |
+| **Observaciones** | Vigilar solapamiento con pm24_015 en revisión humana. |
+| **NO apego_normas** | No validación contra norma externa. |
+| **NO logro_persistencia** | No verifica avance hacia meta acordada (cf. pm24_002). |
+| **NO autonomia_decision** | Percepción de inconsistencia, no juicio de decisión. |
+
+---
+
+### pm24_013
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Mientras avanzo, me doy cuenta si falta algún dato o pieza que necesito para seguir con lo que estoy haciendo. |
+| **Dimensión** | orden_precision |
+| **Faceta** | B. Atención al detalle |
+| **Direction** | direct |
+| **Indicador** | Identifica omisiones de datos o elementos necesarios durante la ejecución |
+| **Justificación** | Detalle preventivo que afecta calidad del trabajo; «continuar correctamente» apunta a integridad del proceso, no a meta de negocio. |
+| **Contaminación residual** | logro_persistencia («continuar» puede leerse como seguir la tarea) |
+| **Deseabilidad** | medium |
+| **Observaciones** | Paralelo estructural a pm24_002 de dim. 1; v1.5 eliminó «correctamente» e «importante» por moralización. |
+| **NO apego_normas** | No checklist regulatorio. |
+| **NO logro_persistencia** | No mide insistencia ni cierre de pendientes. |
+| **NO autonomia_decision** | Detección de lagunas, no decidir solo. |
+
+---
+
+### pm24_014
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Noto diferencias pequeñas en cifras o detalles cuando podrían alterar el resultado del trabajo. |
+| **Dimensión** | orden_precision |
+| **Faceta** | B. Atención al detalle |
+| **Direction** | direct |
+| **Indicador** | Percibe variaciones menores con impacto potencial en el resultado |
+| **Justificación** | Sensibilidad a detalle relevante; evita «siempre reviso todo» (deseabilidad). |
+| **Contaminación residual** | logro_persistencia (menciona «resultado del trabajo») |
+| **Deseabilidad** | medium |
+| **Observaciones** | «Resultado del trabajo» es impacto de calidad, no meta estratégica; documentar en pilotaje. |
+| **NO apego_normas** | No tolerancia cero impuesta externamente. |
+| **NO logro_persistencia** | No priorización ni persistencia. |
+| **NO autonomia_decision** | Atención perceptiva. |
+
+---
+
+### pm24_015
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Antes de cerrar una tarea, suelo dedicar un momento adicional a revisar los puntos que considero más relevantes. |
+| **Dimensión** | orden_precision |
+| **Faceta** | C. Revisión y control de calidad |
+| **Direction** | direct |
+| **Indicador** | Momento adicional de revisión focal antes del cierre |
+| **Justificación** | Revisión autogestionada sin mencionar errores ni calidad deficiente; trade-off tiempo vs repaso. |
+| **Contaminación residual** | logro_persistencia (cerrar tarea) |
+| **Deseabilidad** | medium (post v1.5) |
+| **Observaciones** | Par con pm24_016 (avanzar vs revisión adicional). |
+| **NO apego_normas** | Criterio propio de sensibilidad, no norma publicada. |
+| **NO logro_persistencia** | Revisión de calidad, no retomar ni cerrar pendientes colaterales. |
+| **NO autonomia_decision** | No describe decidir sin apoyo. |
+
+---
+
+### pm24_016
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando considero que una tarea ya cumple con lo necesario, prefiero avanzar a la siguiente actividad en lugar de hacer una revisión adicional. |
+| **Dimensión** | orden_precision |
+| **Faceta** | C. Revisión y control de calidad |
+| **Direction** | inverse |
+| **Indicador** | Prefiere avanzar al siguiente pendiente frente a repaso extra |
+| **Justificación** | Trade-off agilidad vs revisión; alta frecuencia = menor tendencia a control de calidad, sin caricatura ni «errores». |
+| **Contaminación residual** | dinamismo_iniciativa (avanzar al siguiente) · logro_persistencia (flujo de pendientes) |
+| **Deseabilidad** | low–medium (post v1.5) |
+| **Observaciones** | Inverso valorativamente neutral; par complementario de pm24_015. |
+| **NO apego_normas** | No incumplir procedimiento explícito. |
+| **NO logro_persistencia** | Entrega sin repaso, no abandonar meta. |
+| **NO autonomia_decision** | No aplica. |
+
+---
+
+## Autocrítica del piloto dimensión 2 (borrador)
+
+**Candidatos más débiles (post neutralidad v1.5):**
+
+1. **pm24_015 / pm24_016** — Par revisión vs avanzar; vigilar solapamiento con dinamismo al «pasar al siguiente».
+
+2. **pm24_009 / pm24_011** — Ambos ordenan antes de actuar; niveles distintos pero familia similar.
+
+**Otros puntos:**
+
+- **pm24_009** vs **pm24_011**: misma familia (ordenar antes de actuar); aceptable por nivel distinto (entre pendientes vs pasos internos).
+- **pm24_012** vs **pm24_015**: ambos implican comprobar/contrastar; vigilar redundancia percibida en revisión humana.
+- **pm24_013**: «continuar correctamente» — candidato a microajuste si se confunde con persistencia.
