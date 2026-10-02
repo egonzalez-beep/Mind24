@@ -111,14 +111,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a desenvolverse con independencia, formar criterio propio y decidir sin confirmación permanente. |
-| **Facetas** | A. Independencia de supervisión · B. Seguridad decisional · C. Criterio propio |
-| **Indicadores conductuales** | Avanza con información disponible; decide en su ámbito; forma juicio antes de escalar; no paraliza por duda. |
-| **Qué mide** | Independencia funcional y confianza al decidir. |
-| **Qué NO mide** | Liderazgo, dinamismo, persistencia, rechazo a supervisión. |
+| **Definición operacional** | Tendencia a desenvolverse con independencia operativa, autogestionar el avance del propio trabajo, formar criterio propio y decidir sin requerir confirmación constante. |
+| **Facetas** | A. Autogestión e independencia operativa · B. Seguridad decisional · C. Criterio propio |
+| **Indicadores conductuales** | Avanza con lineamientos/resultado acordado; usa seguimiento cuando hace falta; cierra decisiones cotidianas; forma juicio propio antes de escalar. |
+| **Qué mide** | Cuánto seguimiento externo necesita para mantener avance; seguridad al decidir; criterio propio. |
+| **Qué NO mide** | Rechazo a supervisión, aislamiento, desobediencia, liderazgo, dinamismo, rapidez, persistencia, apego/rechazo a normas. |
 | **Fronteras** | Seguridad decisional ≠ criterio propio (confianza vs elaboración de juicio). Autonomía ≠ tomar mando del equipo. |
 | **Riesgo deseabilidad social** | **medium-high** |
-| **Estrategia de redacción** | Evitar «no necesito a nadie»; describir cuándo actúa sin pedir visto bueno rutinario. |
+| **Estrategia de redacción** | **Neutralidad valorativa**; trade-offs consultar/decidir; evitar «no necesito a nadie». |
 
 ---
 
@@ -426,6 +426,9 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 1.4 | 2026-10-02 | Piloto 8 ítems dim. 2 Orden y precisión (draft, revisión humana pendiente) |
 | 1.5 | 2026-10-02 | Principio neutralidad valorativa · auditoría 16 ítems · reescritura 005/006/013/015/016 |
 | 1.6 | 2026-10-02 | Microajuste pm24_010 · CONTENT BASELINE v1 APPROVED dim. 2 |
+| 1.7 | 2026-10-02 | Piloto 8 ítems dim. 3 Autonomía (draft, revisión humana pendiente) |
+| 1.8 | 2026-10-02 | Revisión final dim. 3 · Faceta A autogestión · reescritura 017/018/019/022 |
+| 1.9 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 3 (pm24_017–pm24_024 congelados hasta pilotaje) |
 
 ---
 
@@ -620,3 +623,219 @@ Estado: **draft** · No `production` · No sync BD.
 - **pm24_009** vs **pm24_011**: misma familia (ordenar antes de actuar); aceptable por nivel distinto (entre pendientes vs pasos internos).
 - **pm24_012** vs **pm24_015**: ambos implican comprobar/contrastar; vigilar redundancia percibida en revisión humana.
 - **pm24_013**: «continuar correctamente» — candidato a microajuste si se confunde con persistencia.
+
+---
+
+# Piloto dimensión 3 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 3 — Autonomía y seguridad para decidir: CONTENT BASELINE v1 APPROVED**
+
+## Faceta A — Autogestión e independencia operativa
+
+Tendencia a organizar y continuar el propio trabajo con lineamientos suficientes, usando puntos de seguimiento cuando resultan necesarios, sin depender de validación constante para avanzar.
+
+**No implica:** no pedir ayuda, evitar al supervisor, trabajar solo, rechazar retroalimentación.
+
+**Pregunta guía:** ¿Cuánto seguimiento externo necesita normalmente para mantener su avance operativo?
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Autogestión e independencia operativa | 3 | pm24_017, pm24_018, pm24_019 |
+| B. Seguridad decisional | 3 | pm24_020, pm24_021, pm24_022 |
+| C. Criterio propio | 2 | pm24_023, pm24_024 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_019`)
+
+## Auditoría revisión final v1.8
+
+| ID | Acción | Deseabilidad | Ideal evidente | Contaminación |
+|----|--------|--------------|----------------|---------------|
+| pm24_017 | reescribir | medium | no | logro_persistencia (resultado esperado) |
+| pm24_018 | reescribir | medium | no | sociabilidad_colaboracion |
+| pm24_019 | reescribir | low–medium | no | sociabilidad (contacto responsable) |
+| pm24_020 | conservar | medium | no | autogestión A |
+| pm24_021 | conservar | medium | no | regulacion_presion |
+| pm24_022 | reescribir | medium | no | adaptabilidad_cambio (baja) |
+| pm24_023 | conservar | medium | no | influencia_persuasion |
+| pm24_024 | conservar | medium | no | apego_normas · orden_precision |
+
+## Nota de frontera (dimensión 3)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Dinamismo e iniciativa** | No miden ritmo, arranque ni empuje; solo cuándo consultar o decidir. |
+| **Liderazgo y equipos** | Sin coordinación, dirección ni responsabilidad grupal. |
+| **Influencia y persuasión** | Sin convencer, argumentar ni buscar aprobación interpersonal. |
+| **Orientación al logro/persistencia** | Sin insistencia, cierre de tareas ni esfuerzo sostenido ante obstáculos. |
+
+---
+
+### pm24_017
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Después de quedar claro el resultado esperado, suelo avanzar por mi cuenta hasta que aparece algo que realmente requiere consulta. |
+| **Faceta** | A. Autogestión e independencia operativa |
+| **Direction** | direct |
+| **Indicador** | Autogestiona avance tras acuerdo de resultado hasta consulta necesaria |
+| **Justificación** | Ángulo lineamiento/resultado acordado; consulta puntual, no validación constante. |
+| **Contaminación** | logro_persistencia (resultado esperado) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | No describe ritmo de ejecución. |
+| **NO liderazgo** | Solo trabajo propio. |
+| **NO influencia** | Sin convencer a otros. |
+| **NO logro** | No mide terminar ni persistir. |
+
+---
+
+### pm24_018
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando surge una duda cotidiana en mi trabajo, suelo explorar primero una solución por mi cuenta antes de pedir apoyo. |
+| **Faceta** | A. Autogestión e independencia operativa |
+| **Direction** | direct |
+| **Indicador** | Explora solución propia antes de pedir apoyo en dudas cotidianas |
+| **Justificación** | Trade-off explorar vs pedir apoyo; no «no molestar». |
+| **Contaminación** | sociabilidad_colaboracion (pedir apoyo) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | No mide actividad/ritmo. |
+| **NO liderazgo** | No implica dirigir otros. |
+| **NO influencia** | No persuasión. |
+| **NO logro** | «Resolver» es autonomía operativa, no cierre de meta larga. |
+
+---
+
+### pm24_019
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Para avanzar con claridad en mi trabajo, me resulta útil tener revisiones frecuentes de avance con mi responsable. |
+| **Faceta** | A. Autogestión e independencia operativa |
+| **Direction** | inverse |
+| **Indicador** | Prefiere revisiones frecuentes de avance (mayor necesidad de seguimiento) |
+| **Justificación** | Ángulo 2 (puntos de seguimiento); estilo prudente, no caricatura; evita «validar camino» (apego normas). |
+| **Contaminación** | sociabilidad_colaboracion (contacto con responsable) |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | Pausa para validar, no ritmo. |
+| **NO liderazgo** | Individual. |
+| **NO influencia** | Validar ≠ persuadir. |
+| **NO logro** | No abandono ni persistencia. |
+
+---
+
+### pm24_020
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Ante varias formas razonables de hacer una tarea, suelo elegir una antes de buscar una segunda opinión. |
+| **Faceta** | B. Seguridad decisional |
+| **Direction** | direct |
+| **Indicador** | Elige entre alternativas antes de segunda opinión |
+| **Justificación** | Par decidir primero / consultar primero; núcleo de seguridad decisional. |
+| **Contaminación** | autonomia faceta A (consultar vs no) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | Decisión, no acción rápida. |
+| **NO liderazgo** | Individual. |
+| **NO influencia** | Segunda opinión ≠ persuadir. |
+| **NO logro** | No esfuerzo sostenido. |
+
+---
+
+### pm24_021
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Con la información disponible, suelo decidir entre las opciones presentes aunque queden aspectos sin cerrar por completo. |
+| **Faceta** | B. Seguridad decisional |
+| **Direction** | direct |
+| **Indicador** | Decide con información parcial razonable |
+| **Justificación** | Tolerancia a incertezas residuales; no mide acierto ni velocidad. |
+| **Contaminación** | regulacion_presion (incertidumbre) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | No impulsividad ni ritmo. |
+| **NO liderazgo** | Individual. |
+| **NO influencia** | — |
+| **NO logro** | — |
+
+---
+
+### pm24_022
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando dos alternativas me parecen igualmente viables, suelo elegir una y trabajar a partir de ella. |
+| **Faceta** | B. Seguridad decisional |
+| **Direction** | direct |
+| **Indicador** | Cierra elección entre alternativas equiparables y actúa |
+| **Justificación** | Capacidad de cerrar elección, no aferrarse después; alternativa: seguir comparando. |
+| **Contaminación** | adaptabilidad_cambio (baja — no mide reabrir) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | — |
+| **NO liderazgo** | — |
+| **NO influencia** | — |
+| **NO logro** | — |
+
+---
+
+### pm24_023
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Antes de asumir la conclusión de otras personas, suelo formar mi propia lectura de la situación. |
+| **Faceta** | C. Criterio propio |
+| **Direction** | direct |
+| **Indicador** | Elabora lectura propia antes de adoptar conclusión ajena |
+| **Justificación** | Criterio propio sin terquedad ni desafío a autoridad. |
+| **Contaminación** | influencia_persuasion (opinión de otros) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | — |
+| **NO liderazgo** | — |
+| **NO influencia** | No argumenta ni convence. |
+| **NO logro** | — |
+
+---
+
+### pm24_024
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando recibo una recomendación sobre cómo proceder, suelo contrastarla con lo que yo observo antes de seguirla. |
+| **Faceta** | C. Criterio propio |
+| **Direction** | direct |
+| **Indicador** | Contrasta recomendación con observación propia |
+| **Justificación** | Integración de criterio propio; alternativa: seguir recomendación directamente. |
+| **Contaminación** | apego_normas (seguir recomendación) · orden_precision (observar detalle) |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **NO dinamismo** | — |
+| **NO liderazgo** | — |
+| **NO influencia** | Recibir recomendación ≠ persuadir. |
+| **NO logro** | — |
+
+---
+
+## Autocrítica del piloto dimensión 3 (post v1.8)
+
+**Candidatos más débiles:**
+
+1. **pm24_017** — «Resultado esperado» acerca **logro_persistencia**; la respuesta alta sigue siendo la autogestión deseable, aunque menos obvia que antes. **Vigilar en pilotaje**; otra vuelta solo si correlaciona con logro.
+
+2. **pm24_019** — Revisiones frecuentes con responsable pueden mezclar **sociabilidad** o cultura de equipo con necesidad de seguimiento. **Ideal evidente: no** (estilo prudente legítimo). Microajuste opcional si pilotaje confunde.
+
+**Otros puntos:**
+
+- **pm24_017** / **pm24_019**: par autogestión vs seguimiento frecuente.
+- **pm24_018** mejoró con «explorar antes de pedir apoyo».
+- **pm24_022** reorientado a cerrar elección, no rigidez.
