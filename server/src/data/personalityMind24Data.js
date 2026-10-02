@@ -99,7 +99,72 @@ const DIMENSION_IDS = new Set(PERSONALIDAD_MIND24_DIMENSIONS.map((d) => d.dimens
  */
 
 /** @type {PersonalityMind24ItemDef[]} */
-export const PERSONALIDAD_MIND24_ITEMS = [];
+export const PERSONALIDAD_MIND24_ITEMS = [
+  {
+    itemId: 'pm24_001',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 101,
+    text: 'Cuando tengo varios pendientes abiertos, concentro primero mi esfuerzo en los que más contribuyen al resultado acordado.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_002',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 102,
+    text: 'Mientras avanzo en una tarea, verifico si lo que estoy haciendo sigue acercándome al resultado esperado.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_003',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 103,
+    text: 'Cuando aparecen tareas secundarias durante un trabajo, vuelvo a centrar mi esfuerzo en el objetivo principal.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_004',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 104,
+    text: 'Cuando una tarea se complica más de lo previsto, hago nuevos intentos antes de dejarla pendiente.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_005',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 105,
+    text: 'Si una tarea importante requiere más intentos de los previstos, sigo trabajándola aunque el avance sea más lento de lo esperado.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_006',
+    dimensionId: 'logro_persistencia',
+    direction: 'inverse',
+    sortOrder: 106,
+    text: 'Cuando una tarea sigue atascada después de varios intentos, suelo dejar de insistir y no retomarla por un tiempo.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_007',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 107,
+    text: 'Después de completar la parte principal de una tarea, doy seguimiento a los pendientes relacionados hasta dejarlos cerrados.',
+    bankStatus: 'draft',
+  },
+  {
+    itemId: 'pm24_008',
+    dimensionId: 'logro_persistencia',
+    direction: 'direct',
+    sortOrder: 108,
+    text: 'Cuando dejo una tarea a medias para atender otra prioridad, procuro retomarla después hasta cerrarla.',
+    bankStatus: 'draft',
+  },
+];
 
 export function personalityDimensionById(dimensionId) {
   return PERSONALIDAD_MIND24_DIMENSIONS.find((d) => d.dimensionId === dimensionId) || null;
@@ -141,5 +206,35 @@ export function validatePersonalityMind24Item(item) {
   if (!PERSONALIDAD_MIND24_BANK_STATUSES.includes(item?.bankStatus)) {
     errors.push('invalid bankStatus');
   }
+  const text = typeof item?.text === 'string' ? item.text.trim() : '';
+  if (!text) errors.push('empty text');
   return errors;
+}
+
+/**
+ * Validación del banco en código (IDs, sortOrder, draft vs production).
+ * @returns {{ ok: boolean, errors: string[] }}
+ */
+export function validatePersonalityMind24ItemBank(items = PERSONALIDAD_MIND24_ITEMS) {
+  const errors = [];
+  const itemIds = new Set();
+  const sortOrders = new Set();
+
+  for (const item of items) {
+    const itemErrors = validatePersonalityMind24Item(item);
+    if (itemErrors.length) {
+      errors.push(`${item?.itemId || '?'}: ${itemErrors.join(', ')}`);
+    }
+    if (item?.itemId) {
+      if (itemIds.has(item.itemId)) errors.push(`duplicate itemId: ${item.itemId}`);
+      itemIds.add(item.itemId);
+    }
+    if (Number.isFinite(Number(item?.sortOrder))) {
+      const so = Number(item.sortOrder);
+      if (sortOrders.has(so)) errors.push(`duplicate sortOrder: ${so}`);
+      sortOrders.add(so);
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
 }
