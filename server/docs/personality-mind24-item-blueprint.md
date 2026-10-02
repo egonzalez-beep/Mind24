@@ -141,14 +141,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a establecer relaciones laborales funcionales, integrarse y cooperar de manera constructiva. |
+| **Definición operacional** | Tendencia a establecer relaciones laborales funcionales, integrarse con otras personas y cooperar de manera constructiva para facilitar el trabajo compartido. |
 | **Facetas** | A. Apertura interpersonal · B. Cooperación · C. Apoyo e integración |
-| **Indicadores conductuales** | Inicia contacto funcional; comparte información; apoya tareas ajenas cuando impacta el trabajo. |
-| **Qué mide** | Cooperación y vínculo laboral útil. |
-| **Qué NO mide** | Altruismo extremo, necesidad de aprobación, liderazgo, persuasión. |
-| **Fronteras** | Apoyo = ayuda ligada al trabajo, no amistad obligatoria. |
+| **Indicadores conductuales** | Contacto funcional; comparte información y avances; alinea esfuerzos; apoyo laboral acotado. |
+| **Qué mide** | Colaboración e integración funcional en el trabajo. |
+| **Qué NO mide** | Extroversión, popularidad, influencia, liderazgo, altruismo extremo, necesidad de aprobación. |
+| **Fronteras** | Sociabilidad ≠ convencer (influencia). Cooperar ≠ dirigir (liderazgo). Apoyo = ayuda funcional acotada. |
 | **Riesgo deseabilidad social** | **medium-high** |
-| **Estrategia de redacción** | Conductas de equipo concretas; evitar «me gusta la gente». |
+| **Estrategia de redacción** | **Neutralidad valorativa**; trade-offs apoyar vs foco propio; evitar «buen compañero». |
 
 ---
 
@@ -432,6 +432,9 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 2.0 | 2026-10-02 | Piloto 8 ítems dim. 4 Influencia (draft, revisión humana pendiente) |
 | 2.1 | 2026-10-02 | Revisión final pm24_025/026/031 |
 | 2.2 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 4 (pm24_025–pm24_032 congelados hasta pilotaje) |
+| 2.3 | 2026-10-02 | Piloto 8 ítems dim. 5 Sociabilidad (draft, revisión humana pendiente) |
+| 2.4 | 2026-10-02 | Microajuste pm24_037 |
+| 2.5 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 5 (pm24_033–pm24_040 congelados hasta pilotaje) |
 
 ---
 
@@ -1055,3 +1058,217 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 
 - **pm24_026** mejoró con trade-off plantear vs desarrollar argumentos.
 - **pm24_032** par con **pm24_028** / **pm24_031** (seguir argumentando vs dejar tema / empujar conclusión).
+
+---
+
+# Piloto dimensión 5 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 5 — Sociabilidad y colaboración: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v2.4 (pm24_037)
+
+| ID | Cambio | Deseabilidad | Contaminación residual |
+|----|--------|--------------|------------------------|
+| pm24_037 | Pausas breves para poner en común vs coordinar al final (distinto de 036) | medium | dinamismo_iniciativa (baja — ritmo/pausas) |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Apertura interpersonal | 3 | pm24_033, pm24_034, pm24_035 |
+| B. Cooperación | 3 | pm24_036, pm24_037, pm24_038 |
+| C. Apoyo e integración | 2 | pm24_039, pm24_040 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_040`)
+
+**Nota:** Integración funcional también se cubre en **pm24_034** (apertura a grupo nuevo); **pm24_040** (inverso) refleja foco en la propia parte vs seguimiento del avance ajeno.
+
+## Nota de frontera (dimensión 5)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Influencia y persuasión** | Sin argumentar para cambiar opinión ni buscar aceptación. |
+| **Liderazgo y equipos** | Sin asignar, dirigir ni coordinar al grupo desde autoridad. |
+| **Autonomía** | Contacto/cooperación ≠ decidir sin consulta. |
+| **Apego a normas** | No cumplimiento procedimental. |
+| **Dinamismo** | No ritmo ni iniciativa general de tareas. |
+
+---
+
+### pm24_033
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando necesito coordinar algo con una persona que no conozco bien, suelo iniciar el contacto directamente. |
+| **Faceta** | A. Apertura interpersonal |
+| **Direction** | direct |
+| **Indicador** | Inicia contacto funcional con persona poco familiar |
+| **Justificación** | Apertura laboral situacional; no gusto por conocer gente. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad extroversión (baja) |
+| **NO influencia** | Coordinar, no persuadir. |
+| **NO liderazgo** | — |
+| **NO autonomía** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_034
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Al integrarme a un grupo de trabajo nuevo, suelo participar en los intercambios necesarios para entender cómo se trabaja. |
+| **Faceta** | A. Apertura interpersonal |
+| **Direction** | direct |
+| **Indicador** | Participa en intercambios funcionales al integrarse |
+| **Justificación** | Integración operativa; intercambios necesarios, no socializar. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO influencia** | — |
+| **NO liderazgo** | — |
+| **NO autonomía** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_035
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando me falta información para avanzar en algo compartido, suelo acudir directamente a la persona involucrada. |
+| **Faceta** | A. Apertura interpersonal |
+| **Direction** | direct |
+| **Indicador** | Acude a la persona relevante para aclarar información |
+| **Justificación** | Contacto directo por necesidad operativa compartida. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (pedir vs resolver solo) |
+| **NO influencia** | — |
+| **NO liderazgo** | — |
+| **NO autonomia** | Prioriza coordinación sobre aislamiento informativo. |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_036
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando mi trabajo afecta lo que otra persona hará después, suelo mantenerla al tanto de los cambios relevantes. |
+| **Faceta** | B. Cooperación |
+| **Direction** | direct |
+| **Indicador** | Comunica cambios que impactan trabajo downstream |
+| **Justificación** | Coordinación informativa; trade-off con avanzar sin avisar. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO influencia** | Informar, no convencer. |
+| **NO liderazgo** | No dirige al otro. |
+| **NO autonomia** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_037
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | En trabajos compartidos, suelo hacer pausas breves para poner en común avances con los demás en lugar de esperar hasta el final para coordinarnos. |
+| **Faceta** | B. Cooperación |
+| **Direction** | direct |
+| **Indicador** | Coordinación periódica en curso vs coordinar solo al cierre |
+| **Justificación** | Trade-off estilos de cooperación; complementa 036 (cambios relevantes puntuales). |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | dinamismo_iniciativa (pausas vs avance continuo) |
+| **NO influencia** | — |
+| **NO liderazgo** | — |
+| **NO autonomia** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_038
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una tarea depende de varias personas, suelo alinear mi parte con lo que necesitan las demás para continuar. |
+| **Faceta** | B. Cooperación |
+| **Direction** | direct |
+| **Indicador** | Alinea entregables con necesidades de otros en tarea compartida |
+| **Justificación** | Cooperación mutua; vigilar que no lea liderazgo de coordinación. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | liderazgo_equipos (alinear al grupo) |
+| **NO influencia** | — |
+| **NO liderazgo** | Ajusta parte propia, no reparte ni conduce. |
+| **NO autonomia** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_039
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando alguien del equipo tiene una duda sobre algo que conozco, suelo dedicar un momento a orientarlo antes de continuar con lo mío. |
+| **Faceta** | C. Apoyo e integración |
+| **Direction** | direct |
+| **Indicador** | Orienta duda laboral con costo breve de interrupción |
+| **Justificación** | Trade-off apoyar vs continuar tarea propia; apoyo funcional acotado. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (continuar lo mío) |
+| **NO influencia** | Orientar, no persuadir. |
+| **NO liderazgo** | — |
+| **NO autonomia** | — |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+### pm24_040
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando mi responsabilidad está claramente definida, prefiero concentrarme en mi parte sin involucrarme demasiado en el avance de los demás. |
+| **Faceta** | C. Apoyo e integración |
+| **Direction** | inverse |
+| **Indicador** | Foco en parte propia vs seguimiento del avance ajeno |
+| **Justificación** | Estilo individual plausible; no egoísmo ni desprecio al equipo. |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (foco individual) |
+| **NO influencia** | — |
+| **NO liderazgo** | — |
+| **NO autonomia** | Preferencia de foco, no independencia decisional. |
+| **NO apego_normas** | — |
+| **NO dinamismo** | — |
+
+---
+
+## Autocrítica del piloto dimensión 5 (post v2.4)
+
+**Candidatos más débiles:**
+
+1. **pm24_038** — «Alinear mi parte con lo que necesitan las demás» puede rozar **liderazgo** o coordinación formal. Ideal evidente: no. Vigilar en pilotaje.
+
+2. **pm24_036** vs **pm24_037** — 036 = avisar cambios que impactan downstream; 037 = ritmo de puesta en común. Frontera aceptable; vigilar correlación alta.
+
+**Extroversión/gusto por hablar:** **No** como núcleo del bloque.
+
+**Liderazgo vs colaboración:** **038** sigue siendo el más expuesto.
+
+**«Ayudar» demasiado obvio:** **039** con trade-off razonable; no reescritura urgente.
+
+**Integración (faceta C):** **034** cubre ingreso a grupo; segundo directo C explícito (persona nueva en tarea) opcional en pilotaje, no bloqueante para baseline.

@@ -20,7 +20,7 @@ function check(cond, msg) {
   }
 }
 
-console.log('\n=== Personalidad Mind24 — catálogo (Fase 2A–2D) ===\n');
+console.log('\n=== Personalidad Mind24 — catálogo (Fase 2A–2E) ===\n');
 
 const bank = validatePersonalityMind24ItemBank();
 check(bank.ok, 'banco: validatePersonalityMind24ItemBank');
@@ -28,7 +28,7 @@ if (!bank.ok) {
   for (const e of bank.errors) console.error(`       ${e}`);
 }
 
-check(PERSONALIDAD_MIND24_ITEMS.length === 32, 'piloto: 32 ítems en código (dim. 1–4)');
+check(PERSONALIDAD_MIND24_ITEMS.length === 40, 'piloto: 40 ítems en código (dim. 1–5)');
 check(
   PERSONALIDAD_MIND24_ITEMS.every((i) => i.bankStatus === 'draft'),
   'piloto: todos bankStatus draft',
@@ -43,16 +43,18 @@ const sorts = new Set(PERSONALIDAD_MIND24_ITEMS.map((i) => i.sortOrder));
 check(sorts.size === PERSONALIDAD_MIND24_ITEMS.length, 'sortOrder únicos');
 
 const inverseCount = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.direction === 'inverse').length;
-check(inverseCount === 4, 'piloto: 4 inversos (pm24_006, pm24_016, pm24_019, pm24_032)');
+check(inverseCount === 5, 'piloto: 5 inversos (006, 016, 019, 032, 040)');
 
 const dim1 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'logro_persistencia');
 const dim2 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'orden_precision');
 const dim3 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'autonomia_decision');
 const dim4 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'influencia_persuasion');
+const dim5 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'sociabilidad_colaboracion');
 check(dim1.length === 8, 'piloto dim. 1: 8 ítems');
 check(dim2.length === 8, 'piloto dim. 2: 8 ítems');
 check(dim3.length === 8, 'piloto dim. 3: 8 ítems');
 check(dim4.length === 8, 'piloto dim. 4: 8 ítems');
+check(dim5.length === 8, 'piloto dim. 5: 8 ítems');
 check(
   dim1.filter((i) => i.direction === 'inverse').length === 1,
   'piloto dim. 1: 1 inverso',
@@ -68,6 +70,10 @@ check(
 check(
   dim4.filter((i) => i.direction === 'inverse').length === 1,
   'piloto dim. 4: 1 inverso (pm24_032)',
+);
+check(
+  dim5.filter((i) => i.direction === 'inverse').length === 1,
+  'piloto dim. 5: 1 inverso (pm24_040)',
 );
 
 function rowsForItems(items) {
@@ -89,10 +95,12 @@ check(scoredAll.dimensions.logro_persistencia.nAnswered === 8, 'scoring: 8 respu
 check(scoredAll.dimensions.orden_precision.nAnswered === 8, 'scoring: 8 respuestas dim. 2');
 check(scoredAll.dimensions.autonomia_decision.nAnswered === 8, 'scoring: 8 respuestas dim. 3');
 check(scoredAll.dimensions.influencia_persuasion.nAnswered === 8, 'scoring: 8 respuestas dim. 4');
+check(scoredAll.dimensions.sociabilidad_colaboracion.nAnswered === 8, 'scoring: 8 respuestas dim. 5');
 check(scoredAll.dimensions.logro_persistencia.mean != null, 'scoring: mean dim. 1');
 check(scoredAll.dimensions.orden_precision.mean != null, 'scoring: mean dim. 2');
 check(scoredAll.dimensions.autonomia_decision.mean != null, 'scoring: mean dim. 3');
 check(scoredAll.dimensions.influencia_persuasion.mean != null, 'scoring: mean dim. 4');
+check(scoredAll.dimensions.sociabilidad_colaboracion.mean != null, 'scoring: mean dim. 5');
 check(scoredAll.global === undefined, 'scoring: sin global tras ítems draft');
 
 console.log(
