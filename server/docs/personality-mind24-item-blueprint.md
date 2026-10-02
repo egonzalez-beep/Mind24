@@ -1,4 +1,4 @@
-# Personalidad Mind24 — Matriz maestra de construcción de reactivos (v1.1)
+# Personalidad Mind24 — Matriz maestra de construcción de reactivos (v3.6)
 
 Documento de especificación psicométrica y desarrollo. **No define reglas de scoring** ni interpretación normativa.
 
@@ -216,14 +216,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a reajustar métodos, prioridades o conducta cuando cambian necesidades o condiciones del trabajo. |
-| **Facetas** | A. Apertura al cambio · B. Repriorización · C. Ajuste de estrategia o conducta |
-| **Indicadores conductuales** | Acepta cambios de prioridad; modifica método; mantiene objetivo ajustando el cómo. |
-| **Qué mide** | Flexibilidad ante cambio organizacional/tarea. |
-| **Qué NO mide** | Regulación emocional, energía, cognición, abandono de metas (anti-persistencia). |
-| **Fronteras** | **Regla crítica:** cambiar el *CÓMO* sin abandonar necesariamente el *QUÉ*. |
-| **Riesgo deseabilidad social** | **medium** |
-| **Estrategia de redacción** | Cambios de contexto laboral genéricos; distinguir de «busco otra forma» por obstáculo (persistencia). |
+| **Definición operacional** | Tendencia a reajustar métodos, prioridades o formas de actuar cuando cambian las condiciones, necesidades o restricciones del trabajo. |
+| **Facetas** | A. Apertura operativa al cambio · B. Repriorización · C. Ajuste de estrategia o conducta |
+| **Indicadores conductuales** | Incorpora nuevo esquema/método; reorganiza orden ante cambio contextual; modifica método sin abandonar el objetivo. |
+| **Qué mide** | Flexibilidad operativa ante cambio (cómo/prioridad/estrategia). |
+| **Qué NO mide** | Regulación emocional, dinamismo/rapidez, persistencia, orden base, autonomía, gusto por novedad, improvisación constante. |
+| **Fronteras** | **Regla crítica:** cambiar el *CÓMO* sin abandonar necesariamente el *QUÉ*. Repriorizar ≠ planificar de base (Orden). |
+| **Riesgo deseabilidad social** | **medium-high** |
+| **Estrategia de redacción** | **Neutralidad valorativa**; continuidad vs reajuste; sin «soy flexible» ni «nuevo = mejor». |
 
 ---
 
@@ -443,6 +443,29 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 3.1 | 2026-10-02 | Revisión final pm24_057/059/060/061 · CONTENT BASELINE v1 APPROVED dim. 8 (pm24_057–pm24_064 congelados hasta pilotaje) |
 | 3.2 | 2026-10-02 | Piloto 8 ítems dim. 9 Dinamismo e iniciativa (draft, revisión humana pendiente) |
 | 3.3 | 2026-10-02 | Revisión final pm24_065/068/069 · CONTENT BASELINE v1 APPROVED dim. 9 (pm24_065–pm24_072 congelados hasta pilotaje) |
+| 3.4 | 2026-10-02 | Piloto 8 ítems dim. 10 Adaptabilidad (draft) · banco inicial 80 ítems · revisión humana pendiente |
+| 3.5 | 2026-10-02 | Revisión final pm24_074/pm24_078 · CONTENT BASELINE v1 APPROVED dim. 10 · banco inicial v1 completo (80 ítems) |
+| 3.6 | 2026-10-02 | **PERSONALIDAD MIND24 — FASE 2 CONTENT BASELINE v1 CLOSED** · cierre formal construcción de contenido (sin activación de módulo) |
+
+---
+
+## Cierre Fase 2 — Content baseline v1
+
+**PERSONALIDAD MIND24 — FASE 2 CONTENT BASELINE v1 CLOSED**
+
+**PERSONALIDAD MIND24 — BANCO INICIAL DE CONTENIDO v1:  
+80 REACTIVOS / 10 DIMENSIONES COMPLETADOS**
+
+| Campo | Estado aprobado |
+|-------|-----------------|
+| Dimensiones | 10 (`pm24_001`–`pm24_080`) |
+| Reactivos | 80 · 8 por dimensión · `bankStatus: draft` |
+| Blueprint | v3.6 (contenido congelado Fase 2) |
+| Baselines | Dimensiones 1–10 · CONTENT BASELINE v1 APPROVED |
+| Scoring | Sin cambios en Fase 2 |
+| Módulo | Inactivo (`comingSoon`, sin `ASSIGNABLE_MODULE_KEYS`, sin sync `production`) |
+
+**Fuera de alcance hasta nueva fase:** activación del módulo, UI, `dynamicAssessment`, reporte, selección final 60 ítems `production`. **Siguiente fase:** auditoría global del banco de 80 reactivos.
 
 ---
 
@@ -2157,3 +2180,223 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 **Checklist neutralidad (8 ítems):** ritmo alto ≠ mejor empleado (**072** equilibra); pausa legítima; sin actuar sin pensar (B exige claridad); autonomía/persistencia/liderazgo/productividad **no** primarios.
 
 **Revisión v3.3:** **065/068/069** cerraron solapamiento con **071**, rapidez y juicio valorativo sobre preparación.
+
+---
+
+# Piloto dimensión 10 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 10 — Adaptabilidad y flexibilidad ante el cambio: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v3.5 (pm24_074, pm24_078)
+
+| ID | Cambio | Objetivo de frontera | Deseabilidad | Contaminación residual |
+|----|--------|----------------------|--------------|------------------------|
+| pm24_074 | «Incorporar en lugar de mantener» → empezar a incorporar aunque la anterior siga siendo más familiar | Apertura operativa; familiar vs nuevo sin moralizar adopción | low–medium | orden_precision (baja — hábito familiar) |
+| pm24_078 | Urgencias/revisar orden → ajustar orden previsto con actividad ya iniciada | Repriorizar secuencia en ejecución; ≠ 076 (prioridad jornada) ni 077 (dependencias) | medium | logro_persistencia (baja — dejar actividad en curso) |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Apertura operativa al cambio | 3 | pm24_073, pm24_074, pm24_075 |
+| B. Repriorización | 3 | pm24_076, pm24_077, pm24_078 |
+| C. Ajuste de estrategia o conducta | 2 | pm24_079, pm24_080 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_080`)
+
+## Nota de frontera (dimensión 10)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Regulación bajo presión** | Sin emoción, calma ni recuperación tras molestia. |
+| **Dinamismo** | Sin rapidez, arranque ni ritmo general. |
+| **Logro/persistencia** | Cambiar método ≠ abandonar meta; no «sigo intentando». |
+| **Orden y precisión** | Repriorizar *cuando cambia* el contexto, no planificar de base. |
+| **Autonomía** | Sin decidir sin validación. |
+
+---
+
+### pm24_073
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando cambia la forma en que debe hacerse una tarea, suelo ajustar mi manera de trabajar después de entender el nuevo esquema. |
+| **Faceta** | A. Apertura operativa al cambio |
+| **Direction** | direct |
+| **Indicador** | Ajusta manera de trabajar tras entender nuevo esquema |
+| **Justificación** | Requiere entender primero; no gusto por novedad. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | apego_normas (nuevo esquema/procedimiento) |
+| **NO regulación** | — |
+| **NO dinamismo** | — |
+| **NO persistencia** | — |
+| **NO orden** | Ajuste por cambio, no orden habitual. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_074
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando se introduce una nueva forma de trabajo, suelo empezar a incorporarla aunque todavía me resulte más familiar la anterior. |
+| **Faceta** | A. Apertura operativa al cambio |
+| **Direction** | direct |
+| **Indicador** | Comienza a incorporar nueva forma mientras la anterior sigue siendo más familiar |
+| **Justificación** | Trade-off familiar vs incorporar; no «nuevo = mejor» ni obediencia/rapidez; par **080** (continuidad). |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (baja — preferencia por lo familiar) |
+| **NO regulación** | — |
+| **NO dinamismo** | Sin velocidad de adaptación. |
+| **NO persistencia** | — |
+| **NO orden** | No planificación base; cambio de forma de trabajo. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_075
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando aparecen condiciones nuevas en cómo debe ejecutarse un trabajo, suelo adaptar los pasos que suelo usar a esas condiciones. |
+| **Faceta** | A. Apertura operativa al cambio |
+| **Direction** | direct |
+| **Indicador** | Adapta pasos habituales a condiciones nuevas |
+| **Justificación** | Operativo; no improvisación constante. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (pasos habituales) |
+| **NO regulación** | — |
+| **NO dinamismo** | — |
+| **NO persistencia** | — |
+| **NO orden** | Cambio por condición nueva, no método base. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_076
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando cambia una prioridad durante la jornada, suelo reorganizar lo que estaba atendiendo para reflejar la nueva necesidad. |
+| **Faceta** | B. Repriorización |
+| **Direction** | direct |
+| **Indicador** | Reorganiza atención ante cambio de prioridad |
+| **Justificación** | Repriorización contextual; no plan del día fijo. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (reorganizar) |
+| **NO regulación** | Sin reacción emocional al cambio. |
+| **NO dinamismo** | — |
+| **NO persistencia** | — |
+| **NO orden** | Reorganiza *por cambio*, no orden inicial. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_077
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Si una tarea que iba después se vuelve necesaria para que otras puedan avanzar, suelo cambiar el orden previsto. |
+| **Faceta** | B. Repriorización |
+| **Direction** | direct |
+| **Indicador** | Cambia orden por dependencias nuevas |
+| **Justificación** | Contexto grupal/dependencias; trade-off con plan previo. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | liderazgo_equipos (baja — orden para otros) |
+| **NO regulación** | — |
+| **NO dinamismo** | — |
+| **NO persistencia** | — |
+| **NO orden** | Cambio de orden previsto, no planificación base. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_078
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando cambia qué necesita resolverse primero, suelo ajustar el orden previsto aunque ya hubiera comenzado otra actividad. |
+| **Faceta** | B. Repriorización |
+| **Direction** | direct |
+| **Indicador** | Modifica secuencia en ejecución cuando cambia qué va primero |
+| **Justificación** | **076:** reorganización general ante prioridad; **077:** dependencias; **078:** reordenar con actividad ya iniciada. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (baja — no insistir en terminar lo empezado) |
+| **NO regulación** | — |
+| **NO dinamismo** | Ajuste de orden, no arranque acelerado. |
+| **NO persistencia** | Reprioriza por contexto, no sostener la actividad en curso. |
+| **NO orden** | Cambia secuencia por contexto, no método de planificación habitual. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_079
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando un método deja de ajustarse a las condiciones del trabajo, suelo modificarlo en lugar de mantenerlo solo porque ya había empezado así. |
+| **Faceta** | C. Ajuste de estrategia o conducta |
+| **Direction** | direct |
+| **Indicador** | Modifica método inadecuado manteniendo objetivo |
+| **Justificación** | Consistencia vs reajuste; no abandonar meta. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (seguir por haber empezado) |
+| **NO regulación** | — |
+| **NO dinamismo** | — |
+| **NO persistencia** | Cambia *método*, no abandona objetivo. |
+| **NO orden** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_080
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una forma de trabajo me ha funcionado bien, prefiero mantenerla mientras sea posible antes de cambiar a otra. |
+| **Faceta** | C. Ajuste de estrategia o conducta |
+| **Direction** | inverse |
+| **Indicador** | Preferencia por continuidad de método que funciona |
+| **Justificación** | Estabilidad plausible; no negarse a cambiar. |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO regulación** | — |
+| **NO dinamismo** | — |
+| **NO persistencia** | — |
+| **NO orden** | — |
+| **NO autonomía** | — |
+
+---
+
+## Autocrítica dimensión 10 (revisión final v3.5)
+
+**Candidatos más débiles (residual):**
+
+1. **pm24_079** — «Modificarlo en lugar de mantenerlo solo porque ya había empezado» puede leerse **persistencia** en el límite; la cláusula «método deja de ajustarse» ancla adaptabilidad (cómo vs qué).
+
+2. **pm24_076** — «Reorganizar lo que estaba atendiendo» comparte vocabulario con **Orden**; el disparador «cambia una prioridad durante la jornada» mantiene repriorización contextual.
+
+**Checklist §18 (post v3.5):**
+
+| Pregunta | Respuesta | Notas |
+|----------|-----------|--------|
+| ¿Gusto por el cambio? | **No** | |
+| ¿Regulación? | **No** | |
+| ¿Dinamismo? | **No** primario | **078** ya no usa «urgencias» |
+| ¿Persistencia? | Riesgo bajo | **078, 079** |
+| ¿Orden estable vs repriorizar? | Riesgo bajo | **076** vocabulario; **078** diferenciado |
+| ¿Cambiar = mejor? | **No** primario | **074** cerrado v3.5 |
+
+**Marcados para revisión:** ninguno (bloqueo conceptual cerrado en baseline v1).
+
+**Banco v1:** 80 ítems · 10 dimensiones · 10 inversos · todos `draft` · redacción congelada hasta pilotaje (dims 1–10).
