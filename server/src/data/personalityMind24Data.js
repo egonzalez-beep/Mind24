@@ -417,7 +417,7 @@ export const PERSONALIDAD_MIND24_ITEMS = [
     dimensionId: 'sociabilidad_colaboracion',
     direction: 'inverse',
     sortOrder: 508,
-    text: 'Cuando mi responsabilidad está claramente definida, prefiero concentrarme en mi parte sin involucrarme demasiado en el avance de los demás.',
+    text: 'Cuando cada persona tiene claramente definida su parte, prefiero concentrarme en la mía y ofrecer apoyo en las demás solo cuando me lo solicitan.',
     bankStatus: 'draft',
   },
   {

@@ -1114,7 +1114,7 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 
 **Dirección:** 7 direct · 1 inverse (`pm24_040`)
 
-**Nota:** Integración funcional también se cubre en **pm24_034** (apertura a grupo nuevo); **pm24_040** (inverso) refleja foco en la propia parte vs seguimiento del avance ajeno.
+**Nota:** Integración funcional también se cubre en **pm24_034** (apertura a grupo nuevo); **pm24_040** (inverso, texto 3B) refleja apoyo a demanda vs apoyo espontáneo, no coordinación (pm24_048).
 
 ## Nota de frontera (dimensión 5)
 
@@ -1272,17 +1272,17 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 
 | Campo | Valor |
 |-------|-------|
-| **Texto** | Cuando mi responsabilidad está claramente definida, prefiero concentrarme en mi parte sin involucrarme demasiado en el avance de los demás. |
+| **Texto** | Cuando cada persona tiene claramente definida su parte, prefiero concentrarme en la mía y ofrecer apoyo en las demás solo cuando me lo solicitan. |
 | **Faceta** | C. Apoyo e integración |
 | **Direction** | inverse |
-| **Indicador** | Foco en parte propia vs seguimiento del avance ajeno |
-| **Justificación** | Estilo individual plausible; no egoísmo ni desprecio al equipo. |
+| **Indicador** | Apoyo espontáneo vs apoyo solo si lo solicitan (trabajo compartido) |
+| **Justificación** | Fase 3B: ya no mide “no involucrarme en el avance” (∥ 048). Polo = apoyo a demanda, no dejar la coordinación. |
 | **Deseabilidad** | low–medium |
 | **Ideal evidente** | no |
-| **Contaminación** | autonomia_decision (foco individual) |
+| **Contaminación** | autonomia_decision (baja — foco en lo propio) |
 | **NO influencia** | — |
-| **NO liderazgo** | — |
-| **NO autonomia** | Preferencia de foco, no independencia decisional. |
+| **NO liderazgo** | No decide quién coordina; solo cuándo ofrece apoyo. Distinto de pm24_048. |
+| **NO autonomia** | Preferencia de foco/apoyo, no independencia decisional. |
 | **NO apego_normas** | — |
 | **NO dinamismo** | — |
 
@@ -1494,7 +1494,7 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 | **Justificación** | Estilo especialista plausible (spec §8); no «que otros resuelvan». |
 | **Deseabilidad** | low–medium |
 | **Ideal evidente** | no |
-| **Contaminación** | autonomia_decision · sociabilidad_colaboracion (paralelo pm24_040) |
+| **Contaminación** | autonomia_decision · sociabilidad_colaboracion (ya no paralelo a pm24_040 post-3B) |
 | **NO influencia** | — |
 | **NO sociabilidad** | Delega coordinación, no rechaza cooperar. |
 | **NO autonomía** | Preferencia de rol en grupo, no decidir sin supervisión. |
