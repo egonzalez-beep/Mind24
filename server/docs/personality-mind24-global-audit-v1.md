@@ -1,6 +1,6 @@
 # Personalidad Mind24 — Auditoría global del banco inicial v1
 
-**Fase:** 3A (auditoría) + 3B (consolidación editorial)  
+**Fase:** 3A (auditoría) + 3B (consolidación editorial) + 3C (paquete de revisión experta preparado)  
 **Baseline contenido:** PERSONALIDAD MIND24 — FASE 2 CONTENT BASELINE v1 CLOSED  
 **Blueprint:** v3.6  
 **Commit de referencia Fase 2:** `44c843e0eb35c49f5eed91fc5f07a49e5b6faec4`  
@@ -9,10 +9,12 @@
 
 **FASE 3B — CONSOLIDACIÓN EDITORIAL CLOSED**
 
+**FASE 3C — EXPERT REVIEW PACKAGE PREPARED**
+
 **SHORTLIST EDITORIAL PROVISIONAL:  
 60 PRIORITARIOS / 20 RESERVAS**
 
-Los 60 **no** son selección oficial de `production`. `bankStatus` permanece `draft`. Módulo inactivo.
+Los 60 **no** son selección oficial de `production`. `bankStatus` permanece `draft`. Módulo inactivo. Paquete experto: `personality-mind24-expert-review-v1.md` + `personality-mind24-expert-review-consolidation-template.md`. Sin consolidar resultados ni alterar la shortlist.
 
 `DROP_CANDIDATE` **no significa eliminar**: es una recomendación editorial previa a revisión humana, experta y pilotaje.
 
@@ -482,7 +484,9 @@ Shortlist Regulación 3B: **058, 059, 060, 062, 063, 064** → A 058/059 · B 06
 
 **FASE 3B — CONSOLIDACIÓN EDITORIAL CLOSED**
 
+**FASE 3C — EXPERT REVIEW PACKAGE PREPARED**
+
 **SHORTLIST EDITORIAL PROVISIONAL:  
 60 PRIORITARIOS / 20 RESERVAS**
 
-*Módulo inactivo. Sin selección oficial de 60. Sin iniciar Fase 3C en este cierre.*
+*Módulo inactivo. Sin selección oficial de 60. Sin consolidar revisiones expertas ni modificar la shortlist.*
