@@ -186,14 +186,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a conservar autocontrol funcional, recuperarse de contratiempos y manejar frustración sin desorganizar la conducta laboral. |
-| **Facetas** | A. Autocontrol ante presión · B. Recuperación ante frustración · C. Tolerancia a críticas/rechazo/adversos |
-| **Indicadores conductuales** | Mantiene tono/proceder bajo presión; retoma tras error; procesa críticas sin bloqueo prolongado. |
-| **Qué mide** | Regulación conductual en contexto laboral. |
-| **Qué NO mide** | Desempeño real bajo presión, salud mental, optimismo, adaptabilidad al cambio. |
-| **Fronteras** | Tolerancia emocional ≠ flexibilidad de métodos (adaptabilidad). |
+| **Definición operacional** | Tendencia a conservar regulación conductual funcional ante presión, contratiempos, críticas, rechazo de propuestas o resultados adversos, y recuperar el foco después de esas situaciones. |
+| **Facetas** | A. Autocontrol operativo ante presión · B. Recuperación ante contratiempos · C. Tolerancia a crítica, rechazo y resultados adversos |
+| **Indicadores conductuales** | Modula respuesta bajo tensión; recupera foco tras tropiezo; continúa conducta laboral tras crítica o rechazo contextualizado. |
+| **Qué mide** | Conducta posterior ante presión/frustración (autoinforme de tendencia, no desempeño bajo presión). |
+| **Qué NO mide** | Salud mental clínica, ausencia de emoción, optimismo, persistencia, adaptabilidad, dinamismo, sociabilidad. |
+| **Fronteras** | Regulación ≠ seguir la meta (persistencia). ≠ cambiar método (adaptabilidad). ≠ ritmo/energía (dinamismo). No penalizar reacción emocional normal; medir continuidad funcional. |
 | **Riesgo deseabilidad social** | **high** |
-| **Estrategia de redacción** | Autocontrol observable; no diagnosticar estrés. |
+| **Estrategia de redacción** | **Neutralidad valorativa**; «cuando/después de X, suelo…»; sin «mantengo la calma» ni «trabajo bien bajo presión». |
 
 ---
 
@@ -439,6 +439,8 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 2.7 | 2026-10-02 | Revisión final pm24_043/046/047 · CONTENT BASELINE v1 APPROVED dim. 6 (pm24_041–pm24_048 congelados hasta pilotaje) |
 | 2.8 | 2026-10-02 | Piloto 8 ítems dim. 7 Apego a normas (draft, revisión humana pendiente) |
 | 2.9 | 2026-10-02 | Revisión final pm24_052/056 · CONTENT BASELINE v1 APPROVED dim. 7 (pm24_049–pm24_056 congelados hasta pilotaje) |
+| 3.0 | 2026-10-02 | Piloto 8 ítems dim. 8 Regulación bajo presión (draft, revisión humana pendiente) |
+| 3.1 | 2026-10-02 | Revisión final pm24_057/059/060/061 · CONTENT BASELINE v1 APPROVED dim. 8 (pm24_057–pm24_064 congelados hasta pilotaje) |
 
 ---
 
@@ -1714,3 +1716,222 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 **Checklist validación final:** honestidad **no**; orden personal **052 cerrado** (054 residual bajo); autonomía **no**; rigidez **049 documentado** (método vigente como punto de partida); moralización **no**.
 
 **Revisión v2.9:** **052/056** cerraron fronteras Orden y precisión / incumplimiento aparente en inverso.
+
+---
+
+# Piloto dimensión 8 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 8 — Regulación bajo presión y tolerancia a la frustración: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v3.1 (pm24_057, pm24_059, pm24_060, pm24_061)
+
+| ID | Cambio | Objetivo de frontera | Deseabilidad | Contaminación residual |
+|----|--------|----------------------|--------------|------------------------|
+| pm24_057 | «Mantener comunicación normal» → cuidar forma de respuesta bajo intercambio exigente | Regulación conductual ≠ sociabilidad/calma | medium | sociabilidad_colaboracion (baja) |
+| pm24_059 | Pausa antes de responder → contener efecto de presión entre demandas simultáneas | Autocontrol ≠ pausa (058) ni priorización (Orden) | medium | — |
+| pm24_060 | «Lo que sigue» → reconcentrarse en tarea actual con lo ocurrido aún presente | Recuperación ≠ persistencia/dinamismo | medium | — |
+| pm24_061 | Retomar siguiente → separar error de tareas posteriores vs repasar mientras trabaja | Arrastre funcional ≠ persistencia; distinto de 060 | medium | logro_persistencia (baja — repasar) |
+
+## Validación de facetas (bloque completo)
+
+| Faceta | IDs | Núcleo |
+|--------|-----|--------|
+| A | 057, 058, 059 | Respuesta bajo tensión · pausa ante molestia · no trasladar presión entre demandas |
+| B | 060, 061, 062 | Reconcentración · separar error del resto · tiempo para reconcentrarse (inverso) |
+| C | 063, 064 | Tras rechazo de propuesta · retomar tema tras crítica |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Autocontrol operativo ante presión | 3 | pm24_057, pm24_058, pm24_059 |
+| B. Recuperación ante contratiempos | 3 | pm24_060, pm24_061, pm24_062 |
+| C. Tolerancia a crítica, rechazo y resultados adversos | 2 | pm24_063, pm24_064 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_062`)
+
+## Nota de frontera (dimensión 8)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Logro/persistencia** | Sin «seguir hasta terminar» ni sostener meta ante obstáculo. |
+| **Adaptabilidad** | Sin cambiar método o prioridad por cambio de contexto. |
+| **Dinamismo** | Sin ritmo, energía ni rapidez general. |
+| **Sociabilidad** | Regula comunicación bajo tensión, no integración ni cooperación. |
+| **Autonomía** | Sin necesidad de validación para decidir. |
+
+---
+
+### pm24_057
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una conversación laboral se vuelve tensa, suelo cuidar la forma en que respondo aunque el intercambio siga siendo exigente. |
+| **Faceta** | A. Autocontrol operativo ante presión |
+| **Direction** | direct |
+| **Indicador** | Regula forma de respuesta interpersonal bajo tensión |
+| **Justificación** | «Cuidar la forma» vs escalar tono; no ausencia de emoción ni simpatía. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad_colaboracion (baja) |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | Tono bajo tensión, no apertura ni cooperación. |
+| **NO autonomía** | — |
+
+---
+
+### pm24_058
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando algo me molesta durante el trabajo, suelo darme un momento antes de responder si la situación lo permite. |
+| **Faceta** | A. Autocontrol operativo ante presión |
+| **Direction** | direct |
+| **Indicador** | Pausa antes de responder vs respuesta inmediata |
+| **Justificación** | Trade-off regulación vs responder al instante; «si la situación lo permite» acota. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_059
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando coinciden varias demandas urgentes, suelo evitar que la presión de una situación cambie la forma en que atiendo las demás. |
+| **Faceta** | A. Autocontrol operativo ante presión |
+| **Direction** | direct |
+| **Indicador** | Contiene efecto de presión entre demandas simultáneas |
+| **Justificación** | Distinto de 058 (pausa puntual); no organizar ni priorizar. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_060
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Después de un contratiempo, suelo volver a concentrarme en lo que estoy haciendo aunque todavía tenga presente lo ocurrido. |
+| **Faceta** | B. Recuperación ante contratiempos |
+| **Direction** | direct |
+| **Indicador** | Reconcentración en tarea actual con memoria del contratiempo |
+| **Justificación** | No niega afecto («todavía tengo presente»); no «seguir con lo siguiente». |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO persistencia** | Concentración, no sostener meta. |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_061
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando cometo un error durante una jornada, suelo separar lo ocurrido de las tareas que siguen en lugar de continuar repasándolo mientras trabajo. |
+| **Faceta** | B. Recuperación ante contratiempos |
+| **Direction** | direct |
+| **Indicador** | Limita arrastre del error hacia conducta posterior |
+| **Justificación** | Trade-off separar vs repasar en curso; alternativa humana plausible. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | logro_persistencia (baja — repasar mientras trabaja) |
+| **NO persistencia** | Separación funcional, no reintentar meta. |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_062
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Después de un resultado que me toma por sorpresa, suelo necesitar un tiempo antes de volver a concentrarme en el trabajo. |
+| **Faceta** | B. Recuperación ante contratiempos |
+| **Direction** | inverse |
+| **Indicador** | Latencia de reconcentración tras resultado sorpresa |
+| **Justificación** | Reacción humana plausible; no clínica ni «pierdo el control». |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_063
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una propuesta en la que trabajé no es aceptada, suelo poder continuar con el siguiente asunto sin quedarme demasiado tiempo en ese resultado. |
+| **Faceta** | C. Tolerancia a crítica, rechazo y resultados adversos |
+| **Direction** | direct |
+| **Indicador** | Continuidad laboral tras rechazo de propuesta |
+| **Justificación** | Contexto laboral explícito; no «no me afecta». |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | dinamismo_iniciativa (pasar al siguiente asunto) |
+| **NO persistencia** | Sigue con otro asunto, no reintenta la propuesta. |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | Continuidad, no ritmo elevado. |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+### pm24_064
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Después de recibir una observación crítica inesperada sobre mi trabajo, suelo volver al tema con suficiente distancia para seguir trabajando en él. |
+| **Faceta** | C. Tolerancia a crítica, rechazo y resultados adversos |
+| **Direction** | direct |
+| **Indicador** | Retoma trabajo sobre el mismo tema tras crítica inesperada |
+| **Justificación** | Conducta posterior (volver con distancia), no indiferencia a la crítica. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | influencia_persuasion (baja — propuesta/trabajo previo) |
+| **NO persistencia** | — |
+| **NO adaptabilidad** | — |
+| **NO dinamismo** | — |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+
+---
+
+## Autocrítica del piloto dimensión 8 (post v3.1)
+
+**Candidatos más débiles (residual):**
+
+1. **pm24_057** — «Cuidar la forma en que respondo» sigue anclado en comunicación; riesgo **sociabilidad** bajo. Deseabilidad reducida vs borrador inicial.
+
+2. **pm24_063** — «Continuar con el siguiente asunto» puede leerse **dinamismo** leve; aceptable en baseline C.
+
+**Checklist neutralidad (8 ítems):** molestia/frustración no penalizada (**060** reconoce lo ocurrido presente); sin «no me afecta»; persistencia **060/061 cerrados**; adaptabilidad **no**; dinamismo **063** residual; clínico **no**; baja puntuable plausible (**062**, repasar error en **061**).
+
+**Revisión v3.1:** **057/059/060/061** cerraron solapamiento pausa, Orden, persistencia y «calma».
