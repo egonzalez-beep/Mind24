@@ -156,14 +156,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Disposición a asumir conducción cuando la situación lo requiere, coordinar esfuerzos y responsabilizarse por el avance colectivo. |
-| **Facetas** | A. Asunción de dirección · B. Coordinación y priorización · C. Responsabilidad grupal |
-| **Indicadores conductuales** | Toma la iniciativa de coordinar; reparte tareas; asume consecuencias del grupo. |
-| **Qué mide** | Conducción situacional y responsabilidad colectiva. |
-| **Qué NO mide** | Sociabilidad, persuasión simple, autonomía individual, apego a normas. |
-| **Fronteras** | Responsabilidad grupal ≠ cumplir procedimientos. |
+| **Definición operacional** | Tendencia a asumir funciones de conducción cuando la situación lo requiere, ayudar a establecer dirección y prioridades, coordinar esfuerzos de otras personas y responsabilizarse por el avance colectivo. |
+| **Facetas** | A. Asunción de dirección · B. Coordinación y priorización del equipo · C. Responsabilidad por el avance colectivo |
+| **Indicadores conductuales** | Aporta dirección ante falta de claridad; prioriza esfuerzo colectivo; sigue decisiones grupales; no requiere puesto formal. |
+| **Qué mide** | Predisposición a conducir esfuerzos colectivos entre pares. |
+| **Qué NO mide** | Extroversión, persuasión, sociabilidad genérica, autonomía individual, dinamismo, orden personal. |
+| **Fronteras** | Liderazgo ≠ influir con argumentos. Coordinar al grupo ≠ ordenar solo el propio trabajo. |
 | **Riesgo deseabilidad social** | **high** |
-| **Estrategia de redacción** | «Cuando el grupo necesita…»; evitar títulos jerárquicos. |
+| **Estrategia de redacción** | **Neutralidad valorativa**; «participar/proponer/ayudar a aclarar»; sin «tomar el mando». |
 
 ---
 
@@ -435,6 +435,8 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 2.3 | 2026-10-02 | Piloto 8 ítems dim. 5 Sociabilidad (draft, revisión humana pendiente) |
 | 2.4 | 2026-10-02 | Microajuste pm24_037 |
 | 2.5 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 5 (pm24_033–pm24_040 congelados hasta pilotaje) |
+| 2.6 | 2026-10-02 | Piloto 8 ítems dim. 6 Liderazgo (draft, revisión humana pendiente) |
+| 2.7 | 2026-10-02 | Revisión final pm24_043/046/047 · CONTENT BASELINE v1 APPROVED dim. 6 (pm24_041–pm24_048 congelados hasta pilotaje) |
 
 ---
 
@@ -1272,3 +1274,224 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 **«Ayudar» demasiado obvio:** **039** con trade-off razonable; no reescritura urgente.
 
 **Integración (faceta C):** **034** cubre ingreso a grupo; segundo directo C explícito (persona nueva en tarea) opcional en pilotaje, no bloqueante para baseline.
+
+---
+
+# Piloto dimensión 6 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 6 — Liderazgo y dirección de equipos: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v2.7 (pm24_043, pm24_046, pm24_047)
+
+| ID | Cambio | Objetivo de frontera | Deseabilidad | Contaminación residual |
+|----|--------|----------------------|--------------|------------------------|
+| pm24_043 | Vacío de coordinación al arranque → organización temporal de primeros pasos (sustituye «repartir trabajo») | Liderazgo situacional ≠ autoridad formal para asignar | medium | dinamismo_iniciativa (arranque) · orden_precision (organizar pasos) |
+| pm24_046 | Traslape de responsabilidades → aclarar quién se encarga de cada parte (sustituye priorización duplicada con 044) | Coordinación funcional ≠ solo «qué va primero» | medium | sociabilidad_colaboracion (baja — aclarar roles) |
+| pm24_047 | Atención al avance general además de la parte propia (sustituye «verificar según lo acordado») | Responsabilidad colectiva ≠ apego a normas/procedimiento | medium | sociabilidad_colaboracion (baja — atención al grupo vs solo foco) |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Asunción de dirección | 3 | pm24_041, pm24_042, pm24_043 |
+| B. Coordinación y priorización del equipo | 3 | pm24_044, pm24_045, pm24_046 |
+| C. Responsabilidad por el avance colectivo | 2 | pm24_047, pm24_048 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_048`)
+
+## Nota de frontera (dimensión 6)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Influencia y persuasión** | Sin argumentar para convencer o cambiar opinión. |
+| **Sociabilidad y colaboración** | Sin integración social, ayuda puntual ni compartir avances propios. |
+| **Autonomía** | Conducción colectiva, no gestión solo del propio trabajo. |
+| **Dinamismo** | No ritmo ni arranque individual. |
+| **Orden y precisión** | Organiza trabajo de varias personas, no método personal. |
+
+---
+
+### pm24_041
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando varias personas necesitan definir cómo continuar con una tarea, suelo participar en ordenar los siguientes pasos. |
+| **Faceta** | A. Asunción de dirección |
+| **Direction** | direct |
+| **Indicador** | Interviene para estructurar pasos cuando falta claridad grupal |
+| **Justificación** | «Participar en ordenar» vs esperar que otro coordine; no afirma gusto por mandar. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | dinamismo_iniciativa (intervenir vs esperar) |
+| **NO influencia** | Ordena pasos, no argumenta para cambiar opiniones. |
+| **NO sociabilidad** | Dirección operativa, no relación ni apoyo interpersonal. |
+| **NO autonomía** | Acción sobre el avance del grupo, no solo el propio trabajo. |
+| **NO dinamismo** | Requiere varias personas y definición de ruta, no solo arrancar. |
+| **NO orden y precisión** | Ordena el *cómo continuar* del grupo, no método personal. |
+
+---
+
+### pm24_042
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando un trabajo grupal queda sin una dirección clara, suelo proponer una forma de organizar el avance. |
+| **Faceta** | A. Asunción de dirección |
+| **Direction** | direct |
+| **Indicador** | Propone estructura de avance ante vacío de dirección |
+| **Justificación** | Propuesta situacional; alternativa plausible: esperar consenso o coordinador. |
+| **Deseabilidad** | medium-high |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (organizar) |
+| **NO influencia** | Propone organización, no vende una idea. |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | Organiza avance *colectivo*, no carpetas/plazos propios. |
+
+---
+
+### pm24_043
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando un grupo tiene claro qué debe lograr pero nadie está coordinando el arranque, suelo asumir temporalmente la organización de los primeros pasos. |
+| **Faceta** | A. Asunción de dirección |
+| **Direction** | direct |
+| **Indicador** | Asume conducción temporal ante vacío de coordinación al inicio |
+| **Justificación** | Meta clara + nadie coordina; alternativa legítima: esperar que otro tome el papel. «Temporalmente» reduce lectura de jefe. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | dinamismo_iniciativa (arranque) · orden_precision (organizar pasos) |
+| **NO influencia** | — |
+| **NO sociabilidad** | Organización de arranque, no relación ni apoyo. |
+| **NO autonomía** | Conducción grupal, no solo trabajo propio. |
+| **NO dinamismo** | Requiere vacío de coordinación grupal, no solo actuar rápido. |
+| **NO orden y precisión** | Primeros pasos del *grupo*, no método personal. |
+
+---
+
+### pm24_044
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando varias personas participan en una misma entrega, suelo ayudar a aclarar qué necesita avanzar primero para que el resto pueda continuar. |
+| **Faceta** | B. Coordinación y priorización del equipo |
+| **Direction** | direct |
+| **Indicador** | Prioriza secuencia colectiva de la entrega |
+| **Justificación** | Enunciado tipo blueprint; trade-off con quien solo ejecuta su parte. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO influencia** | Aclara secuencia, no persuade. |
+| **NO sociabilidad** | — |
+| **NO autonomía** | — |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | Prioriza *entre* personas en una entrega compartida. |
+
+---
+
+### pm24_045
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | En trabajos donde intervienen varias personas, suelo señalar las dependencias entre partes para que cada quien sepa qué esperar. |
+| **Faceta** | B. Coordinación y priorización del equipo |
+| **Direction** | direct |
+| **Indicador** | Explicita dependencias interpersonales en el flujo de trabajo |
+| **Justificación** | Coordinación informativa grupal; no requiere rol de jefe. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (dependencias) |
+| **NO influencia** | — |
+| **NO sociabilidad** | Señala expectativas de handoff, no rapport. |
+| **NO autonomía** | — |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | Mapa de dependencias del *equipo*, no checklist personal. |
+
+---
+
+### pm24_046
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando en un trabajo compartido hay responsabilidades que se traslapan, suelo ayudar a aclarar quién se encargará de cada parte. |
+| **Faceta** | B. Coordinación y priorización del equipo |
+| **Direction** | direct |
+| **Indicador** | Clarifica responsabilidades ante traslape (reduce duplicidad) |
+| **Justificación** | Distinto de 044 (secuencia); «ayudar a aclarar» sin asignar desde autoridad formal. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad_colaboracion (baja — acuerdo de roles) |
+| **NO influencia** | — |
+| **NO sociabilidad** | Distribución funcional, no integración ni ayuda puntual. |
+| **NO autonomía** | — |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | Roles entre personas, no orden del propio trabajo. |
+
+---
+
+### pm24_047
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Después de que un grupo acuerda un plan, suelo mantenerme atento al avance general además de concentrarme en mi propia parte. |
+| **Faceta** | C. Responsabilidad por el avance colectivo |
+| **Direction** | direct |
+| **Indicador** | Atención al resultado conjunto además de la entrega individual |
+| **Justificación** | Trade-off con especialista solo en su parte; no verificar cumplimiento normativo. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad_colaboracion (baja — atención al grupo) |
+| **NO influencia** | — |
+| **NO sociabilidad** | Seguimiento del avance, no relación ni cooperación cotidiana. |
+| **NO autonomía** | Involucramiento en el conjunto, no independencia decisional. |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | — |
+| **NO apego_normas** | «Plan acordado» como marco grupal, no procedimiento ni control. |
+
+---
+
+### pm24_048
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando el trabajo de un grupo ya tiene participantes capaces, prefiero concentrarme en mi propia parte y dejar la coordinación a otra persona. |
+| **Faceta** | C. Responsabilidad por el avance colectivo |
+| **Direction** | inverse |
+| **Indicador** | Foco en parte propia cuando ya hay conducción grupal |
+| **Justificación** | Estilo especialista plausible (spec §8); no «que otros resuelvan». |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision · sociabilidad_colaboracion (paralelo pm24_040) |
+| **NO influencia** | — |
+| **NO sociabilidad** | Delega coordinación, no rechaza cooperar. |
+| **NO autonomía** | Preferencia de rol en grupo, no decidir sin supervisión. |
+| **NO dinamismo** | — |
+| **NO orden y precisión** | — |
+
+---
+
+## Autocrítica del piloto dimensión 6 (post v2.7)
+
+**Facetas distinguibles (bloque completo):**
+
+| Faceta | IDs | Núcleo |
+|--------|-----|--------|
+| A | 041, 042, 043 | Entrar a dar dirección cuando falta claridad o coordinación al arranque |
+| B | 044, 045, 046 | Estructurar avance colectivo: secuencia, dependencias, responsabilidades |
+| C | 047, 048 | Involucramiento en el avance del conjunto vs foco en parte propia (048 inverso) |
+
+**Candidatos más débiles (residual):**
+
+1. **pm24_042** — «Proponer forma de organizar el avance» sigue con **medium-high** deseabilidad; alternativa (esperar coordinador) implícita. Aceptable en baseline; vigilar correlación con 041/043 en pilotaje.
+
+2. **pm24_043** — «Asumir temporalmente la organización» puede leerse **iniciativa**; mitigado por condición «nadie está coordinando el arranque». Ya no sugiere autoridad formal.
+
+**Checklist neutralidad (8 ítems):** ideal no evidente (042 en límite); baja = rol especialista legítimo (**048**, también quien no asume arranque en **043**); sin cargo de jefe; sin persuasión primaria; iniciativa no aislada en 041–043 (contexto grupal); no sociabilidad primaria.
+
+**Persuasión / jefe formal:** **No** en el bloque.
+
+**Revisión v2.7:** **043/046/047** cerraron fronteras autoridad formal, duplicidad 044/046 y apego_normas en **047**.
