@@ -4,6 +4,7 @@ export const MIND24_MODULE_KEYS = [
   'cleaver',
   'terman',
   'sales_sjt',
+  'personalidad_mind24',
   'digital_interview',
   'medida',
 ];
@@ -78,6 +79,16 @@ export const MODULE_CATALOG = {
     icon: '📊',
     estimatedMinutes: 30,
     sectionIds: ['principal'],
+  },
+  personalidad_mind24: {
+    label: 'Personalidad laboral Mind24',
+    description:
+      'Evaluación propietaria de personalidad laboral en 10 dimensiones (escala de frecuencia 1–5). Sin interpretación normativa en v1.',
+    icon: '◈',
+    estimatedMinutes: null,
+    sectionIds: ['principal'],
+    comingSoon: true,
+    runnableWhileComingSoon: false,
   },
   digital_interview: {
     label: 'Entrevista Digital Estructurada',
@@ -203,6 +214,7 @@ export const MODULE_TABLE_LABELS = {
   cleaver: 'Cleaver',
   terman: 'Eval. Cognitiva Mind24',
   sales_sjt: 'SJT Comercial',
+  personalidad_mind24: 'Personalidad Mind24',
   digital_interview: 'Entrevista',
   medida: 'A la medida',
 };
@@ -213,6 +225,7 @@ export const MODULE_REPORT_LABELS = {
   cleaver: 'Comportamiento',
   terman: 'Evaluación Cognitiva Analítica Mind24',
   sales_sjt: 'Simulador de Escenarios Comerciales (SJT)',
+  personalidad_mind24: 'Personalidad laboral Mind24',
   digital_interview: 'Entrevista Digital Estructurada',
   medida: 'Módulo a la medida',
 };

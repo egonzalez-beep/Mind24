@@ -17,6 +17,12 @@ import {
   termanQuestionCount,
   termanQuestionsFlat,
 } from '../data/termanData.js';
+import {
+  PERSONALIDAD_MIND24_CATALOG_VERSION,
+  PERSONALIDAD_MIND24_SCALE,
+  personalityProductionItemsFlat,
+  personalityQuestionCount,
+} from '../data/personalityMind24Data.js';
 
 export { CLEAVER_CATALOG_VERSION };
 import {
@@ -414,6 +420,43 @@ async function ensureSalesSjtQuestions(db, moduleId) {
 }
 
 /**
+ * Sync Personalidad Mind24 — formulario fijo v1 (ítems production en catálogo).
+ * No crea preguntas mientras el banco esté vacío.
+ */
+async function ensurePersonalityMind24Questions(db, moduleId) {
+  const flat = personalityProductionItemsFlat();
+  const expected = personalityQuestionCount();
+  if (expected === 0 || flat.length === 0) {
+    return {
+      existing: 0,
+      created: 0,
+      expected: 0,
+      skipped: true,
+      reason: 'empty_item_bank',
+    };
+  }
+
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+
+  // Implementación completa (create/update) en fase de banco de reactivos.
+  console.warn(
+    `[catalog] personalidad_mind24: banco con ${flat.length} ítems production; sync BD pendiente de implementación.`,
+  );
+  return { existing, created: 0, expected, skipped: false, pendingImplementation: true };
+}
+
+/** Opciones Likert 1–5 estándar (para sync futuro). */
+export function personalityMind24LikertOptionsCreatePayload() {
+  return PERSONALIDAD_MIND24_SCALE.optionLabels.map((label, j) => ({
+    label,
+    value: String(j + 1),
+    sortOrder: j,
+  }));
+}
+
+/**
  * Idempotente: asegura módulos del catálogo y preguntas mínimas (Cleaver, placeholders).
  * No borra usuarios, asignaciones ni intentos. Seguro en cada arranque de producción.
  */
@@ -437,6 +480,21 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   let salesSjt = { existing: 0, created: 0 };
   if (salesSjtModuleId) {
     salesSjt = await ensureSalesSjtQuestions(db, salesSjtModuleId);
+  }
+
+  const personalityModuleId = moduleIdByKey.personalidad_mind24;
+  let personalidadMind24 = { existing: 0, created: 0, expected: 0, skipped: true };
+  if (personalityModuleId) {
+    personalidadMind24 = await ensurePersonalityMind24Questions(db, personalityModuleId);
+    const cat = MODULE_CATALOG.personalidad_mind24;
+    if (cat) {
+      await db.evaluationModule.update({
+        where: { id: personalityModuleId },
+        data: {
+          description: `${cat.description} [personalidad_mind24:v${PERSONALIDAD_MIND24_CATALOG_VERSION}]`,
+        },
+      });
+    }
   }
 
   const cleaverCount = cleaverModuleId
@@ -473,6 +531,9 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
     cleaverKeyPendingBlocks: cleaverBankValidation.summary.pendingBlocks,
     termanSeeded: terman.created,
     salesSjtSeeded: salesSjt.created,
+    personalidadMind24Questions: personalidadMind24.existing ?? 0,
+    personalidadMind24Expected: personalidadMind24.expected ?? 0,
+    personalidadMind24Skipped: personalidadMind24.skipped ?? false,
   };
 
   console.log('[catalog] Evaluation catalog OK:', summary);
