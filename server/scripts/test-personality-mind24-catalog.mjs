@@ -20,7 +20,7 @@ function check(cond, msg) {
   }
 }
 
-console.log('\n=== Personalidad Mind24 — catálogo (Fase 2A–2F) ===\n');
+console.log('\n=== Personalidad Mind24 — catálogo (Fase 2A–2G) ===\n');
 
 const bank = validatePersonalityMind24ItemBank();
 check(bank.ok, 'banco: validatePersonalityMind24ItemBank');
@@ -28,7 +28,7 @@ if (!bank.ok) {
   for (const e of bank.errors) console.error(`       ${e}`);
 }
 
-check(PERSONALIDAD_MIND24_ITEMS.length === 48, 'piloto: 48 ítems en código (dim. 1–6)');
+check(PERSONALIDAD_MIND24_ITEMS.length === 56, 'piloto: 56 ítems en código (dim. 1–7)');
 check(
   PERSONALIDAD_MIND24_ITEMS.every((i) => i.bankStatus === 'draft'),
   'piloto: todos bankStatus draft',
@@ -43,7 +43,7 @@ const sorts = new Set(PERSONALIDAD_MIND24_ITEMS.map((i) => i.sortOrder));
 check(sorts.size === PERSONALIDAD_MIND24_ITEMS.length, 'sortOrder únicos');
 
 const inverseCount = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.direction === 'inverse').length;
-check(inverseCount === 6, 'piloto: 6 inversos (006, 016, 019, 032, 040, 048)');
+check(inverseCount === 7, 'piloto: 7 inversos (006, 016, 019, 032, 040, 048, 056)');
 
 const dim1 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'logro_persistencia');
 const dim2 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'orden_precision');
@@ -51,12 +51,14 @@ const dim3 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'autonomi
 const dim4 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'influencia_persuasion');
 const dim5 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'sociabilidad_colaboracion');
 const dim6 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'liderazgo_equipos');
+const dim7 = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.dimensionId === 'apego_normas');
 check(dim1.length === 8, 'piloto dim. 1: 8 ítems');
 check(dim2.length === 8, 'piloto dim. 2: 8 ítems');
 check(dim3.length === 8, 'piloto dim. 3: 8 ítems');
 check(dim4.length === 8, 'piloto dim. 4: 8 ítems');
 check(dim5.length === 8, 'piloto dim. 5: 8 ítems');
 check(dim6.length === 8, 'piloto dim. 6: 8 ítems');
+check(dim7.length === 8, 'piloto dim. 7: 8 ítems');
 check(
   dim1.filter((i) => i.direction === 'inverse').length === 1,
   'piloto dim. 1: 1 inverso',
@@ -81,6 +83,10 @@ check(
   dim6.filter((i) => i.direction === 'inverse').length === 1,
   'piloto dim. 6: 1 inverso (pm24_048)',
 );
+check(
+  dim7.filter((i) => i.direction === 'inverse').length === 1,
+  'piloto dim. 7: 1 inverso (pm24_056)',
+);
 
 function rowsForItems(items) {
   return items.map((item) => ({
@@ -103,12 +109,14 @@ check(scoredAll.dimensions.autonomia_decision.nAnswered === 8, 'scoring: 8 respu
 check(scoredAll.dimensions.influencia_persuasion.nAnswered === 8, 'scoring: 8 respuestas dim. 4');
 check(scoredAll.dimensions.sociabilidad_colaboracion.nAnswered === 8, 'scoring: 8 respuestas dim. 5');
 check(scoredAll.dimensions.liderazgo_equipos.nAnswered === 8, 'scoring: 8 respuestas dim. 6');
+check(scoredAll.dimensions.apego_normas.nAnswered === 8, 'scoring: 8 respuestas dim. 7');
 check(scoredAll.dimensions.logro_persistencia.mean != null, 'scoring: mean dim. 1');
 check(scoredAll.dimensions.orden_precision.mean != null, 'scoring: mean dim. 2');
 check(scoredAll.dimensions.autonomia_decision.mean != null, 'scoring: mean dim. 3');
 check(scoredAll.dimensions.influencia_persuasion.mean != null, 'scoring: mean dim. 4');
 check(scoredAll.dimensions.sociabilidad_colaboracion.mean != null, 'scoring: mean dim. 5');
 check(scoredAll.dimensions.liderazgo_equipos.mean != null, 'scoring: mean dim. 6');
+check(scoredAll.dimensions.apego_normas.mean != null, 'scoring: mean dim. 7');
 check(scoredAll.global === undefined, 'scoring: sin global tras ítems draft');
 
 console.log(

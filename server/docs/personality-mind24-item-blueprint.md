@@ -171,14 +171,14 @@ Si la respuesta es **sí** → **reescribir**.
 
 | Campo | Contenido |
 |-------|-----------|
-| **Definición operacional** | Tendencia a respetar procedimientos, controles y estándares establecidos aunque impliquen disciplina operativa. |
-| **Facetas** | A. Seguimiento de procedimientos · B. Consistencia con estándares · C. Aceptación de controles |
-| **Indicadores conductuales** | Sigue pasos definidos; mantiene estándares; tolera controles sin evadirlos. |
-| **Qué mide** | Alineación a reglas y procesos organizacionales. |
-| **Qué NO mide** | Honestidad/ética, orden personal, dependencia de supervisión. |
-| **Fronteras** | Aceptar controles ≠ necesitar supervisión constante. |
+| **Definición operacional** | Tendencia a trabajar respetando procedimientos, estándares, controles y formas establecidas de operación cuando forman parte del contexto laboral. |
+| **Facetas** | A. Seguimiento de procedimientos · B. Consistencia con estándares · C. Aceptación de controles y verificación externa |
+| **Indicadores conductuales** | Parte del método establecido; contrasta con criterios externos; incorpora registros/autorizaciones al flujo. |
+| **Qué mide** | Relación operativa con estructuras externas de trabajo (procedimiento vs discreción). |
+| **Qué NO mide** | Honestidad/ética, orden personal, dependencia de supervisión, rigidez ante el cambio, obediencia moral. |
+| **Fronteras** | Normas ≠ honestidad (conducta sin vigilancia). Normas ≠ orden propio. Controles del proceso ≠ necesidad de supervisión. Marco existente ≠ resistencia a cambiar el marco. |
 | **Riesgo deseabilidad social** | **high** |
-| **Estrategia de redacción** | Procedimientos genéricos; evitar moralizar. |
+| **Estrategia de redacción** | **Neutralidad valorativa**; estructura vs flexibilidad operativa; sin «cumplir reglas» ni «aunque nadie me vea». |
 
 ---
 
@@ -437,6 +437,8 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 | 2.5 | 2026-10-02 | CONTENT BASELINE v1 APPROVED dim. 5 (pm24_033–pm24_040 congelados hasta pilotaje) |
 | 2.6 | 2026-10-02 | Piloto 8 ítems dim. 6 Liderazgo (draft, revisión humana pendiente) |
 | 2.7 | 2026-10-02 | Revisión final pm24_043/046/047 · CONTENT BASELINE v1 APPROVED dim. 6 (pm24_041–pm24_048 congelados hasta pilotaje) |
+| 2.8 | 2026-10-02 | Piloto 8 ítems dim. 7 Apego a normas (draft, revisión humana pendiente) |
+| 2.9 | 2026-10-02 | Revisión final pm24_052/056 · CONTENT BASELINE v1 APPROVED dim. 7 (pm24_049–pm24_056 congelados hasta pilotaje) |
 
 ---
 
@@ -1495,3 +1497,220 @@ Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción 
 **Persuasión / jefe formal:** **No** en el bloque.
 
 **Revisión v2.7:** **043/046/047** cerraron fronteras autoridad formal, duplicidad 044/046 y apego_normas en **047**.
+
+---
+
+# Piloto dimensión 7 — Reactivos candidatos (draft)
+
+Estado: **draft** · No `production` · No sync BD · Sin cambios de redacción hasta pilotaje.
+
+**Dimensión 7 — Apego a normas y procesos: CONTENT BASELINE v1 APPROVED**
+
+## Auditoría revisión final v2.9 (pm24_052, pm24_056)
+
+| ID | Cambio | Objetivo de frontera | Deseabilidad | Contaminación residual |
+|----|--------|----------------------|--------------|------------------------|
+| pm24_052 | «Contrastar resultado» → tomar criterio de tarea terminada como referencia vs evaluación personal | Estándar externo ≠ revisión de calidad (Orden y precisión) | medium | — |
+| pm24_056 | Verificación intermedia omitida → revisiones concentradas al final cuando es posible | Discreción operativa ≠ saltarse control obligatorio; reduce deseabilidad del «seguir paso a paso» | low–medium | orden_precision (revisiones al final) · dinamismo_iniciativa |
+
+## Distribución
+
+| Faceta | Cantidad | IDs |
+|--------|----------|-----|
+| A. Seguimiento de procedimientos | 3 | pm24_049, pm24_050, pm24_051 |
+| B. Consistencia con estándares | 3 | pm24_052, pm24_053, pm24_054 |
+| C. Aceptación de controles y verificación externa | 2 | pm24_055, pm24_056 |
+
+**Dirección:** 7 direct · 1 inverse (`pm24_056`)
+
+## Nota de frontera (dimensión 7)
+
+| Constructo | Por qué estos ítems no pertenecen ahí |
+|------------|----------------------------------------|
+| **Honestidad/Antifraude** | Sin vigilancia, ética ni «hacer lo correcto». Relación operativa con el marco. |
+| **Orden y precisión** | Criterio/formato/proceso *externo*, no sistema personal de organización. |
+| **Autonomía** | Usar el proceso ≠ pedir validación para decidir. |
+| **Adaptabilidad** | Respeto al marco vigente, no resistencia a que el marco cambie. **pm24_049:** «explorar otra forma» = alternativa operativa tras partir del método *vigente*, no rechazo de métodos nuevos. |
+| **Regulación bajo presión** | Sin presión, frustración ni autocontrol emocional. |
+
+---
+
+### pm24_049
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una actividad ya tiene un método establecido, suelo comenzar por ese método antes de explorar otra forma de hacerla. |
+| **Faceta** | A. Seguimiento de procedimientos |
+| **Direction** | direct |
+| **Indicador** | Parte del método establecido antes de improvisar |
+| **Justificación** | Trade-off método vigente vs explorar otra forma; ambas funcionales. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | adaptabilidad_cambio (explorar otra forma) |
+| **NO honestidad** | Sin vigilancia ni juicio ético. |
+| **NO orden y precisión** | Método *establecido*, no orden propio. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | Punto de partida = método *establecido* vigente; «explorar otra forma» es estilo alternativo en la misma tarea, no resistencia a cambiar el marco cuando la organización lo actualiza. |
+| **NO regulación** | — |
+
+---
+
+### pm24_050
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una tarea incluye una secuencia de pasos definida, suelo seguirla antes de resolverla por mi propio criterio. |
+| **Faceta** | A. Seguimiento de procedimientos |
+| **Direction** | direct |
+| **Indicador** | Sigue secuencia definida vs criterio propio |
+| **Justificación** | Estructura vs discreción operativa; especialista puede resolver directo. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (criterio propio) |
+| **NO honestidad** | — |
+| **NO orden y precisión** | Secuencia *definida* (externa), no planificar pasos propios (pm24_011). |
+| **NO autonomía** | No pide validación; elige usar o no la secuencia dada. |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_051
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Si hay un procedimiento definido para un trabajo que ya conozco, suelo utilizarlo en lugar de improvisar los pasos sobre la marcha. |
+| **Faceta** | A. Seguimiento de procedimientos |
+| **Direction** | direct |
+| **Indicador** | Usa procedimiento aun en tarea familiar vs improvisar |
+| **Justificación** | Conocimiento de la tarea no sustituye el proceso; alternativa: improvisar por dominio. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | dinamismo_iniciativa (improvisar sobre la marcha) |
+| **NO honestidad** | — |
+| **NO orden y precisión** | Procedimiento definido, no checklist personal. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_052
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando existe un criterio establecido para considerar una tarea terminada, suelo tomarlo como referencia aunque mi forma personal de evaluarla sea distinta. |
+| **Faceta** | B. Consistencia con estándares |
+| **Direction** | direct |
+| **Indicador** | Adopta criterio externo de «terminada» vs evaluación personal |
+| **Justificación** | Referencia operativa al estándar; no revisión de detalles ni perfeccionismo. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | — |
+| **NO honestidad** | — |
+| **NO orden y precisión** | Referencia a criterio *establecido*, no control de calidad autoimpuesto. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_053
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando distintas personas entregan un trabajo comparable, suelo utilizar los parámetros comunes en lugar de un criterio propio. |
+| **Faceta** | B. Consistencia con estándares |
+| **Direction** | direct |
+| **Indicador** | Alinea ejecución a parámetros compartidos |
+| **Justificación** | Consistencia interpersonas por estándar común; alternativa: criterio propio. |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | sociabilidad_colaboracion (baja — trabajo comparable) |
+| **NO honestidad** | — |
+| **NO orden y precisión** | Parámetros *comunes*, no método personal. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_054
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Si hay un formato establecido para presentar un trabajo, suelo usarlo aunque me resulte más natural otro esquema. |
+| **Faceta** | B. Consistencia con estándares |
+| **Direction** | direct |
+| **Indicador** | Adopta formato externo vs esquema natural propio |
+| **Justificación** | Trade-off más visible del bloque; ambas formas de presentar son plausibles. |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (formato/esquema) |
+| **NO honestidad** | — |
+| **NO orden y precisión** | Formato *establecido*, no organizar a mi manera. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | No es «me quedo con lo de siempre»; es usar el formato vigente. |
+| **NO regulación** | — |
+
+---
+
+### pm24_055
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando un proceso incluye un punto de revisión o autorización antes de continuar, suelo incorporarlo al flujo de trabajo en lugar de avanzar de un tirón. |
+| **Faceta** | C. Aceptación de controles y verificación externa |
+| **Direction** | direct |
+| **Indicador** | Incorpora control intermedio al flujo vs avance continuo |
+| **Justificación** | Relación funcional con el control del proceso; no «me gusta que me supervisen». |
+| **Deseabilidad** | medium |
+| **Ideal evidente** | no |
+| **Contaminación** | autonomia_decision (avanzar sin parar) · dinamismo_iniciativa |
+| **NO honestidad** | Sin ocultar ni «aunque nadie vea». |
+| **NO orden y precisión** | — |
+| **NO autonomía** | El punto está *en el proceso*, no pide que alguien valide su decisión. |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+### pm24_056
+
+| Campo | Valor |
+|-------|-------|
+| **Texto** | Cuando una tarea incluye varios puntos de control, prefiero avanzar de forma continua y concentrar las revisiones al final cuando es posible. |
+| **Faceta** | C. Aceptación de controles y verificación externa |
+| **Direction** | inverse |
+| **Indicador** | Revisiones al final vs controles distribuidos en el flujo |
+| **Justificación** | Estilo operativo plausible; «cuando es posible» acota; no ignora autorización obligatoria. |
+| **Deseabilidad** | low–medium |
+| **Ideal evidente** | no |
+| **Contaminación** | orden_precision (revisiones al final) · dinamismo_iniciativa |
+| **NO honestidad** | No incumplimiento ni ocultamiento. |
+| **NO orden y precisión** | Preferencia de *momento* de revisión, no método personal de trabajo. |
+| **NO autonomía** | — |
+| **NO adaptabilidad** | — |
+| **NO regulación** | — |
+
+---
+
+## Autocrítica del piloto dimensión 7 (post v2.9)
+
+**Facetas distinguibles (bloque completo):**
+
+| Faceta | IDs | Núcleo |
+|--------|-----|--------|
+| A | 049–051 | Partir de método/secuencia/procedimiento establecido vs criterio propio o improvisar |
+| B | 052–054 | Referencia a criterios, parámetros y formatos externos |
+| C | 055–056 | Controles en el flujo vs concentrar revisiones (056 inverso) |
+
+**Candidatos más débiles (residual):**
+
+1. **pm24_056** — «Concentrar revisiones al final» puede rozar **orden y precisión** (revisar al cierre). Mitigado por par con **055** y «cuando es posible». Vigilar en pilotaje que no se lea como omitir controles obligatorios.
+
+2. **pm24_049–051** — Redundancia conductual posible entre los tres directos de faceta A; distinción conceptual aceptable; correlación alta sería señal de pilotaje, no bloqueo de baseline.
+
+**Checklist validación final:** honestidad **no**; orden personal **052 cerrado** (054 residual bajo); autonomía **no**; rigidez **049 documentado** (método vigente como punto de partida); moralización **no**.
+
+**Revisión v2.9:** **052/056** cerraron fronteras Orden y precisión / incumplimiento aparente en inverso.
