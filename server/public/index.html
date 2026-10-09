@@ -2136,12 +2136,13 @@ function crearEvalModTableLabel(key){
   return MIND24_MOD_TABLE_LABELS[k]||k;
 }
 /** Catálogo corporativo Mind24 (sincronizado con server/src/utils/moduleCatalog.js) */
-const MIND24_ASSIGNABLE_KEYS=['honestidad','cleaver','terman','sales_sjt','digital_interview'];
+const MIND24_ASSIGNABLE_KEYS=['honestidad','cleaver','terman','sales_sjt','personalidad_mind24','digital_interview'];
 const MIND24_EVAL_MODULES=[
   {key:'honestidad',label:'Batería de Honestidad (Exclusivo Mind24)',description:'Detecta blindaje moral, lealtad y riesgos de corrupción. Evaluación propietaria antifraude.',icon:'🛡️',featured:true},
   {key:'cleaver',label:'Comportamiento (CLEAVER)',description:'Predice la reacción bajo presión y adaptabilidad al puesto.',icon:'🎯'},
   {key:'terman',label:'Evaluación Cognitiva Analítica Mind24',description:'Batería cognitiva corporativa Mind24: 10 bloques cronometrados, 50 reactivos.',icon:'🧠'},
   {key:'sales_sjt',label:'Simulador de Escenarios Comerciales (SJT)',description:'Juicio situacional en ventas, negociación y atención a clientes. 15 escenarios premium con puntuación ponderada (máx. 75 pts).',icon:'📊'},
+  {key:'personalidad_mind24',label:'Personalidad Mind24',description:'Evaluación de tendencias de personalidad laboral en 10 dimensiones.',icon:'◈',defaultSelected:false},
   {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
   {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',salesHook:true},
 ];
@@ -2176,7 +2177,7 @@ function mind24InitCrearEvalModules(){
     const el=document.createElement('div');
     const soon=!!mod.comingSoon;
     const salesHook=!!mod.salesHook;
-    const sel=!soon&&!salesHook&&mind24ModAssignable(mod);
+    const sel=!soon&&!salesHook&&mind24ModAssignable(mod)&&mod.defaultSelected!==false;
     el.className='mod-toggle'+(sel?' selected':'')+(mod.featured?' featured-mod':'')+(soon?' mod-coming-soon':'')+(salesHook?' mod-sales-hook':'');
     el.setAttribute('data-mod-key',mod.key);
     el.setAttribute('data-coming-soon',soon?'1':'0');
@@ -3958,7 +3959,7 @@ window.DYNAMIC_CTX=null;
 
 function dynamicTypeLabel(t){
   const mk=mind24ResolveModKey(window.DYNAMIC_CTX&&window.DYNAMIC_CTX.moduleKey);
-  if(mk==='honestidad'||mk==='cleaver'||mk==='terman'||mk==='sales_sjt')return MIND24_CAND_SIGILO_LABEL;
+  if(mk==='honestidad'||mk==='cleaver'||mk==='terman'||mk==='sales_sjt'||mk==='personalidad_mind24')return MIND24_CAND_SIGILO_LABEL;
   const m={MULTIPLE_CHOICE:'Opción múltiple',CLEAVER_MATRIX:'Evaluación en curso',AUDIO_RECORDING:'Entrevista digital',OPEN_TEXT:'Respuesta abierta'};
   return m[t]||MIND24_CAND_SIGILO_LABEL;
 }
@@ -4490,12 +4491,35 @@ function startTermanAssessment(payload){
   mind24EvalShellSync();
 }
 
+function mind24PersonalityIntroHtml(){
+  return '<li>Lee cada afirmación y selecciona la opción que mejor describa con qué frecuencia suele ocurrir en tu forma habitual de trabajar.</li>'
+    +'<li>No hay respuestas correctas o incorrectas.</li>'
+    +'<li>Responde pensando en tu comportamiento habitual, no en una situación excepcional.</li>'
+    +'<li><strong>Escala:</strong> 1 Nunca o casi nunca · 2 Rara vez · 3 A veces · 4 Con frecuencia · 5 Siempre o casi siempre</li>'
+    +'<li>Puedes salir y reanudar más tarde; se conservará tu avance.</li>';
+}
+
+function dynamicStartFromIntro(){
+  const ctx=window.DYNAMIC_CTX;
+  if(!ctx||!ctx.pendingIntro)return;
+  ctx.pendingIntro=false;
+  MIND24_EVAL_SCREENS.forEach(function(s){ s.classList.remove('active'); });
+  const scrDyn=document.getElementById('scr-dynamic');
+  if(scrDyn) scrDyn.classList.add('active');
+  loadDynamicQuestion();
+  const limitSec=mind24ResolveActiveTimeLimitSec();
+  if(limitSec)mind24StartEvalModuleTimer(limitSec,mind24OnEvalModuleTimerExpired);
+  else mind24EvalShellSync();
+}
+
 function startDynamicAssessment(payload){
   mind24StopEvalModuleTimer();
   window.__MIND24_EVAL_TIMER_EXPIRED=false;
   window.__MIND24_EVAL_FINISHING=false;
   const limitRaw=payload.timeLimitSec!=null?Number(payload.timeLimitSec):null;
   const limitSec=limitRaw!=null&&Number.isFinite(limitRaw)&&limitRaw>0?limitRaw:null;
+  const mkDyn=mind24ResolveModKey(payload.moduleKey);
+  const showPersonalityIntro=mkDyn==='personalidad_mind24';
   window.DYNAMIC_CTX={
     attemptId:payload.attemptId,
     assignmentId:payload.assignmentId,
@@ -4504,21 +4528,45 @@ function startDynamicAssessment(payload){
     questions:payload.questions||[],
     idx:0,
     drafts:{},
+    pendingIntro:showPersonalityIntro,
   };
   window.ATTEMPT_CTX={useApi:true,engine:'dynamic',attemptId:payload.attemptId,assignmentId:payload.assignmentId,moduleKey:payload.moduleKey,timeLimitSec:limitSec};
   const u=window.__MIND24_USER||{};
   ES.candidato={nombre:u.fullName||'Candidato',correo:u.email||'',codigo:''};
   const titleEl=document.getElementById('eval-intro-title');
-  const mkDyn=mind24ResolveModKey(payload.moduleKey);
-  if(titleEl) titleEl.innerHTML='Evaluación<br>Mind24';
+  if(titleEl){
+    titleEl.innerHTML=showPersonalityIntro?'Personalidad<br>Mind24':'Evaluación<br>Mind24';
+  }
   const sub=document.getElementById('introSub');
-  if(sub) sub.textContent=(mkDyn==='sales_sjt')?'Lee cada escenario y elige la respuesta que mejor refleje tu criterio comercial.':'Responde cada ítem con atención y continúa.';
+  if(sub){
+    if(showPersonalityIntro){
+      sub.textContent='Indica con qué frecuencia te describe cada afirmación en tu trabajo habitual.';
+    }else if(mkDyn==='sales_sjt'){
+      sub.textContent='Lee cada escenario y elige la respuesta que mejor refleje tu criterio comercial.';
+    }else{
+      sub.textContent='Responde cada ítem con atención y continúa.';
+    }
+  }
   const tag=document.getElementById('evalSecTag');
   if(tag) tag.textContent='◈ Evaluación Mind24';
   const nq=document.getElementById('eval-meta-questions'); if(nq) nq.textContent=String((payload.questions||[]).length);
-  const tm=document.getElementById('eval-meta-minutes'); if(tm) tm.textContent=String(Math.round((payload.timeLimitSec||900)/60));
+  const tm=document.getElementById('eval-meta-minutes');
+  if(tm){
+    if(showPersonalityIntro||limitSec==null) tm.textContent='—';
+    else tm.textContent=String(Math.round(limitSec/60));
+  }
+  const instr=document.querySelector('#scr-intro .eval-instructions ul');
+  if(instr){
+    if(showPersonalityIntro) instr.innerHTML=mind24PersonalityIntroHtml();
+    else instr.innerHTML='<li>Lee cada situación con cuidado y elige la respuesta que mejor refleje tu comportamiento real.</li><li>No hay respuestas correctas o incorrectas — responde con total honestidad.</li><li>Evita interrupciones. El tiempo corre desde que inicies.</li><li>Responde todas las preguntas antes de enviar.</li><li>Los resultados son confidenciales y solo visibles para el equipo de HR.</li>';
+  }
   showView('evaluacion');
   MIND24_EVAL_SCREENS.forEach(function(s){ s.classList.remove('active'); });
+  if(showPersonalityIntro){
+    showScr('intro');
+    mind24EvalShellSync();
+    return;
+  }
   const scrDyn=document.getElementById('scr-dynamic');
   if(scrDyn) scrDyn.classList.add('active');
   loadDynamicQuestion();
@@ -4816,6 +4864,10 @@ function showScr(name){
   });
 }
 function startEval(){
+  if(window.DYNAMIC_CTX&&window.DYNAMIC_CTX.pendingIntro){
+    dynamicStartFromIntro();
+    return;
+  }
   startTimer();
   if(mind24HonestidadUsesInterleavedFlat()){
     loadQ();

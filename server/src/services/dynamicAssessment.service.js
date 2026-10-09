@@ -705,8 +705,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     interpretation = {
       verdict: 'Evaluación completada',
       badge: '✓',
-      description: 'Personalidad laboral Mind24: 10 dimensiones calculadas.',
-      dimensionCount: Object.keys(scoring.dimensions || {}).length,
+      description: 'Evaluación completada correctamente.',
     };
     diagComplete(attemptId, 'scoring:ok', {
       module: 'personalidad_mind24',

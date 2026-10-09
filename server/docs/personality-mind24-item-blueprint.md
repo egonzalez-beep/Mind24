@@ -469,6 +469,17 @@ Criterios: deseabilidad (low/medium/high), respuesta ideal demasiado evidente (s
 
 ---
 
+## Estado vigente — Fase 4B (piloto plataforma)
+
+| Campo | Estado actual (no reescribe Fase 2 arriba) |
+|-------|---------------------------------------------|
+| Reactivos en código | 80 · `bankStatus: pilot` · 0 `production` |
+| Módulo | Asignable (`ASSIGNABLE_MODULE_KEYS`); no preseleccionado en crear evaluación |
+| Shortlist 60/20 | Editorial únicamente |
+| Pendiente | Interpretación 4C · reporte Enterprise 4D · banco `production` definitivo |
+
+---
+
 # Piloto dimensión 2 — Reactivos candidatos (draft)
 
 Estado: **draft** · No `production` · No sync BD.

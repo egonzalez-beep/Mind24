@@ -15,6 +15,7 @@ export const ASSIGNABLE_MODULE_KEYS = [
   'cleaver',
   'terman',
   'sales_sjt',
+  'personalidad_mind24',
   'digital_interview',
 ];
 
@@ -81,14 +82,13 @@ export const MODULE_CATALOG = {
     sectionIds: ['principal'],
   },
   personalidad_mind24: {
-    label: 'Personalidad laboral Mind24',
+    label: 'Personalidad Mind24',
     description:
-      'Evaluación propietaria de personalidad laboral en 10 dimensiones (escala de frecuencia 1–5). Sin interpretación normativa en v1.',
+      'Evaluación de tendencias de personalidad laboral en 10 dimensiones.',
     icon: '◈',
     estimatedMinutes: null,
     sectionIds: ['principal'],
-    comingSoon: true,
-    runnableWhileComingSoon: false,
+    comingSoon: false,
   },
   digital_interview: {
     label: 'Entrevista Digital Estructurada',
@@ -156,7 +156,10 @@ export function filterAssignableModuleKeys(keys) {
   return out;
 }
 
-export const DEFAULT_SELECTED_MODULES = ASSIGNABLE_MODULE_KEYS.filter((k) => isOfferableModuleKey(k));
+/** Módulos preseleccionados al crear evaluación (Personalidad = opt-in consciente en piloto). */
+export const DEFAULT_SELECTED_MODULES = ASSIGNABLE_MODULE_KEYS.filter(
+  (k) => isOfferableModuleKey(k) && k !== 'personalidad_mind24',
+);
 
 /**
  * Módulos visibles en lobby de candidato.

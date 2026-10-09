@@ -20,6 +20,19 @@ Sync idempotente `pilot` ∪ `production` → `Question` / `QuestionOption`; acc
 
 Cableado `personalidad_mind24` en `dynamicAssessment` (start/engine/complete); orden mezclado persistido en `AssessmentAttempt.results.personalityMind24.presentationOrder`; form congelado por intento; claim atómico (`FOR UPDATE`); metadata sanitizada; scoring 10 dimensiones sin global/percentiles/reliability por velocidad. Módulo sigue `comingSoon` y fuera de asignación.
 
+**FASE 4B — PILOTO FUNCIONAL END-TO-END (estado vigente)**
+
+**PERSONALIDAD MIND24 — FASE 4B PILOT END-TO-END READY**
+
+| Aspecto | Estado actual |
+|---------|----------------|
+| Banco en código | 80 reactivos `bankStatus: pilot` (0 `production`) |
+| Sync BD | 80 `Question` + 400 `QuestionOption` (`pilot` ∪ `production`) |
+| Módulo | `comingSoon: false` · en `ASSIGNABLE_MODULE_KEYS` · asignable (opt-in en UI; no en `DEFAULT_SELECTED_MODULES`) |
+| Arranque | `ensureEvaluationCatalog` → sync preguntas → `reconcilePersonalityMind24ModuleActive` (`isActive: true` mismo boot) |
+| Shortlist 60/20 | Solo editorial; **no** selección oficial de `production` |
+| Pendiente | Fase 4C interpretación narrativa · Fase 4D reporte Enterprise · normas/percentiles |
+
 **SHORTLIST EDITORIAL PROVISIONAL:  
 60 PRIORITARIOS / 20 RESERVAS**
 
@@ -499,4 +512,4 @@ Shortlist Regulación 3B: **058, 059, 060, 062, 063, 064** → A 058/059 · B 06
 **SHORTLIST EDITORIAL PROVISIONAL:  
 60 PRIORITARIOS / 20 RESERVAS**
 
-*Módulo inactivo. Sin selección oficial de 60. Sin consolidar revisiones. Sin integración funcional en este cierre. Documentos de revisión = soporte interno.*
+*Cierre histórico Fase 3C: módulo inactivo en ese momento. **Estado operativo vigente:** ver sección **FASE 4B — PILOTO FUNCIONAL** arriba. Shortlist 60/20 sigue editorial; sin selección oficial de 60 `production`.*

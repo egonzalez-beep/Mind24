@@ -151,15 +151,15 @@ if (!bank.ok) {
 
 check(PERSONALIDAD_MIND24_ITEMS.length === 80, 'piloto: 80 ítems en código (dim. 1–10, banco v1)');
 check(
-  PERSONALIDAD_MIND24_ITEMS.every((i) => i.bankStatus === 'draft'),
-  'piloto: todos bankStatus draft',
+  PERSONALIDAD_MIND24_ITEMS.every((i) => i.bankStatus === 'pilot'),
+  'piloto: todos bankStatus pilot',
 );
-check(personalityDraftItemsFlat().length === 80, 'accessor: 80 draft');
-check(personalityPilotItemsFlat().length === 0, 'accessor: 0 pilot');
+check(personalityDraftItemsFlat().length === 0, 'accessor: 0 draft');
+check(personalityPilotItemsFlat().length === 80, 'accessor: 80 pilot');
 check(personalityProductionItemsFlat().length === 0, 'accessor: 0 production');
-check(personalitySyncableItemsFlat().length === 0, 'accessor: 0 syncable (solo draft)');
+check(personalitySyncableItemsFlat().length === 80, 'accessor: 80 syncable (pilot)');
 check(personalityQuestionCount() === 0, 'personalityQuestionCount = 0 (production)');
-check(personalitySyncableQuestionCount() === 0, 'personalitySyncableQuestionCount = 0');
+check(personalitySyncableQuestionCount() === 80, 'personalitySyncableQuestionCount = 80');
 
 const ids = new Set(PERSONALIDAD_MIND24_ITEMS.map((i) => i.itemId));
 check(ids.size === PERSONALIDAD_MIND24_ITEMS.length, 'itemId únicos');
@@ -170,14 +170,31 @@ check(sorts.size === PERSONALIDAD_MIND24_ITEMS.length, 'sortOrder únicos');
 const inverseCount = PERSONALIDAD_MIND24_ITEMS.filter((i) => i.direction === 'inverse').length;
 check(inverseCount === 10, 'piloto: 10 inversos');
 
-console.log('\n--- CASO A: banco draft → sync omitido ---\n');
+console.log('\n--- CASO A: banco pilot completo → sync 80 ---\n');
 
-const dbDraft = createMockDb();
-const skipResult = await ensurePersonalityMind24Questions(dbDraft, 'mod-pm24');
-check(skipResult.skipped === true, 'draft: skipped = true');
-check(skipResult.reason === 'empty_item_bank', 'draft: reason empty_item_bank');
-check(skipResult.expected === 0, 'draft: expected = 0');
-check(dbDraft._questions.size === 0, 'draft: sin preguntas en BD mock');
+const dbFullPilot = createMockDb();
+const fullFirst = await ensurePersonalityMind24Questions(dbFullPilot, 'mod-pm24');
+check(fullFirst.skipped === false, 'pilot full: no skipped');
+check(fullFirst.expected === 80, 'pilot full: expected = 80');
+check(fullFirst.created === 80, 'pilot full: 80 Questions creadas');
+check(dbFullPilot._questions.size === 80, 'pilot full: 80 preguntas en BD mock');
+let optionCount = 0;
+for (const q of dbFullPilot._questions.values()) optionCount += q.options.size;
+check(optionCount === 400, 'pilot full: 400 QuestionOption');
+
+const fullSecond = await ensurePersonalityMind24Questions(dbFullPilot, 'mod-pm24');
+check(fullSecond.created === 0, 'pilot full idempotencia: created = 0');
+check(dbFullPilot._questions.size === 80, 'pilot full idempotencia: sigue 80 preguntas');
+
+console.log('\n--- CASO A2: solo draft en fixture → sync omitido ---\n');
+
+const dbDraftOnly = createMockDb();
+const skipResult = await ensurePersonalityMind24Questions(dbDraftOnly, 'mod-pm24', [
+  { ...PERSONALIDAD_MIND24_ITEMS[0], bankStatus: 'draft' },
+]);
+check(skipResult.skipped === true, 'draft fixture: skipped = true');
+check(skipResult.reason === 'empty_item_bank', 'draft fixture: reason empty_item_bank');
+check(dbDraftOnly._questions.size === 0, 'draft fixture: sin preguntas');
 
 console.log('\n--- CASO B: fixture 1 ítem pilot ---\n');
 
@@ -313,8 +330,8 @@ check(scoredAll.global === undefined, 'scoring: sin global');
 
 const scoredSyncDefault = scorePersonalityMind24Responses(rowsForItems(allItems));
 check(
-  scoredSyncDefault.form.totalItemsExpected === 0,
-  'scoring default (syncable vacío): totalItemsExpected 0',
+  scoredSyncDefault.form.totalItemsExpected === 80,
+  'scoring default (syncable pilot): totalItemsExpected 80',
 );
 
 const likertLabels = PERSONALIDAD_MIND24_SCALE.optionLabels;

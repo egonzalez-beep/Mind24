@@ -664,6 +664,24 @@ export async function ensurePersonalityMind24Questions(db, moduleId, syncableIte
   return { existing, created, expected, skipped: false, updated };
 }
 
+/**
+ * Tras sync de preguntas pilot/production: activa el módulo en el mismo arranque
+ * (evita depender de un segundo restart si la fila quedó inactiva con 0 ítems).
+ */
+export async function reconcilePersonalityMind24ModuleActive(db, moduleId, syncResult) {
+  if (!moduleId || syncResult?.skipped) return { isActive: false, reconciled: false };
+  const expected = syncResult.expected ?? 0;
+  if (expected <= 0) return { isActive: false, reconciled: false };
+  const existing = syncResult.existing ?? 0;
+  const shouldActivate =
+    existing >= expected && isModuleActiveInDb('personalidad_mind24');
+  await db.evaluationModule.update({
+    where: { id: moduleId },
+    data: { isActive: shouldActivate },
+  });
+  return { isActive: shouldActivate, reconciled: true };
+}
+
 /** Opciones Likert 1–5 estándar (para sync futuro). */
 export function personalityMind24LikertOptionsCreatePayload() {
   return PERSONALIDAD_MIND24_SCALE.optionLabels.map((label, j) => ({
@@ -703,6 +721,7 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   let personalidadMind24 = { existing: 0, created: 0, expected: 0, skipped: true };
   if (personalityModuleId) {
     personalidadMind24 = await ensurePersonalityMind24Questions(db, personalityModuleId);
+    await reconcilePersonalityMind24ModuleActive(db, personalityModuleId, personalidadMind24);
   }
 
   const cleaverCount = cleaverModuleId

@@ -66,6 +66,10 @@ check(
 );
 check(DEFAULT_SELECTED_MODULES.includes('cleaver'), 'DEFAULT_SELECTED_MODULES incluye cleaver');
 check(
+  !DEFAULT_SELECTED_MODULES.includes('personalidad_mind24'),
+  'DEFAULT_SELECTED_MODULES excluye personalidad_mind24 (opt-in piloto)',
+);
+check(
   eq(DEFAULT_SELECTED_MODULES, [
     'honestidad',
     'cleaver',
@@ -73,7 +77,7 @@ check(
     'sales_sjt',
     'digital_interview',
   ]),
-  'DEFAULT_SELECTED_MODULES restaura los 5 módulos asignables',
+  'DEFAULT_SELECTED_MODULES conserva los 5 módulos previos',
   DEFAULT_SELECTED_MODULES,
 );
 
@@ -114,9 +118,23 @@ for (const key of ['honestidad', 'terman', 'sales_sjt', 'digital_interview']) {
 check(isModuleActiveInDb('medida') === true, 'medida sigue activo en BD');
 check(isOfferableModuleKey('medida') === false, 'medida sigue fuera de asignación directa (sales hook)');
 check(isModuleActiveInDb('mrr') === false, 'módulo retirado sigue inactivo');
+check(isOfferableModuleKey('personalidad_mind24') === true, 'personalidad_mind24 es ofertable');
+check(isModuleActiveInDb('personalidad_mind24') === true, 'personalidad_mind24 activo en BD');
+check(isComingSoonModuleKey('personalidad_mind24') === false, 'personalidad_mind24 no es comingSoon');
 check(
-  eq(ASSIGNABLE_MODULE_KEYS, ['honestidad', 'cleaver', 'terman', 'sales_sjt', 'digital_interview']),
-  'ASSIGNABLE_MODULE_KEYS intacto',
+  filterAssignableModuleKeys(['personalidad_mind24', 'honestidad']).includes('personalidad_mind24'),
+  'filterAssignableModuleKeys incluye personalidad_mind24',
+);
+check(
+  eq(ASSIGNABLE_MODULE_KEYS, [
+    'honestidad',
+    'cleaver',
+    'terman',
+    'sales_sjt',
+    'personalidad_mind24',
+    'digital_interview',
+  ]),
+  'ASSIGNABLE_MODULE_KEYS incluye personalidad_mind24',
   ASSIGNABLE_MODULE_KEYS,
 );
 
