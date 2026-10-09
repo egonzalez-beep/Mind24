@@ -20,8 +20,7 @@ import {
 import {
   PERSONALIDAD_MIND24_CATALOG_VERSION,
   PERSONALIDAD_MIND24_SCALE,
-  personalityProductionItemsFlat,
-  personalityQuestionCount,
+  personalitySyncableItemsFlat,
 } from '../data/personalityMind24Data.js';
 
 export { CLEAVER_CATALOG_VERSION };
@@ -419,14 +418,183 @@ async function ensureSalesSjtQuestions(db, moduleId) {
   return { existing, created: flat.length, expected };
 }
 
+function personalityMind24QuestionMetadata(item) {
+  return {
+    personalityItemId: item.itemId,
+    dimensionId: item.dimensionId,
+    direction: item.direction,
+    bankStatus: item.bankStatus,
+  };
+}
+
+function personalityItemIdFromQuestion(question) {
+  const meta = question?.metadata;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null;
+  return typeof meta.personalityItemId === 'string' ? meta.personalityItemId : null;
+}
+
+function personalityMetadataEquals(stored, item) {
+  const next = personalityMind24QuestionMetadata(item);
+  if (!stored || typeof stored !== 'object') return false;
+  return (
+    stored.personalityItemId === next.personalityItemId &&
+    stored.dimensionId === next.dimensionId &&
+    stored.direction === next.direction &&
+    stored.bankStatus === next.bankStatus
+  );
+}
+
+function likertOptionNeedsUpdate(option, canonical) {
+  return (
+    option.label !== canonical.label ||
+    (option.value ?? '') !== canonical.value ||
+    Number(option.sortOrder) !== canonical.sortOrder
+  );
+}
+
+function personalityMind24QuestionContentDrift(flat, existingQuestions, likertPayload) {
+  const byItemId = new Map();
+  for (const question of existingQuestions) {
+    const itemId = personalityItemIdFromQuestion(question);
+    if (itemId) byItemId.set(itemId, question);
+  }
+
+  const syncableIds = new Set(flat.map((item) => item.itemId));
+  if (byItemId.size !== flat.length) return true;
+
+  for (const question of existingQuestions) {
+    const itemId = personalityItemIdFromQuestion(question);
+    if (!itemId || !syncableIds.has(itemId)) return true;
+  }
+
+  for (const item of flat) {
+    const question = byItemId.get(item.itemId);
+    if (!question) return true;
+    if (question.text !== item.text) return true;
+    if (Number(question.sortOrder) !== item.sortOrder) return true;
+    if (!personalityMetadataEquals(question.metadata, item)) return true;
+
+    const optionsBySort = new Map(
+      (question.options || []).map((opt) => [Number(opt.sortOrder), opt]),
+    );
+    for (const canonical of likertPayload) {
+      const option = optionsBySort.get(canonical.sortOrder);
+      if (!option || likertOptionNeedsUpdate(option, canonical)) return true;
+    }
+  }
+
+  return false;
+}
+
+async function personalityMind24BankNeedsResync(db, moduleId, expected, flat) {
+  const existing = await db.question.count({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+  });
+  if (existing !== expected) return true;
+
+  const mod = await db.evaluationModule.findUnique({
+    where: { id: moduleId },
+    select: { description: true },
+  });
+  const desc = String(mod?.description || '');
+  if (!desc.includes(`personalidad_mind24:v${PERSONALIDAD_MIND24_CATALOG_VERSION}`)) return true;
+
+  const existingQuestions = await db.question.findMany({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+    include: { options: { orderBy: { sortOrder: 'asc' } } },
+  });
+  const likertPayload = personalityMind24LikertOptionsCreatePayload();
+  return personalityMind24QuestionContentDrift(flat, existingQuestions, likertPayload);
+}
+
+async function upsertPersonalityMind24Question(db, moduleId, item, existingQuestion, likertPayload) {
+  const metadata = personalityMind24QuestionMetadata(item);
+  if (!existingQuestion) {
+    await db.question.create({
+      data: {
+        moduleId,
+        type: 'MULTIPLE_CHOICE',
+        text: item.text,
+        metadata,
+        sortOrder: item.sortOrder,
+        options: {
+          create: likertPayload.map((opt) => ({
+            label: opt.label,
+            value: opt.value,
+            sortOrder: opt.sortOrder,
+          })),
+        },
+      },
+    });
+    return { created: 1, updated: 0 };
+  }
+
+  if (
+    existingQuestion.text !== item.text ||
+    Number(existingQuestion.sortOrder) !== item.sortOrder ||
+    !personalityMetadataEquals(existingQuestion.metadata, item)
+  ) {
+    await db.question.update({
+      where: { id: existingQuestion.id },
+      data: {
+        text: item.text,
+        sortOrder: item.sortOrder,
+        metadata,
+      },
+    });
+  }
+
+  const optionsBySort = new Map(
+    (existingQuestion.options || []).map((opt) => [Number(opt.sortOrder), opt]),
+  );
+  for (const canonical of likertPayload) {
+    const option = optionsBySort.get(canonical.sortOrder);
+    if (!option) {
+      await db.questionOption.create({
+        data: {
+          questionId: existingQuestion.id,
+          label: canonical.label,
+          value: canonical.value,
+          sortOrder: canonical.sortOrder,
+        },
+      });
+    } else if (likertOptionNeedsUpdate(option, canonical)) {
+      await db.questionOption.update({
+        where: { id: option.id },
+        data: {
+          label: canonical.label,
+          value: canonical.value,
+          sortOrder: canonical.sortOrder,
+        },
+      });
+    }
+  }
+
+  return { created: 0, updated: 1 };
+}
+
 /**
- * Sync Personalidad Mind24 — formulario fijo v1 (ítems production en catálogo).
- * No crea preguntas mientras el banco esté vacío.
+ * Sync Personalidad Mind24 — ítems pilot ∪ production (idempotente).
+ * @param {object} db
+ * @param {string} moduleId
+ * @param {Array<object>|null|undefined} syncableItemsOverride Solo pruebas (fixtures).
  */
-async function ensurePersonalityMind24Questions(db, moduleId) {
-  const flat = personalityProductionItemsFlat();
-  const expected = personalityQuestionCount();
-  if (expected === 0 || flat.length === 0) {
+const PERSONALITY_SYNCABLE_STATUSES = new Set(['pilot', 'production']);
+
+function personalitySyncableOnly(items) {
+  return items.filter((item) => PERSONALITY_SYNCABLE_STATUSES.has(item.bankStatus));
+}
+
+export async function ensurePersonalityMind24Questions(db, moduleId, syncableItemsOverride = undefined) {
+  const raw =
+    syncableItemsOverride === undefined
+      ? personalitySyncableItemsFlat()
+      : Array.isArray(syncableItemsOverride)
+        ? syncableItemsOverride
+        : [];
+  const flat = personalitySyncableOnly(raw).sort((a, b) => a.sortOrder - b.sortOrder);
+  const expected = flat.length;
+  if (expected === 0) {
     return {
       existing: 0,
       created: 0,
@@ -436,15 +604,64 @@ async function ensurePersonalityMind24Questions(db, moduleId) {
     };
   }
 
+  if (!(await personalityMind24BankNeedsResync(db, moduleId, expected, flat))) {
+    const existing = await db.question.count({
+      where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+    });
+    return { existing, created: 0, expected, skipped: false, updated: 0 };
+  }
+
+  const existingQuestions = await db.question.findMany({
+    where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
+    include: { options: { orderBy: { sortOrder: 'asc' } } },
+  });
+
+  const byItemId = new Map();
+  for (const question of existingQuestions) {
+    const itemId = personalityItemIdFromQuestion(question);
+    if (itemId) byItemId.set(itemId, question);
+  }
+
+  const syncableIds = new Set(flat.map((item) => item.itemId));
+  for (const question of existingQuestions) {
+    const itemId = personalityItemIdFromQuestion(question);
+    if (itemId && !syncableIds.has(itemId)) {
+      await db.question.delete({ where: { id: question.id } });
+      byItemId.delete(itemId);
+    }
+  }
+
+  const likertPayload = personalityMind24LikertOptionsCreatePayload();
+  let created = 0;
+  let updated = 0;
+  for (const item of flat) {
+    const existingQuestion = byItemId.get(item.itemId) || null;
+    const result = await upsertPersonalityMind24Question(
+      db,
+      moduleId,
+      item,
+      existingQuestion,
+      likertPayload,
+    );
+    created += result.created;
+    updated += result.updated;
+  }
+
+  const cat = MODULE_CATALOG.personalidad_mind24;
+  if (cat) {
+    await db.evaluationModule.update({
+      where: { id: moduleId },
+      data: {
+        description: `${cat.description} [personalidad_mind24:v${PERSONALIDAD_MIND24_CATALOG_VERSION}]`,
+      },
+    });
+  }
+
   const existing = await db.question.count({
     where: { moduleId, type: 'MULTIPLE_CHOICE', isActive: true },
   });
 
-  // Implementación completa (create/update) en fase de banco de reactivos.
-  console.warn(
-    `[catalog] personalidad_mind24: banco con ${flat.length} ítems production; sync BD pendiente de implementación.`,
-  );
-  return { existing, created: 0, expected, skipped: false, pendingImplementation: true };
+  return { existing, created, expected, skipped: false, updated };
 }
 
 /** Opciones Likert 1–5 estándar (para sync futuro). */
@@ -486,15 +703,6 @@ export async function ensureEvaluationCatalog(db = defaultPrisma) {
   let personalidadMind24 = { existing: 0, created: 0, expected: 0, skipped: true };
   if (personalityModuleId) {
     personalidadMind24 = await ensurePersonalityMind24Questions(db, personalityModuleId);
-    const cat = MODULE_CATALOG.personalidad_mind24;
-    if (cat) {
-      await db.evaluationModule.update({
-        where: { id: personalityModuleId },
-        data: {
-          description: `${cat.description} [personalidad_mind24:v${PERSONALIDAD_MIND24_CATALOG_VERSION}]`,
-        },
-      });
-    }
   }
 
   const cleaverCount = cleaverModuleId

@@ -1,12 +1,11 @@
 import {
   PERSONALIDAD_MIND24_CATALOG_VERSION,
   PERSONALIDAD_MIND24_DIMENSIONS,
-  PERSONALIDAD_MIND24_FORM_ITEM_COUNT,
-  PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION,
   PERSONALIDAD_MIND24_MODULE_KEY,
   PERSONALIDAD_MIND24_SCALE,
   personalityExpectedCountByDimension,
   personalityProductionItemsFlat,
+  personalitySyncableItemsFlat,
 } from '../data/personalityMind24Data.js';
 
 const FORBIDDEN_SCORE_KEYS = new Set([
@@ -61,8 +60,7 @@ function roundMean(values) {
   return Math.round((sum / values.length) * 10) / 10;
 }
 
-function emptyDimensionScores() {
-  const expectedByDim = personalityExpectedCountByDimension();
+function emptyDimensionScores(expectedByDim) {
   const dimensions = {};
   for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
     dimensions[dim.dimensionId] = {
@@ -76,6 +74,20 @@ function emptyDimensionScores() {
     };
   }
   return dimensions;
+}
+
+function buildPersonalityFormMeta(expectedItems) {
+  const byDim = personalityExpectedCountByDimension(expectedItems);
+  const total = expectedItems.length;
+  const perDimCounts = Object.values(byDim).filter((c) => c > 0);
+  const uniform =
+    perDimCounts.length > 0 && perDimCounts.every((c) => c === perDimCounts[0]);
+  return {
+    itemsPerDimension: uniform ? perDimCounts[0] : null,
+    totalItemsExpected: total,
+    productionItemsInCatalog: personalityProductionItemsFlat().length,
+    syncableItemsInCatalog: personalitySyncableItemsFlat().length,
+  };
 }
 
 /**
@@ -137,9 +149,12 @@ export function buildPersonalityApplicationQualityMeta(timingSource, completenes
 /**
  * Califica respuestas Likert 1–5 por dimensión (sin puntaje global).
  * @param {Array<{ questionId?: string, question: object, selectedOption: object|null }>} rows
+ * @param {{ expectedItems?: Array<object> }} [options] Ítems del formulario aplicado (default: syncable)
  */
-export function scorePersonalityMind24Responses(rows) {
-  const dimensions = emptyDimensionScores();
+export function scorePersonalityMind24Responses(rows, options = {}) {
+  const expectedItems = options.expectedItems ?? personalitySyncableItemsFlat();
+  const expectedByDim = personalityExpectedCountByDimension(expectedItems);
+  const dimensions = emptyDimensionScores(expectedByDim);
   const keyedByDimension = Object.fromEntries(
     PERSONALIDAD_MIND24_DIMENSIONS.map((d) => [d.dimensionId, []]),
   );
@@ -174,15 +189,9 @@ export function scorePersonalityMind24Responses(rows) {
     bucket.mean = roundMean(values);
   }
 
-  const productionCount = personalityProductionItemsFlat().length;
-
   return {
     catalogVersion: PERSONALIDAD_MIND24_CATALOG_VERSION,
-    form: {
-      itemsPerDimension: PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION,
-      totalItemsExpected: PERSONALIDAD_MIND24_FORM_ITEM_COUNT,
-      productionItemsInCatalog: productionCount,
-    },
+    form: buildPersonalityFormMeta(expectedItems),
     dimensions,
     itemResponses,
   };

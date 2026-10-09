@@ -750,23 +750,66 @@ export function personalityItemsFlat() {
   return [...PERSONALIDAD_MIND24_ITEMS].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-/** Ítems que conforman el formulario fijo v1 (solo bankStatus production). */
-export function personalityProductionItemsFlat() {
-  return personalityItemsFlat().filter((item) => item.bankStatus === 'production');
+const SYNCABLE_BANK_STATUSES = new Set(['pilot', 'production']);
+
+function personalityItemsWithBankStatus(bankStatus) {
+  return personalityItemsFlat().filter((item) => item.bankStatus === bankStatus);
 }
 
+/** Ítems en edición (no sincronizables a BD). */
+export function personalityDraftItemsFlat() {
+  return personalityItemsWithBankStatus('draft');
+}
+
+/** Ítems piloto (sincronizables). */
+export function personalityPilotItemsFlat() {
+  return personalityItemsWithBankStatus('pilot');
+}
+
+/** Ítems que conforman el formulario fijo v1 (solo bankStatus production). */
+export function personalityProductionItemsFlat() {
+  return personalityItemsWithBankStatus('production');
+}
+
+/** pilot ∪ production — excluye draft. */
+export function personalityMind24SyncableItemsFlat() {
+  return personalityItemsFlat().filter((item) => SYNCABLE_BANK_STATUSES.has(item.bankStatus));
+}
+
+/** Alias corto alineado con otros módulos. */
+export function personalitySyncableItemsFlat() {
+  return personalityMind24SyncableItemsFlat();
+}
+
+/** Preguntas activas en catálogo de producción (formulario live). */
 export function personalityQuestionCount() {
   return personalityProductionItemsFlat().length;
 }
 
-export function personalityExpectedCountByDimension() {
+/** Preguntas sincronizables (piloto o producción). */
+export function personalitySyncableQuestionCount() {
+  return personalitySyncableItemsFlat().length;
+}
+
+/**
+ * Conteo esperado por dimensión a partir de un subconjunto de ítems.
+ * @param {typeof PERSONALIDAD_MIND24_ITEMS} [items] default: production
+ */
+export function personalityExpectedCountByDimension(items) {
+  const source =
+    items === undefined ? personalityProductionItemsFlat() : Array.isArray(items) ? items : [];
   const counts = Object.fromEntries(
     PERSONALIDAD_MIND24_DIMENSIONS.map((d) => [d.dimensionId, 0]),
   );
-  for (const item of personalityProductionItemsFlat()) {
+  for (const item of source) {
     if (counts[item.dimensionId] != null) counts[item.dimensionId] += 1;
   }
   return counts;
+}
+
+/** Conteo esperado por dimensión del conjunto sincronizable actual. */
+export function personalitySyncableExpectedCountByDimension() {
+  return personalityExpectedCountByDimension(personalitySyncableItemsFlat());
 }
 
 export function validatePersonalityMind24Item(item) {

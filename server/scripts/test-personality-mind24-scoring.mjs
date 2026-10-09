@@ -5,6 +5,7 @@
 import {
   PERSONALIDAD_MIND24_DIMENSIONS,
   PERSONALIDAD_MIND24_SCALE,
+  personalityItemsFlat,
 } from '../src/data/personalityMind24Data.js';
 import {
   assertNoForbiddenScoreFields,
@@ -89,6 +90,32 @@ for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
 check(allDimScored.global === undefined, 'ausencia de global en scoring');
 check(allDimScored.percentScore === undefined, 'ausencia de percentScore');
 check(allDimScored.percentile === undefined, 'ausencia de percentile');
+
+const pilotFormItems = personalityItemsFlat().map((item) => ({ ...item, bankStatus: 'pilot' }));
+const pilotFormRows = pilotFormItems.map((item) =>
+  row({ questionId: item.itemId, dimensionId: item.dimensionId, direction: item.direction, rawValue: 3 }),
+);
+const pilotScored = scorePersonalityMind24Responses(pilotFormRows, { expectedItems: pilotFormItems });
+check(pilotScored.form.totalItemsExpected === 80, 'form piloto: totalItemsExpected 80');
+check(pilotScored.form.itemsPerDimension === 8, 'form piloto: itemsPerDimension 8');
+check(
+  pilotScored.dimensions.logro_persistencia.nExpected === 8,
+  'form piloto: nExpected 8 por dimensión',
+);
+
+const prodFormItems = [];
+for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
+  const dimItems = personalityItemsFlat()
+    .filter((item) => item.dimensionId === dim.dimensionId)
+    .slice(0, 6);
+  prodFormItems.push(...dimItems.map((item) => ({ ...item, bankStatus: 'production' })));
+}
+const prodFormRows = prodFormItems.map((item) =>
+  row({ questionId: item.itemId, dimensionId: item.dimensionId, direction: item.direction, rawValue: 4 }),
+);
+const prodScored = scorePersonalityMind24Responses(prodFormRows, { expectedItems: prodFormItems });
+check(prodScored.form.totalItemsExpected === 60, 'form producción: totalItemsExpected 60');
+check(prodScored.form.itemsPerDimension === 6, 'form producción: itemsPerDimension 6');
 
 const attempt = buildPersonalityMind24AttemptScores(allDimScored, {
   completeness: { expectedCount: 10, answeredCount: 10, unansweredCount: 0, completenessRate: 100 },
