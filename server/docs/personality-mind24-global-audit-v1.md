@@ -1,15 +1,20 @@
 # Personalidad Mind24 — Auditoría global del banco inicial v1
 
-**Fase:** 3A (auditoría) + 3B (consolidación editorial) + 3C (paquete de revisión como referencia interna)  
+**Fase:** 3A (auditoría) + 3B (consolidación editorial) + 3C (paquete de revisión) + 4A.2 (catálogo piloto / scoring backend)  
 **Baseline contenido:** PERSONALIDAD MIND24 — FASE 2 CONTENT BASELINE v1 CLOSED  
 **Blueprint:** v3.6  
 **Commit de referencia Fase 2:** `44c843e0eb35c49f5eed91fc5f07a49e5b6faec4`  
+**Commit de referencia Fase 4A.2:** `7528ab28bfc5fa46b0a0337bd854dacf8327ec27`  
 **Fecha:** 2026-10-02  
 **Alcance:** 80 reactivos `draft` · 10 dimensiones · 8 por dimensión · 10 inversos  
 
 **FASE 3B — CONSOLIDACIÓN EDITORIAL CLOSED**
 
 **FASE 3C — REVIEW PACKAGE PREPARED / INTERNAL REFERENCE**
+
+**FASE 4A.2 — PILOT CATALOG + SCORING PREPARATION CLOSED**
+
+Sync idempotente `pilot` ∪ `production` → `Question` / `QuestionOption`; accessors draft/pilot/production/syncable; expected counts flexibles en scoring (80 piloto / 60 producción). Banco real sigue 80× `draft`; módulo inactivo; sin runtime candidato.
 
 **SHORTLIST EDITORIAL PROVISIONAL:  
 60 PRIORITARIOS / 20 RESERVAS**
