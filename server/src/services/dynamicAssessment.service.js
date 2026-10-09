@@ -19,6 +19,21 @@ import {
   applyReliabilityToAttemptPayload,
   computeAttemptSpeedReliability,
 } from './attemptReliability.service.js';
+import {
+  buildPersonalityApplicationQualityMeta,
+  buildPersonalityMind24AttemptScores,
+  computePersonalityMind24Completeness,
+  scorePersonalityMind24Responses,
+} from './personalityMind24Scoring.service.js';
+import {
+  claimPersonalityPresentationOrder,
+  orderQuestionsByPresentation,
+  orderResponseRowsByPresentation,
+  personalityExpectedItemsFromQuestions,
+  readPersonalityPresentationOrder,
+  resolvePersonalityAttemptForm,
+  resolvePersonalityPresentationOrder,
+} from './personalityMind24Presentation.service.js';
 import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
 
 const questionInclude = {
@@ -50,14 +65,108 @@ function clientQuestionMetadata(metadata, moduleKey) {
     }
     return Object.keys(out).length ? out : null;
   }
+  if (rk === 'personalidad_mind24') return null;
   return metadata;
 }
 
 function clientOptionMetadata(metadata, moduleKey) {
   if (!metadata || typeof metadata !== 'object') return null;
   const rk = resolveModuleKey(moduleKey);
-  if (rk === 'sales_sjt' || rk === 'terman') return null;
+  if (rk === 'sales_sjt' || rk === 'terman' || rk === 'personalidad_mind24') return null;
   return metadata;
+}
+
+export const PERSONALITY_FORBIDDEN_CLIENT_KEYS = new Set([
+  'dimensionId',
+  'direction',
+  'personalityItemId',
+  'bankStatus',
+]);
+
+export function assertNoPersonalityScoringMetadata(payload) {
+  const found = [];
+  const walk = (value, path) => {
+    if (value == null || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => walk(v, `${path}[${i}]`));
+      return;
+    }
+    for (const [key, nested] of Object.entries(value)) {
+      if (PERSONALITY_FORBIDDEN_CLIENT_KEYS.has(key)) found.push(`${path}.${key}`);
+      walk(nested, `${path}.${key}`);
+    }
+  };
+  walk(payload, 'payload');
+  return found;
+}
+
+async function answeredQuestionIdsForAttempt(attemptId) {
+  const rows = await prisma.candidateResponse.findMany({
+    where: { attemptId },
+    select: { questionId: true },
+  });
+  return rows.map((r) => r.questionId);
+}
+
+async function ensurePersonalityPresentationForAttempt(attempt, questions, options = {}) {
+  const stored = readPersonalityPresentationOrder(attempt);
+  if (stored?.length) return stored;
+
+  const { presentationOrder, created } = resolvePersonalityPresentationOrder(
+    attempt,
+    questions,
+    options,
+  );
+  if (!created) return presentationOrder;
+
+  const { presentationOrder: canonical } = await claimPersonalityPresentationOrder(
+    prisma,
+    attempt.id,
+    presentationOrder,
+  );
+  return canonical;
+}
+
+async function buildPersonalityQuestionsPayload(attempt, catalogQuestions, moduleKey, { resumed }) {
+  let form = await resolvePersonalityAttemptForm(
+    prisma,
+    attempt,
+    catalogQuestions,
+    questionInclude,
+  );
+
+  if (!form.frozen) {
+    if (!catalogQuestions?.length) {
+      const err = new Error('DYNAMIC_ENGINE_NOT_AVAILABLE');
+      err.code = 'DYNAMIC_ENGINE_NOT_AVAILABLE';
+      throw err;
+    }
+    const presentationOrder = await ensurePersonalityPresentationForAttempt(
+      attempt,
+      catalogQuestions,
+    );
+    form = {
+      frozen: false,
+      presentationOrder,
+      questions: orderQuestionsByPresentation(catalogQuestions, presentationOrder),
+    };
+  }
+
+  const presentationOrder = form.presentationOrder;
+  const ordered = form.questions;
+  const total = ordered.length;
+  const answeredQuestionIds =
+    resumed && attempt?.id ? await answeredQuestionIdsForAttempt(attempt.id) : [];
+  return {
+    questions: ordered.map((q, idx) => ({
+      ...serializeQuestion(q, moduleKey),
+      presentationIndex: idx + 1,
+      presentationTotal: total,
+    })),
+    presentationOrder,
+    answeredQuestionIds,
+    totalItems: total,
+  };
 }
 
 export function serializeQuestion(q, moduleKey = '') {
@@ -125,12 +234,25 @@ export async function getAttemptEnginePayload(userId, attemptId) {
   const mod = attempt.moduleKey
     ? await getActiveModuleWithQuestions(attempt.moduleKey)
     : null;
-  if (!mod?.questions?.length) {
+  const resolved = resolveModuleKey(attempt.moduleKey || '');
+  const personalityStoredOrder =
+    resolved === 'personalidad_mind24' ? readPersonalityPresentationOrder(attempt) : null;
+  if (!mod?.questions?.length && !personalityStoredOrder?.length) {
     const err = new Error('DYNAMIC_ENGINE_NOT_AVAILABLE');
     err.code = 'DYNAMIC_ENGINE_NOT_AVAILABLE';
     throw err;
   }
-  const answered = new Set(attempt.candidateResponses.map((r) => r.questionId));
+  let questionsPayload = (mod?.questions || []).map((q) => serializeQuestion(q, resolved));
+  let answeredQuestionIds = attempt.candidateResponses.map((r) => r.questionId);
+
+  if (resolved === 'personalidad_mind24') {
+    const personality = await buildPersonalityQuestionsPayload(attempt, mod.questions, resolved, {
+      resumed: true,
+    });
+    questionsPayload = personality.questions;
+    answeredQuestionIds = personality.answeredQuestionIds;
+  }
+
   return {
     engine: 'dynamic',
     attemptId: attempt.id,
@@ -139,8 +261,10 @@ export async function getAttemptEnginePayload(userId, attemptId) {
     moduleTitle: mod.title,
     timeLimitSec: attempt.timeLimitSec,
     status: attempt.status,
-    questions: mod.questions.map((q) => serializeQuestion(q, attempt.moduleKey || '')),
-    answeredQuestionIds: [...answered],
+    assessmentMode: resolved === 'personalidad_mind24' ? 'personalidad_mind24' : undefined,
+    totalItems: resolved === 'personalidad_mind24' ? questionsPayload.length : undefined,
+    questions: questionsPayload,
+    answeredQuestionIds,
   };
 }
 
@@ -189,6 +313,23 @@ export async function buildDynamicStartPayload({
 
   const meta = moduleMetaForKey(moduleKey);
   const resolved = resolveModuleKey(moduleKey);
+  const attempt = attemptId
+    ? await prisma.assessmentAttempt.findUnique({ where: { id: attemptId } })
+    : null;
+
+  let questionsForClient = mod.questions.map((q) => serializeQuestion(q, resolved));
+  let answeredQuestionIds = [];
+
+  if (resolved === 'personalidad_mind24' && attempt) {
+    const personality = await buildPersonalityQuestionsPayload(attempt, mod.questions, resolved, {
+      resumed: !!resumed,
+    });
+    questionsForClient = personality.questions;
+    answeredQuestionIds = personality.answeredQuestionIds;
+  } else if (resumed && attemptId) {
+    answeredQuestionIds = await answeredQuestionIdsForAttempt(attemptId);
+  }
+
   const base = {
     engine: 'dynamic',
     attemptId,
@@ -198,8 +339,8 @@ export async function buildDynamicStartPayload({
     timeLimitSec: timeLimitSec ?? 900,
     startedAt,
     resumed,
-    questions: mod.questions.map((q) => serializeQuestion(q, resolved)),
-    answeredQuestionIds: [],
+    questions: questionsForClient,
+    answeredQuestionIds,
   };
 
   if (resolved === 'terman') {
@@ -211,6 +352,11 @@ export async function buildDynamicStartPayload({
   if (resolved === 'sales_sjt') {
     base.assessmentMode = 'sales_sjt';
     base.totalScenarios = mod.questions.length;
+  }
+
+  if (resolved === 'personalidad_mind24') {
+    base.assessmentMode = 'personalidad_mind24';
+    base.totalItems = mod.questions.length;
   }
 
   return base;
@@ -370,13 +516,26 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     timedOut,
   });
 
+  let personalityForm = null;
+  if (resolvedKey === 'personalidad_mind24') {
+    personalityForm = await resolvePersonalityAttemptForm(
+      prisma,
+      attempt,
+      mod?.questions || [],
+      questionInclude,
+    );
+  }
+
   const questionCount =
-    resolvedKey === 'terman'
-      ? (mod?.questions || []).length
+    resolvedKey === 'personalidad_mind24' && personalityForm?.presentationOrder?.length
+      ? personalityForm.presentationOrder.length
       : (mod?.questions || []).length;
 
   if (resolvedKey !== 'terman' && !timedOut) {
-    const requiredIds = new Set((mod?.questions || []).map((q) => q.id));
+    const requiredIds =
+      resolvedKey === 'personalidad_mind24' && personalityForm?.presentationOrder?.length
+        ? new Set(personalityForm.presentationOrder)
+        : new Set((mod?.questions || []).map((q) => q.id));
     const answeredIds = new Set(attempt.candidateResponses.map((r) => r.questionId));
     for (const qid of requiredIds) {
       if (!answeredIds.has(qid)) {
@@ -492,6 +651,70 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     interpretation = buildTermanHrInterpretation(scoring);
   }
 
+  if (resolvedKey === 'personalidad_mind24') {
+    diagComplete(attemptId, 'scoring:start', { module: 'personalidad_mind24' });
+    if (!personalityForm) {
+      personalityForm = await resolvePersonalityAttemptForm(
+        prisma,
+        attempt,
+        mod?.questions || [],
+        questionInclude,
+      );
+    }
+    let presentationOrder = personalityForm.presentationOrder;
+    let formQuestions = personalityForm.questions;
+    if (!presentationOrder?.length) {
+      presentationOrder = await ensurePersonalityPresentationForAttempt(
+        attempt,
+        mod?.questions || [],
+      );
+      formQuestions = orderQuestionsByPresentation(mod?.questions || [], presentationOrder);
+    }
+
+    const pmRows = await prisma.candidateResponse.findMany({
+      where: { attemptId: attempt.id },
+      include: {
+        selectedOption: true,
+        question: { select: { metadata: true, sortOrder: true, id: true, text: true } },
+      },
+    });
+    const orderedRows = orderResponseRowsByPresentation(pmRows, presentationOrder);
+    const expectedItems = personalityExpectedItemsFromQuestions(formQuestions);
+
+    let scoring;
+    try {
+      scoring = scorePersonalityMind24Responses(
+        orderedRows.map((r) => ({
+          questionId: r.questionId,
+          question: r.question,
+          selectedOption: r.selectedOption,
+        })),
+        { expectedItems },
+      );
+    } catch (scoreErr) {
+      diagCompleteFail(attemptId, 'scoring:personalidad_mind24', scoreErr);
+      throw scoreErr;
+    }
+
+    const completeness = computePersonalityMind24Completeness(
+      formQuestions.map((q) => q.id),
+      pmRows,
+    );
+    const applicationQuality = buildPersonalityApplicationQualityMeta(reliability, completeness);
+    attemptScores = buildPersonalityMind24AttemptScores(scoring, applicationQuality);
+    interpretation = {
+      verdict: 'Evaluación completada',
+      badge: '✓',
+      description: 'Personalidad laboral Mind24: 10 dimensiones calculadas.',
+      dimensionCount: Object.keys(scoring.dimensions || {}).length,
+    };
+    diagComplete(attemptId, 'scoring:ok', {
+      module: 'personalidad_mind24',
+      totalItemsExpected: scoring.form?.totalItemsExpected,
+      responseRows: pmRows.length,
+    });
+  }
+
   if (resolvedKey === 'sales_sjt') {
     const sjtRows = await prisma.candidateResponse.findMany({
       where: { attemptId: attempt.id },
@@ -517,7 +740,10 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
 
   let persistedScores = attemptScores?.scores ?? null;
   let persistedFlags = [];
-  if (attemptScores?.scores) {
+  if (resolvedKey === 'personalidad_mind24' && attemptScores?.scores) {
+    persistedScores = attemptScores.scores;
+    persistedFlags = [];
+  } else if (attemptScores?.scores) {
     const merged = applyReliabilityToAttemptPayload(
       attemptScores.scores,
       [],
