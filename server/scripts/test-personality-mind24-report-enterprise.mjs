@@ -1,5 +1,5 @@
 /**
- * Regresión — reporte Personalidad Mind24 (Fase 4C.2).
+ * Regresión — reporte Personalidad Mind24 (Fase 4C.2 / 4C.2.1).
  * Ejecutar: node server/scripts/test-personality-mind24-report-enterprise.mjs
  */
 import fs from 'fs';
@@ -18,6 +18,9 @@ import {
   intraprofileHasContrast,
   intraprofileTrends,
   PERSONALITY_METHODOLOGY_NOTE,
+  PM24_RADAR_SHORT_LABELS,
+  radarRadiusForMean,
+  radarVertexPoints,
   rankPersonalityDimensionsByMean,
 } from '../src/reports/fragments/personalityMind24Report.fragment.js';
 
@@ -111,13 +114,20 @@ function buildValidScores(meanOverrides = {}) {
   };
 }
 
-console.log('\n=== Personalidad Mind24 — reporte Enterprise (4C.2) ===\n');
+console.log('\n=== Personalidad Mind24 — reporte Enterprise (4C.2.1) ===\n');
 
 console.log('--- Escala visual barras 1–5 ---\n');
 
 check(barWidthPct(1.0) === 0, 'barWidth mean 1.0 → 0%');
 check(barWidthPct(3.0) === 50, 'barWidth mean 3.0 → 50%');
 check(barWidthPct(5.0) === 100, 'barWidth mean 5.0 → 100%');
+
+console.log('\n--- Radar escala 1–5 ---\n');
+
+check(radarRadiusForMean(1, 80) === 0, 'radar mean 1 → radio 0');
+check(radarRadiusForMean(3, 80) === 40, 'radar mean 3 → radio 50% del máximo');
+check(radarRadiusForMean(5, 80) === 80, 'radar mean 5 → radio máximo');
+check(PM24_RADAR_SHORT_LABELS.length === 10, '10 labels cortos radar');
 
 console.log('\n--- CASO A: scores válidos 80/80 (contraste claro) ---\n');
 
@@ -148,10 +158,22 @@ check(htmlA.includes('width:50.0%;'), 'barra 3.0 normalizada (50%)');
 check(htmlA.includes('left:25%;'), 'marca escala 2 al 25%');
 check(htmlA.includes('4.2 / 5'), 'mean visible en gráfica');
 check(htmlA.includes(PERSONALITY_METHODOLOGY_NOTE), 'nota metodológica');
+check(htmlA.includes('Mapa general del perfil'), 'sección radar');
+check(htmlA.includes('Perfil dimensional'), 'sección barras');
+check(htmlA.includes('pm24-radar'), 'radar SVG presente');
+check((htmlA.match(/pm24-radar-vertex/g) || []).length === 10, 'radar: 10 vértices');
+check((htmlA.match(/pm24-radar-ring/g) || []).length === 4, 'radar: anillos escala 2–5');
+check((htmlA.match(/class="pm24-radar-axis"/g) || []).length === 10, 'radar: 10 ejes');
+for (const label of PM24_RADAR_SHORT_LABELS) {
+  check(htmlA.includes(label), `radar label: ${label}`);
+}
+check(radarVertexPoints(extractedA.dimensionRows).length === 10, 'radarVertexPoints: 10');
+check(!htmlA.includes('Desglose por dimensión'), 'sin tabla desglose redundante');
+check(!htmlA.match(/\b8\s\/\s8\b/), 'sin 8/8 repetido por dimensión');
+check(htmlA.includes('Aplicación completa: 80/80 respuestas.'), 'nota completitud compacta');
 check(htmlA.includes('Tendencias relativamente más expresadas'), 'sección más expresadas');
 check(htmlA.includes('Tendencias relativamente menos expresadas'), 'sección menos expresadas');
-check(htmlA.includes('Desglose por dimensión'), 'tabla desglose');
-check(htmlA.includes('8 / 8'), 'nAnswered/nExpected en tabla');
+check(htmlA.includes('pm24-interpret-slot'), 'espacio reservado 4C.3');
 
 const trendsA = intraprofileTrends(extractedA.dimensionRows);
 check(trendsA.hasContrast === true, 'CASO A: hay contraste intraperfil');

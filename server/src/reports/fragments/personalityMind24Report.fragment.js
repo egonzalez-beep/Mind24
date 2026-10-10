@@ -18,6 +18,169 @@ const SCALE_MIN = PERSONALIDAD_MIND24_SCALE.min;
 const SCALE_MAX = PERSONALIDAD_MIND24_SCALE.max;
 const SCALE_SPAN = SCALE_MAX - SCALE_MIN;
 
+/** Etiquetas cortas solo para el radar (orden canónico). */
+export const PM24_RADAR_SHORT_LABELS = [
+  'Logro',
+  'Orden',
+  'Autonomía',
+  'Influencia',
+  'Sociabilidad',
+  'Liderazgo',
+  'Normas',
+  'Regulación',
+  'Dinamismo',
+  'Adaptabilidad',
+];
+
+export const PM24_RADAR_LABEL_BY_DIMENSION_ID = Object.fromEntries(
+  PERSONALIDAD_MIND24_DIMENSIONS.map((d, i) => [d.dimensionId, PM24_RADAR_SHORT_LABELS[i]]),
+);
+
+const RADAR_CX = 120;
+const RADAR_CY = 120;
+const RADAR_R_MAX = 78;
+const RADAR_AXIS_COUNT = PERSONALIDAD_MIND24_DIMENSIONS.length;
+
+function radarAngleRad(index) {
+  return -Math.PI / 2 + index * ((2 * Math.PI) / RADAR_AXIS_COUNT);
+}
+
+/** Radio SVG para media en escala 1–5 (1 → centro, 5 → borde). */
+export function radarRadiusForMean(mean, rMax = RADAR_R_MAX) {
+  const n = Number(mean);
+  if (!Number.isFinite(n)) return 0;
+  const t = (n - SCALE_MIN) / SCALE_SPAN;
+  return Math.max(0, Math.min(1, t)) * rMax;
+}
+
+function radarPolarXY(index, radius) {
+  const a = radarAngleRad(index);
+  const x = RADAR_CX + radius * Math.cos(a);
+  const y = RADAR_CY + radius * Math.sin(a);
+  return { x: +x.toFixed(2), y: +y.toFixed(2) };
+}
+
+/**
+ * @param {Array<object>} dimensionRows — orden canónico
+ * @returns {Array<{ dimensionId: string, mean: number, x: number, y: number, shortLabel: string }>}
+ */
+export function radarVertexPoints(dimensionRows) {
+  return dimensionRows.map((row, index) => {
+    const r = radarRadiusForMean(row.mean);
+    const { x, y } = radarPolarXY(index, r);
+    return {
+      dimensionId: row.dimensionId,
+      mean: Number(row.mean),
+      x,
+      y,
+      shortLabel: PM24_RADAR_LABEL_BY_DIMENSION_ID[row.dimensionId] || row.label,
+    };
+  });
+}
+
+function buildRadarGridPolygons() {
+  const parts = [];
+  for (let level = 2; level <= SCALE_MAX; level += 1) {
+    const r = radarRadiusForMean(level);
+    const pts = [];
+    for (let i = 0; i < RADAR_AXIS_COUNT; i += 1) {
+      const { x, y } = radarPolarXY(i, r);
+      pts.push(`${x},${y}`);
+    }
+    parts.push(
+      `<polygon class="pm24-radar-ring" data-scale-level="${level}" points="${pts.join(' ')}" fill="none" stroke="#E5E7EB" stroke-width="1"/>`,
+    );
+  }
+  return parts.join('\n');
+}
+
+function buildRadarAxes() {
+  const parts = [];
+  for (let i = 0; i < RADAR_AXIS_COUNT; i += 1) {
+    const outer = radarPolarXY(i, RADAR_R_MAX);
+    parts.push(
+      `<line class="pm24-radar-axis" x1="${RADAR_CX}" y1="${RADAR_CY}" x2="${outer.x}" y2="${outer.y}" stroke="#E5E7EB" stroke-width="1"/>`,
+    );
+  }
+  return parts.join('\n');
+}
+
+function buildRadarScaleLabels() {
+  const parts = [];
+  for (let level = SCALE_MIN; level <= SCALE_MAX; level += 1) {
+    const r = radarRadiusForMean(level);
+    const x = RADAR_CX + 4;
+    const y = RADAR_CY - r;
+    if (level === SCALE_MIN && r === 0) continue;
+    parts.push(
+      `<text class="pm24-radar-scale-label" x="${x.toFixed(2)}" y="${(y + 3).toFixed(2)}" font-size="7" fill="#9CA3AF" text-anchor="start">${level}</text>`,
+    );
+  }
+  return parts.join('\n');
+}
+
+function buildRadarAxisLabels(dimensionRows) {
+  const labelR = RADAR_R_MAX + 14;
+  return dimensionRows
+    .map((row, index) => {
+      const short = PM24_RADAR_LABEL_BY_DIMENSION_ID[row.dimensionId] || row.label;
+      const a = radarAngleRad(index);
+      const x = RADAR_CX + labelR * Math.cos(a);
+      const y = RADAR_CY + labelR * Math.sin(a);
+      let anchor = 'middle';
+      if (x < RADAR_CX - 8) anchor = 'end';
+      else if (x > RADAR_CX + 8) anchor = 'start';
+      return `<text class="pm24-radar-axis-label" x="${x.toFixed(2)}" y="${(y + 3).toFixed(2)}" font-size="7" font-weight="600" fill="#4B5563" text-anchor="${anchor}">${esc(short)}</text>`;
+    })
+    .join('\n');
+}
+
+function buildProfileRadarChart(dimensionRows) {
+  const vertices = radarVertexPoints(dimensionRows);
+  const polygonPts = vertices.map((v) => `${v.x},${v.y}`).join(' ');
+  const dots = vertices
+    .map(
+      (v) =>
+        `<circle class="pm24-radar-vertex" data-dimension-id="${esc(v.dimensionId)}" data-mean="${esc(formatMean(v.mean))}" cx="${v.x}" cy="${v.y}" r="2.5" fill="#7C3AED" stroke="#fff" stroke-width="1"/>`,
+    )
+    .join('\n');
+
+  return `<div class="pm24-radar-wrap">
+  <svg class="pm24-radar" viewBox="0 0 240 240" role="img" aria-label="Mapa general del perfil en 10 dimensiones, escala 1 a 5">
+    ${buildRadarGridPolygons()}
+    ${buildRadarAxes()}
+    ${buildRadarScaleLabels()}
+    <polygon class="pm24-radar-profile" points="${polygonPts}" fill="rgba(124,58,237,0.18)" stroke="#7C3AED" stroke-width="1.5" stroke-linejoin="round"/>
+    ${dots}
+    ${buildRadarAxisLabels(dimensionRows)}
+  </svg>
+</div>`;
+}
+
+function buildCompletenessNote(scores) {
+  const form = scores?.form || {};
+  const expected = form.totalItemsExpected;
+  const completeness = scores?.meta?.applicationQuality?.completeness;
+  const answered =
+    completeness?.answeredCount != null
+      ? Number(completeness.answeredCount)
+      : dimensionRowsTotalAnswered(scores?.dimensionRows);
+  if (expected == null || !Number.isFinite(Number(expected))) return '';
+  const exp = Number(expected);
+  if (answered != null && Number.isFinite(answered) && answered === exp) {
+    return `<p class="pm24-completeness">Aplicación completa: ${answered}/${exp} respuestas.</p>`;
+  }
+  if (answered != null && Number.isFinite(answered)) {
+    return `<p class="pm24-completeness">Respuestas registradas: ${answered}/${exp}.</p>`;
+  }
+  return '';
+}
+
+function dimensionRowsTotalAnswered(rows) {
+  if (!Array.isArray(rows) || !rows.length) return null;
+  return rows.reduce((sum, r) => sum + (Number(r.nAnswered) || 0), 0);
+}
+
 const SVG_PM24 = `<svg class="module-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>`;
 
 /**
@@ -199,11 +362,11 @@ function buildBarChart(dimensionRows) {
 </div>`;
 }
 
-function buildTrendsSection(trends) {
+function buildTrendsPanel(trends) {
   if (!trends.hasContrast) {
     return `<p class="pm24-homogeneous">${esc(HOMOGENEOUS_PROFILE_MESSAGE)}</p>`;
   }
-  return `<div class="pm24-trends-grid">
+  return `<div class="pm24-trends-stack">
       <div class="pm24-trend-card pm24-trend-more">
         <div class="pm24-trend-title">Tendencias relativamente más expresadas</div>
         ${buildTrendList(trends.moreExpressed)}
@@ -212,8 +375,7 @@ function buildTrendsSection(trends) {
         <div class="pm24-trend-title">Tendencias relativamente menos expresadas</div>
         ${buildTrendList(trends.lessExpressed)}
       </div>
-    </div>
-    <p class="pm24-intra-disclaimer">${esc(INTRAPROFILE_DISCLAIMER)}</p>`;
+    </div>`;
 }
 
 function buildTrendList(items) {
@@ -224,23 +386,6 @@ function buildTrendList(items) {
         `<li><span class="pm24-trend-name">${esc(row.label)}</span> <span class="pm24-trend-mean">${esc(formatMean(row.mean))} / ${SCALE_MAX}</span></li>`,
     )
     .join('')}</ul>`;
-}
-
-function buildBreakdownTable(dimensionRows) {
-  const body = dimensionRows
-    .map(
-      (row) => `<tr>
-  <td>${esc(row.label)}</td>
-  <td class="num strong">${esc(`${formatMean(row.mean)} / ${SCALE_MAX}`)}</td>
-  <td class="num">${esc(`${row.nAnswered} / ${row.nExpected}`)}</td>
-</tr>`,
-    )
-    .join('\n');
-
-  return `<table class="pm24-table">
-  <thead><tr><th>Dimensión</th><th>Media</th><th>Respuestas</th></tr></thead>
-  <tbody>${body}</tbody>
-</table>`;
 }
 
 export function buildPersonalityMind24IncompleteFragment(ctx) {
@@ -279,17 +424,25 @@ export function buildPersonalityMind24ModuleFragment(ctx) {
 
     <p class="pm24-method-note">${esc(PERSONALITY_METHODOLOGY_NOTE)}</p>
 
-    <div class="section">
-      <div class="section-title">Perfil de personalidad laboral</div>
-      <p class="pm24-chart-sub">10 dimensiones · escala ${SCALE_MIN}–${SCALE_MAX}</p>
+    <div class="pm24-overview-grid">
+      <div class="section pm24-radar-section">
+        <div class="section-title">Mapa general del perfil</div>
+        <p class="pm24-chart-sub">10 dimensiones · escala ${SCALE_MIN}–${SCALE_MAX}</p>
+        ${buildProfileRadarChart(rows)}
+      </div>
+      <div class="section pm24-trends-section">
+        ${buildTrendsPanel(trends)}
+      </div>
+    </div>
+
+    <div class="section pm24-bars-section">
+      <div class="section-title">Perfil dimensional</div>
+      ${buildCompletenessNote(scores)}
+      <p class="pm24-chart-sub">Medias por dimensión · escala ${SCALE_MIN}–${SCALE_MAX}</p>
       ${buildBarChart(rows)}
     </div>
 
-    ${buildTrendsSection(trends)}
-
-    <div class="section pm24-table-section">
-      <div class="section-title">Desglose por dimensión</div>
-      ${buildBreakdownTable(rows)}
-    </div>
+    ${trends.hasContrast ? `<p class="pm24-intra-disclaimer">${esc(INTRAPROFILE_DISCLAIMER)}</p>` : ''}
+    <div class="pm24-interpret-slot" aria-hidden="true"></div>
   </section>`;
 }
