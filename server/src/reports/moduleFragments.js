@@ -21,6 +21,11 @@ import {
   buildTermanModuleFragment,
   extractTermanScores,
 } from './fragments/termanReport.fragment.js';
+import {
+  buildPersonalityMind24IncompleteFragment,
+  buildPersonalityMind24ModuleFragment,
+  extractPersonalityMind24Scores,
+} from './fragments/personalityMind24Report.fragment.js';
 import { buildSpeedReliabilityAlertHtml } from './reliabilityAlert.fragment.js';
 
 const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
@@ -56,6 +61,24 @@ export function buildModuleFragment(attempt) {
     const scores = extractSjtSalesScores(attempt);
     if (!scores) return null;
     return buildSjtSalesModuleFragment({ scores, submittedAt, attempt });
+  }
+
+  if (moduleKey === 'personalidad_mind24') {
+    const scores = extractPersonalityMind24Scores(attempt);
+    if (scores) {
+      return buildPersonalityMind24ModuleFragment({ scores, submittedAt });
+    }
+    if (attempt.status === 'submitted') {
+      console.warn('[report] personalidad_mind24: desglose dimensional no disponible', {
+        attemptId: attempt.id,
+      });
+      const meta = moduleMetaForKey(moduleKey);
+      return buildPersonalityMind24IncompleteFragment({
+        submittedAt,
+        moduleLabel: meta.label,
+      });
+    }
+    return null;
   }
 
   if (attempt.status !== 'submitted') return null;

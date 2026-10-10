@@ -9,6 +9,7 @@ import {
 import { extractHonestidadPayload } from './honestidadReport.fragment.js';
 import { extractSjtSalesScores } from './fragments/sjtSalesReport.fragment.js';
 import { extractTermanScores } from './fragments/termanReport.fragment.js';
+import { extractPersonalityMind24Scores } from './fragments/personalityMind24Report.fragment.js';
 import { formatTermanCompletenessText } from '../services/termanScoring.service.js';
 
 const CLEAVER_KEYS = new Set(['cleaver', 'disc']);
@@ -94,6 +95,25 @@ function summarySjt(attempt) {
   };
 }
 
+function summaryPersonalityMind24(attempt) {
+  const scores = extractPersonalityMind24Scores(attempt);
+  if (!scores) {
+    return {
+      moduleKey: 'personalidad_mind24',
+      title: moduleReportLabel('personalidad_mind24'),
+      lines: [line('Estado', 'Completado')],
+    };
+  }
+  return {
+    moduleKey: 'personalidad_mind24',
+    title: moduleReportLabel('personalidad_mind24'),
+    lines: [
+      line('Dimensiones', '10 dimensiones evaluadas'),
+      line('Estado', 'Perfil completado'),
+    ],
+  };
+}
+
 function summaryGeneric(attempt, moduleKey) {
   const raw = attempt?.scores;
   const global =
@@ -121,6 +141,7 @@ export function buildModuleCoverSummaries(orderedAttempts) {
     else if (CLEAVER_KEYS.has(moduleKey)) summary = summaryCleaver(attempt);
     else if (moduleKey === 'terman') summary = summaryTerman(attempt);
     else if (moduleKey === 'sales_sjt') summary = summarySjt(attempt);
+    else if (moduleKey === 'personalidad_mind24') summary = summaryPersonalityMind24(attempt);
     else if (attempt.status === 'submitted') summary = summaryGeneric(attempt, moduleKey);
     if (summary) out.push(summary);
   }

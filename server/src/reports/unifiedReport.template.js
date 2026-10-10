@@ -292,6 +292,34 @@ const MASTER_STYLES = `
   .sjt-tech{padding:10px 12px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
   .sjt-tech-table{width:100%;font-size:9px}
   .sjt-tech-table th,.sjt-tech-table td{padding:4px 6px}
+  .pm24-module{border-top-color:#7C3AED}
+  .pm24-method-note{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#F5F3FF;border:1px solid #DDD6FE;font-size:9px;line-height:1.5;color:#374151;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .pm24-chart-sub{margin:-6px 0 10px;font-size:9px;color:#6B7280}
+  .pm24-chart-wrap{padding:10px 12px;border:1px solid #E5E7EB;border-radius:10px;background:#FAFAFA;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .pm24-scale-track{position:relative;height:14px;margin-bottom:2px}
+  .pm24-scale-tick{position:absolute;transform:translateX(-50%);font-size:8px;font-weight:700;color:#9CA3AF;font-variant-numeric:tabular-nums;top:0}
+  .pm24-scale-tick[style*="left:0%"]{transform:translateX(0)}
+  .pm24-scale-tick[style*="left:100%"]{transform:translateX(-100%)}
+  .pm24-homogeneous{margin:12px 0;padding:10px 12px;border-radius:8px;background:#F9FAFB;border:1px solid #E5E7EB;font-size:9.5px;line-height:1.5;color:#374151;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .pm24-bar-row{display:grid;grid-template-columns:minmax(140px,38%) 1fr 52px;gap:8px;align-items:center;margin-bottom:7px}
+  .pm24-bar-row:last-child{margin-bottom:0}
+  .pm24-bar-label{font-size:9px;font-weight:600;color:#374151;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .pm24-bar-track{height:10px;background:#E5E7EB;border-radius:6px;overflow:hidden}
+  .pm24-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#7C3AED 0%,#A78BFA 100%);min-width:0}
+  .pm24-bar-val{font-size:9px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:#374151}
+  .pm24-trends-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 6px}
+  .pm24-trend-card{border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;background:#fff;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .pm24-trend-more{border-top:3px solid #7C3AED}
+  .pm24-trend-less{border-top:3px solid #C4B5FD}
+  .pm24-trend-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#5B21B6;margin-bottom:8px;line-height:1.35}
+  .pm24-trend-list{margin:0;padding:0 0 0 14px;font-size:9.5px;line-height:1.45;color:#374151}
+  .pm24-trend-list li{margin-bottom:4px}
+  .pm24-trend-name{font-weight:600}
+  .pm24-trend-mean{font-variant-numeric:tabular-nums;color:#6B7280}
+  .pm24-trend-empty{margin:0;font-size:9.5px;color:#6B7280}
+  .pm24-intra-disclaimer{margin:0 0 12px;font-size:8.5px;color:#6B7280;line-height:1.45;font-style:italic}
+  .pm24-table-section{margin-top:4px}
+  .pm24-table td:first-child{max-width:220px;line-height:1.35}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
   .footer{margin-top:14px;padding-top:9px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center;break-before:avoid-page;page-break-before:avoid;break-inside:avoid;page-break-inside:avoid}
 `;
