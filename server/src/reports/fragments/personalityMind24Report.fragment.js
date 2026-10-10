@@ -3,6 +3,7 @@ import {
   PERSONALIDAD_MIND24_MODULE_KEY,
   PERSONALIDAD_MIND24_SCALE,
 } from '../../data/personalityMind24Data.js';
+import { buildPersonalityInterpretationSectionHtml } from '../personalityMind24Interpretation.js';
 import { esc } from '../reportUtils.js';
 
 export const PERSONALITY_METHODOLOGY_NOTE =
@@ -443,6 +444,6 @@ export function buildPersonalityMind24ModuleFragment(ctx) {
     </div>
 
     ${trends.hasContrast ? `<p class="pm24-intra-disclaimer">${esc(INTRAPROFILE_DISCLAIMER)}</p>` : ''}
-    <div class="pm24-interpret-slot" aria-hidden="true"></div>
+    ${buildPersonalityInterpretationSectionHtml(rows, trends)}
   </section>`;
 }

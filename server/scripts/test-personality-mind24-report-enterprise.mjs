@@ -173,7 +173,11 @@ check(!htmlA.match(/\b8\s\/\s8\b/), 'sin 8/8 repetido por dimensión');
 check(htmlA.includes('Aplicación completa: 80/80 respuestas.'), 'nota completitud compacta');
 check(htmlA.includes('Tendencias relativamente más expresadas'), 'sección más expresadas');
 check(htmlA.includes('Tendencias relativamente menos expresadas'), 'sección menos expresadas');
-check(htmlA.includes('pm24-interpret-slot'), 'espacio reservado 4C.3');
+check(htmlA.includes('Interpretación del perfil'), 'sección interpretación 4C.3');
+check((htmlA.match(/pm24-interpret-row/g) || []).length === 10, '10 lecturas interpretativas');
+check(htmlA.includes('Síntesis del perfil'), 'síntesis del perfil');
+check(htmlA.includes('Lectura por dimensión'), 'lectura por dimensión');
+check(htmlA.includes('Frecuencia observada'), 'descriptor frecuencia en interpretación');
 
 const trendsA = intraprofileTrends(extractedA.dimensionRows);
 check(trendsA.hasContrast === true, 'CASO A: hay contraste intraperfil');
