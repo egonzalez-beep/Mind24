@@ -19,6 +19,7 @@ import {
   intraprofileTrends,
   PERSONALITY_METHODOLOGY_NOTE,
   PM24_RADAR_SHORT_LABELS,
+  PM24_RADAR_VIEWBOX,
   radarRadiusForMean,
   radarVertexPoints,
   rankPersonalityDimensionsByMean,
@@ -164,8 +165,14 @@ check(htmlA.includes('pm24-radar'), 'radar SVG presente');
 check((htmlA.match(/pm24-radar-vertex/g) || []).length === 10, 'radar: 10 vértices');
 check((htmlA.match(/pm24-radar-ring/g) || []).length === 4, 'radar: anillos escala 2–5');
 check((htmlA.match(/class="pm24-radar-axis"/g) || []).length === 10, 'radar: 10 ejes');
+check(
+  htmlA.includes(
+    `viewBox="${PM24_RADAR_VIEWBOX.min} ${PM24_RADAR_VIEWBOX.min} ${PM24_RADAR_VIEWBOX.size} ${PM24_RADAR_VIEWBOX.size}"`,
+  ),
+  'radar viewBox con padding anti-clipping',
+);
 for (const label of PM24_RADAR_SHORT_LABELS) {
-  check(htmlA.includes(label), `radar label: ${label}`);
+  check(htmlA.includes(`data-radar-label="${label}"`), `radar label completa: ${label}`);
 }
 check(radarVertexPoints(extractedA.dimensionRows).length === 10, 'radarVertexPoints: 10');
 check(!htmlA.includes('Desglose por dimensión'), 'sin tabla desglose redundante');

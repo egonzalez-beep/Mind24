@@ -39,7 +39,10 @@ export const PM24_RADAR_LABEL_BY_DIMENSION_ID = Object.fromEntries(
 
 const RADAR_CX = 120;
 const RADAR_CY = 120;
-const RADAR_R_MAX = 78;
+/** Radio del polígono (reducido para dejar margen a etiquetas en PDF). */
+const RADAR_R_MAX = 68;
+/** Padding simétrico del viewBox: evita clipping de labels con text-anchor start/end. */
+export const PM24_RADAR_VIEWBOX = { min: -38, size: 316 };
 const RADAR_AXIS_COUNT = PERSONALIDAD_MIND24_DIMENSIONS.length;
 
 function radarAngleRad(index) {
@@ -120,18 +123,35 @@ function buildRadarScaleLabels() {
   return parts.join('\n');
 }
 
+function radarAxisLabelLayout(index, x, y) {
+  const a = radarAngleRad(index);
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  let anchor = 'middle';
+  let dx = 0;
+  let dy = 3;
+  if (cos > 0.3) {
+    anchor = 'start';
+    dx = 3;
+  } else if (cos < -0.3) {
+    anchor = 'end';
+    dx = -3;
+  }
+  if (sin < -0.35) dy = 0;
+  else if (sin > 0.35) dy = 5;
+  return { anchor, dx, dy };
+}
+
 function buildRadarAxisLabels(dimensionRows) {
-  const labelR = RADAR_R_MAX + 14;
+  const labelR = RADAR_R_MAX + 11;
   return dimensionRows
     .map((row, index) => {
       const short = PM24_RADAR_LABEL_BY_DIMENSION_ID[row.dimensionId] || row.label;
       const a = radarAngleRad(index);
       const x = RADAR_CX + labelR * Math.cos(a);
       const y = RADAR_CY + labelR * Math.sin(a);
-      let anchor = 'middle';
-      if (x < RADAR_CX - 8) anchor = 'end';
-      else if (x > RADAR_CX + 8) anchor = 'start';
-      return `<text class="pm24-radar-axis-label" x="${x.toFixed(2)}" y="${(y + 3).toFixed(2)}" font-size="7" font-weight="600" fill="#4B5563" text-anchor="${anchor}">${esc(short)}</text>`;
+      const { anchor, dx, dy } = radarAxisLabelLayout(index, x, y);
+      return `<text class="pm24-radar-axis-label" data-radar-label="${esc(short)}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" dx="${dx}" dy="${dy}" font-size="7" font-weight="600" fill="#4B5563" text-anchor="${anchor}">${esc(short)}</text>`;
     })
     .join('\n');
 }
@@ -147,7 +167,7 @@ function buildProfileRadarChart(dimensionRows) {
     .join('\n');
 
   return `<div class="pm24-radar-wrap">
-  <svg class="pm24-radar" viewBox="0 0 240 240" role="img" aria-label="Mapa general del perfil en 10 dimensiones, escala 1 a 5">
+  <svg class="pm24-radar" viewBox="${PM24_RADAR_VIEWBOX.min} ${PM24_RADAR_VIEWBOX.min} ${PM24_RADAR_VIEWBOX.size} ${PM24_RADAR_VIEWBOX.size}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa general del perfil en 10 dimensiones, escala 1 a 5">
     ${buildRadarGridPolygons()}
     ${buildRadarAxes()}
     ${buildRadarScaleLabels()}

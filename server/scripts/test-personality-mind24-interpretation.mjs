@@ -13,6 +13,7 @@ import {
   buildDimensionInterpretationView,
   buildPersonalityProfileSummary,
   HOMOGENEOUS_PROFILE_SUMMARY_TEXT,
+  summaryQualityIssues,
   personalityDimensionNarrative,
   personalityFrequencyDescriptor,
   personalityNarrativeStyleZone,
@@ -157,6 +158,19 @@ check(
   'piloto: bottom incluye sociabilidad',
 );
 
+const pilotSummaryText = pilotSummary.paragraphs.join(' ');
+check(pilotSummaryText.includes('En conjunto, este patrón sugiere'), 'piloto síntesis: transición natural p1');
+check(pilotSummaryText.includes('presentan menor expresión relativa dentro del perfil'), 'piloto síntesis: estructura p2');
+check(!/\bgradual\w*.*\bgradual\w*/i.test(pilotSummaryText), 'piloto síntesis: sin repetir gradual');
+check(summaryQualityIssues(pilotSummaryText).length === 0, 'piloto síntesis: calidad redacción');
+check(
+  (pilotSummaryText.match(/\bpreferencia\b/gi) || []).length === 1,
+  'piloto síntesis: una sola mención de preferencia',
+);
+for (const re of PERSONALITY_INTERPRETATION_FORBIDDEN) {
+  check(!re.test(pilotSummaryText), `piloto síntesis sin patrón ${re}`);
+}
+
 const pilotHtml = buildPersonalityMind24ModuleFragment({
   scores: buildScoresPayload(pilotRows),
   submittedAt: '10 oct 2026',
@@ -176,6 +190,8 @@ const homTrends = intraprofileTrends(homRows);
 const homSummary = buildPersonalityProfileSummary(homRows, homTrends);
 check(homSummary.isHomogeneous, 'homogéneo: flag');
 check(homSummary.paragraphs[0] === HOMOGENEOUS_PROFILE_SUMMARY_TEXT, 'homogéneo: texto síntesis');
+check(homSummary.paragraphs.join(' ').includes('homogénea'), 'homogéneo: sin contrastes inventados');
+check(summaryQualityIssues(homSummary.paragraphs.join(' ')).length === 0, 'homogéneo: calidad redacción');
 check(
   personalityDimensionNarrative('logro_persistencia', 3.0) ===
     PERSONALITY_DIMENSION_INTERPRETATIONS.logro_persistencia.mixedText,

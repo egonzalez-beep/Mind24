@@ -181,18 +181,110 @@ function joinSpanishList(items) {
   return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`;
 }
 
-function uniqueThemes(rows, themeKey) {
-  const seen = new Set();
+/**
+ * Frases cortas para síntesis ejecutiva (no sustituyen narrativas dimensionales).
+ * @type {Record<string, string>}
+ */
+export const PM24_SUMMARY_UPPER_SNIPPET = {
+  logro_persistencia: 'sostener el esfuerzo hacia resultados y el seguimiento de pendientes',
+  orden_precision: 'organizar el trabajo, cuidar el detalle y revisar antes de cerrar',
+  autonomia_decision: 'autogestión',
+  influencia_persuasion: 'argumentar y buscar que las propuestas sean consideradas',
+  sociabilidad_colaboracion: 'coordinación directa y apoyo en trabajo compartido',
+  liderazgo_equipos: 'participación en la coordinación del trabajo colectivo',
+  apego_normas: 'uso de referencias y procedimientos claros',
+  regulacion_presion: 'mantener el foco bajo exigencia y recuperarse tras contratiempos',
+  dinamismo_iniciativa: 'ritmo activo e inicio oportuno de tareas',
+  adaptabilidad_cambio: 'ajustar métodos y prioridades cuando cambian las condiciones',
+};
+
+/** @type {Record<string, string>} */
+export const PM24_SUMMARY_LOWER_SNIPPET = {
+  logro_persistencia: 'redistribuir esfuerzo o pausar el seguimiento cuando el avance se complica',
+  orden_precision: 'avanzar con fluidez sin revisar cada detalle',
+  autonomia_decision: 'validar o intercambiar antes de decidir',
+  influencia_persuasion: 'comunicar la postura sin ampliar el esfuerzo persuasivo',
+  sociabilidad_colaboracion: 'concentrarse en responsabilidades propias',
+  liderazgo_equipos: 'centrarse en la contribución individual con dirección asignada',
+  apego_normas: 'apoyarse en criterio propio más que en procedimientos fijos',
+  regulacion_presion: 'tomar más tiempo para reenfocarse tras situaciones exigentes',
+  dinamismo_iniciativa: 'mantener un ritmo de trabajo más pausado',
+  adaptabilidad_cambio: 'conservar métodos conocidos mientras sigan siendo funcionales',
+};
+
+function collectSummarySnippets(rows, snippetMap) {
   const out = [];
+  const seen = new Set();
   for (const row of rows) {
-    const copy = PERSONALITY_DIMENSION_INTERPRETATIONS[row.dimensionId];
-    if (!copy) continue;
-    const theme = copy[themeKey];
-    if (!theme || seen.has(theme)) continue;
-    seen.add(theme);
-    out.push(theme);
+    const snippet = snippetMap[row.dimensionId];
+    if (!snippet || seen.has(snippet)) continue;
+    seen.add(snippet);
+    out.push(snippet);
   }
   return out;
+}
+
+function filterRedundantSummaryPhrases(phrases) {
+  const out = [];
+  const seenStems = new Set();
+  for (const phrase of phrases) {
+    const lower = phrase.toLowerCase();
+    if (/\bgradual/i.test(lower) && seenStems.has('gradual')) continue;
+    if (/\bgradual/i.test(lower)) seenStems.add('gradual');
+    if (/\bpreferencia\b/i.test(lower) && seenStems.has('preferencia')) continue;
+    if (/\bpreferencia\b/i.test(lower)) seenStems.add('preferencia');
+    const dup = [...seenStems].some((stem) => stem.length > 6 && lower.includes(stem));
+    if (dup && out.length > 0) continue;
+    out.push(phrase);
+    const head = lower.split(/\s+/).slice(0, 3).join(' ');
+    if (head.length > 8) seenStems.add(head);
+  }
+  return out.slice(0, 3);
+}
+
+function withDefiniteArticle(phrase) {
+  const s = phrase.trim();
+  if (/^(la |el |las |los )/i.test(s)) return s;
+  return `la ${s}`;
+}
+
+function composeUpperConductasPhrase(snippets) {
+  const parts = filterRedundantSummaryPhrases(snippets);
+  if (parts.length === 0) {
+    return 'descritas con mayor frecuencia relativa en esas dimensiones';
+  }
+  if (parts.length === 1) {
+    return `orientadas al ${parts[0]}`;
+  }
+  const first = parts[0];
+  const rest = parts.slice(1).map((p) => withDefiniteArticle(p));
+  return `orientadas al ${first}, ${joinSpanishList(rest)}`;
+}
+
+function composeLowerPreferencePhrase(snippets) {
+  const parts = filterRedundantSummaryPhrases(snippets);
+  if (parts.length === 0) {
+    return 'estilos alternativos descritos con menor frecuencia relativa en esas áreas';
+  }
+  return joinSpanishList(parts);
+}
+
+/** @param {string} text */
+export function summaryQualityIssues(text) {
+  const issues = [];
+  if (!text || !text.trim()) issues.push('empty');
+  const gradual = (text.match(/\bgradual\w*/gi) || []).length;
+  if (gradual > 1) issues.push('repeat-gradual');
+  const pref = (text.match(/\bpreferencia\b/gi) || []).length;
+  if (pref > 1) issues.push('repeat-preferencia');
+  const conductasTail = text.split(/conductas\s/i)[1];
+  const preferenciaTail = text.split(/preferencia por\s/i)[1];
+  for (const tail of [conductasTail, preferenciaTail]) {
+    if (!tail) continue;
+    const segment = tail.split(/\.\s/)[0] || tail;
+    if ((segment.match(/\s+y\s+/g) || []).length > 2) issues.push('excess-y');
+  }
+  return issues;
 }
 
 /**
@@ -207,15 +299,19 @@ export function buildPersonalityProfileSummary(dimensionRows, trends) {
 
   const topNames = trends.moreExpressed.map((r) => r.label);
   const bottomNames = trends.lessExpressed.map((r) => r.label);
-  const upperThemes = uniqueThemes(trends.moreExpressed, 'summaryUpperTheme');
-  const lowerThemes = uniqueThemes(trends.lessExpressed, 'summaryLowerTheme');
+  const upperSnippets = collectSummarySnippets(trends.moreExpressed, PM24_SUMMARY_UPPER_SNIPPET);
+  const lowerSnippets = collectSummarySnippets(trends.lessExpressed, PM24_SUMMARY_LOWER_SNIPPET);
 
   const p1 =
     `Dentro del propio perfil, las tendencias relativamente más expresadas se concentran en ${joinSpanishList(topNames)}. ` +
-    `Esto sugiere una mayor presencia relativa de conductas asociadas con ${joinSpanishList(upperThemes)}.`;
+    `En conjunto, este patrón sugiere una mayor presencia relativa de conductas ${composeUpperConductasPhrase(upperSnippets)}.`;
 
+  const lowerBody = composeLowerPreferencePhrase(lowerSnippets);
   const p2 =
-    `En contraste, ${joinSpanishList(bottomNames)} aparecen con menor expresión relativa, lo que puede reflejar una preferencia por ${joinSpanishList(lowerThemes)}.`;
+    `En contraste, ${joinSpanishList(bottomNames)} presentan menor expresión relativa dentro del perfil. ` +
+    (lowerBody.startsWith('estilos alternativos')
+      ? `Esto puede asociarse con ${lowerBody}.`
+      : `Esto puede asociarse con una mayor preferencia por ${lowerBody}.`);
 
   return { paragraphs: [p1, p2], isHomogeneous: false };
 }
@@ -292,11 +388,11 @@ export function buildPersonalityInterpretationSectionHtml(dimensionRows, trends)
   return `<div class="pm24-interpret-slot">
   <div class="section pm24-interpret-section">
     <div class="section-title">Interpretación del perfil</div>
-    <div class="pm24-interpret-block">
+    <div class="pm24-interpret-block pm24-interpret-summary">
       <h3 class="pm24-interpret-heading">Síntesis del perfil</h3>
       ${summaryHtml}
     </div>
-    <div class="pm24-interpret-block">
+    <div class="pm24-interpret-block pm24-interpret-by-dim">
       <h3 class="pm24-interpret-heading">Lectura por dimensión</h3>
       <div class="pm24-interpret-list">${rowsHtml}</div>
     </div>
