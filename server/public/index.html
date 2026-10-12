@@ -411,6 +411,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-toggle.mod-sales-hook{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7;cursor:pointer;}
 .mod-toggle.mod-sales-hook:hover{border-color:#34d399;background:linear-gradient(135deg,#d1fae5,#a7f3d0);box-shadow:0 4px 16px rgba(52,211,153,.18);}
 .mod-toggle.mod-sales-hook .mod-check{border-color:#059669;background:#059669;color:#fff;}
+.mod-toggle.mod-fitness-hook{background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(52,211,153,.06));border-color:rgba(16,185,129,.35);cursor:pointer;}
+.mod-toggle.mod-fitness-hook:hover{border-color:rgba(16,185,129,.6);background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(52,211,153,.12));box-shadow:0 4px 16px rgba(16,185,129,.15);}
+.mod-toggle.mod-fitness-hook .mod-check{border-color:#059669;background:#059669;color:#fff;}
+.mod-toggle.mod-fitness-hook .mod-name{color:#065f46;}
+.cev-mod-commercial{display:flex;flex-direction:column;gap:10px;}
+#view-dash-crear-eval #cev-sidebar-fitness-cta{display:none!important;}
 .mod-badge-soon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);background:rgba(124,58,237,.12);padding:4px 8px;border-radius:100px;flex-shrink:0;margin-left:8px;}
 #cev-mis-assign-tbody tr:nth-child(odd),#cev-res-assign-tbody tr:nth-child(odd){background:#ffffff;}
 #cev-mis-assign-tbody tr:nth-child(even),#cev-res-assign-tbody tr:nth-child(even){background:#e8edf3;}
@@ -1327,7 +1333,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
-      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1360,6 +1366,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               
               
               <p id="cev-mod-inline-warn" class="cev-inline-warn hidden" role="alert">⚠️ Debes seleccionar al menos un módulo para continuar.</p>
+            </div>
+          </div>
+          <div class="card" id="cev-commercial-card">
+            <div class="card-body">
+              <div id="cev-mod-commercial" class="cev-mod-commercial" aria-label="Servicios complementarios Mind24"></div>
             </div>
           </div>
         </div>
@@ -2146,8 +2157,17 @@ const MIND24_EVAL_MODULES=[
   {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
   {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',salesHook:true},
 ];
+/** CTA comercial Crear evaluación (UI only; no backend / no ASSIGNABLE_MODULE_KEYS). */
+const MIND24_CEV_FITNESS_UPSELL={
+  key:'__cev_fitness_upsell',
+  label:'Mind Fitness — Bienestar Organizacional',
+  description:'Bienestar corporativo y mindfulness para tu organización.',
+  icon:'❤️',
+  fitnessHook:true,
+};
 const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida',entrevista_digital:'digital_interview'};
-function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&!mod.salesHook&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
+function mind24ModIsCommercialHook(mod){ return mod&&(mod.salesHook||mod.fitnessHook); }
+function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&!mind24ModIsCommercialHook(mod)&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
 function mind24ResolveModKey(key){ return MIND24_LEGACY_MOD_KEYS[key]||key; }
 function mind24IsLegacyOnlyModule(key){ return mind24ResolveModKey(key)==='honestidad'; }
 const MIND24_VIEW_EL_CACHE={};
@@ -2169,22 +2189,38 @@ function mind24ModByKey(key){
   const k=mind24ResolveModKey(key);
   return MIND24_EVAL_MODULES.find(m=>m.key===k)||{key:k,label:k,description:'',icon:'◈'};
 }
+function mind24CreateCevModToggleEl(mod){
+  const el=document.createElement('div');
+  const soon=!!mod.comingSoon;
+  const salesHook=!!mod.salesHook;
+  const fitnessHook=!!mod.fitnessHook;
+  const sel=!soon&&!mind24ModIsCommercialHook(mod)&&mind24ModAssignable(mod)&&mod.defaultSelected!==false;
+  el.className='mod-toggle'+(sel?' selected':'')+(mod.featured?' featured-mod':'')+(soon?' mod-coming-soon':'')+(salesHook?' mod-sales-hook':'')+(fitnessHook?' mod-fitness-hook':'');
+  el.setAttribute('data-mod-key',mod.key);
+  el.setAttribute('data-coming-soon',soon?'1':'0');
+  el.setAttribute('data-sales-hook',salesHook?'1':'0');
+  el.setAttribute('data-fitness-hook',fitnessHook?'1':'0');
+  el.onclick=function(){toggleMod(this);};
+  const hookArrow=(salesHook||fitnessHook)?'↗':'';
+  el.innerHTML='<div class="mod-left"><div class="mod-icon">'+mod.icon+'</div><div><div class="mod-name">'+mind24EscHtml(mod.label)+'</div><div class="mod-desc">'+mind24EscHtml(mod.description)+'</div></div></div><div class="mod-check">'+(sel?'✓':hookArrow)+'</div>';
+  return el;
+}
 function mind24InitCrearEvalModules(){
   const list=document.getElementById('cev-mod-list');
+  const commercial=document.getElementById('cev-mod-commercial');
   if(!list)return;
   list.innerHTML='';
+  if(commercial){
+    commercial.innerHTML='';
+    commercial.appendChild(mind24CreateCevModToggleEl(MIND24_CEV_FITNESS_UPSELL));
+    MIND24_EVAL_MODULES.forEach(mod=>{
+      if(!mod.salesHook)return;
+      commercial.appendChild(mind24CreateCevModToggleEl(mod));
+    });
+  }
   MIND24_EVAL_MODULES.forEach(mod=>{
-    const el=document.createElement('div');
-    const soon=!!mod.comingSoon;
-    const salesHook=!!mod.salesHook;
-    const sel=!soon&&!salesHook&&mind24ModAssignable(mod)&&mod.defaultSelected!==false;
-    el.className='mod-toggle'+(sel?' selected':'')+(mod.featured?' featured-mod':'')+(soon?' mod-coming-soon':'')+(salesHook?' mod-sales-hook':'');
-    el.setAttribute('data-mod-key',mod.key);
-    el.setAttribute('data-coming-soon',soon?'1':'0');
-    el.setAttribute('data-sales-hook',salesHook?'1':'0');
-    el.onclick=function(){toggleMod(this);};
-    el.innerHTML='<div class="mod-left"><div class="mod-icon">'+mod.icon+'</div><div><div class="mod-name">'+mind24EscHtml(mod.label)+'</div><div class="mod-desc">'+mind24EscHtml(mod.description)+'</div></div></div><div class="mod-check">'+(sel?'✓':(salesHook?'↗':''))+'</div>';
-    list.appendChild(el);
+    if(mind24ModIsCommercialHook(mod))return;
+    list.appendChild(mind24CreateCevModToggleEl(mod));
   });
   crearEvalSyncModSummary();
 }
@@ -2702,6 +2738,10 @@ function crearEvalSyncModSummary(){
 }
 function toggleMod(el){
   if(window.__CEV_FORM_LOCKED)return;
+  if(el.getAttribute('data-fitness-hook')==='1'){
+    mind24OpenFitnessModal();
+    return;
+  }
   if(el.getAttribute('data-sales-hook')==='1'){
     mind24OpenMedidaModal();
     return;
