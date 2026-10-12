@@ -236,6 +236,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item.active{background:var(--purple-light);color:var(--purple-dark);font-weight:600;}
 .sidebar-item-cta-fitness{border:1px solid rgba(16,185,129,.35)!important;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(52,211,153,.06))!important;color:#065f46!important;font-weight:600!important;}
 .sidebar-item-cta-fitness:hover{border-color:rgba(16,185,129,.6)!important;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(52,211,153,.12))!important;box-shadow:0 2px 12px rgba(16,185,129,.15);}
+.sidebar-item-cta-medida{border:1px solid #6ee7b7!important;background:linear-gradient(135deg,#ecfdf5,#d1fae5)!important;color:#065f46!important;font-weight:600!important;}
+.sidebar-item-cta-medida:hover{border-color:#34d399!important;background:linear-gradient(135deg,#d1fae5,#a7f3d0)!important;box-shadow:0 4px 16px rgba(52,211,153,.18);}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
 .si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--slate-100);transition:var(--tr-fast);}
 .sidebar-item:hover .si-icon{background:rgba(124,58,237,.12);}
@@ -415,8 +417,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mod-toggle.mod-fitness-hook:hover{border-color:rgba(16,185,129,.6);background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(52,211,153,.12));box-shadow:0 4px 16px rgba(16,185,129,.15);}
 .mod-toggle.mod-fitness-hook .mod-check{border-color:#059669;background:#059669;color:#fff;}
 .mod-toggle.mod-fitness-hook .mod-name{color:#065f46;}
-.cev-mod-commercial{display:flex;flex-direction:column;gap:10px;}
-#view-dash-crear-eval #cev-sidebar-fitness-cta{display:none!important;}
 .mod-badge-soon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);background:rgba(124,58,237,.12);padding:4px 8px;border-radius:100px;flex-shrink:0;margin-left:8px;}
 #cev-mis-assign-tbody tr:nth-child(odd),#cev-res-assign-tbody tr:nth-child(odd){background:#ffffff;}
 #cev-mis-assign-tbody tr:nth-child(even),#cev-res-assign-tbody tr:nth-child(even){background:#e8edf3;}
@@ -1334,6 +1334,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
       <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" id="cev-sidebar-medida-cta" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1366,11 +1367,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               
               
               <p id="cev-mod-inline-warn" class="cev-inline-warn hidden" role="alert">⚠️ Debes seleccionar al menos un módulo para continuar.</p>
-            </div>
-          </div>
-          <div class="card" id="cev-commercial-card">
-            <div class="card-body">
-              <div id="cev-mod-commercial" class="cev-mod-commercial" aria-label="Servicios complementarios Mind24"></div>
             </div>
           </div>
         </div>
@@ -1890,7 +1886,8 @@ function mind24EnsureMedidaModalInBody(){
   if(modal.parentElement!==document.body) document.body.appendChild(modal);
   return modal;
 }
-function mind24OpenMedidaModal(){
+function mind24OpenMedidaModal(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
   const modal=mind24EnsureMedidaModalInBody();
   if(!modal) return;
   modal.classList.remove('hidden');
@@ -2157,14 +2154,6 @@ const MIND24_EVAL_MODULES=[
   {key:'digital_interview',label:'Entrevista Digital Estructurada',description:'Filtro asíncrono con respuestas por nota de voz a preguntas clave del puesto.',icon:'🎤'},
   {key:'medida',label:'Módulo a la Medida',description:'Digitalizamos tus pruebas técnicas o procesos de Onboarding corporativo.',icon:'🛠️',salesHook:true},
 ];
-/** CTA comercial Crear evaluación (UI only; no backend / no ASSIGNABLE_MODULE_KEYS). */
-const MIND24_CEV_FITNESS_UPSELL={
-  key:'__cev_fitness_upsell',
-  label:'Mind Fitness — Bienestar Organizacional',
-  description:'Bienestar corporativo y mindfulness para tu organización.',
-  icon:'❤️',
-  fitnessHook:true,
-};
 const MIND24_LEGACY_MOD_KEYS={habilidades:'sales_sjt',habilidades_especificas:'sales_sjt',conocimientos:'terman',cognitivo:'terman',raven:'terman',disc:'cleaver',liderazgo:'medida',entrevista_digital:'digital_interview'};
 function mind24ModIsCommercialHook(mod){ return mod&&(mod.salesHook||mod.fitnessHook); }
 function mind24ModAssignable(mod){ return mod&&!mod.comingSoon&&!mind24ModIsCommercialHook(mod)&&MIND24_ASSIGNABLE_KEYS.indexOf(mod.key)>=0; }
@@ -2207,17 +2196,8 @@ function mind24CreateCevModToggleEl(mod){
 }
 function mind24InitCrearEvalModules(){
   const list=document.getElementById('cev-mod-list');
-  const commercial=document.getElementById('cev-mod-commercial');
   if(!list)return;
   list.innerHTML='';
-  if(commercial){
-    commercial.innerHTML='';
-    commercial.appendChild(mind24CreateCevModToggleEl(MIND24_CEV_FITNESS_UPSELL));
-    MIND24_EVAL_MODULES.forEach(mod=>{
-      if(!mod.salesHook)return;
-      commercial.appendChild(mind24CreateCevModToggleEl(mod));
-    });
-  }
   MIND24_EVAL_MODULES.forEach(mod=>{
     if(mind24ModIsCommercialHook(mod))return;
     list.appendChild(mind24CreateCevModToggleEl(mod));
