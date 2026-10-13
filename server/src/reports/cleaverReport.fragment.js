@@ -274,16 +274,18 @@ export function buildCleaverModuleFragment(ctx) {
 
   return `
   <section class="module-block cle-module" id="mod-cleaver">
-    <div class="module-hd">
-      ${SVG_TARGET}
-      <div>
-        <h2 class="module-title">Comportamiento (Cleaver)</h2>
-        <p class="module-sub">Perfil conductual DISC · ${esc(CLEAVER_NET_PROFILE_LABEL)} · Cierre: ${closed}</p>
+    <div class="cle-module-lead">
+      <div class="module-hd">
+        ${SVG_TARGET}
+        <div>
+          <h2 class="module-title">Comportamiento (Cleaver)</h2>
+          <p class="module-sub">Perfil conductual DISC · ${esc(CLEAVER_NET_PROFILE_LABEL)} · Cierre: ${closed}</p>
+        </div>
       </div>
-    </div>
-    <div class="section">
-      <div class="section-title">Resultado ejecutivo</div>
-      ${executiveHtml}
+      <div class="section cle-section-exec">
+        <div class="section-title">Resultado ejecutivo</div>
+        ${executiveHtml}
+      </div>
     </div>
     <div class="section">
       <div class="section-title">Capas del perfil — Más, Menos y Perfil neto</div>

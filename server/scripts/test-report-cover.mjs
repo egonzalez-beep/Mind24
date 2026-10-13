@@ -179,7 +179,11 @@ const cogModuleSlice = (() => {
 check(cogModuleSlice.includes('Agrupación descriptiva de series'), 'Cognitiva: agrupación descriptiva');
 check(!cogModuleSlice.includes('Referencia técnica'), 'Cognitiva: sin referencia técnica');
 check(!cogModuleSlice.includes('cog-tech-table'), 'Cognitiva: sin tabla duplicada');
-check(soloCogHtml.includes('page-break-before:avoid'), 'consolidado: regla anti-footer huérfano');
+check(
+  soloCogHtml.includes('.footer{') && soloCogHtml.includes('page-break-before:auto'),
+  'consolidado: footer puede compartir última página con contenido',
+);
+check(soloCogHtml.includes('cle-module-lead'), 'consolidado: wrapper anti-heading huérfano Cleaver');
 
 for (const sc of scenarios) {
   const summaries = buildModuleCoverSummaries(sc.attempts);

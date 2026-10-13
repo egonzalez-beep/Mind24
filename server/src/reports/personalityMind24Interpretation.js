@@ -190,8 +190,8 @@ export const PM24_SUMMARY_UPPER_SNIPPET = {
   orden_precision: 'organizar el trabajo, cuidar el detalle y revisar antes de cerrar',
   autonomia_decision: 'autogestión',
   influencia_persuasion: 'argumentar y buscar que las propuestas sean consideradas',
-  sociabilidad_colaboracion: 'coordinación directa y apoyo en trabajo compartido',
-  liderazgo_equipos: 'participación en la coordinación del trabajo colectivo',
+  sociabilidad_colaboracion: 'contacto directo con apoyo en trabajo compartido',
+  liderazgo_equipos: 'participación en la dirección del trabajo colectivo',
   apego_normas: 'uso de referencias y procedimientos claros',
   regulacion_presion: 'mantener el foco bajo exigencia y recuperarse tras contratiempos',
   dinamismo_iniciativa: 'ritmo activo e inicio oportuno de tareas',
@@ -233,19 +233,32 @@ function filterRedundantSummaryPhrases(phrases) {
     if (/\bgradual/i.test(lower)) seenStems.add('gradual');
     if (/\bpreferencia\b/i.test(lower) && seenStems.has('preferencia')) continue;
     if (/\bpreferencia\b/i.test(lower)) seenStems.add('preferencia');
+    if (/\bcoordinaci[oó]n\b/i.test(lower) && seenStems.has('coordinación')) continue;
     const dup = [...seenStems].some((stem) => stem.length > 6 && lower.includes(stem));
     if (dup && out.length > 0) continue;
     out.push(phrase);
+    if (/\bcoordinaci[oó]n\b/i.test(lower)) seenStems.add('coordinación');
     const head = lower.split(/\s+/).slice(0, 3).join(' ');
     if (head.length > 8) seenStems.add(head);
   }
   return out.slice(0, 3);
 }
 
-function withDefiniteArticle(phrase) {
+/**
+ * Enlace gramatical tras “conductas orientadas …” (a / a la / al / a un).
+ * @param {string} phrase
+ */
+export function conductasLinkFragment(phrase) {
   const s = phrase.trim();
-  if (/^(la |el |las |los )/i.test(s)) return s;
-  return `la ${s}`;
+  if (/^el /i.test(s)) return `al ${s.slice(3)}`;
+  if (/^(la |las |los |un |una )/i.test(s)) return `a ${s}`;
+  if (/^(coordinación|organización|autogestión|participación)/i.test(s)) {
+    return `a la ${s}`;
+  }
+  if (/^uso\b/i.test(s)) return `al ${s}`;
+  if (/^contacto\b/i.test(s)) return `al ${s}`;
+  if (/^ritmo\b/i.test(s)) return `a un ${s}`;
+  return `a ${s}`;
 }
 
 function composeUpperConductasPhrase(snippets) {
@@ -253,12 +266,8 @@ function composeUpperConductasPhrase(snippets) {
   if (parts.length === 0) {
     return 'descritas con mayor frecuencia relativa en esas dimensiones';
   }
-  if (parts.length === 1) {
-    return `orientadas al ${parts[0]}`;
-  }
-  const first = parts[0];
-  const rest = parts.slice(1).map((p) => withDefiniteArticle(p));
-  return `orientadas al ${first}, ${joinSpanishList(rest)}`;
+  const links = parts.map(conductasLinkFragment);
+  return `orientadas ${joinSpanishList(links)}`;
 }
 
 function composeLowerPreferencePhrase(snippets) {
@@ -277,11 +286,22 @@ export function summaryQualityIssues(text) {
   if (gradual > 1) issues.push('repeat-gradual');
   const pref = (text.match(/\bpreferencia\b/gi) || []).length;
   if (pref > 1) issues.push('repeat-preferencia');
+  if (/\bal coordinaci/i.test(text)) issues.push('grammar-al-coordinacion');
+  if (/\bla uso\b/i.test(text)) issues.push('grammar-la-uso');
+  if (/\bal autogest/i.test(text)) issues.push('grammar-al-autogestion');
   const conductasTail = text.split(/conductas\s/i)[1];
   const preferenciaTail = text.split(/preferencia por\s/i)[1];
-  for (const tail of [conductasTail, preferenciaTail]) {
-    if (!tail) continue;
-    const segment = tail.split(/\.\s/)[0] || tail;
+  if (conductasTail) {
+    const listPart = conductasTail.split(/orientadas\s/i)[1] || conductasTail;
+    const segment = listPart.split(/\.\s/)[0] || listPart;
+    const coordInConductas = (segment.match(/\bcoordinaci[oó]n\b/gi) || []).length;
+    if (coordInConductas > 1) issues.push('repeat-coordinacion-conductas');
+    const listJoinY = segment.includes(',') ? (segment.match(/,\s+[^,]+(\s+y\s+[^,]+)?$/i) ? 1 : 0) : 0;
+    const internalY = (segment.match(/\s+y\s+/g) || []).length;
+    if (internalY - listJoinY > 2) issues.push('excess-y');
+  }
+  if (preferenciaTail) {
+    const segment = preferenciaTail.split(/\.\s/)[0] || preferenciaTail;
     if ((segment.match(/\s+y\s+/g) || []).length > 2) issues.push('excess-y');
   }
   return issues;

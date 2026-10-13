@@ -12,6 +12,7 @@ import {
   assertInterpretationCatalogComplete,
   buildDimensionInterpretationView,
   buildPersonalityProfileSummary,
+  conductasLinkFragment,
   HOMOGENEOUS_PROFILE_SUMMARY_TEXT,
   summaryQualityIssues,
   personalityDimensionNarrative,
@@ -129,6 +130,81 @@ for (const def of PERSONALIDAD_MIND24_DIMENSIONS) {
     `${def.dimensionId}: mean 4.0 → upper`,
   );
 }
+
+console.log('\n--- Síntesis top Sociabilidad + Liderazgo + Apego a normas ---\n');
+
+const realTopMeans = {
+  logro_persistencia: 3.0,
+  orden_precision: 3.1,
+  autonomia_decision: 3.2,
+  influencia_persuasion: 3.0,
+  sociabilidad_colaboracion: 4.35,
+  liderazgo_equipos: 4.25,
+  apego_normas: 4.45,
+  regulacion_presion: 3.0,
+  dinamismo_iniciativa: 2.6,
+  adaptabilidad_cambio: 2.5,
+};
+const realTopRows = buildRows(realTopMeans);
+const realTopTrends = intraprofileTrends(realTopRows);
+const realTopIds = realTopTrends.moreExpressed.map((r) => r.dimensionId);
+check(
+  realTopIds.includes('sociabilidad_colaboracion') &&
+    realTopIds.includes('liderazgo_equipos') &&
+    realTopIds.includes('apego_normas'),
+  'top 3 incluye sociabilidad, liderazgo y apego_normas',
+);
+const realTopSummary = buildPersonalityProfileSummary(realTopRows, realTopTrends);
+const realTopP1 = realTopSummary.paragraphs[0];
+check(!/\bal coordinaci/i.test(realTopP1), 'real top3: no “al coordinación”');
+check(!/\bla uso\b/i.test(realTopP1), 'real top3: no “la uso”');
+check(summaryQualityIssues(realTopP1).length === 0, 'real top3: summaryQualityIssues vacío');
+const conductasSeg =
+  realTopP1.split(/conductas\s/i)[1]?.split(/\.\s/)[0]?.toLowerCase() || '';
+check(
+  (conductasSeg.match(/\bcoordinaci[oó]n\b/g) || []).length === 0,
+  'real top3: sin repetición de “coordinación” en oración de conductas',
+);
+check(
+  conductasSeg.includes('contacto') || conductasSeg.includes('apoyo'),
+  'real top3: idea sociabilidad',
+);
+check(conductasSeg.includes('dirección') || conductasSeg.includes('colectivo'), 'real top3: idea liderazgo');
+check(conductasSeg.includes('referencias') || conductasSeg.includes('procedimientos'), 'real top3: idea apego_normas');
+
+console.log('\n--- Síntesis gramatical (composición conductas) ---\n');
+
+check(
+  conductasLinkFragment('contacto directo con apoyo en trabajo compartido') ===
+    'al contacto directo con apoyo en trabajo compartido',
+  'link: contacto → al',
+);
+check(conductasLinkFragment('uso de referencias y procedimientos claros') === 'al uso de referencias y procedimientos claros', 'link: uso → al');
+check(conductasLinkFragment('sostener el esfuerzo hacia resultados y el seguimiento de pendientes') === 'a sostener el esfuerzo hacia resultados y el seguimiento de pendientes', 'link: infinitivo → a');
+
+const grammarMeans = {
+  logro_persistencia: 3.0,
+  orden_precision: 3.0,
+  autonomia_decision: 3.0,
+  influencia_persuasion: 3.0,
+  sociabilidad_colaboracion: 4.4,
+  liderazgo_equipos: 4.2,
+  apego_normas: 4.5,
+  regulacion_presion: 3.0,
+  dinamismo_iniciativa: 2.5,
+  adaptabilidad_cambio: 2.5,
+};
+const grammarRows = buildRows(grammarMeans);
+const grammarTrends = intraprofileTrends(grammarRows);
+const grammarSummary = buildPersonalityProfileSummary(grammarRows, grammarTrends);
+const grammarText = grammarSummary.paragraphs.join(' ');
+check(!/\bal coordinaci/i.test(grammarText), 'síntesis: no “al coordinación”');
+check(!/\bla uso\b/i.test(grammarText), 'síntesis: no “la uso”');
+check(summaryQualityIssues(grammarText).length === 0, 'síntesis gramatical: calidad redacción');
+check(
+  grammarText.includes('al contacto directo') || grammarText.includes('al uso de referencias'),
+  'síntesis: concordancia artículos/preposiciones',
+);
 
 console.log('\n--- Perfil piloto realista ---\n');
 

@@ -76,8 +76,9 @@ const MASTER_STYLES = `
   .summary-kpi-value{font-size:13px;font-weight:800;color:#111827;margin-top:2px;line-height:1.35}
   .summary-kpi-value.summary-kpi-primary{font-size:18px;color:#4C1D95}
   .summary-kpi-value.summary-kpi-sm{font-size:11px;font-weight:700;color:#374151}
-  .details-page{padding:24px 32px 12px}
+  .details-page{padding:24px 32px 6px}
   .module-block{margin-top:24px;padding-top:18px;border-top:2px solid #E5E7EB;break-before:auto;break-after:auto;break-inside:auto;page-break-inside:auto}
+  .module-block:last-of-type{margin-bottom:4px}
   .module-block:first-child{margin-top:0;padding-top:0;border-top:none}
   .module-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
   .module-icon{font-size:22px;line-height:1}
@@ -155,6 +156,9 @@ const MASTER_STYLES = `
   .hon-attention-item strong{display:block;font-size:9px;color:#991B1B;margin-bottom:3px}
   .hon-attention-item span{color:#7F1D1D}
   .hon-synthesis .interp{padding:10px 12px;border-radius:8px;background:#F5F3FF;border:1px solid #DDD6FE}
+  .cle-module-lead{break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
+  .cle-module .module-hd{break-after:avoid;page-break-after:avoid;-webkit-column-break-after:avoid}
+  .cle-section-exec>.section-title{break-after:avoid;page-break-after:avoid}
   .cle-exec{border:1px solid #E5E7EB;border-radius:12px;padding:12px 14px;background:#fff;box-shadow:0 1px 2px rgba(17,24,39,.04);border-top:3px solid #7C3AED;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
   .cle-exec-head{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 16px;align-items:start}
   .cle-exec-kpi-primary{grid-column:1/-1}
@@ -347,7 +351,7 @@ const MASTER_STYLES = `
   .pm24-trend-empty{margin:0;font-size:9.5px;color:#6B7280}
   .pm24-intra-disclaimer{margin:0 0 12px;font-size:8.5px;color:#6B7280;line-height:1.45;font-style:italic}
   .generic-body{padding:12px 14px;border:1px dashed #D1D5DB;border-radius:8px;background:#F9FAFB}
-  .footer{margin-top:14px;padding-top:9px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center;break-before:avoid-page;page-break-before:avoid;break-inside:avoid;page-break-inside:avoid}
+  .footer{margin-top:8px;padding-top:8px;border-top:1px solid #E5E7EB;font-size:8px;color:#9CA3AF;text-align:center;break-before:auto;page-break-before:auto;break-after:auto;page-break-after:auto;break-inside:avoid;page-break-inside:avoid}
 `;
 
 function buildSummaryCardsHtml(summaries) {
