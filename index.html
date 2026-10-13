@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MIND24 — Bienestar & Evaluación Corporativa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -574,7 +574,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 #view-evaluacion{min-height:100vh;background:linear-gradient(160deg,var(--d1) 0%,var(--d2) 50%,var(--d3) 100%);display:flex;flex-direction:column;position:relative;overflow-x:hidden;}
 #view-evaluacion.hidden{display:none!important;pointer-events:none!important;visibility:hidden;}
 #view-evaluacion::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.05) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;opacity:.35;}
-.eval-topbar{position:sticky;top:0;z-index:100;background:rgba(6,4,17,.92);border-bottom:1px solid rgba(124,58,237,.2);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.eval-topbar{position:sticky;top:0;z-index:100;background:rgba(6,4,17,.92);border-bottom:1px solid rgba(124,58,237,.2);padding:max(0px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:nowrap;}
+.eval-tb-mobile-prog{display:none;flex-direction:column;gap:4px;min-width:0;flex:1 1 auto;}
+.eval-mobile-prog-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.02em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eval-mobile-prog-track{height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+.eval-mobile-prog-fill{height:100%;background:var(--purple-gradient);border-radius:2px;transition:width .35s ease;box-shadow:0 0 6px rgba(139,92,246,.45);}
 .eval-logo{display:flex;align-items:center;gap:8px;}
 .eval-logo-icon{width:32px;height:32px;background:var(--assess-gradient);border-radius:8px;position:relative;box-shadow:0 4px 12px rgba(124,58,237,.4);flex-shrink:0;}
 .eval-logo-icon::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.8);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
@@ -708,6 +712,39 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .btn-r-primary:hover{transform:translateY(-2px);}
 .btn-r-secondary{padding:14px 28px;font-size:15px;font-weight:600;color:rgba(255,255,255,.6);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;transition:var(--tr-fast);}
 .btn-r-secondary:hover{color:var(--white);background:rgba(255,255,255,.1);}
+
+/* Personalidad Mind24 — mobile polish v1 (candidato; UI only) */
+#view-evaluacion.eval-personalidad-mind24{min-height:100vh;min-height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.eval-instructions li.eval-instr-pm24-scale{margin-top:4px;padding-top:8px;border-top:1px solid rgba(139,92,246,.12);line-height:1.45;}
+@media(max-width:768px){
+  #view-evaluacion #scr-dynamic.active{align-items:flex-start;justify-content:flex-start;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));flex:1 1 auto;min-height:0;}
+  #view-evaluacion #scr-dynamic.active .eval-q-wrap{gap:18px;width:100%;}
+  #view-evaluacion #scr-dynamic.active .eval-q-card{margin-bottom:0;}
+  #view-evaluacion #scr-dynamic.active .dyn-mc-list{gap:8px;}
+  #view-evaluacion #scr-dynamic.active .dyn-mc-opt{padding:14px 14px;min-height:44px;}
+  .eval-personalidad-mind24 .eval-topbar{height:auto;min-height:56px;flex-wrap:wrap;row-gap:6px;padding-bottom:8px;}
+  .eval-personalidad-mind24 .eval-tb-mobile-prog.is-active{display:flex;flex:1 1 100%;order:3;margin:0;padding:0 0 2px;}
+  .eval-personalidad-mind24 .eval-tb-center{display:none!important;}
+  .eval-personalidad-mind24 #scr-intro.active{align-items:flex-start;justify-content:flex-start;padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));}
+  .eval-personalidad-mind24 #scr-intro.active .eval-intro-card{padding:28px 20px 24px;margin:0 auto;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-intro-badge{margin-bottom:16px;padding:5px 12px;font-size:11px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-intro-title{margin-bottom:10px;font-size:clamp(22px,6vw,28px);}
+  .eval-personalidad-mind24 #scr-intro.active .eval-intro-subtitle{margin-bottom:18px;font-size:14px;line-height:1.5;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-intro-meta{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-meta-item{padding:10px 6px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-meta-icon{font-size:18px;margin-bottom:4px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-meta-value{font-size:16px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-instructions{padding:12px 14px;margin-bottom:20px;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-instructions li{font-size:13px;margin-bottom:5px;line-height:1.45;}
+  .eval-personalidad-mind24 #scr-intro.active .eval-instructions li.eval-instr-pm24-scale{margin-top:6px;padding-top:6px;font-size:12px;line-height:1.4;}
+  .eval-personalidad-mind24 #scr-intro.active .btn-start{padding:14px 28px;width:100%;max-width:100%;justify-content:center;box-sizing:border-box;}
+}
+@media(max-width:480px){
+  #scr-dynamic .eval-nav{flex-wrap:wrap;justify-content:stretch;gap:10px 10px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));}
+  #scr-dynamic .eval-nav .q-note{order:1;flex:0 0 100%;width:100%;text-align:center;font-size:13px;color:rgba(255,255,255,.45);font-style:normal;line-height:1.35;padding:0 4px;}
+  #scr-dynamic .eval-nav #dynBtnPrev{order:2;flex:1 1 calc(50% - 5px);justify-content:center;min-height:44px;padding:12px 10px;}
+  #scr-dynamic .eval-nav #dynBtnNext{order:3;flex:1 1 calc(50% - 5px);justify-content:center;min-height:44px;padding:12px 10px;}
+}
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -1611,6 +1648,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <div id="view-evaluacion" class="hidden">
   <div class="eval-topbar">
     <div class="eval-logo"><div class="eval-logo-icon"></div><div class="eval-logo-name">MIND<span>24</span></div></div>
+    <div class="eval-tb-mobile-prog" id="evalMobileProg" aria-hidden="true">
+      <div class="eval-mobile-prog-lbl" id="evalMobileProgText">Pregunta 1 de 1 · 0%</div>
+      <div class="eval-mobile-prog-track" aria-hidden="true"><div class="eval-mobile-prog-fill" id="evalMobileProgFill" style="width:0%"></div></div>
+    </div>
     <div class="eval-tb-center">
       <div class="eval-section-tag" id="evalSecTag">📊 Batería de Honestidad</div>
       <div class="eval-prog-wrap">
@@ -2532,7 +2573,13 @@ function mind24ResetUiBlockers(){
   const ev=document.getElementById('view-evaluacion');
   if(ev){
     ev.classList.add('hidden');
+    ev.classList.remove('eval-personalidad-mind24');
     ev.setAttribute('aria-hidden','true');
+  }
+  const mobProg=document.getElementById('evalMobileProg');
+  if(mobProg){
+    mobProg.classList.remove('is-active');
+    mobProg.setAttribute('aria-hidden','true');
   }
   document.querySelectorAll('.modal-overlay,.m24-fitness-overlay,.cev-success-overlay').forEach(function(el){
     el.classList.add('hidden');
@@ -4515,8 +4562,14 @@ function mind24PersonalityIntroHtml(){
   return '<li>Lee cada afirmación y selecciona la opción que mejor describa con qué frecuencia suele ocurrir en tu forma habitual de trabajar.</li>'
     +'<li>No hay respuestas correctas o incorrectas.</li>'
     +'<li>Responde pensando en tu comportamiento habitual, no en una situación excepcional.</li>'
-    +'<li><strong>Escala:</strong> 1 Nunca o casi nunca · 2 Rara vez · 3 A veces · 4 Con frecuencia · 5 Siempre o casi siempre</li>'
+    +'<li class="eval-instr-pm24-scale"><strong>Escala:</strong> 1 Nunca o casi nunca · 2 Rara vez · 3 A veces · 4 Con frecuencia · 5 Siempre o casi siempre</li>'
     +'<li>Puedes salir y reanudar más tarde; se conservará tu avance.</li>';
+}
+function mind24EvalApplyPersonalityShellClass(){
+  const root=document.getElementById('view-evaluacion');
+  if(!root)return;
+  const mk=mind24ResolveModKey(window.ATTEMPT_CTX&&window.ATTEMPT_CTX.moduleKey);
+  root.classList.toggle('eval-personalidad-mind24',mk==='personalidad_mind24');
 }
 
 function dynamicStartFromIntro(){
@@ -4581,6 +4634,7 @@ function startDynamicAssessment(payload){
     else instr.innerHTML='<li>Lee cada situación con cuidado y elige la respuesta que mejor refleje tu comportamiento real.</li><li>No hay respuestas correctas o incorrectas — responde con total honestidad.</li><li>Evita interrupciones. El tiempo corre desde que inicies.</li><li>Responde todas las preguntas antes de enviar.</li><li>Los resultados son confidenciales y solo visibles para el equipo de HR.</li>';
   }
   showView('evaluacion');
+  mind24EvalApplyPersonalityShellClass();
   MIND24_EVAL_SCREENS.forEach(function(s){ s.classList.remove('active'); });
   if(showPersonalityIntro){
     showScr('intro');
@@ -4650,6 +4704,21 @@ function mind24EvalShellSync(){
   if(progLbl)progLbl.textContent=prefix+' '+(current+1)+' de '+total;
   if(progPct)progPct.textContent=pct+'%';
   if(progFill)progFill.style.width=pct+'%';
+
+  mind24EvalApplyPersonalityShellClass();
+  const mobProg=document.getElementById('evalMobileProg');
+  const mobText=document.getElementById('evalMobileProgText');
+  const mobFill=document.getElementById('evalMobileProgFill');
+  const isPm24Shell=engine==='dynamic'&&window.DYNAMIC_CTX&&mind24ResolveModKey(window.DYNAMIC_CTX.moduleKey)==='personalidad_mind24';
+  if(mobProg){
+    mobProg.classList.toggle('is-active',!!isPm24Shell);
+    mobProg.setAttribute('aria-hidden',isPm24Shell?'false':'true');
+  }
+  if(isPm24Shell){
+    const lbl=prefix+' '+(current+1)+' de '+total+' · '+pct+'%';
+    if(mobText)mobText.textContent=lbl;
+    if(mobFill)mobFill.style.width=pct+'%';
+  }
 
   if(engine==='terman'){
     if(timerBox)timerBox.classList.add('hidden');
