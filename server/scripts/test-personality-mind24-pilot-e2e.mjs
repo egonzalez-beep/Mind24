@@ -6,8 +6,10 @@ process.env.DATABASE_URL =
   process.env.DATABASE_URL || 'postgresql://test:test@127.0.0.1:5432/test';
 
 import {
+  PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
   PERSONALIDAD_MIND24_DIMENSIONS,
   PERSONALIDAD_MIND24_SCALE,
+  filterPersonalityCatalogQuestionsToActiveForm,
   personalityPilotItemsFlat,
   personalityProductionItemsFlat,
   personalityQuestionCount,
@@ -165,7 +167,7 @@ console.log('--- [1] Banco y módulo activo ---\n');
 check(personalityPilotItemsFlat().length === 80, '80 ítems pilot');
 check(personalityProductionItemsFlat().length === 0, '0 production');
 check(personalitySyncableItemsFlat().length === 80, '80 syncable');
-check(personalityQuestionCount() === 0, 'personalityQuestionCount sigue production-only (0)');
+check(personalityQuestionCount() === 60, 'personalityQuestionCount = forma activa v2 (60)');
 check(MODULE_CATALOG.personalidad_mind24.comingSoon === false, 'comingSoon false');
 check(isOfferableModuleKey('personalidad_mind24') === true, 'ofertable');
 check(isModuleActiveInDb('personalidad_mind24') === true, 'isModuleActiveInDb true');
@@ -197,19 +199,21 @@ check(opts === 400, '400 opciones totales');
 const sync2 = await ensurePersonalityMind24Questions(db, 'mod-pm24');
 check(sync2.created === 0, 'idempotencia sync');
 
-console.log('\n--- [3] Start payload candidato (80, sanitizado) ---\n');
+console.log('\n--- [3] Start payload candidato (60 forma v2, sanitizado) ---\n');
 
 const catalogQs = dbQuestionsFromSync(db);
+const activeCatalogQs = filterPersonalityCatalogQuestionsToActiveForm(catalogQs);
+check(activeCatalogQs.length === 60, 'catálogo activo 60 tras sync 80');
 const attempt = { id: 'att-e2e', results: null };
-const resolved = resolvePersonalityPresentationOrder(attempt, catalogQs, {
+const resolved = resolvePersonalityPresentationOrder(attempt, activeCatalogQs, {
   random: () => 0.42,
 });
-check(resolved.presentationOrder.length === 80, 'presentationOrder 80');
-const ordered = orderQuestionsByPresentation(catalogQs, resolved.presentationOrder);
-check(ordered.length === 80, 'payload 80 preguntas');
+check(resolved.presentationOrder.length === 60, 'presentationOrder 60');
+const ordered = orderQuestionsByPresentation(activeCatalogQs, resolved.presentationOrder);
+check(ordered.length === 60, 'payload 60 preguntas');
 
 const clientPayload = ordered.map((q) => serializeQuestion(q, 'personalidad_mind24'));
-check(clientPayload.length === 80, 'serialize 80');
+check(clientPayload.length === 60, 'serialize 60');
 check(
   clientPayload.every((q) => q.type === 'MULTIPLE_CHOICE' && q.options.length === 5),
   'MULTIPLE_CHOICE × 5 opciones',
@@ -223,67 +227,75 @@ check(forbidden.length === 0, 'metadata sanitizada');
 
 console.log('\n--- [4] Resume mismo orden ---\n');
 
-const stored = mergePersonalityAttemptResults(null, resolved.presentationOrder);
+const stored = mergePersonalityAttemptResults(null, resolved.presentationOrder, {
+  formVersion: PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
+});
 const attemptResume = { id: 'att-e2e', results: stored };
-const resolved2 = resolvePersonalityPresentationOrder(attemptResume, catalogQs);
+const resolved2 = resolvePersonalityPresentationOrder(attemptResume, activeCatalogQs);
 check(resolved2.created === false, 'resume: no recrea orden');
 check(
   JSON.stringify(resolved2.presentationOrder) === JSON.stringify(resolved.presentationOrder),
   'resume: mismo presentationOrder',
 );
 
-console.log('\n--- [5] Completion 79/80 vs 80/80 ---\n');
+console.log('\n--- [5] Completion 59/60 vs 60/60 (forma v2) ---\n');
 
 const expectedItems = personalityExpectedItemsFromQuestions(ordered);
-const rows79 = ordered.slice(0, 79).map((q, idx) => ({
+const rows59 = ordered.slice(0, 59).map((q, idx) => ({
   questionId: q.id,
   question: { metadata: q.metadata },
   selectedOption: { value: String((idx % 5) + 1), sortOrder: idx % 5 },
 }));
-const scored79 = scorePersonalityMind24Responses(rows79, { expectedItems });
-check(scored79.form.totalItemsExpected === 80, 'form frozen totalItemsExpected 80');
-const comp79 = computePersonalityMind24Completeness(
+const scored59 = scorePersonalityMind24Responses(rows59, {
+  expectedItems,
+  formVersion: PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
+});
+check(scored59.form.totalItemsExpected === 60, 'form frozen totalItemsExpected 60');
+const comp59 = computePersonalityMind24Completeness(
   ordered.map((q) => q.id),
-  rows79.map((r) => ({ questionId: r.questionId })),
+  rows59.map((r) => ({ questionId: r.questionId })),
 );
-check(comp79.answeredCount === 79, 'completeness 79/80');
-check(comp79.unansweredCount === 1, 'incompleto a 79 (1 omitida)');
+check(comp59.answeredCount === 59, 'completeness 59/60');
+check(comp59.unansweredCount === 1, 'incompleto a 59 (1 omitida)');
 
-const rows80 = ordered.map((q, idx) => ({
+const rows60 = ordered.map((q, idx) => ({
   questionId: q.id,
   question: { metadata: q.metadata },
   selectedOption: { value: String((idx % 5) + 1), sortOrder: idx % 5 },
 }));
-const scored80 = scorePersonalityMind24Responses(rows80, { expectedItems });
-check(scored80.form.totalItemsExpected === 80, '80/80 totalItemsExpected');
+const scored60 = scorePersonalityMind24Responses(rows60, {
+  expectedItems,
+  formVersion: PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
+});
+check(scored60.form.totalItemsExpected === 60, '60/60 totalItemsExpected');
 for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
-  const d = scored80.dimensions[dim.dimensionId];
-  check(d.nAnswered === 8 && d.nExpected === 8, `${dim.dimensionId}: 8/8`);
+  const d = scored60.dimensions[dim.dimensionId];
+  check(d.nAnswered === 6 && d.nExpected === 6, `${dim.dimensionId}: 6/6`);
   check(d.scaleMin === 1 && d.scaleMax === 5, `${dim.dimensionId}: escala 1–5`);
   check(d.mean != null, `${dim.dimensionId}: mean presente`);
 }
-check(scored80.global === undefined, 'sin global');
+check(scored60.global === undefined, 'sin global');
 
 const reliabilityFast = {
   isUnreliableSpeed: true,
   avgSecondsPerQuestion: 0.1,
-  elapsedMs: 800,
-  questionCount: 80,
+  elapsedMs: 600,
+  questionCount: 60,
 };
-const comp80 = computePersonalityMind24Completeness(
+const comp60 = computePersonalityMind24Completeness(
   ordered.map((q) => q.id),
-  rows80.map((r) => ({ questionId: r.questionId })),
+  rows60.map((r) => ({ questionId: r.questionId })),
 );
-const aq = buildPersonalityApplicationQualityMeta(reliabilityFast, comp80);
+const aq = buildPersonalityApplicationQualityMeta(reliabilityFast, comp60);
 check(aq.reliability?.isUnreliableSpeed === undefined, 'sin isUnreliableSpeed');
-check(aq.completeness?.answeredCount === 80, 'AQ completeness 80');
+check(aq.completeness?.answeredCount === 60, 'AQ completeness 60');
 
-const persisted = buildPersonalityMind24AttemptScores(scored80, aq);
+const persisted = buildPersonalityMind24AttemptScores(scored60, aq);
 check(persisted.instrument === 'personalidad_mind24', 'scores.instrument');
-check(persisted.scores.form.totalItemsExpected === 80, 'persist form.totalItemsExpected');
+check(persisted.scores.form.totalItemsExpected === 60, 'persist form.totalItemsExpected');
 check(!('global' in persisted.scores), 'scores sin global');
 check(
-  readPersonalityPresentationOrder({ results: stored })?.length === 80,
+  readPersonalityPresentationOrder({ results: stored })?.length === 60,
   'presentationOrder persistible en attempt',
 );
 

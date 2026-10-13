@@ -3,9 +3,60 @@
  * Persistencia: AssessmentAttempt.results.personalityMind24.presentationOrder (questionId[]).
  */
 
+import {
+  PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
+  PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION,
+  PERSONALIDAD_MIND24_LEGACY_FORM_VERSION,
+  PERSONALIDAD_MIND24_LEGACY_ITEMS_PER_DIMENSION,
+} from '../data/personalityMind24Data.js';
+
 export const PERSONALITY_MIND24_MAX_CONSECUTIVE_SAME_DIMENSION = 2;
 
 const PERSONALITY_RESULTS_KEY = 'personalityMind24';
+
+export function inferPersonalityFormVersionFromOrderLength(length) {
+  if (length === 80) return PERSONALIDAD_MIND24_LEGACY_FORM_VERSION;
+  if (length === 60) return PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION;
+  return null;
+}
+
+export function personalityItemsPerDimensionForFormVersion(formVersion) {
+  if (formVersion === PERSONALIDAD_MIND24_LEGACY_FORM_VERSION) {
+    return PERSONALIDAD_MIND24_LEGACY_ITEMS_PER_DIMENSION;
+  }
+  if (formVersion === PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION) {
+    return PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION;
+  }
+  return null;
+}
+
+export function readPersonalityFormMeta(attempt) {
+  const results = attempt?.results;
+  if (!results || typeof results !== 'object' || Array.isArray(results)) {
+    return null;
+  }
+  const block = results[PERSONALITY_RESULTS_KEY];
+  if (!block || typeof block !== 'object') return null;
+  const order = Array.isArray(block.presentationOrder) ? block.presentationOrder : [];
+  let formVersion =
+    block.formVersion != null ? Number(block.formVersion) : inferPersonalityFormVersionFromOrderLength(order.length);
+  const totalItemsExpected =
+    block.totalItemsExpected != null ? Number(block.totalItemsExpected) : order.length || null;
+  let itemsPerDimension =
+    block.itemsPerDimension != null
+      ? Number(block.itemsPerDimension)
+      : personalityItemsPerDimensionForFormVersion(formVersion);
+  if (!formVersion && order.length) {
+    formVersion = inferPersonalityFormVersionFromOrderLength(order.length);
+    itemsPerDimension = personalityItemsPerDimensionForFormVersion(formVersion);
+  }
+  return {
+    formVersion,
+    totalItemsExpected,
+    itemsPerDimension,
+    presentationOrderLength: order.length,
+  };
+}
 
 export function personalityDimensionIdFromQuestion(question) {
   const meta = question?.metadata;
@@ -186,15 +237,28 @@ export async function resolvePersonalityAttemptForm(db, attempt, catalogQuestion
   };
 }
 
-export function mergePersonalityAttemptResults(existingResults, presentationOrder) {
+export function mergePersonalityAttemptResults(existingResults, presentationOrder, options = {}) {
   const base =
     existingResults && typeof existingResults === 'object' && !Array.isArray(existingResults)
       ? { ...existingResults }
       : {};
+  const order = [...presentationOrder];
+  const formVersion =
+    options.formVersion != null
+      ? options.formVersion
+      : inferPersonalityFormVersionFromOrderLength(order.length) ?? PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION;
+  const itemsPerDimension =
+    options.itemsPerDimension != null
+      ? options.itemsPerDimension
+      : personalityItemsPerDimensionForFormVersion(formVersion);
+  const totalItemsExpected = options.totalItemsExpected != null ? options.totalItemsExpected : order.length;
   return {
     ...base,
     [PERSONALITY_RESULTS_KEY]: {
-      presentationOrder: [...presentationOrder],
+      presentationOrder: order,
+      formVersion,
+      totalItemsExpected,
+      itemsPerDimension,
     },
   };
 }
@@ -217,7 +281,14 @@ export async function claimPersonalityPresentationOrder(db, attemptId, candidate
       return { presentationOrder: existing, claimed: false };
     }
 
-    const merged = mergePersonalityAttemptResults(results, candidateOrder);
+    const formVersion =
+      inferPersonalityFormVersionFromOrderLength(candidateOrder.length) ??
+      PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION;
+    const merged = mergePersonalityAttemptResults(results, candidateOrder, {
+      formVersion,
+      itemsPerDimension: personalityItemsPerDimensionForFormVersion(formVersion),
+      totalItemsExpected: candidateOrder.length,
+    });
     await tx.assessmentAttempt.update({
       where: { id: attemptId },
       data: { results: merged },

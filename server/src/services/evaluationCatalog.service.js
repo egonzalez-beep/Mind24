@@ -626,7 +626,10 @@ export async function ensurePersonalityMind24Questions(db, moduleId, syncableIte
   for (const question of existingQuestions) {
     const itemId = personalityItemIdFromQuestion(question);
     if (itemId && !syncableIds.has(itemId)) {
-      await db.question.delete({ where: { id: question.id } });
+      await db.question.update({
+        where: { id: question.id },
+        data: { isActive: false },
+      });
       byItemId.delete(itemId);
     }
   }

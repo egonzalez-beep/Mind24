@@ -158,7 +158,7 @@ check(personalityDraftItemsFlat().length === 0, 'accessor: 0 draft');
 check(personalityPilotItemsFlat().length === 80, 'accessor: 80 pilot');
 check(personalityProductionItemsFlat().length === 0, 'accessor: 0 production');
 check(personalitySyncableItemsFlat().length === 80, 'accessor: 80 syncable (pilot)');
-check(personalityQuestionCount() === 0, 'personalityQuestionCount = 0 (production)');
+check(personalityQuestionCount() === 60, 'personalityQuestionCount = 60 (forma activa v2)');
 check(personalitySyncableQuestionCount() === 80, 'personalitySyncableQuestionCount = 80');
 
 const ids = new Set(PERSONALIDAD_MIND24_ITEMS.map((i) => i.itemId));
@@ -330,8 +330,8 @@ check(scoredAll.global === undefined, 'scoring: sin global');
 
 const scoredSyncDefault = scorePersonalityMind24Responses(rowsForItems(allItems));
 check(
-  scoredSyncDefault.form.totalItemsExpected === 80,
-  'scoring default (syncable pilot): totalItemsExpected 80',
+  scoredSyncDefault.form.totalItemsExpected === 60,
+  'scoring default (forma activa v2): totalItemsExpected 60',
 );
 
 const likertLabels = PERSONALIDAD_MIND24_SCALE.optionLabels;

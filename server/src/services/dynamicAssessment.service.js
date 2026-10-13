@@ -25,11 +25,13 @@ import {
   computePersonalityMind24Completeness,
   scorePersonalityMind24Responses,
 } from './personalityMind24Scoring.service.js';
+import { filterPersonalityCatalogQuestionsToActiveForm } from '../data/personalityMind24Data.js';
 import {
   claimPersonalityPresentationOrder,
   orderQuestionsByPresentation,
   orderResponseRowsByPresentation,
   personalityExpectedItemsFromQuestions,
+  readPersonalityFormMeta,
   readPersonalityPresentationOrder,
   resolvePersonalityAttemptForm,
   resolvePersonalityPresentationOrder,
@@ -127,28 +129,36 @@ async function ensurePersonalityPresentationForAttempt(attempt, questions, optio
   return canonical;
 }
 
+function personalityCatalogForNewAttempt(catalogQuestions, attempt) {
+  const stored = readPersonalityPresentationOrder(attempt);
+  if (stored?.length) return catalogQuestions;
+  return filterPersonalityCatalogQuestionsToActiveForm(catalogQuestions);
+}
+
 async function buildPersonalityQuestionsPayload(attempt, catalogQuestions, moduleKey, { resumed }) {
+  const catalogForResolve = personalityCatalogForNewAttempt(catalogQuestions, attempt);
   let form = await resolvePersonalityAttemptForm(
     prisma,
     attempt,
-    catalogQuestions,
+    catalogForResolve,
     questionInclude,
   );
 
   if (!form.frozen) {
-    if (!catalogQuestions?.length) {
+    const activeCatalog = filterPersonalityCatalogQuestionsToActiveForm(catalogQuestions);
+    if (!activeCatalog?.length) {
       const err = new Error('DYNAMIC_ENGINE_NOT_AVAILABLE');
       err.code = 'DYNAMIC_ENGINE_NOT_AVAILABLE';
       throw err;
     }
     const presentationOrder = await ensurePersonalityPresentationForAttempt(
       attempt,
-      catalogQuestions,
+      activeCatalog,
     );
     form = {
       frozen: false,
       presentationOrder,
-      questions: orderQuestionsByPresentation(catalogQuestions, presentationOrder),
+      questions: orderQuestionsByPresentation(activeCatalog, presentationOrder),
     };
   }
 
@@ -664,12 +674,18 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     let presentationOrder = personalityForm.presentationOrder;
     let formQuestions = personalityForm.questions;
     if (!presentationOrder?.length) {
+      const activeCatalog = filterPersonalityCatalogQuestionsToActiveForm(mod?.questions || []);
       presentationOrder = await ensurePersonalityPresentationForAttempt(
         attempt,
-        mod?.questions || [],
+        activeCatalog,
       );
-      formQuestions = orderQuestionsByPresentation(mod?.questions || [], presentationOrder);
+      formQuestions = orderQuestionsByPresentation(activeCatalog, presentationOrder);
     }
+
+    const formMeta = readPersonalityFormMeta(attempt);
+    const scoringFormVersion =
+      formMeta?.formVersion ??
+      (presentationOrder?.length === 80 ? 1 : presentationOrder?.length === 60 ? 2 : null);
 
     const pmRows = await prisma.candidateResponse.findMany({
       where: { attemptId: attempt.id },
@@ -689,7 +705,7 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
           question: r.question,
           selectedOption: r.selectedOption,
         })),
-        { expectedItems },
+        { expectedItems, formVersion: scoringFormVersion ?? undefined },
       );
     } catch (scoreErr) {
       diagCompleteFail(attemptId, 'scoring:personalidad_mind24', scoreErr);

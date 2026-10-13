@@ -1,10 +1,20 @@
 /**
  * Catálogo — Personalidad laboral Mind24 (clave: personalidad_mind24).
- * Formulario v1 fijo: 6 reactivos × 10 dimensiones (60 ítems production).
- * Banco de desarrollo: draft | pilot | production (sin selección aleatoria en v1).
+ * Banco total: 80 reactivos (10 dimensiones × 8 en banco).
+ * Forma activa v2: 60 reactivos (6 por dimensión) — shortlist aprobada.
+ * Reserva: 20 reactivos (permanecen en banco/BD, no entran en intentos nuevos).
+ * Forma legacy v1 (intentos congelados): 80 reactivos, 8 por dimensión.
  */
 
-export const PERSONALIDAD_MIND24_CATALOG_VERSION = 1;
+export const PERSONALIDAD_MIND24_CATALOG_VERSION = 2;
+
+/** Versión de forma congelada en intento (metadata results.personalityMind24.formVersion). */
+export const PERSONALIDAD_MIND24_LEGACY_FORM_VERSION = 1;
+export const PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION = 2;
+
+export const PERSONALIDAD_MIND24_LEGACY_ITEMS_PER_DIMENSION = 8;
+export const PERSONALIDAD_MIND24_BANK_ITEM_COUNT = 80;
+export const PERSONALIDAD_MIND24_RESERVE_ITEM_COUNT = 20;
 
 export const PERSONALIDAD_MIND24_MODULE_KEY = 'personalidad_mind24';
 
@@ -86,6 +96,94 @@ export const PERSONALIDAD_MIND24_DIMENSIONS = [
 ];
 
 const DIMENSION_IDS = new Set(PERSONALIDAD_MIND24_DIMENSIONS.map((d) => d.dimensionId));
+
+/** Shortlist definitiva — forma activa v2 (60). */
+export const PERSONALIDAD_MIND24_ACTIVE_FORM_ITEM_IDS = [
+  'pm24_002',
+  'pm24_003',
+  'pm24_004',
+  'pm24_006',
+  'pm24_007',
+  'pm24_008',
+  'pm24_009',
+  'pm24_010',
+  'pm24_012',
+  'pm24_013',
+  'pm24_015',
+  'pm24_016',
+  'pm24_017',
+  'pm24_019',
+  'pm24_021',
+  'pm24_022',
+  'pm24_023',
+  'pm24_024',
+  'pm24_025',
+  'pm24_026',
+  'pm24_029',
+  'pm24_030',
+  'pm24_031',
+  'pm24_032',
+  'pm24_033',
+  'pm24_034',
+  'pm24_036',
+  'pm24_037',
+  'pm24_039',
+  'pm24_040',
+  'pm24_042',
+  'pm24_043',
+  'pm24_044',
+  'pm24_046',
+  'pm24_047',
+  'pm24_048',
+  'pm24_050',
+  'pm24_051',
+  'pm24_052',
+  'pm24_054',
+  'pm24_055',
+  'pm24_056',
+  'pm24_058',
+  'pm24_059',
+  'pm24_060',
+  'pm24_062',
+  'pm24_063',
+  'pm24_064',
+  'pm24_065',
+  'pm24_067',
+  'pm24_068',
+  'pm24_069',
+  'pm24_071',
+  'pm24_072',
+  'pm24_073',
+  'pm24_074',
+  'pm24_076',
+  'pm24_077',
+  'pm24_079',
+  'pm24_080',
+];
+
+/** Banco de reserva v2 (20) — no eliminar del catálogo ni de BD. */
+export const PERSONALIDAD_MIND24_RESERVE_FORM_ITEM_IDS = [
+  'pm24_001',
+  'pm24_005',
+  'pm24_011',
+  'pm24_014',
+  'pm24_018',
+  'pm24_020',
+  'pm24_027',
+  'pm24_028',
+  'pm24_035',
+  'pm24_038',
+  'pm24_041',
+  'pm24_045',
+  'pm24_049',
+  'pm24_053',
+  'pm24_057',
+  'pm24_061',
+  'pm24_066',
+  'pm24_070',
+  'pm24_075',
+  'pm24_078',
+];
 
 /**
  * Banco de reactivos (vacío hasta fase de redacción).
@@ -771,7 +869,7 @@ export function personalityProductionItemsFlat() {
   return personalityItemsWithBankStatus('production');
 }
 
-/** pilot ∪ production — excluye draft. */
+/** pilot ∪ production — excluye draft (banco completo sincronizable a BD, 80). */
 export function personalityMind24SyncableItemsFlat() {
   return personalityItemsFlat().filter((item) => SYNCABLE_BANK_STATUSES.has(item.bankStatus));
 }
@@ -781,14 +879,50 @@ export function personalitySyncableItemsFlat() {
   return personalityMind24SyncableItemsFlat();
 }
 
-/** Preguntas activas en catálogo de producción (formulario live). */
-export function personalityQuestionCount() {
-  return personalityProductionItemsFlat().length;
+/** Banco total en código (alias explícito para reportes/sync). */
+export function personalityMind24BankItemsFlat() {
+  return personalitySyncableItemsFlat();
 }
 
-/** Preguntas sincronizables (piloto o producción). */
+/** Forma legacy v1 congelada: los 80 ítems sincronizables (8 por dimensión). */
+export function personalityLegacyFormItemsFlat() {
+  return personalitySyncableItemsFlat();
+}
+
+const _personalityItemById = () => new Map(PERSONALIDAD_MIND24_ITEMS.map((i) => [i.itemId, i]));
+
+/** Forma activa v2 — exactamente los 60 IDs aprobados. */
+export function getPersonalityMind24ActiveFormItems() {
+  const byId = _personalityItemById();
+  return PERSONALIDAD_MIND24_ACTIVE_FORM_ITEM_IDS.map((id) => {
+    const item = byId.get(id);
+    if (!item) throw new Error(`PERSONALITY_ACTIVE_FORM_MISSING_ITEM:${id}`);
+    return item;
+  });
+}
+
+/** Ítems de reserva (20) — permanecen en banco, excluidos de intentos nuevos. */
+export function getPersonalityMind24ReserveFormItems() {
+  const byId = _personalityItemById();
+  return PERSONALIDAD_MIND24_RESERVE_FORM_ITEM_IDS.map((id) => {
+    const item = byId.get(id);
+    if (!item) throw new Error(`PERSONALITY_RESERVE_FORM_MISSING_ITEM:${id}`);
+    return item;
+  });
+}
+
+/** Preguntas activas en forma v2 (live). */
+export function personalityQuestionCount() {
+  return getPersonalityMind24ActiveFormItems().length;
+}
+
+/** Preguntas sincronizables en BD (banco 80). */
 export function personalitySyncableQuestionCount() {
   return personalitySyncableItemsFlat().length;
+}
+
+export function personalityActiveFormQuestionCount() {
+  return getPersonalityMind24ActiveFormItems().length;
 }
 
 /**
@@ -856,4 +990,68 @@ export function validatePersonalityMind24ItemBank(items = PERSONALIDAD_MIND24_IT
   }
 
   return { ok: errors.length === 0, errors };
+}
+
+/**
+ * Valida banco 80, forma activa 60, reserva 20 y shortlists aprobadas.
+ * @returns {{ ok: boolean, errors: string[] }}
+ */
+export function validatePersonalityMind24FormPartition() {
+  const errors = [];
+  const bank = personalityMind24BankItemsFlat();
+  const active = getPersonalityMind24ActiveFormItems();
+  const reserve = getPersonalityMind24ReserveFormItems();
+  const bankIds = new Set(bank.map((i) => i.itemId));
+  const activeIds = new Set(active.map((i) => i.itemId));
+  const reserveIds = new Set(reserve.map((i) => i.itemId));
+
+  if (bank.length !== PERSONALIDAD_MIND24_BANK_ITEM_COUNT) {
+    errors.push(`bank count ${bank.length} !== ${PERSONALIDAD_MIND24_BANK_ITEM_COUNT}`);
+  }
+  if (active.length !== PERSONALIDAD_MIND24_FORM_ITEM_COUNT) {
+    errors.push(`active form ${active.length} !== ${PERSONALIDAD_MIND24_FORM_ITEM_COUNT}`);
+  }
+  if (reserve.length !== PERSONALIDAD_MIND24_RESERVE_ITEM_COUNT) {
+    errors.push(`reserve ${reserve.length} !== ${PERSONALIDAD_MIND24_RESERVE_ITEM_COUNT}`);
+  }
+  for (const id of PERSONALIDAD_MIND24_ACTIVE_FORM_ITEM_IDS) {
+    if (!bankIds.has(id)) errors.push(`active id not in bank: ${id}`);
+    if (reserveIds.has(id)) errors.push(`active id also reserve: ${id}`);
+  }
+  for (const id of PERSONALIDAD_MIND24_RESERVE_FORM_ITEM_IDS) {
+    if (!bankIds.has(id)) errors.push(`reserve id not in bank: ${id}`);
+    if (activeIds.has(id)) errors.push(`reserve id also active: ${id}`);
+  }
+  for (const id of bankIds) {
+    if (!activeIds.has(id) && !reserveIds.has(id)) {
+      errors.push(`bank item neither active nor reserve: ${id}`);
+    }
+  }
+  const activeByDim = personalityExpectedCountByDimension(active);
+  for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
+    if (activeByDim[dim.dimensionId] !== PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION) {
+      errors.push(
+        `active dim ${dim.dimensionId}: ${activeByDim[dim.dimensionId]} !== ${PERSONALIDAD_MIND24_ITEMS_PER_DIMENSION}`,
+      );
+    }
+  }
+  const legacyByDim = personalityExpectedCountByDimension(personalityLegacyFormItemsFlat());
+  for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
+    if (legacyByDim[dim.dimensionId] !== PERSONALIDAD_MIND24_LEGACY_ITEMS_PER_DIMENSION) {
+      errors.push(
+        `legacy dim ${dim.dimensionId}: ${legacyByDim[dim.dimensionId]} !== ${PERSONALIDAD_MIND24_LEGACY_ITEMS_PER_DIMENSION}`,
+      );
+    }
+  }
+  return { ok: errors.length === 0, errors };
+}
+
+/** Filtra preguntas BD al formulario activo v2 (por metadata.personalityItemId). */
+export function filterPersonalityCatalogQuestionsToActiveForm(catalogQuestions) {
+  const activeIds = new Set(getPersonalityMind24ActiveFormItems().map((i) => i.itemId));
+  return (catalogQuestions || []).filter((q) => {
+    const meta = q?.metadata && typeof q.metadata === 'object' ? q.metadata : {};
+    const itemId = meta.personalityItemId;
+    return itemId && activeIds.has(String(itemId));
+  });
 }

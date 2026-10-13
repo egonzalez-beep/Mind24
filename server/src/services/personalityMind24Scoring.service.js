@@ -1,10 +1,12 @@
 import {
-  PERSONALIDAD_MIND24_CATALOG_VERSION,
+  PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
   PERSONALIDAD_MIND24_DIMENSIONS,
   PERSONALIDAD_MIND24_MODULE_KEY,
   PERSONALIDAD_MIND24_SCALE,
+  getPersonalityMind24ActiveFormItems,
+  getPersonalityMind24ReserveFormItems,
   personalityExpectedCountByDimension,
-  personalityProductionItemsFlat,
+  personalityMind24BankItemsFlat,
   personalitySyncableItemsFlat,
 } from '../data/personalityMind24Data.js';
 
@@ -85,7 +87,9 @@ function buildPersonalityFormMeta(expectedItems) {
   return {
     itemsPerDimension: uniform ? perDimCounts[0] : null,
     totalItemsExpected: total,
-    productionItemsInCatalog: personalityProductionItemsFlat().length,
+    bankItemsInCatalog: personalityMind24BankItemsFlat().length,
+    activeFormItemsInCatalog: getPersonalityMind24ActiveFormItems().length,
+    reserveItemsInCatalog: getPersonalityMind24ReserveFormItems().length,
     syncableItemsInCatalog: personalitySyncableItemsFlat().length,
   };
 }
@@ -152,7 +156,7 @@ export function buildPersonalityApplicationQualityMeta(timingSource, completenes
  * @param {{ expectedItems?: Array<object> }} [options] Ítems del formulario aplicado (default: syncable)
  */
 export function scorePersonalityMind24Responses(rows, options = {}) {
-  const expectedItems = options.expectedItems ?? personalitySyncableItemsFlat();
+  const expectedItems = options.expectedItems ?? getPersonalityMind24ActiveFormItems();
   const expectedByDim = personalityExpectedCountByDimension(expectedItems);
   const dimensions = emptyDimensionScores(expectedByDim);
   const keyedByDimension = Object.fromEntries(
@@ -189,8 +193,10 @@ export function scorePersonalityMind24Responses(rows, options = {}) {
     bucket.mean = roundMean(values);
   }
 
+  const formVersion =
+    options.formVersion != null ? options.formVersion : PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION;
   return {
-    catalogVersion: PERSONALIDAD_MIND24_CATALOG_VERSION,
+    catalogVersion: formVersion,
     form: buildPersonalityFormMeta(expectedItems),
     dimensions,
     itemResponses,

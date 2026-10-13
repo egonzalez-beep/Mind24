@@ -6,9 +6,11 @@ process.env.DATABASE_URL =
   process.env.DATABASE_URL || 'postgresql://test:test@127.0.0.1:5432/test';
 
 import {
+  PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
   PERSONALIDAD_MIND24_DIMENSIONS,
   PERSONALIDAD_MIND24_ITEMS,
   PERSONALIDAD_MIND24_SCALE,
+  getPersonalityMind24ActiveFormItems,
   personalityItemsFlat,
 } from '../src/data/personalityMind24Data.js';
 import {
@@ -83,10 +85,15 @@ const questions80 = dbQuestionsFromItems(
   items80.map((i) => ({ ...i, bankStatus: 'pilot' })),
   'pilot',
 );
+const items60Active = getPersonalityMind24ActiveFormItems();
+const questions60Active = dbQuestionsFromItems(
+  items60Active.map((i) => ({ ...i, bankStatus: 'pilot' })),
+  'pilot',
+);
 
 for (let seed = 1; seed <= 25; seed += 1) {
-  const order = buildPersonalityPresentationOrder(questions80, { random: seededRandom(seed) });
-  const inv = validatePersonalityPresentationInvariants(questions80, order);
+  const order = buildPersonalityPresentationOrder(questions60Active, { random: seededRandom(seed) });
+  const inv = validatePersonalityPresentationInvariants(questions60Active, order);
   check(inv.ok, `shuffle seed ${seed}: invariantes (${inv.errors[0] || 'ok'})`);
 }
 
@@ -109,28 +116,30 @@ check(forbidden.length === 0, 'sin dimensionId/direction/personalityItemId/bankS
 console.log('\n--- Persistencia presentationOrder ---\n');
 
 const attemptEmpty = { id: 'att-1', results: null };
-const resolved = resolvePersonalityPresentationOrder(attemptEmpty, questions80, {
+const resolved = resolvePersonalityPresentationOrder(attemptEmpty, questions60Active, {
   random: seededRandom(42),
 });
 check(resolved.created === true, 'primera resolución: created');
-check(resolved.presentationOrder.length === 80, 'orden: 80 ids');
+check(resolved.presentationOrder.length === 60, 'orden: 60 ids (forma activa v2)');
 
-const mergedResults = mergePersonalityAttemptResults(null, resolved.presentationOrder);
+const mergedResults = mergePersonalityAttemptResults(null, resolved.presentationOrder, {
+  formVersion: PERSONALIDAD_MIND24_ACTIVE_FORM_VERSION,
+});
 check(
-  readPersonalityPresentationOrder({ results: mergedResults })?.length === 80,
+  readPersonalityPresentationOrder({ results: mergedResults })?.length === 60,
   'readPersonalityPresentationOrder desde results',
 );
 
 const attemptStored = { id: 'att-1', results: mergedResults };
-const resolvedAgain = resolvePersonalityPresentationOrder(attemptStored, questions80);
+const resolvedAgain = resolvePersonalityPresentationOrder(attemptStored, questions60Active);
 check(resolvedAgain.created === false, 'resume: reutiliza orden persistido');
 check(
   JSON.stringify(resolvedAgain.presentationOrder) === JSON.stringify(resolved.presentationOrder),
   'resume: mismo presentationOrder',
 );
 
-const ordered = orderQuestionsByPresentation(questions80, resolved.presentationOrder);
-check(ordered.length === 80, 'orderQuestionsByPresentation: 80');
+const ordered = orderQuestionsByPresentation(questions60Active, resolved.presentationOrder);
+check(ordered.length === 60, 'orderQuestionsByPresentation: 60');
 check(ordered[0].id === resolved.presentationOrder[0], 'orden aplicado a preguntas');
 
 console.log('\n--- Scoring integración 80 ---\n');
@@ -183,18 +192,9 @@ check(
 );
 check(attempt80.scores.itemResponses === undefined, '80: itemResponses no persistidos en scores');
 
-console.log('\n--- Scoring integración 60 ---\n');
+console.log('\n--- Scoring integración 60 (forma activa v2) ---\n');
 
-const prodItems = [];
-for (const dim of PERSONALIDAD_MIND24_DIMENSIONS) {
-  prodItems.push(
-    ...personalityItemsFlat()
-      .filter((i) => i.dimensionId === dim.dimensionId)
-      .slice(0, 6)
-      .map((i) => ({ ...i, bankStatus: 'production' })),
-  );
-}
-const questions60 = dbQuestionsFromItems(prodItems, 'production');
+const questions60 = questions60Active;
 const expected60 = personalityExpectedItemsFromQuestions(questions60);
 const rows60 = questions60.map((q, idx) => ({
   questionId: q.id,

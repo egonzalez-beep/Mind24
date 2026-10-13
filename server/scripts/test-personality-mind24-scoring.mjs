@@ -5,6 +5,7 @@
 import {
   PERSONALIDAD_MIND24_DIMENSIONS,
   PERSONALIDAD_MIND24_SCALE,
+  getPersonalityMind24ActiveFormItems,
   personalityItemsFlat,
 } from '../src/data/personalityMind24Data.js';
 import {
@@ -91,16 +92,16 @@ check(allDimScored.global === undefined, 'ausencia de global en scoring');
 check(allDimScored.percentScore === undefined, 'ausencia de percentScore');
 check(allDimScored.percentile === undefined, 'ausencia de percentile');
 
-const pilotFormItems = personalityItemsFlat().map((item) => ({ ...item, bankStatus: 'pilot' }));
-const pilotFormRows = pilotFormItems.map((item) =>
+const activeFormItems = getPersonalityMind24ActiveFormItems();
+const activeFormRows = activeFormItems.map((item) =>
   row({ questionId: item.itemId, dimensionId: item.dimensionId, direction: item.direction, rawValue: 3 }),
 );
-const pilotScored = scorePersonalityMind24Responses(pilotFormRows, { expectedItems: pilotFormItems });
-check(pilotScored.form.totalItemsExpected === 80, 'form piloto: totalItemsExpected 80');
-check(pilotScored.form.itemsPerDimension === 8, 'form piloto: itemsPerDimension 8');
+const pilotScored = scorePersonalityMind24Responses(activeFormRows);
+check(pilotScored.form.totalItemsExpected === 60, 'form activo v2: totalItemsExpected 60');
+check(pilotScored.form.itemsPerDimension === 6, 'form activo v2: itemsPerDimension 6');
 check(
-  pilotScored.dimensions.logro_persistencia.nExpected === 8,
-  'form piloto: nExpected 8 por dimensión',
+  pilotScored.dimensions.logro_persistencia.nExpected === 6,
+  'form activo v2: nExpected 6 por dimensión',
 );
 
 const prodFormItems = [];
