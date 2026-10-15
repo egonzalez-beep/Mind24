@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
+import { createTimeclockSessionMiddleware } from './middleware/timeclockSession.middleware.js';
+import timeclockPublicRoutes from './routes/timeclock.public.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
 import { getUploadStorageMeta, resolveUploadsRootAbs, checkVolumePersistence } from './utils/uploadPaths.js';
@@ -81,26 +83,35 @@ export function createApp() {
     }),
   );
 
-  app.use(
-    session({
-      store: new PgStore({
-        conString: env.DATABASE_URL,
-        createTableIfMissing: false,
-      }),
-      name: 'mind24.sid',
-      secret: env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      rolling: true,
-      proxy: env.TRUST_PROXY,
-      cookie: {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 8 * 60 * 60 * 1000,
-      },
+  const adminSession = session({
+    store: new PgStore({
+      conString: env.DATABASE_URL,
+      createTableIfMissing: false,
     }),
-  );
+    name: 'mind24.sid',
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    proxy: env.TRUST_PROXY,
+    cookie: {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60 * 1000,
+    },
+  });
+
+  const timeclockSession = createTimeclockSessionMiddleware();
+
+  app.use('/api/timeclock/public', timeclockSession, timeclockPublicRoutes);
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/timeclock/public')) {
+      return next();
+    }
+    return adminSession(req, res, next);
+  });
 
   app.use((req, res, next) => {
     const t = Date.now();

@@ -58,6 +58,99 @@ model Organization {
   users                 User[]
   candidates            Candidate[]
   assessmentDefinitions AssessmentDefinition[]
+  workforceEmployees    WorkforceEmployee[]
+}
+
+enum RemoteWorkSessionStatus {
+  open
+  completed
+  admin_closed
+}
+
+enum WebSignal {
+  connected
+  background
+  no_signal
+}
+
+enum RemoteWorkEventType {
+  CHECK_IN
+  CHECK_OUT
+  WEB_SIGNAL_CHANGED
+  TAB_BACKGROUND
+  TAB_VISIBLE
+  ADMIN_CLOSE
+  ADMIN_ADJUSTMENT
+}
+
+/// Colaborador con acceso al checador remoto (dominio separado de candidatos).
+model WorkforceEmployee {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fullName        String
+  employeeCode    String?
+  position        String?
+  department      String?
+  timezone        String
+  isActive        Boolean  @default(true)
+  accessTokenHash String   @unique
+  tokenVersion    Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sessions RemoteWorkSession[]
+  events   RemoteWorkEvent[]
+
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+}
+
+model RemoteWorkSession {
+  id                String                    @id @default(cuid())
+  employeeId        String
+  employee          WorkforceEmployee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  checkInAt         DateTime                  @db.Timestamptz(6)
+  checkOutAt        DateTime?                 @db.Timestamptz(6)
+  status            RemoteWorkSessionStatus   @default(open)
+  lastHeartbeatAt   DateTime?                 @db.Timestamptz(6)
+  lastWebSignal     WebSignal                 @default(no_signal)
+  lastVisibilityState String?
+  userAgent         String?
+  clientMetadata    Json?
+  anomalyFlag       Boolean                   @default(false)
+  closedByUserId    String?
+  closedBy          User?                     @relation("RemoteWorkSessionClosedBy", fields: [closedByUserId], references: [id], onDelete: SetNull)
+  closedAt          DateTime?                 @db.Timestamptz(6)
+  closeReason       String?
+  adjustedByUserId  String?
+  adjustedBy        User?                     @relation("RemoteWorkSessionAdjustedBy", fields: [adjustedByUserId], references: [id], onDelete: SetNull)
+  adjustedAt        DateTime?                 @db.Timestamptz(6)
+  adjustmentReason  String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  events RemoteWorkEvent[]
+
+  @@index([employeeId, checkInAt])
+  @@index([employeeId, status])
+}
+
+model RemoteWorkEvent {
+  id          String               @id @default(cuid())
+  sessionId   String
+  session     RemoteWorkSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  employeeId  String
+  employee    WorkforceEmployee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  type        RemoteWorkEventType
+  occurredAt  DateTime             @db.Timestamptz(6)
+  payload     Json?
+  actorUserId String?
+  actorUser   User?                @relation("RemoteWorkEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  createdAt   DateTime             @default(now())
+
+  @@index([sessionId, occurredAt])
+  @@index([employeeId, occurredAt])
 }
 
 model User {
@@ -77,6 +170,9 @@ model User {
 
   candidateProfile Candidate?
   assignmentsCreated Assignment[] @relation("AssignmentAssignedBy")
+  remoteWorkSessionsClosed RemoteWorkSession[] @relation("RemoteWorkSessionClosedBy")
+  remoteWorkSessionsAdjusted RemoteWorkSession[] @relation("RemoteWorkSessionAdjustedBy")
+  remoteWorkEventsActed RemoteWorkEvent[] @relation("RemoteWorkEventActor")
 }
 
 model Candidate {

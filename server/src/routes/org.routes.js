@@ -18,10 +18,13 @@ import {
   isPioneerAspenAdminEmail,
 } from '../services/aspenAdmin.service.js';
 import { filterAssignableModuleKeys } from '../utils/moduleCatalog.js';
+import timeclockOrgRoutes from './timeclock.org.routes.js';
 
 const router = Router();
 
 router.use(requireAuth, requireRole('empresa_admin'), requireEmpresaPortal);
+
+router.use('/timeclock', timeclockOrgRoutes);
 
 router.get('/candidates', async (req, res, next) => {
   try {
