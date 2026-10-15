@@ -47,8 +47,8 @@ router.get('/employees', async (req, res, next) => {
 router.get('/employees/:id', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const employee = await getWorkforceEmployeeForOrg(u.organizationId, req.params.id);
-    res.json({ employee });
+    const out = await getWorkforceEmployeeForOrg(u.organizationId, req.params.id);
+    res.json(out);
   } catch (e) {
     next(e);
   }

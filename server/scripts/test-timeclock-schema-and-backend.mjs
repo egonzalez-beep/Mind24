@@ -28,6 +28,9 @@ const {
   webSignalFromVisibility,
 } = await import('../src/services/timeclockWebSignal.service.js');
 const { createApp } = await import('../src/app.js');
+const { buildAdminJornadaPayload, workedDurationSec } = await import(
+  '../src/services/remoteWorkSession.service.js'
+);
 const { hashPassword } = await import('../src/services/auth.service.js');
 const {
   isTimeclockSessionCurrent,
@@ -110,6 +113,22 @@ const empV1 = { id: 'emp-1', tokenVersion: 1 };
 const empV2 = { id: 'emp-1', tokenVersion: 2 };
 check(isTimeclockSessionCurrent(sessionV1, empV1) === true, 'G session tokenVersion=1 matches employee');
 check(isTimeclockSessionCurrent(sessionV1, empV2) === false, 'G session tokenVersion=1 rejected after regenerate=2');
+
+const closedAt = new Date('2026-10-15T18:00:00Z');
+const closedSession = {
+  id: 's1',
+  checkInAt: new Date('2026-10-15T10:00:00Z'),
+  checkOutAt: closedAt,
+  status: 'completed',
+  lastHeartbeatAt: new Date('2026-10-15T17:50:00Z'),
+  lastWebSignal: 'connected',
+};
+const lastClosed = buildAdminJornadaPayload(null, closedSession);
+check(lastClosed.shiftLifecycle === 'SHIFT_COMPLETED', 'admin last closed → SHIFT_COMPLETED');
+check(lastClosed.session && lastClosed.session.checkOutAt, 'admin last closed includes checkOutAt');
+check(workedDurationSec(closedSession) === 8 * 3600, 'admin duration 8h');
+const none = buildAdminJornadaPayload(null, null);
+check(none.shiftLifecycle === 'OFF_DUTY' && none.session == null, 'admin no sessions → OFF_DUTY');
 
 console.log('\n=== Timeclock 1B — integration (DB) ===\n');
 

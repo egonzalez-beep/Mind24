@@ -132,6 +132,11 @@ export function createApp() {
     res.sendFile(indexHtmlAbs);
   });
 
+  // Checador remoto: SPA + token en fragmento (#TOKEN). Refresh directo debe servir el HTML.
+  app.get('/checador', (_req, res) => {
+    res.sendFile(indexHtmlAbs);
+  });
+
   app.use(errorHandler);
   return app;
 }

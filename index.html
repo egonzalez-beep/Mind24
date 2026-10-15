@@ -238,6 +238,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item-cta-fitness:hover{border-color:rgba(16,185,129,.6)!important;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(52,211,153,.12))!important;box-shadow:0 2px 12px rgba(16,185,129,.15);}
 .sidebar-item-cta-medida{border:1px solid #6ee7b7!important;background:linear-gradient(135deg,#ecfdf5,#d1fae5)!important;color:#065f46!important;font-weight:600!important;}
 .sidebar-item-cta-medida:hover{border-color:#34d399!important;background:linear-gradient(135deg,#d1fae5,#a7f3d0)!important;box-shadow:0 4px 16px rgba(52,211,153,.18);}
+.sidebar-item-cta-timeclock{border:1px solid rgba(37,99,235,.32)!important;background:linear-gradient(135deg,rgba(37,99,235,.09),rgba(14,165,233,.06))!important;color:#1e3a8a!important;font-weight:600!important;align-items:center;}
+.sidebar-item-cta-timeclock:hover{border-color:rgba(37,99,235,.55)!important;background:linear-gradient(135deg,rgba(37,99,235,.16),rgba(14,165,233,.1))!important;box-shadow:0 2px 12px rgba(37,99,235,.14);}
+.sidebar-item-cta-timeclock.active{border-color:rgba(37,99,235,.55)!important;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12);}
+.si-cta-stack{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.15;}
+.si-cta-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
+.si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
+.tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.tc-emp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.tc-emp-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--slate-200);color:var(--slate-500);font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+.tc-emp-table td{padding:10px;border-bottom:1px solid var(--slate-100);vertical-align:middle;}
+.tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;}
+.tc-emp-actions .card-action{padding:5px 10px;font-size:12px;}
+.tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
+.tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
+.tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:center;justify-content:center;padding:32px 20px;}
+.tc-emp-card{width:100%;max-width:520px;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:36px 32px 28px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
+.tc-emp-brand{font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--purple);margin-bottom:6px;}
+.tc-emp-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:18px;}
+.tc-emp-hello{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.2;margin-bottom:6px;}
+.tc-emp-meta{font-size:14px;color:var(--slate-500);margin-bottom:18px;}
+.tc-emp-clock{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--slate-100);margin-bottom:22px;font-size:13px;color:var(--slate-600);}
+.tc-emp-status{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:6px;}
+.tc-emp-state{font-size:22px;font-weight:800;margin-bottom:16px;color:var(--primary);}
+.tc-emp-rows{display:grid;gap:8px;margin-bottom:20px;font-size:14px;color:var(--slate-600);}
+.tc-emp-rows strong{color:var(--primary);}
+.tc-emp-btn{width:100%;border:none;border-radius:12px;padding:14px 18px;font-family:inherit;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;color:#fff;background:var(--assess-gradient);}
+.tc-emp-btn[disabled]{opacity:.55;cursor:wait;}
+.tc-emp-btn-out{background:linear-gradient(135deg,#1e293b,#334155);}
+.tc-emp-hint{font-size:13px;color:var(--slate-500);margin:12px 0 0;line-height:1.5;}
+.tc-emp-err{font-size:14px;color:#b91c1c;line-height:1.55;margin-top:8px;}
+.tc-emp-privacy{margin-top:22px;padding-top:16px;border-top:1px solid var(--slate-100);font-size:12px;color:var(--slate-500);line-height:1.55;}
+.tc-emp-laptop{display:none;margin-bottom:12px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;}
+@media(max-width:768px){.tc-emp-laptop{display:block;}}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
 .si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--slate-100);transition:var(--tr-fast);}
 .sidebar-item:hover .si-icon{background:rgba(124,58,237,.12);}
@@ -1372,6 +1406,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
       <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" id="cev-sidebar-medida-cta" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
+      <button type="button" id="cev-sidebar-timeclock-cta" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Control de asistencia</span><span class="si-cta-sub">Reloj checador remoto</span></span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1443,6 +1478,110 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <textarea id="cev-success-speech-preview" class="cev-success-speech" readonly aria-label="Mensaje de acceso para el candidato"></textarea>
       <button type="button" class="cev-success-copy-btn" id="btn-copy-access-msg" onclick="copyCrearEvalAccessMessage()">Copiar Mensaje de Acceso</button>
       <button type="button" class="cev-success-close-link" onclick="crearEvalCloseSuccessModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ DASH CONTROL DE ASISTENCIA ════════════════════ -->
+<div id="view-dash-timeclock" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','resultados');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📊</span><span>Resultados</span></button>
+      <div class="sidebar-section-label">Cuenta</div>
+      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-timeclock active" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Control de asistencia</span><span class="si-cta-sub">Reloj checador remoto</span></span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-green" id="tc-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="tc-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
+      <button class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar"><div><div class="topbar-title">Control de asistencia</div><div class="topbar-subtitle">Reloj checador remoto</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="page-content">
+      <div class="tc-page-head">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin-bottom:4px;">Colaboradores</h2>
+          <p style="font-size:14px;color:var(--slate-500);line-height:1.5;max-width:560px;">El enlace secreto solo se muestra al crear o regenerar. Si se pierde, hay que generar uno nuevo.</p>
+        </div>
+        <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
+      </div>
+      <div id="tc-add-card" class="card hidden" style="margin-bottom:18px;">
+        <div class="card-header"><div><div class="card-title">Nuevo colaborador</div><div class="card-subtitle">Timezone IANA obligatorio</div></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="form-label">Nombre completo</label><input type="text" id="tc-add-name" class="form-input" maxlength="200" placeholder="Nombre y apellido"></div>
+            <div><label class="form-label">Puesto</label><input type="text" id="tc-add-position" class="form-input" maxlength="200" placeholder="Opcional"></div>
+            <div><label class="form-label">Departamento</label><input type="text" id="tc-add-dept" class="form-input" maxlength="200" placeholder="Opcional"></div>
+            <div><label class="form-label">Código interno</label><input type="text" id="tc-add-code" class="form-input" maxlength="64" placeholder="Opcional"></div>
+            <div style="grid-column:1/-1;"><label class="form-label">Zona horaria</label>
+              <select id="tc-add-tz" class="form-input">
+                <option value="">Selecciona una zona IANA</option>
+                <option value="America/Tijuana">America/Tijuana</option>
+                <option value="America/Hermosillo">America/Hermosillo</option>
+                <option value="America/Mazatlan">America/Mazatlan</option>
+                <option value="America/Mexico_City">America/Mexico_City</option>
+                <option value="America/Merida">America/Merida</option>
+                <option value="America/Cancun">America/Cancun</option>
+                <option value="America/Monterrey">America/Monterrey</option>
+                <option value="America/Chihuahua">America/Chihuahua</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+          </div>
+          <p id="tc-add-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:10px;"></p>
+          <div style="display:flex;gap:10px;margin-top:14px;">
+            <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcCreateEmployee()">Crear y generar enlace</button>
+            <button type="button" class="card-action" onclick="tcToggleAddForm(false)">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
+      <p id="tc-list-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Directorio</div><div class="card-subtitle" id="tc-list-count">0 colaboradores</div></div><button type="button" class="card-action" onclick="tcLoadEmployees()">↻ Actualizar</button></div>
+        <div class="card-body" style="overflow-x:auto;">
+          <table class="tc-emp-table">
+            <thead><tr><th>Colaborador</th><th>Puesto</th><th>Zona</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tc-emp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="tc-jornada-card" class="card hidden" style="margin-top:18px;">
+        <div class="card-header"><div><div class="card-title">Jornada</div><div class="card-subtitle" id="tc-jornada-sub">—</div></div><button type="button" class="card-action" onclick="tcCloseJornada()">Cerrar</button></div>
+        <div class="card-body" id="tc-jornada-body"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════ CHECADOR EMPLEADO ════════════════════ -->
+<div id="view-timeclock" class="hidden">
+  <div class="tc-emp-shell">
+    <div class="tc-emp-card">
+      <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
+      <div class="tc-emp-brand">MIND24</div>
+      <div class="tc-emp-kicker">Control de asistencia</div>
+      <div id="tc-emp-gate" class="hidden">
+        <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
+      </div>
+      <div id="tc-emp-app" class="hidden">
+        <h1 class="tc-emp-hello" id="tc-emp-hello">Hola</h1>
+        <p class="tc-emp-meta" id="tc-emp-role"></p>
+        <div class="tc-emp-clock"><span id="tc-emp-date">—</span><span id="tc-emp-now">—</span></div>
+        <div class="tc-emp-status">Estado</div>
+        <div class="tc-emp-state" id="tc-emp-state">Fuera de jornada</div>
+        <div class="tc-emp-rows" id="tc-emp-rows"></div>
+        <p class="tc-emp-err hidden" id="tc-emp-err"></p>
+        <button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+        <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+        <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -1777,8 +1916,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
-const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
-const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-psicologo','dash-empleado']);
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-timeclock':'view-dash-timeclock', timeclock:'view-timeclock', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
+const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-timeclock','dash-psicologo','dash-empleado']);
 const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
 const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
 const MIND24_ASPEN_PW_STORAGE='mind24_aspen_pw_v1';
@@ -2432,6 +2571,12 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
     cChip.style.display='flex';
   }
   if(cAv) cAv.textContent=ini;
+  const tcAv=document.getElementById('tc-sidebar-av');
+  const tcName=document.getElementById('tc-sidebar-name');
+  const tcTbAv=document.getElementById('tc-topbar-av');
+  if(tcAv) tcAv.textContent=ini;
+  if(tcName) tcName.textContent=u.fullName||u.email||'';
+  if(tcTbAv) tcTbAv.textContent=ini;
   mind24SyncCrearEvalShell();
   mind24UpdateAspenPioneerVisibility();
   const dashCev=document.getElementById('dash-admin-nav-crear-eval');
@@ -2635,6 +2780,14 @@ function showView(name) {
       }catch(_){}
       crearEvalSidebarNav(tab);
     },0);
+  }
+  if(name==='dash-timeclock'){
+    setTimeout(function(){ tcOnShow(); },0);
+  }
+  if(name==='timeclock'){
+    const landingNav=document.getElementById('mainNav');
+    if(landingNav) landingNav.classList.add('light-nav');
+    pauseParticles();
   }
   if(name==='evaluacion'){
     const ev=document.getElementById('view-evaluacion');
@@ -3029,6 +3182,7 @@ function mind24PersistLastView(name){
     const allowed = [
       'dash-admin',
       'dash-crear-eval',
+      'dash-timeclock',
       'dash-psicologo',
       'dash-empleado',
       'dash-candidato',
@@ -5093,9 +5247,412 @@ function finishEval(){
     await openCandidatoLobby();
   })();
 }
+let tcSecretLinkTemp=null;
+function tcClearSecretLink(){
+  tcSecretLinkTemp=null;
+  const box=document.getElementById('tc-secret-banner');
+  if(!box) return;
+  box.innerHTML='';
+  box.classList.add('hidden');
+}
+function tcShiftLabel(code){
+  if(code==='SHIFT_OPEN') return 'Jornada en curso';
+  if(code==='SHIFT_COMPLETED') return 'Jornada finalizada';
+  if(code==='OPEN_ANOMALY') return 'Revisión requerida';
+  return 'Fuera de jornada';
+}
+function tcSignalLabel(code){
+  if(code==='connected'||code==='CONNECTED') return 'Con señal reciente';
+  if(code==='background'||code==='BACKGROUND') return 'Página en segundo plano';
+  return 'Sin señal reciente';
+}
+function tcFmtDuration(sec){
+  const n=Math.max(0, Number(sec)||0);
+  const h=Math.floor(n/3600);
+  const m=Math.floor((n%3600)/60);
+  const s=n%60;
+  const pad=function(v){ return String(v).padStart(2,'0'); };
+  return pad(h)+':'+pad(m)+':'+pad(s);
+}
+function tcFmtHm(iso){
+  if(!iso) return '—';
+  try{ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+  catch(_){ return '—'; }
+}
+function tcOnShow(){
+  mind24RefreshEmpresaAdminDashboardChrome();
+  tcLoadEmployees();
+}
+function tcToggleAddForm(force){
+  const card=document.getElementById('tc-add-card');
+  if(!card) return;
+  const show = force===false ? false : force===true ? true : card.classList.contains('hidden');
+  card.classList.toggle('hidden', !show);
+  const err=document.getElementById('tc-add-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+}
+function tcShowSecretLink(accessLink){
+  tcSecretLinkTemp=String(accessLink||'');
+  const box=document.getElementById('tc-secret-banner');
+  if(!box) return;
+  box.classList.remove('hidden');
+  box.innerHTML='<strong>Enlace de acceso (cópialo ahora)</strong> — al cerrar no se podrá volver a mostrar.'+
+    '<code id="tc-secret-code">'+tcEsc(tcSecretLinkTemp)+'</code>'+
+    '<div class="tc-link-banner-actions">'+
+    '<button type="button" class="card-action" onclick="tcCopySecretLink()">Copiar enlace</button>'+
+    '<button type="button" class="card-action" onclick="tcClearSecretLink()">Cerrar</button>'+
+    '</div>';
+}
+function tcEsc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(ch){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+  });
+}
+async function tcCopySecretLink(){
+  if(!tcSecretLinkTemp){ alert('El enlace ya no está disponible. Regenera uno nuevo.'); return; }
+  try{
+    await navigator.clipboard.writeText(tcSecretLinkTemp);
+    alert('Enlace copiado.');
+  }catch(_){
+    prompt('Copia el enlace:', tcSecretLinkTemp);
+  }
+}
+async function tcLoadEmployees(){
+  const err=document.getElementById('tc-list-err');
+  const tbody=document.getElementById('tc-emp-tbody');
+  const count=document.getElementById('tc-list-count');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  try{
+    const j=await apiJson('/api/org/timeclock/employees');
+    const rows=j.employees||[];
+    if(count) count.textContent=rows.length+' colaborador'+(rows.length===1?'':'es');
+    if(!tbody) return;
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="5" style="color:var(--slate-400);padding:18px 10px;">Aún no hay colaboradores. Usa «+ Agregar colaborador».</td></tr>';
+      return;
+    }
+    tbody.innerHTML=rows.map(function(emp){
+      const st=emp.isActive?'Activo':'Inactivo';
+      const stCls=emp.isActive?'pb-active':'pb-review';
+      return '<tr>'+
+        '<td><strong>'+tcEsc(emp.fullName)+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</td>'+
+        '<td>'+tcEsc(emp.position||'—')+'</td>'+
+        '<td>'+tcEsc(emp.timezone)+'</td>'+
+        '<td><span class="p-badge '+stCls+'">'+st+'</span></td>'+
+        '<td><div class="tc-emp-actions">'+
+          '<button type="button" class="card-action" onclick="tcViewJornada(\''+emp.id+'\')">Ver jornada</button>'+
+          '<button type="button" class="card-action" onclick="tcRegenerate(\''+emp.id+'\')">Regenerar enlace</button>'+
+          '<button type="button" class="card-action" onclick="tcToggleActive(\''+emp.id+'\','+(!emp.isActive)+')">'+(emp.isActive?'Desactivar':'Activar')+'</button>'+
+        '</div></td></tr>';
+    }).join('');
+  }catch(e){
+    if(err){ err.classList.remove('hidden'); err.textContent=e.message||'No se pudieron cargar los colaboradores.'; }
+  }
+}
+async function tcCreateEmployee(){
+  const err=document.getElementById('tc-add-err');
+  const fullName=(document.getElementById('tc-add-name')||{}).value||'';
+  const timezone=(document.getElementById('tc-add-tz')||{}).value||'';
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  try{
+    const out=await apiJson('/api/org/timeclock/employees',{
+      method:'POST',
+      body:JSON.stringify({
+        fullName:fullName.trim(),
+        position:((document.getElementById('tc-add-position')||{}).value||'').trim()||null,
+        department:((document.getElementById('tc-add-dept')||{}).value||'').trim()||null,
+        employeeCode:((document.getElementById('tc-add-code')||{}).value||'').trim()||null,
+        timezone:timezone.trim(),
+      }),
+    });
+    if(out.accessLink) tcShowSecretLink(out.accessLink);
+    ['tc-add-name','tc-add-position','tc-add-dept','tc-add-code'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+    const tz=document.getElementById('tc-add-tz'); if(tz) tz.selectedIndex=0;
+    tcToggleAddForm(false);
+    await tcLoadEmployees();
+  }catch(e){
+    if(err){ err.classList.remove('hidden'); err.textContent=e.message||'No se pudo crear el colaborador.'; }
+  }
+}
+async function tcRegenerate(id){
+  if(!confirm('El enlace anterior dejará de funcionar de inmediato. ¿Generar uno nuevo?')) return;
+  try{
+    const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id)+'/regenerate-token',{method:'POST'});
+    if(out.accessLink) tcShowSecretLink(out.accessLink);
+    await tcLoadEmployees();
+  }catch(e){ alert(e.message||'No se pudo regenerar el enlace.'); }
+}
+async function tcToggleActive(id, nextActive){
+  try{
+    await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id),{
+      method:'PATCH',
+      body:JSON.stringify({ isActive: !!nextActive }),
+    });
+    await tcLoadEmployees();
+  }catch(e){ alert(e.message||'No se pudo actualizar el estado.'); }
+}
+async function tcViewJornada(id){
+  const card=document.getElementById('tc-jornada-card');
+  const body=document.getElementById('tc-jornada-body');
+  const sub=document.getElementById('tc-jornada-sub');
+  try{
+    const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
+    const emp=out.employee||{};
+    const j=out.jornada||{};
+    const sess=j.session||j.openSession||null;
+    if(sub) sub.textContent=emp.fullName||'—';
+    if(body){
+      const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
+      body.innerHTML=
+        '<p style="font-size:14px;margin-bottom:8px;"><strong>Estado:</strong> '+tcEsc(tcShiftLabel(j.shiftLifecycle))+'</p>'+
+        '<p style="font-size:14px;margin-bottom:8px;"><strong>Entrada:</strong> '+tcEsc(sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX'):'—')+'</p>'+
+        '<p style="font-size:14px;margin-bottom:8px;"><strong>Salida:</strong> '+tcEsc(sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX'):'—')+'</p>'+
+        '<p style="font-size:14px;margin-bottom:8px;"><strong>Duración:</strong> '+tcEsc(dur)+'</p>'+
+        '<p style="font-size:14px;margin-bottom:8px;"><strong>Última señal:</strong> '+tcEsc(tcSignalLabel(j.webSignal))+' <span style="color:var(--slate-400);font-size:12px;">(no implica inactividad laboral)</span></p>';
+    }
+    if(card) card.classList.remove('hidden');
+    if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
+}
+function tcCloseJornada(){
+  const card=document.getElementById('tc-jornada-card');
+  if(card) card.classList.add('hidden');
+}
+
+const TC_HEARTBEAT_MS=45000;
+let tcEmpMe=null;
+let tcEmpCompleted=null;
+let tcEmpBusy=false;
+let tcClockTimer=null;
+let tcCounterTimer=null;
+let tcHeartbeatTimer=null;
+function tcIsChecadorPath(){
+  try{ return String(window.location.pathname||'').replace(/\/+$/,'')==='/checador'; }
+  catch(_){ return false; }
+}
+async function tcPublicJson(url, opts){
+  const merged=Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}}, opts||{});
+  const r=await fetch(url, merged);
+  let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch(_){}
+  if(!r.ok){
+    const er=new Error((j&&j.message)||t||('HTTP '+r.status));
+    er.code=j&&j.error; er.httpStatus=r.status;
+    throw er;
+  }
+  return j;
+}
+function tcEmpStopTimers(){
+  if(tcClockTimer){ clearInterval(tcClockTimer); tcClockTimer=null; }
+  if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
+  if(tcHeartbeatTimer){ clearInterval(tcHeartbeatTimer); tcHeartbeatTimer=null; }
+  document.removeEventListener('visibilitychange', tcEmpOnVisibility);
+}
+function tcEmpTickClock(){
+  const d=document.getElementById('tc-emp-date');
+  const n=document.getElementById('tc-emp-now');
+  const now=new Date();
+  if(d) d.textContent=now.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+  if(n) n.textContent=now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function tcEmpElapsed(){
+  const open=tcEmpMe&&tcEmpMe.openSession;
+  if(!open||!open.checkInAt) return '00:00:00';
+  const sec=Math.max(0, Math.floor((Date.now()-new Date(open.checkInAt).getTime())/1000));
+  return tcFmtDuration(sec);
+}
+function tcEmpSetError(msg){
+  const el=document.getElementById('tc-emp-err');
+  if(!el) return;
+  if(!msg){ el.classList.add('hidden'); el.textContent=''; return; }
+  el.classList.remove('hidden'); el.textContent=msg;
+}
+function tcEmpShowGate(msg){
+  tcEmpStopTimers();
+  const gate=document.getElementById('tc-emp-gate');
+  const app=document.getElementById('tc-emp-app');
+  const gm=document.getElementById('tc-emp-gate-msg');
+  if(app) app.classList.add('hidden');
+  if(gate) gate.classList.remove('hidden');
+  if(gm) gm.textContent=msg||'Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.';
+}
+function tcEmpShowApp(){
+  const gate=document.getElementById('tc-emp-gate');
+  const app=document.getElementById('tc-emp-app');
+  if(gate) gate.classList.add('hidden');
+  if(app) app.classList.remove('hidden');
+}
+function tcEmpRender(){
+  const me=tcEmpMe||{};
+  const completed=tcEmpCompleted;
+  const open=me.openSession;
+  const hello=document.getElementById('tc-emp-hello');
+  const role=document.getElementById('tc-emp-role');
+  const state=document.getElementById('tc-emp-state');
+  const rows=document.getElementById('tc-emp-rows');
+  const btn=document.getElementById('tc-emp-primary');
+  const hint=document.getElementById('tc-emp-hint');
+  if(hello) hello.textContent='Hola, '+(me.fullName||'');
+  const bits=[];
+  if(me.position) bits.push(me.position);
+  if(me.department) bits.push(me.department);
+  if(role) role.textContent=bits.join(' · ');
+  tcEmpTickClock();
+  if(!tcClockTimer) tcClockTimer=setInterval(tcEmpTickClock, 1000);
+  if(completed&&completed.checkOutAt){
+    if(state) state.textContent='Jornada finalizada';
+    if(rows) rows.innerHTML=
+      '<div><strong>Entrada:</strong> '+tcEsc(tcFmtHm(completed.checkInAt))+'</div>'+
+      '<div><strong>Salida:</strong> '+tcEsc(tcFmtHm(completed.checkOutAt))+'</div>'+
+      '<div><strong>Duración:</strong> '+tcEsc(tcFmtDuration((new Date(completed.checkOutAt)-new Date(completed.checkInAt))/1000))+'</div>';
+    if(btn){ btn.classList.add('hidden'); btn.disabled=false; }
+    if(hint) hint.textContent='Tu jornada quedó registrada. Puedes cerrar esta página.';
+    return;
+  }
+  if(open&&open.checkInAt){
+    if(state) state.textContent='Jornada en curso';
+    if(rows) rows.innerHTML=
+      '<div><strong>Entrada:</strong> '+tcEsc(tcFmtHm(open.checkInAt))+'</div>'+
+      '<div><strong>Tiempo transcurrido:</strong> <span id="tc-emp-elapsed">'+tcEsc(tcEmpElapsed())+'</span></div>'+
+      '<div><strong>Señal:</strong> '+tcEsc(tcSignalLabel(me.webSignal))+'</div>';
+    if(btn){
+      btn.classList.remove('hidden');
+      btn.classList.add('tc-emp-btn-out');
+      btn.textContent='Registrar salida';
+      btn.disabled=false;
+    }
+    if(hint) hint.textContent='La jornada termina solo cuando registras tu salida.';
+    if(!tcCounterTimer) tcCounterTimer=setInterval(function(){
+      const el=document.getElementById('tc-emp-elapsed');
+      if(el) el.textContent=tcEmpElapsed();
+    },1000);
+    return;
+  }
+  if(state) state.textContent='Fuera de jornada';
+  if(rows) rows.innerHTML='';
+  if(btn){
+    btn.classList.remove('hidden','tc-emp-btn-out');
+    btn.textContent='Registrar entrada';
+    btn.disabled=false;
+  }
+  if(hint) hint.textContent='Tu horario de entrada será registrado automáticamente por Mind24.';
+}
+function tcEmpStartHeartbeat(){
+  if(tcHeartbeatTimer) return;
+  document.addEventListener('visibilitychange', tcEmpOnVisibility);
+  tcHeartbeatTimer=setInterval(function(){ tcEmpSendHeartbeat(); }, TC_HEARTBEAT_MS);
+  tcEmpSendHeartbeat();
+}
+function tcEmpStopHeartbeat(){
+  if(tcHeartbeatTimer){ clearInterval(tcHeartbeatTimer); tcHeartbeatTimer=null; }
+  document.removeEventListener('visibilitychange', tcEmpOnVisibility);
+}
+function tcEmpOnVisibility(){
+  if(tcEmpMe&&tcEmpMe.openSession) tcEmpSendHeartbeat();
+}
+async function tcEmpSendHeartbeat(){
+  if(!(tcEmpMe&&tcEmpMe.openSession)) return;
+  try{
+    const vis=document.visibilityState==='hidden'?'hidden':'visible';
+    const j=await tcPublicJson('/api/timeclock/public/heartbeat',{
+      method:'POST',
+      body:JSON.stringify({ visibilityState: vis }),
+    });
+    if(j&&j.webSignal) tcEmpMe.webSignal=j.webSignal;
+    const sig=document.querySelector('#tc-emp-rows');
+    if(sig&&tcEmpMe.openSession){
+      const last=sig.lastElementChild;
+      if(last&&/Señal/.test(last.textContent||'')) last.innerHTML='<strong>Señal:</strong> '+tcEsc(tcSignalLabel(tcEmpMe.webSignal));
+    }
+  }catch(_){}
+}
+async function tcEmpLoadMe(){
+  const me=await tcPublicJson('/api/timeclock/public/me');
+  tcEmpMe=me;
+  if(!(me&&me.openSession)) tcEmpStopHeartbeat();
+  else tcEmpStartHeartbeat();
+  tcEmpShowApp();
+  tcEmpRender();
+}
+function tcEmpHashToken(){
+  try{ return String(window.location.hash||'').replace(/^#/, '').trim(); }
+  catch(_){ return ''; }
+}
+async function tcEmployeeBoot(){
+  showView('timeclock');
+  tcEmpStopTimers();
+  tcEmpCompleted=null;
+  const token=tcEmpHashToken();
+  try{
+    if(token){
+      await tcPublicJson('/api/timeclock/public/exchange',{
+        method:'POST',
+        body:JSON.stringify({ token: token }),
+      });
+      try{ history.replaceState(null, '', '/checador'); }catch(_){}
+    }
+    await tcEmpLoadMe();
+  }catch(e){
+    try{ if(token) history.replaceState(null, '', '/checador'); }catch(_){}
+    let msg='Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.';
+    if(e&&e.httpStatus===403) msg='Tu acceso está desactivado. Solicita ayuda a tu administrador.';
+    else if(e&&e.message&&/Failed to fetch|NetworkError/i.test(String(e.message))) msg='No hay conexión. Revisa tu red e intenta de nuevo.';
+    tcEmpShowGate(msg);
+  }
+}
+async function tcEmpPrimaryAction(){
+  if(tcEmpBusy) return;
+  const btn=document.getElementById('tc-emp-primary');
+  const open=tcEmpMe&&tcEmpMe.openSession;
+  if(open){
+    if(!confirm('¿Deseas finalizar tu jornada?')) return;
+    tcEmpBusy=true;
+    if(btn){ btn.disabled=true; btn.textContent='Registrando…'; }
+    try{
+      const j=await tcPublicJson('/api/timeclock/public/check-out',{ method:'POST', body:JSON.stringify({}) });
+      tcEmpStopHeartbeat();
+      if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
+      tcEmpCompleted=j.session||null;
+      tcEmpMe=Object.assign({}, tcEmpMe, { openSession:null, shiftLifecycle:'SHIFT_COMPLETED' });
+      tcEmpSetError('');
+      tcEmpRender();
+    }catch(e){
+      tcEmpSetError(e.message||'No se pudo registrar la salida.');
+      if(btn){ btn.disabled=false; btn.textContent='Registrar salida'; }
+    }finally{ tcEmpBusy=false; }
+    return;
+  }
+  tcEmpBusy=true;
+  if(btn){ btn.disabled=true; btn.textContent='Registrando…'; }
+  try{
+    await tcPublicJson('/api/timeclock/public/check-in',{ method:'POST', body:JSON.stringify({}) });
+    tcEmpSetError('');
+    await tcEmpLoadMe();
+  }catch(e){
+    tcEmpSetError(e.message||'No se pudo registrar la entrada.');
+    if(btn){ btn.disabled=false; btn.textContent='Registrar entrada'; }
+  }finally{ tcEmpBusy=false; }
+}
+window.tcOnShow=tcOnShow;
+window.tcToggleAddForm=tcToggleAddForm;
+window.tcCreateEmployee=tcCreateEmployee;
+window.tcLoadEmployees=tcLoadEmployees;
+window.tcCopySecretLink=tcCopySecretLink;
+window.tcClearSecretLink=tcClearSecretLink;
+window.tcRegenerate=tcRegenerate;
+window.tcToggleActive=tcToggleActive;
+window.tcViewJornada=tcViewJornada;
+window.tcCloseJornada=tcCloseJornada;
+window.tcEmpPrimaryAction=tcEmpPrimaryAction;
+window.tcEmployeeBoot=tcEmployeeBoot;
+window.tcIsChecadorPath=tcIsChecadorPath;
+
 // ── Init ──
 if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
 ;(async function mind24BootstrapSession(){
+  if(typeof tcIsChecadorPath==='function' && tcIsChecadorPath()){
+    await tcEmployeeBoot();
+    return;
+  }
   const marker=(function(){ try{ return localStorage.getItem(MIND24_AUTH_TOKEN_KEY); }catch(_){ return null; } })();
   if(!marker){
     const cached=mind24ReadPersistedUser();

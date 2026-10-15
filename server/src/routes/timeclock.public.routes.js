@@ -47,6 +47,7 @@ function sessionToPublicMe(emp, openSession) {
   return {
     fullName: emp.fullName,
     position: emp.position,
+    department: emp.department,
     timezone: emp.timezone,
     shiftLifecycle: resolveShiftLifecycle(openSession),
     webSignal,

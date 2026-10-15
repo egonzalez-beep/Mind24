@@ -5,6 +5,12 @@ import {
   generateTimeclockAccessToken,
   hashTimeclockToken,
 } from './timeclockToken.service.js';
+import {
+  buildAdminJornadaPayload,
+  getLatestSessionForEmployee,
+  getOpenSessionForEmployee,
+} from './remoteWorkSession.service.js';
+
 function timeclockLinkBase() {
   return (process.env.TIMECLOCK_PUBLIC_LINK_BASE || 'https://mind24.mx/checador').trim();
 }
@@ -47,7 +53,16 @@ export async function listWorkforceEmployees(organizationId) {
 
 export async function getWorkforceEmployeeForOrg(organizationId, employeeId) {
   const emp = await assertWorkforceEmployeeInOrg(employeeId, organizationId);
-  return sanitizeEmployeeForAdmin(emp);
+  const open = await getOpenSessionForEmployee(emp.id);
+  const latest = open ? open : await getLatestSessionForEmployee(emp.id);
+  const jornada = buildAdminJornadaPayload(open, latest);
+  return {
+    employee: sanitizeEmployeeForAdmin(emp),
+    jornada: {
+      ...jornada,
+      openSession: jornada.session && !jornada.session.checkOutAt ? jornada.session : null,
+    },
+  };
 }
 
 export async function createWorkforceEmployee(organizationId, data) {

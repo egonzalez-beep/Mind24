@@ -38,6 +38,58 @@ export async function getOpenSessionForEmployee(employeeId) {
   return findOpenSession(prisma, employeeId);
 }
 
+export async function getLatestSessionForEmployee(employeeId) {
+  return prisma.remoteWorkSession.findFirst({
+    where: { employeeId },
+    orderBy: { checkInAt: 'desc' },
+  });
+}
+
+export function workedDurationSec(session, now = new Date()) {
+  if (!session?.checkInAt) return null;
+  const start = new Date(session.checkInAt).getTime();
+  const end = session.checkOutAt ? new Date(session.checkOutAt).getTime() : now.getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  return Math.max(0, Math.floor((end - start) / 1000));
+}
+
+/** Admin: jornada abierta, o si no hay, la última cerrada. */
+export function buildAdminJornadaPayload(openSession, latestSession, now = new Date()) {
+  const session = openSession || latestSession || null;
+  if (!session) {
+    return {
+      shiftLifecycle: 'OFF_DUTY',
+      webSignal: 'no_signal',
+      webSignalLabel: webSignalLabel('no_signal'),
+      session: null,
+    };
+  }
+  const open = openSession && !openSession.checkOutAt ? openSession : null;
+  const shiftLifecycle = open
+    ? resolveShiftLifecycle(open)
+    : session.checkOutAt
+      ? 'SHIFT_COMPLETED'
+      : resolveShiftLifecycle(session);
+  const webSignal = open
+    ? resolveCurrentWebSignal(open, now)
+    : session.lastWebSignal || 'no_signal';
+  return {
+    shiftLifecycle,
+    webSignal,
+    webSignalLabel: webSignalLabel(webSignal),
+    session: {
+      id: session.id,
+      checkInAt: session.checkInAt,
+      checkOutAt: session.checkOutAt || null,
+      status: session.status,
+      lastHeartbeatAt: session.lastHeartbeatAt,
+      durationSec: workedDurationSec(session, now),
+      webSignal,
+      webSignalLabel: webSignalLabel(webSignal),
+    },
+  };
+}
+
 export async function checkInRemoteWorkSession({ employeeId, userAgent, clientMetadata }) {
   const now = new Date();
   return prisma.$transaction(async (tx) => {
