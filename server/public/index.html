@@ -272,12 +272,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--purple-light);color:var(--purple-dark);}
 .tc-member-badge--inactive{background:var(--slate-100);color:var(--slate-600);}
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
-.tc-jornada-stack{display:flex;flex-direction:column;gap:16px;}
-.tc-jornada-dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px 28px;margin:0;}
+.tc-jornada-split{display:flex;align-items:flex-start;gap:32px;min-height:80px;}
+.tc-jornada-main{flex:0 0 38%;max-width:400px;min-width:220px;}
+.tc-jornada-aside{flex:1 1 62%;min-width:0;}
+.tc-jornada-dl{display:flex;flex-direction:column;gap:14px;margin:0;}
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
 .tc-jornada-dl dd{margin:0;font-size:14px;font-weight:600;color:var(--primary);line-height:1.45;}
-.tc-jornada-future-slot{border-top:1px dashed var(--slate-200);padding-top:14px;margin-top:2px;display:none;}
+@media(max-width:900px){.tc-jornada-split{flex-direction:column;gap:0;}.tc-jornada-main{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-aside{display:none;}}
 .tc-emp-title{font-size:22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin:0 0 4px;line-height:1.2;}
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
@@ -5315,11 +5317,11 @@ function tcSignalDotHtml(code, withInfo){
 function tcSvgEye(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
-function tcSvgLinkRefresh(){
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><path d="M8 11h8"/><path d="M12 7v8"/></svg>';
+function tcSvgLink(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 }
-function tcSvgUserPause(){
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="17" y1="8" y2="14"/><line x1="20" x2="14" y1="11" y2="11"/></svg>';
+function tcSvgUserMinus(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" x2="16" y1="11" y2="11"/></svg>';
 }
 function tcSvgUserCheck(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
@@ -5398,7 +5400,7 @@ async function tcLoadEmployees(){
     tbody.innerHTML=rows.map(function(emp){
       const name=tcEsc(emp.fullName);
       const actBtn=emp.isActive
-        ? '<button type="button" class="tc-icon-btn tc-icon-btn--pause" title="Desactivar colaborador" aria-label="Desactivar colaborador '+name+'" onclick="tcToggleActive(\''+emp.id+'\',false)">'+tcSvgUserPause()+'</button>'
+        ? '<button type="button" class="tc-icon-btn tc-icon-btn--pause" title="Desactivar colaborador" aria-label="Desactivar colaborador '+name+'" onclick="tcToggleActive(\''+emp.id+'\',false)">'+tcSvgUserMinus()+'</button>'
         : '<button type="button" class="tc-icon-btn tc-icon-btn--activate" title="Activar colaborador" aria-label="Activar colaborador '+name+'" onclick="tcToggleActive(\''+emp.id+'\',true)">'+tcSvgUserCheck()+'</button>';
       return '<tr>'+
         '<td><strong>'+name+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</td>'+
@@ -5407,7 +5409,7 @@ async function tcLoadEmployees(){
         '<td>'+tcMemberBadgeHtml(emp.isActive)+'</td>'+
         '<td><div class="tc-emp-actions">'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
-          '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLinkRefresh()+'</button>'+
+          '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLink()+'</button>'+
           actBtn+
         '</div></td></tr>';
     }).join('');
@@ -5472,7 +5474,8 @@ async function tcViewJornada(id){
       const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       body.innerHTML=
-        '<div class="tc-jornada-stack">'+
+        '<div class="tc-jornada-split">'+
+        '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
         '<div><dt>Estado</dt><dd>'+tcEsc(tcShiftLabel(j.shiftLifecycle))+'</dd></div>'+
         '<div><dt>Entrada</dt><dd>'+tcEsc(entFmt)+'</dd></div>'+
@@ -5480,7 +5483,8 @@ async function tcViewJornada(id){
         '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
         '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
         '</dl>'+
-        '<div class="tc-jornada-future-slot" aria-hidden="true"></div>'+
+        '</div>'+
+        '<div class="tc-jornada-aside" aria-hidden="true"></div>'+
         '</div>';
     }
     if(card) card.classList.remove('hidden');
