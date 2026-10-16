@@ -274,7 +274,39 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
 .tc-jornada-split{display:flex;align-items:flex-start;gap:32px;min-height:80px;}
 .tc-jornada-main{flex:0 0 38%;max-width:400px;min-width:220px;}
-.tc-jornada-aside{flex:1 1 62%;min-width:0;}
+.tc-jornada-aside{flex:1 1 62%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;}
+.tc-history-toggle{display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 4px;border-radius:8px;transition:var(--tr-fast);}
+.tc-history-toggle:hover{background:var(--purple-light);}
+.tc-history-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-chevron{font-size:11px;opacity:.85;}
+.tc-history-panel{width:100%;margin-top:10px;display:flex;flex-direction:column;gap:12px;}
+.tc-history-panel.hidden{display:none!important;}
+.tc-week-summary{font-size:12px;color:var(--slate-500);line-height:1.5;padding:0 2px;}
+.tc-week-summary strong{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:2px;}
+.tc-cal{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.tc-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.tc-cal-title{font-size:14px;font-weight:700;color:var(--primary);text-transform:capitalize;flex:1;text-align:center;}
+.tc-cal-nav{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:var(--tr-fast);}
+.tc-cal-nav:hover:not([disabled]){background:var(--purple-light);border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
+.tc-cal-nav:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-cal-nav[disabled]{opacity:.35;cursor:not-allowed;}
+.tc-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+.tc-cal-weekdays span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-400);text-align:center;}
+.tc-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.tc-cal-day{position:relative;min-height:36px;border:none;border-radius:8px;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-600);cursor:default;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;}
+.tc-cal-day--muted{color:var(--slate-300);}
+.tc-cal-day--has{cursor:pointer;}
+.tc-cal-day--has:hover{background:var(--slate-50);}
+.tc-cal-day--selected{background:var(--purple-light)!important;color:var(--purple-dark);}
+.tc-cal-day:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
+.tc-cal-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);}
+.tc-cal-dot--open{background:#f59e0b;}
+.tc-cal-popover{position:fixed;z-index:1200;max-width:240px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);font-size:12px;color:var(--slate-600);line-height:1.45;pointer-events:none;}
+.tc-cal-popover strong{display:block;font-size:13px;color:var(--primary);margin-bottom:6px;font-weight:700;}
+.tc-history-detail{font-size:12px;color:var(--slate-600);line-height:1.5;padding:10px 12px;border-radius:10px;background:var(--slate-50);border:1px solid var(--slate-100);}
+.tc-history-detail h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--primary);}
+.tc-history-session{margin-top:10px;padding-top:10px;border-top:1px solid var(--slate-200);}
+.tc-history-session:first-of-type{margin-top:0;padding-top:0;border-top:none;}
 .tc-jornada-dl{display:flex;flex-direction:column;gap:14px;margin:0;}
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
@@ -5463,9 +5495,11 @@ async function tcViewJornada(id){
   const card=document.getElementById('tc-jornada-card');
   const body=document.getElementById('tc-jornada-body');
   const sub=document.getElementById('tc-jornada-sub');
+  tcHideCalPopover();
   try{
     const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
     const emp=out.employee||{};
+    tcResetHistoryState(emp);
     const j=out.jornada||{};
     const sess=j.session||j.openSession||null;
     if(sub) sub.textContent=emp.fullName||'—';
@@ -5484,14 +5518,252 @@ async function tcViewJornada(id){
         '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
         '</dl>'+
         '</div>'+
-        '<div class="tc-jornada-aside" aria-hidden="true"></div>'+
+        '<div class="tc-jornada-aside">'+tcHistoryShellHtml()+'</div>'+
         '</div>';
     }
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
 }
+let tcJornadaEmpId=null;
+let tcJornadaTz='America/Mexico_City';
+let tcHistoryOpen=false;
+let tcHistoryYear=null;
+let tcHistoryMonth=null;
+let tcHistorySelectedDay=null;
+let tcHistoryPayload=null;
+let tcHistoryLoading=false;
+const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+function tcFmtDurationHuman(sec){
+  const n=Math.max(0, Number(sec)||0);
+  const h=Math.floor(n/3600);
+  const m=Math.floor((n%3600)/60);
+  if(h&&m) return h+' h '+m+' min';
+  if(h) return h+' h';
+  if(m) return m+' min';
+  return '0 min';
+}
+function tcLocalTodayParts(tz){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('-');
+  return { y:Number(p[0]), m:Number(p[1]), d:Number(p[2]) };
+}
+function tcMonthRangeKeys(y,m0){
+  const pad=function(v){ return String(v).padStart(2,'0'); };
+  const last=new Date(Date.UTC(y,m0+1,0)).getUTCDate();
+  return { from:y+'-'+pad(m0+1)+'-01', to:y+'-'+pad(m0+1)+'-'+pad(last) };
+}
+function tcFmtTimeLocal(iso,tz){
+  if(!iso) return '—';
+  try{
+    return new Date(iso).toLocaleTimeString('es-MX',{timeZone:tz,hour:'numeric',minute:'2-digit'});
+  }catch(_){ return '—'; }
+}
+function tcFmtDayTitle(dayKey,tz){
+  try{
+    const noon=dayKey+'T12:00:00';
+    return new Date(noon).toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'long',year:'numeric'});
+  }catch(_){ return dayKey; }
+}
+function tcHistoryShellHtml(){
+  return '<button type="button" class="tc-history-toggle" id="tc-history-toggle" aria-expanded="false" onclick="tcToggleHistoryPanel()">'+
+    'Historial de jornadas <span class="tc-history-chevron" id="tc-history-chevron" aria-hidden="true">▾</span></button>'+
+    '<div id="tc-history-panel" class="tc-history-panel hidden" aria-hidden="true">'+
+    '<div class="tc-week-summary" id="tc-week-summary"></div>'+
+    '<div id="tc-cal-root"></div>'+
+    '<div class="tc-history-detail hidden" id="tc-history-detail"></div>'+
+    '</div>'+
+    '<div id="tc-cal-popover" class="tc-cal-popover hidden" role="tooltip"></div>';
+}
+function tcResetHistoryState(emp){
+  tcJornadaEmpId=emp.id||null;
+  tcJornadaTz=emp.timezone||'America/Mexico_City';
+  tcHistoryOpen=false;
+  tcHistorySelectedDay=null;
+  tcHistoryPayload=null;
+  const t=tcLocalTodayParts(tcJornadaTz);
+  tcHistoryYear=t.y;
+  tcHistoryMonth=t.m-1;
+}
+async function tcToggleHistoryPanel(){
+  tcHistoryOpen=!tcHistoryOpen;
+  const panel=document.getElementById('tc-history-panel');
+  const toggle=document.getElementById('tc-history-toggle');
+  const chev=document.getElementById('tc-history-chevron');
+  if(toggle) toggle.setAttribute('aria-expanded', tcHistoryOpen?'true':'false');
+  if(chev) chev.textContent=tcHistoryOpen?'▴':'▾';
+  if(panel){
+    panel.classList.toggle('hidden', !tcHistoryOpen);
+    panel.setAttribute('aria-hidden', tcHistoryOpen?'false':'true');
+  }
+  if(tcHistoryOpen) await tcLoadHistoryMonth();
+  else tcHideCalPopover();
+}
+function tcCanGoNextMonth(){
+  const t=tcLocalTodayParts(tcJornadaTz);
+  if(tcHistoryYear>t.y) return false;
+  if(tcHistoryYear===t.y&&tcHistoryMonth>=t.m-1) return false;
+  return true;
+}
+async function tcHistoryChangeMonth(delta){
+  tcHistoryMonth+=delta;
+  if(tcHistoryMonth<0){ tcHistoryMonth=11; tcHistoryYear-=1; }
+  if(tcHistoryMonth>11){ tcHistoryMonth=0; tcHistoryYear+=1; }
+  tcHistorySelectedDay=null;
+  await tcLoadHistoryMonth();
+}
+async function tcLoadHistoryMonth(){
+  if(!tcJornadaEmpId||tcHistoryLoading) return;
+  tcHistoryLoading=true;
+  const root=document.getElementById('tc-cal-root');
+  if(root) root.innerHTML='<p style="font-size:12px;color:var(--slate-400);padding:8px;">Cargando…</p>';
+  try{
+    const r=tcMonthRangeKeys(tcHistoryYear, tcHistoryMonth);
+    const q='from='+encodeURIComponent(r.from)+'&to='+encodeURIComponent(r.to);
+    tcHistoryPayload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions?'+q);
+    tcRenderWeekSummary();
+    tcRenderCalendar();
+    tcRenderHistoryDetail();
+  }catch(e){
+    if(root) root.innerHTML='<p style="font-size:12px;color:#b91c1c;">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p>';
+  }finally{
+    tcHistoryLoading=false;
+  }
+}
+function tcRenderWeekSummary(){
+  const el=document.getElementById('tc-week-summary');
+  const w=tcHistoryPayload&&tcHistoryPayload.weekSummary;
+  if(!el||!w) return;
+  let html='<strong>Esta semana</strong>'+w.sessionCount+' jornada'+(w.sessionCount===1?'':'s')+' · '+tcEsc(tcFmtDurationHuman(w.totalDurationSec));
+  if(w.averageDurationSec!=null&&w.sessionCount>0){
+    html+='<div style="margin-top:2px;">Promedio por jornada: '+tcEsc(tcFmtDurationHuman(w.averageDurationSec))+'</div>';
+  }
+  el.innerHTML=html;
+}
+function tcRenderCalendar(){
+  const root=document.getElementById('tc-cal-root');
+  if(!root) return;
+  const y=tcHistoryYear;
+  const m0=tcHistoryMonth;
+  const days=tcHistoryPayload&&tcHistoryPayload.days||{};
+  const title=TC_MONTH_NAMES[m0]+' '+y;
+  const firstDow=(function(){
+    const dow=new Date(Date.UTC(y,m0,1)).getUTCDay();
+    return dow===0?6:dow-1;
+  })();
+  const daysInMonth=new Date(Date.UTC(y,m0+1,0)).getUTCDate();
+  let cells='';
+  for(let i=0;i<firstDow;i++) cells+='<div class="tc-cal-day tc-cal-day--muted" aria-hidden="true"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const key=y+'-'+String(m0+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const bucket=days[key];
+    const has=bucket&&bucket.sessionCount>0;
+    const open=has&&bucket.hasOpen;
+    const sel=tcHistorySelectedDay===key;
+    const dot=has?('<span class="tc-cal-dot'+(open?' tc-cal-dot--open':'')+'" aria-hidden="true"></span>'):'';
+    if(has){
+      cells+='<button type="button" class="tc-cal-day tc-cal-day--has'+(sel?' tc-cal-day--selected':'')+'" data-day="'+key+'" onclick="tcSelectHistoryDay(\''+key+'\')" onmouseenter="tcShowCalPopover(event,\''+key+'\')" onmouseleave="tcHideCalPopover()" onfocus="tcShowCalPopover(event,\''+key+'\')" onblur="tcHideCalPopover()">'+
+        '<span>'+d+'</span>'+dot+'</button>';
+    }else{
+      cells+='<div class="tc-cal-day tc-cal-day--muted"><span>'+d+'</span></div>';
+    }
+  }
+  const wd=TC_WEEKDAYS.map(function(l){ return '<span>'+l+'</span>'; }).join('');
+  root.innerHTML=
+    '<div class="tc-cal">'+
+    '<div class="tc-cal-head">'+
+    '<button type="button" class="tc-cal-nav tc-cal-prev" aria-label="Mes anterior" onclick="tcHistoryChangeMonth(-1)">‹</button>'+
+    '<div class="tc-cal-title">'+tcEsc(title)+'</div>'+
+    '<button type="button" class="tc-cal-nav tc-cal-next" aria-label="Mes siguiente" onclick="tcHistoryChangeMonth(1)"'+(tcCanGoNextMonth()?'':' disabled')+'>›</button>'+
+    '</div>'+
+    '<div class="tc-cal-weekdays">'+wd+'</div>'+
+    '<div class="tc-cal-grid">'+cells+'</div>'+
+    '</div>';
+}
+function tcDayPopoverHtml(dayKey){
+  const bucket=tcHistoryPayload&&tcHistoryPayload.days&&tcHistoryPayload.days[dayKey];
+  if(!bucket) return '';
+  const title=tcFmtDayTitle(dayKey, tcJornadaTz);
+  if(bucket.sessionCount>1){
+    return '<strong>'+tcEsc(title)+'</strong>'+
+      bucket.sessionCount+' jornadas<br>Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec));
+  }
+  const s=bucket.sessions[0];
+  if(!s) return '';
+  if(s.isOpen){
+    return '<strong>'+tcEsc(title)+'</strong>'+
+      'Jornada abierta<br>Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
+      'Salida: —<br>Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+  }
+  return '<strong>'+tcEsc(title)+'</strong>'+
+    'Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
+    'Salida: '+tcEsc(tcFmtTimeLocal(s.checkOutAt, tcJornadaTz))+'<br>'+
+    'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+}
+function tcShowCalPopover(ev,dayKey){
+  if(window.matchMedia&&window.matchMedia('(max-width:900px)').matches) return;
+  const pop=document.getElementById('tc-cal-popover');
+  if(!pop) return;
+  const html=tcDayPopoverHtml(dayKey);
+  if(!html){ pop.classList.add('hidden'); return; }
+  pop.innerHTML=html;
+  pop.classList.remove('hidden');
+  const x=(ev&&ev.clientX?ev.clientX:0)+12;
+  const y=(ev&&ev.clientY?ev.clientY:0)+12;
+  pop.style.left=Math.min(x, window.innerWidth-260)+'px';
+  pop.style.top=Math.min(y, window.innerHeight-120)+'px';
+}
+function tcHideCalPopover(){
+  const pop=document.getElementById('tc-cal-popover');
+  if(pop) pop.classList.add('hidden');
+}
+function tcSelectHistoryDay(dayKey){
+  tcHistorySelectedDay=dayKey;
+  tcRenderCalendar();
+  tcRenderHistoryDetail();
+  tcHideCalPopover();
+}
+function tcRenderHistoryDetail(){
+  const el=document.getElementById('tc-history-detail');
+  if(!el) return;
+  if(!tcHistorySelectedDay||!tcHistoryPayload||!tcHistoryPayload.days){
+    el.classList.add('hidden');
+    el.innerHTML='';
+    return;
+  }
+  const bucket=tcHistoryPayload.days[tcHistorySelectedDay];
+  if(!bucket){
+    el.classList.add('hidden');
+    return;
+  }
+  el.classList.remove('hidden');
+  const title=tcFmtDayTitle(tcHistorySelectedDay, tcJornadaTz);
+  let html='<h4>'+tcEsc(title)+'</h4>';
+  if(bucket.sessionCount>1){
+    html+='<p>'+bucket.sessionCount+' jornadas · Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+'</p>';
+  }
+  bucket.sessions.forEach(function(s,idx){
+    html+='<div class="tc-history-session">';
+    if(bucket.sessionCount>1) html+='<div style="font-weight:700;margin-bottom:4px;">Jornada '+(idx+1)+'</div>';
+    if(s.isOpen){
+      html+='<div style="color:#b45309;font-weight:600;margin-bottom:4px;">Jornada abierta</div>'+
+        'Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
+        'Salida: —<br>'+
+        'Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+    }else{
+      html+='Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
+        'Salida: '+tcEsc(tcFmtTimeLocal(s.checkOutAt, tcJornadaTz))+'<br>'+
+        'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+    }
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
 function tcCloseJornada(){
+  tcHideCalPopover();
+  tcJornadaEmpId=null;
+  tcHistoryOpen=false;
+  tcHistoryPayload=null;
   const card=document.getElementById('tc-jornada-card');
   if(card) card.classList.add('hidden');
 }
@@ -5716,6 +5988,9 @@ window.tcRegenerate=tcRegenerate;
 window.tcToggleActive=tcToggleActive;
 window.tcViewJornada=tcViewJornada;
 window.tcCloseJornada=tcCloseJornada;
+window.tcToggleHistoryPanel=tcToggleHistoryPanel;
+window.tcHistoryChangeMonth=tcHistoryChangeMonth;
+window.tcSelectHistoryDay=tcSelectHistoryDay;
 window.tcEmpPrimaryAction=tcEmpPrimaryAction;
 window.tcEmployeeBoot=tcEmployeeBoot;
 window.tcIsChecadorPath=tcIsChecadorPath;

@@ -4,6 +4,7 @@ import { assertEmpresaAdmin } from '../services/candidate.service.js';
 import {
   adminCloseRemoteWorkSession,
 } from '../services/remoteWorkSession.service.js';
+import { listEmployeeSessionsHistory } from '../services/remoteWorkSessionHistory.service.js';
 import {
   createWorkforceEmployee,
   getWorkforceEmployeeForOrg,
@@ -48,6 +49,27 @@ router.get('/employees/:id', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     const out = await getWorkforceEmployeeForOrg(u.organizationId, req.params.id);
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/sessions', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { from, to } = z
+      .object({
+        from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(req.query);
+    const out = await listEmployeeSessionsHistory({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      fromKey: from,
+      toKey: to,
+    });
     res.json(out);
   } catch (e) {
     next(e);
