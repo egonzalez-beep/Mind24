@@ -4,6 +4,7 @@ import {
   buildTimeclockAccessLink,
   generateTimeclockAccessToken,
   hashTimeclockToken,
+  resolveTimeclockPublicLinkBase,
 } from './timeclockToken.service.js';
 import {
   buildAdminJornadaPayload,
@@ -12,7 +13,9 @@ import {
 } from './remoteWorkSession.service.js';
 
 function timeclockLinkBase() {
-  return (process.env.TIMECLOCK_PUBLIC_LINK_BASE || 'https://mind24.mx/checador').trim();
+  const base = resolveTimeclockPublicLinkBase();
+  console.log(`[timeclock] public link base: ${base}`);
+  return base;
 }
 
 export async function assertWorkforceEmployeeInOrg(employeeId, organizationId) {

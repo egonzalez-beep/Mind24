@@ -68,6 +68,7 @@ La app sirve el `index.html` del **repositorio padre** (raíz del proyecto) y la
 | `NODE_ENV` | Recomendada | `production` (cookies `Secure`, `trust proxy`, etc.). |
 | `PORT` | No | Railway la define sola; el código usa `process.env.PORT \|\| 3000`. |
 | `CLIENT_ORIGINS` | Opcional | Solo si el HTML se sirve desde otro dominio que no sea el del API (CORS con credenciales). Mismo dominio Railway → déjalo vacío. |
+| `TIMECLOCK_PUBLIC_LINK_BASE` | Recomendada en prod | URL pública del checador **sin token**, p. ej. `https://mind24-production.up.railway.app/checador`. Si falta, se usa `RAILWAY_PUBLIC_DOMAIN`. No usar `mind24.mx` hasta que el dominio exista y apunte al servicio. |
 | `TRUST_PROXY` | Opcional | En producción ya se confía en proxy por defecto; puedes forzar `1`. |
 | `AUDIO_UPLOAD_DIR` | Recomendada en prod | Ruta **absoluta** del volumen (ej. `/data/uploads`). Si se omite en producción, el servidor usa `/data/uploads` por defecto. |
 

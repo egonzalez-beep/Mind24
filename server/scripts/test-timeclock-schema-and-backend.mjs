@@ -21,6 +21,9 @@ const {
   generateTimeclockAccessToken,
   hashTimeclockToken,
   TIMECLOCK_TOKEN_RAW_BYTES,
+  buildTimeclockAccessLink,
+  normalizeTimeclockPublicLinkBase,
+  resolveTimeclockPublicLinkBase,
 } = await import('../src/services/timeclockToken.service.js');
 const {
   resolveCurrentWebSignal,
@@ -89,6 +92,53 @@ check(hashTimeclockToken(token) === hash, 'B hash deterministic');
 
 const rawBuf = crypto.default.randomBytes(TIMECLOCK_TOKEN_RAW_BYTES);
 check(rawBuf.length === 32, 'B token uses 32 random bytes');
+
+check(
+  normalizeTimeclockPublicLinkBase('https://mind24-production.up.railway.app') ===
+    'https://mind24-production.up.railway.app/checador',
+  'link base origin-only → /checador',
+);
+check(
+  normalizeTimeclockPublicLinkBase('https://mind24-production.up.railway.app/checador/') ===
+    'https://mind24-production.up.railway.app/checador',
+  'link base strips trailing slash',
+);
+check(
+  resolveTimeclockPublicLinkBase({
+    TIMECLOCK_PUBLIC_LINK_BASE: 'https://mind24-production.up.railway.app/checador',
+    NODE_ENV: 'production',
+  }) === 'https://mind24-production.up.railway.app/checador',
+  'explicit TIMECLOCK_PUBLIC_LINK_BASE wins',
+);
+check(
+  resolveTimeclockPublicLinkBase({
+    RAILWAY_PUBLIC_DOMAIN: 'mind24-production.up.railway.app',
+    NODE_ENV: 'production',
+  }) === 'https://mind24-production.up.railway.app/checador',
+  'fallback RAILWAY_PUBLIC_DOMAIN',
+);
+check(
+  resolveTimeclockPublicLinkBase({ NODE_ENV: 'development', PORT: '3000' }) ===
+    'http://localhost:3000/checador',
+  'dev fallback localhost',
+);
+let prodMissing = false;
+try {
+  resolveTimeclockPublicLinkBase({ NODE_ENV: 'production' });
+} catch (e) {
+  prodMissing = e.code === 'CONFIG_ERROR';
+}
+check(prodMissing, 'production without base throws CONFIG_ERROR');
+check(
+  !String(resolveTimeclockPublicLinkBase({ NODE_ENV: 'development' })).includes('mind24.mx'),
+  'no silent mind24.mx fallback',
+);
+const sampleTok = 'A'.repeat(43);
+check(
+  buildTimeclockAccessLink(sampleTok, 'https://mind24-production.up.railway.app/checador') ===
+    `https://mind24-production.up.railway.app/checador#${sampleTok}`,
+  'accessLink keeps #TOKEN fragment',
+);
 
 const sessionRow = {
   checkOutAt: null,
