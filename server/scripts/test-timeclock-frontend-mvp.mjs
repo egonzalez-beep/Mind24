@@ -13,6 +13,10 @@ const orgService = fs.readFileSync(
   path.join(root, 'server/src/services/workforceEmployee.service.js'),
   'utf8',
 );
+const tokenService = fs.readFileSync(
+  path.join(root, 'server/src/services/timeclockToken.service.js'),
+  'utf8',
+);
 
 let failed = 0;
 function check(cond, msg) {
@@ -24,11 +28,16 @@ function check(cond, msg) {
   }
 }
 
-console.log('\n=== Timeclock 1C — frontend estático ===\n');
+console.log('\n=== Timeclock 1C / 1C.2 — frontend estático ===\n');
 
 check(/app\.get\(\s*'\/checador'/.test(appJs), '/checador route in app.js');
 check(!/app\.get\(\s*'\/checador\/:/.test(appJs), 'no /checador/:token route');
 check(/sendFile\(indexHtmlAbs\)/.test(appJs), '/checador serves SPA HTML');
+check(!/mind24\.mx/.test(orgService), 'employee service has no mind24.mx fallback');
+check(!/https:\/\/mind24\.mx\/checador/.test(tokenService), 'token service has no mind24.mx default');
+check(/TIMECLOCK_PUBLIC_LINK_BASE/.test(tokenService), 'explicit TIMECLOCK_PUBLIC_LINK_BASE');
+check(/RAILWAY_PUBLIC_DOMAIN/.test(tokenService), 'fallback RAILWAY_PUBLIC_DOMAIN');
+check(/X-Forwarded-Host/.test(tokenService) === false, 'no X-Forwarded-Host URL build');
 
 check(/id="view-timeclock"/.test(indexHtml), 'view-timeclock exists');
 check(/timeclock:'view-timeclock'/.test(indexHtml), 'VIEWS.timeclock registered');
@@ -44,7 +53,23 @@ check(!/sessionStorage\.setItem/.test(indexHtml.slice(indexHtml.indexOf('async f
 check(/Este enlace no es válido o la sesión ha expirado/.test(indexHtml), 'invalid session copy');
 check(/Solicita un nuevo enlace a tu administrador/.test(indexHtml), 'ask admin for new link');
 
-check(/CONTROL DE ASISTENCIA|Control de asistencia/.test(indexHtml), 'employee heading');
+check(/Gestión de equipo/.test(indexHtml), 'admin module title Gestión de equipo');
+check(/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin module subtitle');
+check(/tc-emp-title/.test(indexHtml) && /Mi jornada/.test(indexHtml), 'employee title Mi jornada');
+check(/Asistencia y actividades/.test(indexHtml), 'employee subtitle');
+check(!/Reloj checador remoto/.test(indexHtml), 'no legacy reloj checador subtitle');
+check(/Zona horaria/.test(indexHtml), 'directory column Zona horaria');
+check(/tc-icon-btn--view/.test(indexHtml) && /tcSvgEye/.test(indexHtml), 'SVG ver jornada');
+check(/tc-icon-btn--link/.test(indexHtml) && /tcSvgLinkRefresh/.test(indexHtml), 'SVG regenerar enlace');
+check(/tc-icon-btn--pause/.test(indexHtml) && /Desactivar colaborador/.test(indexHtml), 'SVG desactivar + aria');
+check(/aria-label="Ver jornada de/.test(indexHtml), 'aria-label ver jornada');
+check(/tc-status-dot--connected/.test(indexHtml) && /tc-status-dot--background/.test(indexHtml) && /tc-status-dot--no_signal/.test(indexHtml), 'status-dot variants');
+check(/TC_SIGNAL_INFO/.test(indexHtml) && /no representa actividad laboral/.test(indexHtml), 'signal info tooltip text');
+check(!/no implica inactividad laboral/.test(indexHtml), 'no inline inactividad laboral');
+check(/tcMemberBadgeHtml/.test(indexHtml), 'member active badge helper');
+check(/tc-jornada-dl/.test(indexHtml), 'jornada card dl layout');
+check(!/Eliminar colaborador/.test(indexHtml), 'no eliminar colaborador button');
+check(!/Control de productividad/.test(indexHtml), 'no productividad naming');
 check(/Hola,/.test(indexHtml), 'greeting uses name');
 check(/Registrar entrada/.test(indexHtml), 'check-in CTA');
 check(/Tu horario de entrada será registrado automáticamente por Mind24/.test(indexHtml), 'check-in hint');
@@ -69,7 +94,8 @@ check(!/window\.__TC_ACCESS_LINKS/.test(indexHtml), 'no persistent access-link m
 check(/Copiar enlace/.test(indexHtml) && /onclick="tcCopySecretLink\(\)"/.test(indexHtml), 'copy only on secret banner');
 check(/buildAdminJornadaPayload/.test(orgService), 'admin uses last/open jornada helper');
 check(/getLatestSessionForEmployee/.test(orgService), 'admin loads latest session if none open');
-check(/onclick="tcViewJornada/.test(indexHtml) && /Duración/.test(indexHtml), 'admin jornada shows duration');
+check(/onclick="tcViewJornada/.test(indexHtml) && /<dt>Duración<\/dt>/.test(indexHtml), 'admin jornada shows duration');
+check(/Cerrar detalle de jornada/.test(indexHtml), 'jornada close aria-label');
 check(/tcEmployeeBoot/.test(indexHtml) && /mind24BootstrapSession/.test(indexHtml), 'boot wires /checador before admin session');
 check(/tcPublicJson/.test(indexHtml), 'public API helper distinct from admin 401 redirect');
 check(/\/api\/timeclock\/public\/check-in/.test(indexHtml) && /\/api\/timeclock\/public\/check-out/.test(indexHtml), 'check-in/out endpoints');

@@ -248,8 +248,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-table{width:100%;border-collapse:collapse;font-size:13px;}
 .tc-emp-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--slate-200);color:var(--slate-500);font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
 .tc-emp-table td{padding:10px;border-bottom:1px solid var(--slate-100);vertical-align:middle;}
-.tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;}
-.tc-emp-actions .card-action{padding:5px 10px;font-size:12px;}
+.tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.tc-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid var(--slate-200);border-radius:8px;background:transparent;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);flex-shrink:0;}
+.tc-icon-btn:hover{background:var(--slate-50);border-color:var(--slate-300);}
+.tc-icon-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-icon-btn[disabled]{opacity:.45;cursor:not-allowed;}
+.tc-icon-btn--view{color:var(--purple-dark);border-color:rgba(124,58,237,.28);}
+.tc-icon-btn--view:hover{background:var(--purple-light);border-color:rgba(124,58,237,.4);}
+.tc-icon-btn--link:hover{background:var(--purple-light);color:var(--purple-dark);border-color:rgba(124,58,237,.35);}
+.tc-icon-btn--pause:hover{background:#fff7ed;border-color:#fed7aa;color:#9a3412;}
+.tc-icon-btn--activate:hover{background:#ecfdf5;border-color:#6ee7b7;color:#065f46;}
+.tc-icon-btn--close{width:32px;height:32px;border:none;background:var(--slate-100);color:var(--slate-600);}
+.tc-icon-btn--close:hover{background:var(--slate-200);}
+.tc-refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px!important;}
+.tc-status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tc-status-dot--connected{background:#22c55e;}
+.tc-status-dot--background{background:#f59e0b;}
+.tc-status-dot--no_signal{background:#94a3b8;}
+.tc-status-dot--member{background:#22c55e;width:6px;height:6px;}
+.tc-signal-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:500;}
+.tc-signal-info{display:inline-flex;align-items:center;color:var(--slate-400);cursor:help;line-height:0;}
+.tc-signal-info:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:4px;}
+.tc-member-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--purple-light);color:var(--purple-dark);}
+.tc-member-badge--inactive{background:var(--slate-100);color:var(--slate-600);}
+.tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
+.tc-jornada-stack{display:flex;flex-direction:column;gap:16px;}
+.tc-jornada-dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px 28px;margin:0;}
+.tc-jornada-dl>div{margin:0;}
+.tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
+.tc-jornada-dl dd{margin:0;font-size:14px;font-weight:600;color:var(--primary);line-height:1.45;}
+.tc-jornada-future-slot{border-top:1px dashed var(--slate-200);padding-top:14px;margin-top:2px;display:none;}
+.tc-emp-title{font-size:22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin:0 0 4px;line-height:1.2;}
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
 .tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
@@ -1406,7 +1435,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
       <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" id="cev-sidebar-medida-cta" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
-      <button type="button" id="cev-sidebar-timeclock-cta" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Control de asistencia</span><span class="si-cta-sub">Reloj checador remoto</span></span></button>
+      <button type="button" id="cev-sidebar-timeclock-cta" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1482,7 +1511,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
-<!-- ════════════════════ DASH CONTROL DE ASISTENCIA ════════════════════ -->
+<!-- ════════════════════ DASH GESTIÓN DE EQUIPO ════════════════════ -->
 <div id="view-dash-timeclock" class="app-shell hidden">
   <aside class="sidebar">
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
@@ -1494,7 +1523,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
-      <button type="button" class="sidebar-item sidebar-item-cta-timeclock active" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Control de asistencia</span><span class="si-cta-sub">Reloj checador remoto</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-timeclock active" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green" id="tc-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="tc-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
@@ -1502,7 +1531,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title">Control de asistencia</div><div class="topbar-subtitle">Reloj checador remoto</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title">Gestión de equipo</div><div class="topbar-subtitle">Asistencia y seguimiento de tareas</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div class="tc-page-head">
         <div>
@@ -1543,16 +1572,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
       <p id="tc-list-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
       <div class="card">
-        <div class="card-header"><div><div class="card-title">Directorio</div><div class="card-subtitle" id="tc-list-count">0 colaboradores</div></div><button type="button" class="card-action" onclick="tcLoadEmployees()">↻ Actualizar</button></div>
+        <div class="card-header"><div><div class="card-title">Directorio</div><div class="card-subtitle" id="tc-list-count">0 colaboradores</div></div><button type="button" class="card-action tc-refresh-btn" onclick="tcLoadEmployees()" title="Actualizar directorio" aria-label="Actualizar directorio de colaboradores"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Actualizar</span></button></div>
         <div class="card-body" style="overflow-x:auto;">
           <table class="tc-emp-table">
-            <thead><tr><th>Colaborador</th><th>Puesto</th><th>Zona</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Colaborador</th><th>Puesto</th><th>Zona horaria</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tc-emp-tbody"></tbody>
           </table>
         </div>
       </div>
       <div id="tc-jornada-card" class="card hidden" style="margin-top:18px;">
-        <div class="card-header"><div><div class="card-title">Jornada</div><div class="card-subtitle" id="tc-jornada-sub">—</div></div><button type="button" class="card-action" onclick="tcCloseJornada()">Cerrar</button></div>
+        <div class="card-header"><div><div class="card-title">Jornada</div><div class="card-subtitle" id="tc-jornada-sub">—</div></div><button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
         <div class="card-body" id="tc-jornada-body"></div>
       </div>
     </div>
@@ -1565,7 +1594,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="tc-emp-card">
       <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
       <div class="tc-emp-brand">MIND24</div>
-      <div class="tc-emp-kicker">Control de asistencia</div>
+      <h1 class="tc-emp-title">Mi jornada</h1>
+      <div class="tc-emp-kicker">Asistencia y actividades</div>
       <div id="tc-emp-gate" class="hidden">
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
       </div>
@@ -5265,6 +5295,41 @@ function tcSignalLabel(code){
   if(code==='background'||code==='BACKGROUND') return 'Página en segundo plano';
   return 'Sin señal reciente';
 }
+var TC_SIGNAL_INFO='La señal corresponde únicamente a esta página y no representa actividad laboral.';
+function tcSignalKind(code){
+  if(code==='connected'||code==='CONNECTED') return 'connected';
+  if(code==='background'||code==='BACKGROUND') return 'background';
+  return 'no_signal';
+}
+function tcSvgInfoCircle(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+}
+function tcSignalInfoIcon(){
+  return '<span class="tc-signal-info" tabindex="0" role="img" title="'+TC_SIGNAL_INFO+'" aria-label="'+TC_SIGNAL_INFO+'">'+tcSvgInfoCircle()+'</span>';
+}
+function tcSignalDotHtml(code, withInfo){
+  const kind=tcSignalKind(code);
+  const label=tcSignalLabel(code);
+  return '<span class="tc-signal-line"><span class="tc-status-dot tc-status-dot--'+kind+'" aria-hidden="true"></span><span>'+tcEsc(label)+'</span>'+(withInfo?tcSignalInfoIcon():'')+'</span>';
+}
+function tcSvgEye(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+function tcSvgLinkRefresh(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><path d="M8 11h8"/><path d="M12 7v8"/></svg>';
+}
+function tcSvgUserPause(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="17" y1="8" y2="14"/><line x1="20" x2="14" y1="11" y2="11"/></svg>';
+}
+function tcSvgUserCheck(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
+}
+function tcMemberBadgeHtml(isActive){
+  if(isActive){
+    return '<span class="tc-member-badge"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>Activo</span>';
+  }
+  return '<span class="tc-member-badge tc-member-badge--inactive"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>Inactivo</span>';
+}
 function tcFmtDuration(sec){
   const n=Math.max(0, Number(sec)||0);
   const h=Math.floor(n/3600);
@@ -5331,17 +5396,19 @@ async function tcLoadEmployees(){
       return;
     }
     tbody.innerHTML=rows.map(function(emp){
-      const st=emp.isActive?'Activo':'Inactivo';
-      const stCls=emp.isActive?'pb-active':'pb-review';
+      const name=tcEsc(emp.fullName);
+      const actBtn=emp.isActive
+        ? '<button type="button" class="tc-icon-btn tc-icon-btn--pause" title="Desactivar colaborador" aria-label="Desactivar colaborador '+name+'" onclick="tcToggleActive(\''+emp.id+'\',false)">'+tcSvgUserPause()+'</button>'
+        : '<button type="button" class="tc-icon-btn tc-icon-btn--activate" title="Activar colaborador" aria-label="Activar colaborador '+name+'" onclick="tcToggleActive(\''+emp.id+'\',true)">'+tcSvgUserCheck()+'</button>';
       return '<tr>'+
-        '<td><strong>'+tcEsc(emp.fullName)+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</td>'+
+        '<td><strong>'+name+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</td>'+
         '<td>'+tcEsc(emp.position||'—')+'</td>'+
         '<td>'+tcEsc(emp.timezone)+'</td>'+
-        '<td><span class="p-badge '+stCls+'">'+st+'</span></td>'+
+        '<td>'+tcMemberBadgeHtml(emp.isActive)+'</td>'+
         '<td><div class="tc-emp-actions">'+
-          '<button type="button" class="card-action" onclick="tcViewJornada(\''+emp.id+'\')">Ver jornada</button>'+
-          '<button type="button" class="card-action" onclick="tcRegenerate(\''+emp.id+'\')">Regenerar enlace</button>'+
-          '<button type="button" class="card-action" onclick="tcToggleActive(\''+emp.id+'\','+(!emp.isActive)+')">'+(emp.isActive?'Desactivar':'Activar')+'</button>'+
+          '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
+          '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLinkRefresh()+'</button>'+
+          actBtn+
         '</div></td></tr>';
     }).join('');
   }catch(e){
@@ -5402,12 +5469,19 @@ async function tcViewJornada(id){
     if(sub) sub.textContent=emp.fullName||'—';
     if(body){
       const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
+      const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
+      const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       body.innerHTML=
-        '<p style="font-size:14px;margin-bottom:8px;"><strong>Estado:</strong> '+tcEsc(tcShiftLabel(j.shiftLifecycle))+'</p>'+
-        '<p style="font-size:14px;margin-bottom:8px;"><strong>Entrada:</strong> '+tcEsc(sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX'):'—')+'</p>'+
-        '<p style="font-size:14px;margin-bottom:8px;"><strong>Salida:</strong> '+tcEsc(sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX'):'—')+'</p>'+
-        '<p style="font-size:14px;margin-bottom:8px;"><strong>Duración:</strong> '+tcEsc(dur)+'</p>'+
-        '<p style="font-size:14px;margin-bottom:8px;"><strong>Última señal:</strong> '+tcEsc(tcSignalLabel(j.webSignal))+' <span style="color:var(--slate-400);font-size:12px;">(no implica inactividad laboral)</span></p>';
+        '<div class="tc-jornada-stack">'+
+        '<dl class="tc-jornada-dl">'+
+        '<div><dt>Estado</dt><dd>'+tcEsc(tcShiftLabel(j.shiftLifecycle))+'</dd></div>'+
+        '<div><dt>Entrada</dt><dd>'+tcEsc(entFmt)+'</dd></div>'+
+        '<div><dt>Salida</dt><dd>'+tcEsc(outFmt)+'</dd></div>'+
+        '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
+        '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
+        '</dl>'+
+        '<div class="tc-jornada-future-slot" aria-hidden="true"></div>'+
+        '</div>';
     }
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -5512,7 +5586,7 @@ function tcEmpRender(){
     if(rows) rows.innerHTML=
       '<div><strong>Entrada:</strong> '+tcEsc(tcFmtHm(open.checkInAt))+'</div>'+
       '<div><strong>Tiempo transcurrido:</strong> <span id="tc-emp-elapsed">'+tcEsc(tcEmpElapsed())+'</span></div>'+
-      '<div><strong>Señal:</strong> '+tcEsc(tcSignalLabel(me.webSignal))+'</div>';
+      '<div id="tc-emp-signal-row"><strong>Señal:</strong> '+tcSignalDotHtml(me.webSignal,true)+'</div>';
     if(btn){
       btn.classList.remove('hidden');
       btn.classList.add('tc-emp-btn-out');
@@ -5557,11 +5631,8 @@ async function tcEmpSendHeartbeat(){
       body:JSON.stringify({ visibilityState: vis }),
     });
     if(j&&j.webSignal) tcEmpMe.webSignal=j.webSignal;
-    const sig=document.querySelector('#tc-emp-rows');
-    if(sig&&tcEmpMe.openSession){
-      const last=sig.lastElementChild;
-      if(last&&/Señal/.test(last.textContent||'')) last.innerHTML='<strong>Señal:</strong> '+tcEsc(tcSignalLabel(tcEmpMe.webSignal));
-    }
+    const sigRow=document.getElementById('tc-emp-signal-row');
+    if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML='<strong>Señal:</strong> '+tcSignalDotHtml(tcEmpMe.webSignal,true);
   }catch(_){}
 }
 async function tcEmpLoadMe(){
