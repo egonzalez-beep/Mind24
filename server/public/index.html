@@ -272,14 +272,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--purple-light);color:var(--purple-dark);}
 .tc-member-badge--inactive{background:var(--slate-100);color:var(--slate-600);}
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
-.tc-jornada-split{display:flex;align-items:stretch;gap:32px;min-height:200px;}
-.tc-jornada-main{flex:0 0 38%;max-width:400px;min-width:220px;}
-.tc-jornada-aside{flex:1 1 62%;min-width:0;display:flex;flex-direction:column;}
-.tc-jornada-card-header--compact{padding:10px 22px 0!important;margin-bottom:0!important;justify-content:flex-end!important;gap:12px!important;}
-.tc-jornada-header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.tc-jornada-top-row{display:flex;align-items:flex-start;gap:32px;margin-bottom:12px;}
-.tc-jornada-top-left{flex:0 0 38%;max-width:400px;min-width:220px;}
-.tc-jornada-top-right{flex:1 1 62%;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tc-jornada-split{display:flex;align-items:stretch;gap:20px;min-height:200px;}
+.tc-jornada-main{flex:0 0 30%;max-width:320px;min-width:200px;}
+.tc-jornada-aside{flex:1 1 70%;min-width:0;display:flex;flex-direction:column;}
+.tc-jornada-card-header--compact{padding:10px 22px 0!important;margin-bottom:0!important;justify-content:flex-end!important;}
+.tc-jornada-top-row{display:flex;align-items:flex-start;gap:20px;margin-bottom:12px;}
+.tc-jornada-top-left{flex:0 0 30%;max-width:320px;min-width:200px;}
+.tc-jornada-top-right{flex:1 1 70%;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tc-jornada-meta{margin-top:16px;padding-top:14px;border-top:1px solid var(--slate-100);display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
+.tc-jornada-alta{font-size:11px;color:var(--slate-400);line-height:1.4;}
+.tc-history-toggle--inline{margin-top:2px;}
 .tc-jornada-top-title{margin:0 0 4px!important;font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.02em;line-height:1.2;}
 .tc-jornada-top-title--act{color:var(--purple-dark);}
 #tc-jornada-body .card-subtitle{margin:0;font-size:13px;color:var(--slate-500);}
@@ -1705,10 +1707,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div id="tc-jornada-card" class="card hidden" style="margin-top:18px;">
         <div class="card-header tc-jornada-card-header tc-jornada-card-header--compact">
-          <div class="tc-jornada-header-actions">
-            <button type="button" class="tc-history-toggle hidden" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">Historial de jornadas</button>
-            <button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-          </div>
+          <button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <div class="card-body" id="tc-jornada-body"></div>
       </div>
@@ -5497,6 +5496,15 @@ function tcSignalDotHtml(code, withInfo){
 function tcSvgEye(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
+function tcSvgCalendarHistory(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>';
+}
+function tcFmtEmployeeAlta(iso){
+  if(!iso) return '—';
+  try{
+    return new Date(iso).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  }catch(_){ return '—'; }
+}
 function tcSvgLink(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 }
@@ -5653,6 +5661,7 @@ async function tcViewJornada(id){
       const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
       const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
+      const altaFmt=tcFmtEmployeeAlta(emp.createdAt);
       body.innerHTML=
         '<div class="tc-jornada-top-row">'+
         '<div class="tc-jornada-top-left">'+
@@ -5672,6 +5681,10 @@ async function tcViewJornada(id){
         '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
         '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
         '</dl>'+
+        '<div class="tc-jornada-meta">'+
+        '<button type="button" class="tc-history-toggle tc-history-toggle--inline" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">'+tcSvgCalendarHistory()+' Historial de jornadas</button>'+
+        '<div class="tc-jornada-alta">Alta: '+tcEsc(altaFmt)+'</div>'+
+        '</div>'+
         '</div>'+
         '<div class="tc-jornada-aside" id="tc-jornada-aside"></div>'+
         '</div>';
@@ -5683,8 +5696,6 @@ async function tcViewJornada(id){
       tcKanbanCompletedShowAll=false;
       await tcKanbanLoad();
     }
-    const histBtn=document.getElementById('tc-history-toggle');
-    if(histBtn) histBtn.classList.remove('hidden');
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
@@ -6389,8 +6400,6 @@ function tcCloseJornada(){
   tcKanbanEmpId=null;
   tcKanbanCloseAssign();
   tcKanbanCloseEdit();
-  const histBtn=document.getElementById('tc-history-toggle');
-  if(histBtn) histBtn.classList.add('hidden');
   const card=document.getElementById('tc-jornada-card');
   if(card) card.classList.add('hidden');
 }

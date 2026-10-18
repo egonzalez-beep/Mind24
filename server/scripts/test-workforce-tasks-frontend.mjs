@@ -44,7 +44,9 @@ check(/tcKanbanMoveTask/.test(indexHtml) && /Mover a/.test(indexHtml), 'fallback
 check(!/location\.reload\(/.test(indexHtml) || !/tcKanban.*reload/.test(indexHtml), 'kanban sin full-page reload');
 check(/tc-history-dialog/.test(indexHtml) && /tcKanbanLoad/.test(indexHtml), 'historial y actividades coexisten');
 check(/tc-jornada-top-row/.test(indexHtml) && /tc-jornada-top-left/.test(indexHtml) && /tc-jornada-top-right/.test(indexHtml), 'Jornada y Actividades misma fila superior');
-check(/tc-jornada-card-header--compact/.test(indexHtml) && /tc-jornada-header-actions/.test(indexHtml), 'Historial no empuja Kanban');
+check(/tc-jornada-main/.test(indexHtml) && /tc-jornada-meta/.test(indexHtml) && /tc-history-toggle--inline/.test(indexHtml), 'Historial en bloque Jornada');
+check(/tc-jornada-main\{flex:0 0 30%/.test(indexHtml) && /tc-jornada-aside\{flex:1 1 70%/.test(indexHtml), 'proporción ~30/70 Jornada-Actividades');
+check(/tc-jornada-alta/.test(indexHtml) && /tcFmtEmployeeAlta/.test(indexHtml) && /Alta:/.test(indexHtml), 'fecha de alta colaborador');
 check(/tc-kanban-status-dot--pending/.test(indexHtml) && /tc-kanban-status-dot--progress/.test(indexHtml) && /tc-kanban-status-dot--completed/.test(indexHtml), 'semáforo columnas');
 check(/tc-kanban-col-chip/.test(indexHtml), 'micro-contadores');
 check(/Sin pendientes/.test(indexHtml) && /Sin actividades en progreso/.test(indexHtml) && /Sin completadas/.test(indexHtml), 'empty states columnas');
