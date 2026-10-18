@@ -78,8 +78,14 @@ console.log('\n=== Timeclock — historial (estático) ===\n');
 check(/employees\/:id\/sessions/.test(routesJs), 'route GET sessions');
 check(/listEmployeeSessionsHistory/.test(routesJs), 'route usa listEmployeeSessionsHistory');
 check(/Historial de jornadas/.test(indexHtml), 'toggle historial copy');
-check(/tcToggleHistoryPanel/.test(indexHtml), 'expandir/compactar historial');
-check(/tc-history-panel hidden/.test(indexHtml), 'panel colapsado por defecto');
+check(/tcToggleHistoryPanel/.test(indexHtml), 'abrir/cerrar historial flotante');
+check(/tc-history-dialog hidden/.test(indexHtml), 'dialog colapsado por defecto');
+check(/tc-history-backdrop/.test(indexHtml), 'backdrop historial');
+check(/tc-jornada-header-top/.test(indexHtml) && /id="tc-history-toggle"/.test(indexHtml), 'botón junto a título Jornada');
+check(!/tc-history-panel/.test(indexHtml), 'sin panel inline en tarjeta');
+check(/tc-history-pinned/.test(indexHtml), 'detalle anclado dentro del popover');
+check(/tcHistoryPinnedDay/.test(indexHtml), 'estado detalle por click');
+check(/aria-controls="tc-history-dialog"/.test(indexHtml), 'aria-controls dialog');
 check(/assertWorkforceEmployeeInOrg/.test(
   fs.readFileSync(path.join(root, 'src/services/remoteWorkSessionHistory.service.js'), 'utf8'),
 ), 'historial valida empleado en org');
@@ -88,7 +94,6 @@ check(/Duración de jornada/.test(indexHtml), 'wording duración de jornada');
 check(!/Tiempo de conexión/.test(indexHtml), 'no tiempo de conexión');
 check(/tc-cal-prev/.test(indexHtml) && /tc-cal-next/.test(indexHtml), 'navegación mes');
 check(/aria-label.*Mes anterior/.test(indexHtml), 'aria mes anterior');
-check(/tcHistorySelectedDay/.test(indexHtml), 'detalle por click');
 check(/tc-cal-popover/.test(indexHtml), 'popover hover desktop');
 
 console.log(failed === 0 ? '\n✓ Timeclock session history tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);

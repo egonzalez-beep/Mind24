@@ -274,13 +274,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
 .tc-jornada-split{display:flex;align-items:flex-start;gap:32px;min-height:80px;}
 .tc-jornada-main{flex:0 0 38%;max-width:400px;min-width:220px;}
-.tc-jornada-aside{flex:1 1 62%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;}
-.tc-history-toggle{display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 4px;border-radius:8px;transition:var(--tr-fast);}
-.tc-history-toggle:hover{background:var(--purple-light);}
+.tc-jornada-aside{flex:1 1 62%;min-width:0;}
+.tc-jornada-card-header{align-items:flex-start!important;}
+.tc-jornada-header-main{flex:1;min-width:0;}
+.tc-jornada-header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tc-jornada-header-top .card-title{margin-bottom:0!important;}
+.tc-history-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,58,237,.22);background:rgba(255,255,255,.9);color:var(--purple-dark);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:8px;transition:var(--tr-fast);white-space:nowrap;}
+.tc-history-toggle:hover{background:var(--purple-light);border-color:rgba(124,58,237,.4);}
 .tc-history-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-history-chevron{font-size:11px;opacity:.85;}
-.tc-history-panel{width:100%;margin-top:10px;display:flex;flex-direction:column;gap:12px;}
-.tc-history-panel.hidden{display:none!important;}
+.tc-history-toggle.hidden{display:none!important;}
+.tc-history-backdrop{position:fixed;inset:0;z-index:1190;background:rgba(15,23,42,.18);backdrop-filter:blur(2px);}
+.tc-history-backdrop.hidden{display:none!important;}
+.tc-history-dialog{position:fixed;z-index:1200;width:min(580px,calc(100vw - 32px));max-height:min(78vh,640px);display:flex;flex-direction:column;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border:1px solid var(--slate-200);border-radius:16px;box-shadow:0 24px 60px rgba(15,23,42,.16),0 4px 16px rgba(124,58,237,.08);overflow:hidden;}
+.tc-history-dialog.hidden{display:none!important;}
+.tc-history-dialog--mobile{left:50%!important;top:auto!important;bottom:16px!important;transform:translateX(-50%);width:calc(100vw - 24px);max-height:85vh;border-radius:18px 18px 14px 14px;}
+.tc-history-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--slate-100);}
+.tc-history-dialog-head h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-history-dialog-body{padding:12px 16px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.tc-history-cal-wrap{position:relative;}
 .tc-week-summary{font-size:12px;color:var(--slate-500);line-height:1.5;padding:0 2px;}
 .tc-week-summary strong{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:2px;}
 .tc-cal{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
@@ -303,8 +314,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-cal-dot--open{background:#f59e0b;}
 .tc-cal-popover{position:fixed;z-index:1200;max-width:240px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);font-size:12px;color:var(--slate-600);line-height:1.45;pointer-events:none;}
 .tc-cal-popover strong{display:block;font-size:13px;color:var(--primary);margin-bottom:6px;font-weight:700;}
-.tc-history-detail{font-size:12px;color:var(--slate-600);line-height:1.5;padding:10px 12px;border-radius:10px;background:var(--slate-50);border:1px solid var(--slate-100);}
-.tc-history-detail h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--primary);}
+.tc-history-pinned{position:absolute;z-index:5;left:8px;right:8px;bottom:8px;font-size:12px;color:var(--slate-600);line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.98);border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);}
+.tc-history-pinned.hidden{display:none!important;}
+.tc-history-pinned h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--primary);}
 .tc-history-session{margin-top:10px;padding-top:10px;border-top:1px solid var(--slate-200);}
 .tc-history-session:first-of-type{margin-top:0;padding-top:0;border-top:none;}
 .tc-jornada-dl{display:flex;flex-direction:column;gap:14px;margin:0;}
@@ -1615,8 +1627,32 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="tc-jornada-card" class="card hidden" style="margin-top:18px;">
-        <div class="card-header"><div><div class="card-title">Jornada</div><div class="card-subtitle" id="tc-jornada-sub">—</div></div><button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+        <div class="card-header tc-jornada-card-header">
+          <div class="tc-jornada-header-main">
+            <div class="tc-jornada-header-top">
+              <div class="card-title">Jornada</div>
+              <button type="button" class="tc-history-toggle hidden" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">Historial de jornadas</button>
+            </div>
+            <div class="card-subtitle" id="tc-jornada-sub">—</div>
+          </div>
+          <button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </div>
         <div class="card-body" id="tc-jornada-body"></div>
+      </div>
+      <div id="tc-history-backdrop" class="tc-history-backdrop hidden" aria-hidden="true"></div>
+      <div id="tc-history-dialog" class="tc-history-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="tc-history-dialog-title" aria-hidden="true">
+        <div class="tc-history-dialog-head">
+          <h3 id="tc-history-dialog-title">Historial de jornadas</h3>
+          <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-history-dialog-close" aria-label="Cerrar historial de jornadas" onclick="tcCloseHistoryDialog(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </div>
+        <div class="tc-history-dialog-body">
+          <div class="tc-week-summary" id="tc-week-summary"></div>
+          <div class="tc-history-cal-wrap">
+            <div id="tc-cal-root"></div>
+            <div id="tc-history-pinned" class="tc-history-pinned hidden" role="region" aria-live="polite"></div>
+            <div id="tc-cal-popover" class="tc-cal-popover hidden" role="tooltip"></div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -5518,9 +5554,11 @@ async function tcViewJornada(id){
         '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
         '</dl>'+
         '</div>'+
-        '<div class="tc-jornada-aside">'+tcHistoryShellHtml()+'</div>'+
+        '<div class="tc-jornada-aside" aria-hidden="true"></div>'+
         '</div>';
     }
+    const histBtn=document.getElementById('tc-history-toggle');
+    if(histBtn) histBtn.classList.remove('hidden');
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
@@ -5530,9 +5568,10 @@ let tcJornadaTz='America/Mexico_City';
 let tcHistoryOpen=false;
 let tcHistoryYear=null;
 let tcHistoryMonth=null;
-let tcHistorySelectedDay=null;
+let tcHistoryPinnedDay=null;
 let tcHistoryPayload=null;
 let tcHistoryLoading=false;
+let tcHistoryKeyHandler=null;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function tcFmtDurationHuman(sec){
@@ -5565,39 +5604,109 @@ function tcFmtDayTitle(dayKey,tz){
     return new Date(noon).toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'long',year:'numeric'});
   }catch(_){ return dayKey; }
 }
-function tcHistoryShellHtml(){
-  return '<button type="button" class="tc-history-toggle" id="tc-history-toggle" aria-expanded="false" onclick="tcToggleHistoryPanel()">'+
-    'Historial de jornadas <span class="tc-history-chevron" id="tc-history-chevron" aria-hidden="true">▾</span></button>'+
-    '<div id="tc-history-panel" class="tc-history-panel hidden" aria-hidden="true">'+
-    '<div class="tc-week-summary" id="tc-week-summary"></div>'+
-    '<div id="tc-cal-root"></div>'+
-    '<div class="tc-history-detail hidden" id="tc-history-detail"></div>'+
-    '</div>'+
-    '<div id="tc-cal-popover" class="tc-cal-popover hidden" role="tooltip"></div>';
-}
 function tcResetHistoryState(emp){
   tcJornadaEmpId=emp.id||null;
   tcJornadaTz=emp.timezone||'America/Mexico_City';
-  tcHistoryOpen=false;
-  tcHistorySelectedDay=null;
+  tcCloseHistoryDialog(false);
+  tcHistoryPinnedDay=null;
   tcHistoryPayload=null;
   const t=tcLocalTodayParts(tcJornadaTz);
   tcHistoryYear=t.y;
   tcHistoryMonth=t.m-1;
 }
-async function tcToggleHistoryPanel(){
-  tcHistoryOpen=!tcHistoryOpen;
-  const panel=document.getElementById('tc-history-panel');
-  const toggle=document.getElementById('tc-history-toggle');
-  const chev=document.getElementById('tc-history-chevron');
-  if(toggle) toggle.setAttribute('aria-expanded', tcHistoryOpen?'true':'false');
-  if(chev) chev.textContent=tcHistoryOpen?'▴':'▾';
-  if(panel){
-    panel.classList.toggle('hidden', !tcHistoryOpen);
-    panel.setAttribute('aria-hidden', tcHistoryOpen?'false':'true');
+function tcPositionHistoryDialog(){
+  const dlg=document.getElementById('tc-history-dialog');
+  const btn=document.getElementById('tc-history-toggle');
+  if(!dlg||!btn) return;
+  if(window.matchMedia&&window.matchMedia('(max-width:900px)').matches){
+    dlg.classList.add('tc-history-dialog--mobile');
+    dlg.style.left='';
+    dlg.style.top='';
+    return;
   }
-  if(tcHistoryOpen) await tcLoadHistoryMonth();
-  else tcHideCalPopover();
+  dlg.classList.remove('tc-history-dialog--mobile');
+  const r=btn.getBoundingClientRect();
+  let left=Math.max(16, r.left);
+  let top=r.bottom+10;
+  const w=Math.min(580, window.innerWidth-32);
+  if(left+w>window.innerWidth-16) left=window.innerWidth-w-16;
+  const maxH=Math.min(window.innerHeight*0.78, 640);
+  if(top+maxH>window.innerHeight-12) top=Math.max(12, r.top-maxH-8);
+  dlg.style.width=w+'px';
+  dlg.style.left=left+'px';
+  dlg.style.top=top+'px';
+}
+function tcHistoryOnKeydown(e){
+  if(e.key!=='Escape') return;
+  if(tcHistoryPinnedDay){
+    tcHistoryPinnedDay=null;
+    tcRenderHistoryPinned();
+    tcRenderCalendar();
+    e.preventDefault();
+    return;
+  }
+  if(tcHistoryOpen) tcCloseHistoryDialog(true);
+}
+function tcHistoryOnBackdropClick(e){
+  if(e.target!==e.currentTarget) return;
+  if(tcHistoryPinnedDay){
+    tcHistoryPinnedDay=null;
+    tcRenderHistoryPinned();
+    tcRenderCalendar();
+    return;
+  }
+  tcCloseHistoryDialog(true);
+}
+async function tcOpenHistoryDialog(){
+  const dlg=document.getElementById('tc-history-dialog');
+  const backdrop=document.getElementById('tc-history-backdrop');
+  const toggle=document.getElementById('tc-history-toggle');
+  if(!dlg||!backdrop) return;
+  tcHistoryOpen=true;
+  tcHistoryPinnedDay=null;
+  if(toggle) toggle.setAttribute('aria-expanded','true');
+  backdrop.classList.remove('hidden');
+  backdrop.setAttribute('aria-hidden','false');
+  backdrop.onclick=tcHistoryOnBackdropClick;
+  dlg.classList.remove('hidden');
+  dlg.setAttribute('aria-hidden','false');
+  tcPositionHistoryDialog();
+  if(!tcHistoryKeyHandler){
+    tcHistoryKeyHandler=function(ev){ tcHistoryOnKeydown(ev); };
+    document.addEventListener('keydown', tcHistoryKeyHandler);
+  }
+  await tcLoadHistoryMonth();
+  const closeBtn=document.getElementById('tc-history-dialog-close');
+  if(closeBtn) closeBtn.focus();
+}
+function tcCloseHistoryDialog(restoreFocus){
+  const dlg=document.getElementById('tc-history-dialog');
+  const backdrop=document.getElementById('tc-history-backdrop');
+  const toggle=document.getElementById('tc-history-toggle');
+  tcHistoryOpen=false;
+  tcHistoryPinnedDay=null;
+  tcHideCalPopover();
+  if(toggle) toggle.setAttribute('aria-expanded','false');
+  if(dlg){
+    dlg.classList.add('hidden');
+    dlg.setAttribute('aria-hidden','true');
+  }
+  if(backdrop){
+    backdrop.classList.add('hidden');
+    backdrop.setAttribute('aria-hidden','true');
+    backdrop.onclick=null;
+  }
+  if(tcHistoryKeyHandler){
+    document.removeEventListener('keydown', tcHistoryKeyHandler);
+    tcHistoryKeyHandler=null;
+  }
+  const pinned=document.getElementById('tc-history-pinned');
+  if(pinned){ pinned.classList.add('hidden'); pinned.innerHTML=''; }
+  if(restoreFocus&&toggle) toggle.focus();
+}
+async function tcToggleHistoryPanel(){
+  if(tcHistoryOpen){ tcCloseHistoryDialog(true); return; }
+  await tcOpenHistoryDialog();
 }
 function tcCanGoNextMonth(){
   const t=tcLocalTodayParts(tcJornadaTz);
@@ -5609,7 +5718,8 @@ async function tcHistoryChangeMonth(delta){
   tcHistoryMonth+=delta;
   if(tcHistoryMonth<0){ tcHistoryMonth=11; tcHistoryYear-=1; }
   if(tcHistoryMonth>11){ tcHistoryMonth=0; tcHistoryYear+=1; }
-  tcHistorySelectedDay=null;
+  tcHistoryPinnedDay=null;
+  tcRenderHistoryPinned();
   await tcLoadHistoryMonth();
 }
 async function tcLoadHistoryMonth(){
@@ -5623,7 +5733,7 @@ async function tcLoadHistoryMonth(){
     tcHistoryPayload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions?'+q);
     tcRenderWeekSummary();
     tcRenderCalendar();
-    tcRenderHistoryDetail();
+    tcRenderHistoryPinned();
   }catch(e){
     if(root) root.innerHTML='<p style="font-size:12px;color:#b91c1c;">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p>';
   }finally{
@@ -5659,7 +5769,7 @@ function tcRenderCalendar(){
     const bucket=days[key];
     const has=bucket&&bucket.sessionCount>0;
     const open=has&&bucket.hasOpen;
-    const sel=tcHistorySelectedDay===key;
+    const sel=tcHistoryPinnedDay===key;
     const dot=has?('<span class="tc-cal-dot'+(open?' tc-cal-dot--open':'')+'" aria-hidden="true"></span>'):'';
     if(has){
       cells+='<button type="button" class="tc-cal-day tc-cal-day--has'+(sel?' tc-cal-day--selected':'')+'" data-day="'+key+'" onclick="tcSelectHistoryDay(\''+key+'\')" onmouseenter="tcShowCalPopover(event,\''+key+'\')" onmouseleave="tcHideCalPopover()" onfocus="tcShowCalPopover(event,\''+key+'\')" onblur="tcHideCalPopover()">'+
@@ -5702,42 +5812,39 @@ function tcDayPopoverHtml(dayKey){
 }
 function tcShowCalPopover(ev,dayKey){
   if(window.matchMedia&&window.matchMedia('(max-width:900px)').matches) return;
+  if(tcHistoryPinnedDay) return;
   const pop=document.getElementById('tc-cal-popover');
-  if(!pop) return;
+  const wrap=pop&&pop.closest('.tc-history-cal-wrap');
+  if(!pop||!wrap) return;
   const html=tcDayPopoverHtml(dayKey);
   if(!html){ pop.classList.add('hidden'); return; }
   pop.innerHTML=html;
   pop.classList.remove('hidden');
-  const x=(ev&&ev.clientX?ev.clientX:0)+12;
-  const y=(ev&&ev.clientY?ev.clientY:0)+12;
-  pop.style.left=Math.min(x, window.innerWidth-260)+'px';
-  pop.style.top=Math.min(y, window.innerHeight-120)+'px';
+  pop.style.position='absolute';
+  const rect=wrap.getBoundingClientRect();
+  const bx=(ev&&ev.currentTarget&&ev.currentTarget.getBoundingClientRect)?ev.currentTarget.getBoundingClientRect():null;
+  let x=bx?(bx.left-rect.left):40;
+  let y=bx?(bx.bottom-rect.top+6):40;
+  if(x+220>wrap.clientWidth) x=Math.max(4, wrap.clientWidth-224);
+  if(y+100>wrap.clientHeight) y=Math.max(4, (bx?bx.top-rect.top-96:4));
+  pop.style.left=x+'px';
+  pop.style.top=y+'px';
 }
 function tcHideCalPopover(){
   const pop=document.getElementById('tc-cal-popover');
   if(pop) pop.classList.add('hidden');
 }
 function tcSelectHistoryDay(dayKey){
-  tcHistorySelectedDay=dayKey;
+  tcHistoryPinnedDay=tcHistoryPinnedDay===dayKey?null:dayKey;
   tcRenderCalendar();
-  tcRenderHistoryDetail();
+  tcRenderHistoryPinned();
   tcHideCalPopover();
 }
-function tcRenderHistoryDetail(){
-  const el=document.getElementById('tc-history-detail');
-  if(!el) return;
-  if(!tcHistorySelectedDay||!tcHistoryPayload||!tcHistoryPayload.days){
-    el.classList.add('hidden');
-    el.innerHTML='';
-    return;
-  }
-  const bucket=tcHistoryPayload.days[tcHistorySelectedDay];
-  if(!bucket){
-    el.classList.add('hidden');
-    return;
-  }
-  el.classList.remove('hidden');
-  const title=tcFmtDayTitle(tcHistorySelectedDay, tcJornadaTz);
+function tcDayDetailHtml(dayKey){
+  if(!dayKey||!tcHistoryPayload||!tcHistoryPayload.days) return '';
+  const bucket=tcHistoryPayload.days[dayKey];
+  if(!bucket) return '';
+  const title=tcFmtDayTitle(dayKey, tcJornadaTz);
   let html='<h4>'+tcEsc(title)+'</h4>';
   if(bucket.sessionCount>1){
     html+='<p>'+bucket.sessionCount+' jornadas · Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+'</p>';
@@ -5757,13 +5864,30 @@ function tcRenderHistoryDetail(){
     }
     html+='</div>';
   });
+  return html;
+}
+function tcRenderHistoryPinned(){
+  const el=document.getElementById('tc-history-pinned');
+  if(!el) return;
+  if(!tcHistoryPinnedDay){
+    el.classList.add('hidden');
+    el.innerHTML='';
+    return;
+  }
+  const html=tcDayDetailHtml(tcHistoryPinnedDay);
+  if(!html){
+    el.classList.add('hidden');
+    return;
+  }
+  el.classList.remove('hidden');
   el.innerHTML=html;
 }
 function tcCloseJornada(){
-  tcHideCalPopover();
+  tcCloseHistoryDialog(false);
   tcJornadaEmpId=null;
-  tcHistoryOpen=false;
   tcHistoryPayload=null;
+  const histBtn=document.getElementById('tc-history-toggle');
+  if(histBtn) histBtn.classList.add('hidden');
   const card=document.getElementById('tc-jornada-card');
   if(card) card.classList.add('hidden');
 }
