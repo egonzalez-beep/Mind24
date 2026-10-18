@@ -59,6 +59,7 @@ model Organization {
   candidates            Candidate[]
   assessmentDefinitions AssessmentDefinition[]
   workforceEmployees    WorkforceEmployee[]
+  workforceTasks        WorkforceTask[]
 }
 
 enum RemoteWorkSessionStatus {
@@ -101,9 +102,72 @@ model WorkforceEmployee {
 
   sessions RemoteWorkSession[]
   events   RemoteWorkEvent[]
+  tasks    WorkforceTask[]
+  taskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventEmployee")
 
   @@index([organizationId])
   @@index([organizationId, isActive])
+}
+
+enum WorkforceTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum WorkforceTaskEventType {
+  TASK_CREATED
+  TASK_STATUS_CHANGED
+  TASK_ARCHIVED
+}
+
+enum WorkforceTaskActorType {
+  ADMIN
+  EMPLOYEE
+}
+
+/// Actividad asignada a un colaborador (Kanban workforce).
+model WorkforceTask {
+  id              String              @id @default(cuid())
+  organizationId  String
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        WorkforceEmployee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  status          WorkforceTaskStatus   @default(PENDING)
+  position        Int
+  dueAt           DateTime?           @db.Timestamptz(6)
+  createdByUserId String
+  createdBy       User                @relation("WorkforceTaskCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  startedAt       DateTime?           @db.Timestamptz(6)
+  completedAt     DateTime?           @db.Timestamptz(6)
+  archivedAt      DateTime?           @db.Timestamptz(6)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  events WorkforceTaskEvent[]
+
+  @@index([organizationId, employeeId])
+  @@index([employeeId, status, position])
+  @@index([employeeId, archivedAt])
+}
+
+model WorkforceTaskEvent {
+  id              String                  @id @default(cuid())
+  taskId          String
+  task            WorkforceTask           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  type            WorkforceTaskEventType
+  actorType       WorkforceTaskActorType
+  actorUserId     String?
+  actorUser       User?                   @relation("WorkforceTaskEventUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorEmployeeId String?
+  actorEmployee   WorkforceEmployee?      @relation("WorkforceTaskEventEmployee", fields: [actorEmployeeId], references: [id], onDelete: SetNull)
+  fromStatus      WorkforceTaskStatus?
+  toStatus        WorkforceTaskStatus?
+  createdAt       DateTime                @default(now())
+
+  @@index([taskId, createdAt])
 }
 
 model RemoteWorkSession {
@@ -173,6 +237,8 @@ model User {
   remoteWorkSessionsClosed RemoteWorkSession[] @relation("RemoteWorkSessionClosedBy")
   remoteWorkSessionsAdjusted RemoteWorkSession[] @relation("RemoteWorkSessionAdjustedBy")
   remoteWorkEventsActed RemoteWorkEvent[] @relation("RemoteWorkEventActor")
+  workforceTasksCreated WorkforceTask[] @relation("WorkforceTaskCreatedBy")
+  workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
 }
 
 model Candidate {

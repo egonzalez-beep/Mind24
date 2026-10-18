@@ -12,6 +12,12 @@ import {
   regenerateWorkforceEmployeeToken,
   updateWorkforceEmployee,
 } from '../services/workforceEmployee.service.js';
+import {
+  createWorkforceTaskForEmployee,
+  listWorkforceTasksForAdmin,
+  patchWorkforceTaskAsAdmin,
+  WORKFORCE_TASK_STATUSES,
+} from '../services/workforceTask.service.js';
 
 const router = Router();
 
@@ -101,6 +107,98 @@ router.post('/employees/:id/regenerate-token', async (req, res, next) => {
     const u = await assertEmpresaAdmin(req.session.userId);
     const out = await regenerateWorkforceEmployeeToken(u.organizationId, req.params.id);
     res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+const taskStatusSchema = z.enum(WORKFORCE_TASK_STATUSES);
+
+router.post('/employees/:id/tasks', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        title: z.string().min(1).max(200),
+        description: z.string().max(4000).optional().nullable(),
+        dueAt: z.string().datetime().optional().nullable(),
+      })
+      .parse(req.body);
+    const dueAt = body.dueAt ? new Date(body.dueAt) : null;
+    if (dueAt && Number.isNaN(dueAt.getTime())) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+    const task = await createWorkforceTaskForEmployee({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      createdByUserId: u.id,
+      title: body.title,
+      description: body.description,
+      dueAt,
+    });
+    res.status(201).json({ task });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/tasks', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const q = z
+      .object({
+        status: taskStatusSchema.optional(),
+      })
+      .parse(req.query);
+    const tasks = await listWorkforceTasksForAdmin({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      status: q.status,
+    });
+    res.json({ tasks });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/tasks/:taskId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        status: taskStatusSchema.optional(),
+        position: z.number().int().optional(),
+        title: z.string().min(1).max(200).optional(),
+        description: z.string().max(4000).optional().nullable(),
+        dueAt: z.string().datetime().optional().nullable(),
+        archive: z.boolean().optional(),
+        expectedUpdatedAt: z.string().datetime().optional(),
+      })
+      .parse(req.body);
+    let dueAt;
+    if (body.dueAt !== undefined) {
+      dueAt = body.dueAt ? new Date(body.dueAt) : null;
+      if (dueAt && Number.isNaN(dueAt.getTime())) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        throw err;
+      }
+    }
+    const task = await patchWorkforceTaskAsAdmin({
+      organizationId: u.organizationId,
+      taskId: req.params.taskId,
+      actorUserId: u.id,
+      status: body.status,
+      position: body.position,
+      title: body.title,
+      description: body.description,
+      dueAt,
+      archive: body.archive,
+      expectedUpdatedAt: body.expectedUpdatedAt,
+    });
+    res.json({ task });
   } catch (e) {
     next(e);
   }

@@ -32,6 +32,11 @@ import {
   resolveCurrentWebSignal,
   webSignalLabel,
 } from '../services/timeclockWebSignal.service.js';
+import {
+  listWorkforceTasksForEmployee,
+  patchWorkforceTaskAsEmployee,
+  WORKFORCE_TASK_STATUSES,
+} from '../services/workforceTask.service.js';
 
 const router = Router();
 
@@ -142,6 +147,40 @@ router.post(
         alreadyClosed,
         serverTime: new Date().toISOString(),
       });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/tasks', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const tasks = await listWorkforceTasksForEmployee(req.timeclockEmployee.id);
+    res.json({ tasks });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch(
+  '/tasks/:taskId',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  async (req, res, next) => {
+    try {
+      const body = z
+        .object({
+          status: z.enum(WORKFORCE_TASK_STATUSES),
+          expectedUpdatedAt: z.string().datetime().optional(),
+        })
+        .parse(req.body);
+      const task = await patchWorkforceTaskAsEmployee({
+        employeeId: req.timeclockEmployee.id,
+        taskId: req.params.taskId,
+        status: body.status,
+        expectedUpdatedAt: body.expectedUpdatedAt,
+      });
+      res.json({ task });
     } catch (e) {
       next(e);
     }

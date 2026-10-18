@@ -6205,6 +6205,32 @@ async function tcEmpPrimaryAction(){
     if(btn){ btn.disabled=false; btn.textContent='Registrar entrada'; }
   }finally{ tcEmpBusy=false; }
 }
+async function tcAdminFetchEmployeeTasks(employeeId, status){
+  const q=status?'?status='+encodeURIComponent(status):'';
+  return apiJson('/api/org/timeclock/employees/'+encodeURIComponent(employeeId)+'/tasks'+q);
+}
+async function tcAdminCreateEmployeeTask(employeeId, body){
+  return apiJson('/api/org/timeclock/employees/'+encodeURIComponent(employeeId)+'/tasks',{method:'POST',body:JSON.stringify(body)});
+}
+async function tcAdminUpdateWorkforceTask(taskId, body){
+  return apiJson('/api/org/timeclock/tasks/'+encodeURIComponent(taskId),{method:'PATCH',body:JSON.stringify(body)});
+}
+async function tcAdminUpdateTaskStatus(taskId, status, expectedUpdatedAt){
+  const body={status:status};
+  if(expectedUpdatedAt) body.expectedUpdatedAt=expectedUpdatedAt;
+  return tcAdminUpdateWorkforceTask(taskId, body);
+}
+async function tcAdminUpdateTaskPosition(taskId, position, extra){
+  return tcAdminUpdateWorkforceTask(taskId, Object.assign({position:position}, extra||{}));
+}
+async function tcPublicFetchTasks(){
+  return tcPublicJson('/api/timeclock/public/tasks');
+}
+async function tcPublicUpdateTaskStatus(taskId, status, expectedUpdatedAt){
+  const body={status:status};
+  if(expectedUpdatedAt) body.expectedUpdatedAt=expectedUpdatedAt;
+  return tcPublicJson('/api/timeclock/public/tasks/'+encodeURIComponent(taskId),{method:'PATCH',body:JSON.stringify(body)});
+}
 window.tcOnShow=tcOnShow;
 window.tcToggleAddForm=tcToggleAddForm;
 window.tcCreateEmployee=tcCreateEmployee;
@@ -6221,6 +6247,13 @@ window.tcSelectHistoryDay=tcSelectHistoryDay;
 window.tcEmpPrimaryAction=tcEmpPrimaryAction;
 window.tcEmployeeBoot=tcEmployeeBoot;
 window.tcIsChecadorPath=tcIsChecadorPath;
+window.tcAdminFetchEmployeeTasks=tcAdminFetchEmployeeTasks;
+window.tcAdminCreateEmployeeTask=tcAdminCreateEmployeeTask;
+window.tcAdminUpdateWorkforceTask=tcAdminUpdateWorkforceTask;
+window.tcAdminUpdateTaskStatus=tcAdminUpdateTaskStatus;
+window.tcAdminUpdateTaskPosition=tcAdminUpdateTaskPosition;
+window.tcPublicFetchTasks=tcPublicFetchTasks;
+window.tcPublicUpdateTaskStatus=tcPublicUpdateTaskStatus;
 
 // ── Init ──
 if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
