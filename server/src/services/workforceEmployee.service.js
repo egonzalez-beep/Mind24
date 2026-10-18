@@ -11,6 +11,10 @@ import {
   getLatestSessionForEmployee,
   getOpenSessionForEmployee,
 } from './remoteWorkSession.service.js';
+import {
+  aggregateWorkforceTaskSummariesForOrg,
+  workforceTaskSummaryForEmployee,
+} from './workforceTaskSummary.service.js';
 
 function timeclockLinkBase() {
   const base = resolveTimeclockPublicLinkBase();
@@ -47,11 +51,17 @@ export function sanitizeEmployeeForAdmin(emp) {
 }
 
 export async function listWorkforceEmployees(organizationId) {
-  const rows = await prisma.workforceEmployee.findMany({
-    where: { organizationId },
-    orderBy: { fullName: 'asc' },
-  });
-  return rows.map(sanitizeEmployeeForAdmin);
+  const [rows, summaryMap] = await Promise.all([
+    prisma.workforceEmployee.findMany({
+      where: { organizationId },
+      orderBy: { fullName: 'asc' },
+    }),
+    aggregateWorkforceTaskSummariesForOrg(organizationId),
+  ]);
+  return rows.map((emp) => ({
+    ...sanitizeEmployeeForAdmin(emp),
+    taskSummary: workforceTaskSummaryForEmployee(summaryMap, emp.id),
+  }));
 }
 
 export async function getWorkforceEmployeeForOrg(organizationId, employeeId) {

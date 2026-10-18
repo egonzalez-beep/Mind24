@@ -58,7 +58,8 @@ check(/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin module subtit
 check(/tc-emp-title/.test(indexHtml) && /Mi jornada/.test(indexHtml), 'employee title Mi jornada');
 check(/Asistencia y actividades/.test(indexHtml), 'employee subtitle');
 check(!/Reloj checador remoto/.test(indexHtml), 'no legacy reloj checador subtitle');
-check(/Zona horaria/.test(indexHtml), 'directory column Zona horaria');
+check(/tc-emp-th-num">Pendientes/.test(indexHtml) && /Completadas/.test(indexHtml), 'directorio columnas resumen actividades');
+check(/Zona horaria/.test(indexHtml) && !/<th>Zona horaria<\/th>/.test(indexHtml), 'timezone solo en alta, no en directorio');
 check(/tc-icon-btn--view/.test(indexHtml) && /tcSvgEye/.test(indexHtml), 'SVG ver jornada');
 check(/tc-icon-btn--link/.test(indexHtml) && /function tcSvgLink\(/.test(indexHtml), 'SVG link chain regenerar enlace');
 check(!/tcSvgLinkRefresh/.test(indexHtml), 'no legacy link-refresh icon');
