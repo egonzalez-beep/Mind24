@@ -81,7 +81,7 @@ check(/Historial de jornadas/.test(indexHtml), 'toggle historial copy');
 check(/tcToggleHistoryPanel/.test(indexHtml), 'abrir/cerrar historial flotante');
 check(/tc-history-dialog hidden/.test(indexHtml), 'dialog colapsado por defecto');
 check(/tc-history-backdrop/.test(indexHtml), 'backdrop historial');
-check(/tc-jornada-header-top/.test(indexHtml) && /id="tc-history-toggle"/.test(indexHtml), 'botón junto a título Jornada');
+check(/tc-jornada-header-actions/.test(indexHtml) && /id="tc-history-toggle"/.test(indexHtml), 'historial en acciones del header');
 check(!/tc-history-panel/.test(indexHtml), 'sin panel inline en tarjeta');
 check(/tc-history-pinned/.test(indexHtml), 'detalle anclado dentro del popover');
 check(/tcHistoryPinnedDay/.test(indexHtml), 'estado detalle por click');
@@ -98,7 +98,7 @@ check(/tc-cal-popover/.test(indexHtml), 'popover hover desktop');
 check(/tc-cal-viewport/.test(indexHtml) && /tc-cal-pane/.test(indexHtml), 'transición local calendario');
 check(/tcHistorySlideDir/.test(indexHtml), 'dirección slide mes');
 check(/tc-cal-loading/.test(indexHtml) && /tcShowCalLoadingDelayed/.test(indexHtml), 'loading local sin blanquear');
-check(/tc-jornada-card-header\{[^}]*gap:\s*28px/.test(indexHtml), 'spacing Historial vs cerrar jornada');
+check(/tc-jornada-header-actions/.test(indexHtml) && /tc-history-toggle/.test(indexHtml), 'Historial junto a cerrar jornada');
 
 console.log(failed === 0 ? '\n✓ Timeclock session history tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);

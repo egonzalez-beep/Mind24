@@ -272,13 +272,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--purple-light);color:var(--purple-dark);}
 .tc-member-badge--inactive{background:var(--slate-100);color:var(--slate-600);}
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
-.tc-jornada-split{display:flex;align-items:flex-start;gap:32px;min-height:80px;}
+.tc-jornada-split{display:flex;align-items:stretch;gap:32px;min-height:200px;}
 .tc-jornada-main{flex:0 0 38%;max-width:400px;min-width:220px;}
-.tc-jornada-aside{flex:1 1 62%;min-width:0;}
-.tc-jornada-card-header{align-items:flex-start!important;gap:28px!important;}
-.tc-jornada-header-main{flex:1;min-width:0;padding-right:4px;}
-.tc-jornada-header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.tc-jornada-header-top .card-title{margin-bottom:0!important;}
+.tc-jornada-aside{flex:1 1 62%;min-width:0;display:flex;flex-direction:column;}
+.tc-jornada-card-header--compact{padding:10px 22px 0!important;margin-bottom:0!important;justify-content:flex-end!important;gap:12px!important;}
+.tc-jornada-header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.tc-jornada-top-row{display:flex;align-items:flex-start;gap:32px;margin-bottom:12px;}
+.tc-jornada-top-left{flex:0 0 38%;max-width:400px;min-width:220px;}
+.tc-jornada-top-right{flex:1 1 62%;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tc-jornada-top-title{margin:0 0 4px!important;font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.02em;line-height:1.2;}
+.tc-jornada-top-title--act{color:var(--purple-dark);}
+#tc-jornada-body .card-subtitle{margin:0;font-size:13px;color:var(--slate-500);}
 .tc-history-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,58,237,.22);background:rgba(255,255,255,.9);color:var(--purple-dark);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:8px;transition:var(--tr-fast);white-space:nowrap;}
 .tc-history-toggle:hover{background:var(--purple-light);border-color:rgba(124,58,237,.4);}
 .tc-history-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
@@ -334,19 +338,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
 .tc-jornada-dl dd{margin:0;font-size:14px;font-weight:600;color:var(--primary);line-height:1.45;}
-.tc-kanban-wrap{display:flex;flex-direction:column;gap:10px;min-width:0;height:100%;}
-.tc-kanban-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.tc-kanban-head h4{margin:0;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-kanban-wrap{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;min-height:200px;}
 .tc-kanban-assign-btn{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--assess-gradient);color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,.25);transition:var(--tr-fast);white-space:nowrap;}
 .tc-kanban-assign-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
 .tc-kanban-assign-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-kanban-msg{font-size:12px;color:#b45309;margin:0;padding:6px 8px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;}
 .tc-kanban-msg.hidden{display:none!important;}
-.tc-kanban-board{display:flex;gap:10px;max-height:min(320px,42vh);min-height:200px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;}
+.tc-kanban-board{display:flex;gap:10px;flex:1;max-height:min(360px,48vh);min-height:220px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;}
 .tc-kanban-col{flex:1 1 0;min-width:168px;max-width:100%;display:flex;flex-direction:column;background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;}
 .tc-kanban-col-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px;border-bottom:1px solid var(--slate-200);background:rgba(255,255,255,.7);}
-.tc-kanban-col-head span{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
-.tc-kanban-col-count{font-size:11px;font-weight:700;color:var(--slate-400);}
+.tc-kanban-col-label{display:inline-flex;align-items:center;gap:0;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-600);}
+.tc-kanban-status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;}
+.tc-kanban-status-dot--pending{background:#f4a4a4;}
+.tc-kanban-status-dot--progress{background:#fbbf24;}
+.tc-kanban-status-dot--completed{background:#86efac;}
+.tc-kanban-col-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);line-height:1.3;}
+.tc-task-card-status-dot{position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;}
+.tc-task-card-title{padding-left:12px;}
 .tc-kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;transition:background 160ms ease,border-color 160ms ease;}
 .tc-kanban-col-body.tc-kanban-col--over{background:rgba(237,233,254,.45);outline:2px dashed rgba(124,58,237,.35);outline-offset:-2px;border-radius:0 0 10px 10px;}
 .tc-kanban-col-body::-webkit-scrollbar{width:5px;}
@@ -392,7 +400,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-task-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-emp-tasks-empty{font-size:13px;color:var(--slate-500);line-height:1.5;}
 .tc-emp-tasks-toast{font-size:12px;font-weight:600;color:#15803d;margin:8px 0 0;}
-@media(max-width:900px){.tc-jornada-split{flex-direction:column;gap:18px;}.tc-jornada-main{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-aside{width:100%;}.tc-kanban-board{max-height:280px;}}
+@media(max-width:900px){.tc-jornada-top-row{flex-direction:column;gap:12px;}.tc-jornada-top-left,.tc-jornada-top-right{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-split{flex-direction:column;gap:18px;}.tc-jornada-main{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-aside{width:100%;}.tc-kanban-board{max-height:280px;}}
 .tc-emp-title{font-size:22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin:0 0 4px;line-height:1.2;}
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
@@ -1696,15 +1704,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="tc-jornada-card" class="card hidden" style="margin-top:18px;">
-        <div class="card-header tc-jornada-card-header">
-          <div class="tc-jornada-header-main">
-            <div class="tc-jornada-header-top">
-              <div class="card-title">Jornada</div>
-              <button type="button" class="tc-history-toggle hidden" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">Historial de jornadas</button>
-            </div>
-            <div class="card-subtitle" id="tc-jornada-sub">—</div>
+        <div class="card-header tc-jornada-card-header tc-jornada-card-header--compact">
+          <div class="tc-jornada-header-actions">
+            <button type="button" class="tc-history-toggle hidden" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">Historial de jornadas</button>
+            <button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
-          <button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <div class="card-body" id="tc-jornada-body"></div>
       </div>
@@ -5638,7 +5642,6 @@ async function tcToggleActive(id, nextActive){
 async function tcViewJornada(id){
   const card=document.getElementById('tc-jornada-card');
   const body=document.getElementById('tc-jornada-body');
-  const sub=document.getElementById('tc-jornada-sub');
   tcHideCalPopover();
   try{
     const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
@@ -5646,12 +5649,20 @@ async function tcViewJornada(id){
     tcResetHistoryState(emp);
     const j=out.jornada||{};
     const sess=j.session||j.openSession||null;
-    if(sub) sub.textContent=emp.fullName||'—';
     if(body){
       const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
       const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       body.innerHTML=
+        '<div class="tc-jornada-top-row">'+
+        '<div class="tc-jornada-top-left">'+
+        '<div class="tc-jornada-top-title">Jornada</div>'+
+        '<div class="card-subtitle" id="tc-jornada-sub">'+tcEsc(emp.fullName||'—')+'</div>'+
+        '</div>'+
+        '<div class="tc-jornada-top-right">'+
+        '<div class="tc-jornada-top-title tc-jornada-top-title--act">Actividades</div>'+
+        '<button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanOpenAssign()" aria-label="Asignar actividad">+ Asignar actividad</button>'+
+        '</div></div>'+
         '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
@@ -6097,13 +6108,16 @@ let tcKanbanCompletedShowAll=false;
 let tcKanbanEditTask=null;
 const TC_KANBAN_STATUSES=['PENDING','IN_PROGRESS','COMPLETED'];
 const TC_KANBAN_LABELS={PENDING:'Pendiente',IN_PROGRESS:'En progreso',COMPLETED:'Completada'};
+const TC_KANBAN_DOT_CLASS={PENDING:'tc-kanban-status-dot--pending',IN_PROGRESS:'tc-kanban-status-dot--progress',COMPLETED:'tc-kanban-status-dot--completed'};
+const TC_KANBAN_EMPTY={PENDING:'Sin pendientes',IN_PROGRESS:'Sin actividades en progreso',COMPLETED:'Sin completadas'};
 const TC_KANBAN_COMPLETED_CAP=8;
 function tcKanbanShellHtml(){
   return '<div class="tc-kanban-wrap">'+
-    '<div class="tc-kanban-head"><h4>Actividades</h4>'+
-    '<button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanOpenAssign()" aria-label="Asignar actividad">+ Asignar actividad</button></div>'+
     '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
     '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
+}
+function tcKanbanTaskDotClass(status){
+  return TC_KANBAN_DOT_CLASS[status]||TC_KANBAN_DOT_CLASS.PENDING;
 }
 function tcKanbanSetMsg(text){
   const el=document.getElementById('tc-kanban-msg');
@@ -6149,8 +6163,10 @@ function tcKanbanCardHtml(task){
   const moveBtns=TC_KANBAN_STATUSES.filter(function(s){ return s!==task.status; }).map(function(s){
     return '<button type="button" onclick="event.stopPropagation();tcKanbanMoveTask(\''+task.id+'\',\''+s+'\')">Mover a '+tcEsc(TC_KANBAN_LABELS[s])+'</button>';
   }).join('');
+  const dot=tcKanbanTaskDotClass(task.status);
   return '<article class="tc-task-card" draggable="true" tabindex="0" data-task-id="'+task.id+'" aria-label="Actividad: '+tcEsc(task.title)+'"'+
     ' ondragstart="tcKanbanDragStart(event,\''+task.id+'\')" ondragend="tcKanbanDragEnd(event)" onclick="tcKanbanOpenEdit(\''+task.id+'\')">'+
+    '<span class="tc-task-card-status-dot tc-kanban-status-dot '+dot+'" aria-hidden="true"></span>'+
     '<details class="tc-task-menu" onclick="event.stopPropagation()"><summary aria-label="Opciones de actividad">⋯</summary>'+
     '<div class="tc-task-menu-panel" role="menu">'+moveBtns+'</div></details>'+
     '<h5 class="tc-task-card-title">'+tcEsc(task.title)+'</h5>'+desc+dueHtml+'</article>';
@@ -6172,9 +6188,10 @@ function tcKanbanRender(){
       list=list.slice(0, TC_KANBAN_COMPLETED_CAP);
       moreBtn='<button type="button" class="tc-kanban-more" onclick="tcKanbanShowMoreCompleted()">Ver más completadas ('+(total-TC_KANBAN_COMPLETED_CAP)+')</button>';
     }
-    const cards=list.length?list.map(tcKanbanCardHtml).join(''):'<div class="tc-kanban-empty">—</div>';
+    const cards=list.length?list.map(tcKanbanCardHtml).join(''):('<div class="tc-kanban-empty">'+tcEsc(TC_KANBAN_EMPTY[status])+'</div>');
+    const dot=TC_KANBAN_DOT_CLASS[status]||'';
     html+='<div class="tc-kanban-col" data-status="'+status+'">'+
-      '<div class="tc-kanban-col-head"><span>'+tcEsc(TC_KANBAN_LABELS[status])+'</span><span class="tc-kanban-col-count">'+total+'</span></div>'+
+      '<div class="tc-kanban-col-head"><span class="tc-kanban-col-label"><span class="tc-kanban-status-dot '+dot+'" aria-hidden="true"></span>'+tcEsc(TC_KANBAN_LABELS[status])+'</span><span class="tc-kanban-col-chip">'+total+'</span></div>'+
       '<div class="tc-kanban-col-body" data-drop-status="'+status+'" ondragover="tcKanbanDragOver(event)" ondragleave="tcKanbanDragLeave(event)" ondrop="tcKanbanDrop(event,\''+status+'\')">'+
       cards+moreBtn+'</div></div>';
   });
