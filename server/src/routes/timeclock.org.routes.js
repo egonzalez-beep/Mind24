@@ -6,20 +6,34 @@ import {
 } from '../services/remoteWorkSession.service.js';
 import { listEmployeeSessionsHistory } from '../services/remoteWorkSessionHistory.service.js';
 import {
+  assertWorkforceEmployeeInOrg,
   createWorkforceEmployee,
   getWorkforceEmployeeForOrg,
   listWorkforceEmployees,
   regenerateWorkforceEmployeeToken,
   updateWorkforceEmployee,
 } from '../services/workforceEmployee.service.js';
+import { resolveWorkforceTaskDueAtFromInput } from '../utils/workforceDueDate.js';
 import {
+  assertWorkforceTaskInOrg,
   createWorkforceTaskForEmployee,
   listWorkforceTasksForAdmin,
   patchWorkforceTaskAsAdmin,
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
+import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
 
 const router = Router();
+
+router.get('/team-pulse', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const pulse = await getTeamPulseForOrganization(u.organizationId);
+    res.json({ pulse });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.post('/employees', async (req, res, next) => {
   try {
@@ -122,14 +136,20 @@ router.post('/employees/:id/tasks', async (req, res, next) => {
         title: z.string().min(1).max(200),
         description: z.string().max(4000).optional().nullable(),
         dueAt: z.string().datetime().optional().nullable(),
+        dueDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional()
+          .nullable(),
       })
       .parse(req.body);
-    const dueAt = body.dueAt ? new Date(body.dueAt) : null;
-    if (dueAt && Number.isNaN(dueAt.getTime())) {
-      const err = new Error('VALIDATION_ERROR');
-      err.code = 'VALIDATION_ERROR';
-      throw err;
-    }
+    const emp = await assertWorkforceEmployeeInOrg(req.params.id, u.organizationId);
+    const dueResolved = resolveWorkforceTaskDueAtFromInput({
+      dueDate: body.dueDate,
+      dueAtIso: body.dueAt,
+      timezone: emp.timezone,
+    });
+    const dueAt = dueResolved === undefined ? null : dueResolved;
     const task = await createWorkforceTaskForEmployee({
       organizationId: u.organizationId,
       employeeId: req.params.id,
@@ -173,17 +193,28 @@ router.patch('/tasks/:taskId', async (req, res, next) => {
         title: z.string().min(1).max(200).optional(),
         description: z.string().max(4000).optional().nullable(),
         dueAt: z.string().datetime().optional().nullable(),
+        dueDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional()
+          .nullable(),
         archive: z.boolean().optional(),
         expectedUpdatedAt: z.string().datetime().optional(),
       })
       .parse(req.body);
     let dueAt;
-    if (body.dueAt !== undefined) {
-      dueAt = body.dueAt ? new Date(body.dueAt) : null;
-      if (dueAt && Number.isNaN(dueAt.getTime())) {
-        const err = new Error('VALIDATION_ERROR');
-        err.code = 'VALIDATION_ERROR';
-        throw err;
+    if (body.dueDate !== undefined || body.dueAt !== undefined) {
+      const existing = await assertWorkforceTaskInOrg(req.params.taskId, u.organizationId);
+      const emp = await assertWorkforceEmployeeInOrg(existing.employeeId, u.organizationId);
+      if (body.dueDate === null && body.dueAt === null) {
+        dueAt = null;
+      } else {
+        const dueResolved = resolveWorkforceTaskDueAtFromInput({
+          dueDate: body.dueDate,
+          dueAtIso: body.dueAt,
+          timezone: emp.timezone,
+        });
+        dueAt = dueResolved === undefined ? null : dueResolved;
       }
     }
     const task = await patchWorkforceTaskAsAdmin({

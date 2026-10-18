@@ -245,6 +245,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .si-cta-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
 .tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.tc-pulse-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,58,237,.28);background:rgba(255,255,255,.92);color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);white-space:nowrap;}
+.tc-pulse-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.45);}
+.tc-pulse-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-pulse-btn[aria-expanded="true"]{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
+.tc-pulse-popover{position:fixed;z-index:1180;width:min(300px,calc(100vw - 24px));padding:0;border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
+.tc-pulse-popover.hidden{display:none!important;}
+.tc-pulse-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
+.tc-pulse-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-pulse-popover-body{padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;}
+.tc-pulse-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;line-height:1.35;}
+.tc-pulse-row-label{color:var(--slate-500);font-weight:500;}
+.tc-pulse-chip{display:inline-flex;align-items:center;justify-content:center;min-width:32px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:800;line-height:1.3;}
+.tc-pulse-chip--neutral{background:rgba(237,233,254,.75);color:var(--purple-dark);}
+.tc-pulse-chip--shift{background:rgba(187,247,208,.55);color:#15803d;}
+.tc-pulse-chip--pending{background:rgba(254,202,202,.55);color:#b91c1c;}
+.tc-pulse-chip--progress{background:rgba(253,230,138,.55);color:#b45309;}
+.tc-pulse-chip--overdue{background:rgba(254,226,226,.85);color:#dc2626;border:1px solid rgba(248,113,113,.35);}
+.tc-pulse-chip--completed{background:rgba(187,247,208,.55);color:#15803d;}
+.tc-pulse-loading{font-size:12px;color:var(--slate-400);padding:8px 2px;}
+.tc-pulse-err{font-size:12px;color:#b91c1c;padding:4px 2px;}
 .tc-emp-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;}
 .tc-emp-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--slate-200);color:var(--slate-500);font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
 .tc-emp-table th.tc-emp-th-num,.tc-emp-table th.tc-emp-th-status,.tc-emp-table th.tc-emp-th-actions{text-align:center;}
@@ -1670,7 +1691,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div>
           <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin-bottom:4px;">Colaboradores</h2>
         </div>
-        <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
+        <div class="tc-page-head-actions">
+          <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
+          <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
+        </div>
+      </div>
+      <div id="tc-pulse-popover" class="tc-pulse-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-pulse-popover-title" aria-hidden="true">
+        <div class="tc-pulse-popover-head">
+          <h3 id="tc-pulse-popover-title">Pulso de hoy</h3>
+          <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-pulse-close" aria-label="Cerrar pulso de hoy" onclick="tcCloseTeamPulse(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </div>
+        <div class="tc-pulse-popover-body" id="tc-pulse-body"></div>
       </div>
       <div id="tc-add-card" class="card hidden" style="margin-bottom:18px;">
         <div class="card-header"><div><div class="card-title">Nuevo colaborador</div><div class="card-subtitle">Timezone IANA obligatorio</div></div></div>
@@ -5546,7 +5577,87 @@ function tcFmtHm(iso){
   try{ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
   catch(_){ return '—'; }
 }
+let tcTeamPulseOpen=false;
+let tcTeamPulseBound=false;
+function tcTeamPulseRowHtml(label,value,chipClass){
+  const v=Number(value)||0;
+  return '<div class="tc-pulse-row"><span class="tc-pulse-row-label">'+tcEsc(label)+'</span><span class="tc-pulse-chip '+chipClass+'">'+v+'</span></div>';
+}
+function tcRenderTeamPulseBody(pulse){
+  const p=pulse||{};
+  const el=document.getElementById('tc-pulse-body');
+  if(!el) return;
+  el.innerHTML=
+    tcTeamPulseRowHtml('Colaboradores',p.collaborators,'tc-pulse-chip--neutral')+
+    tcTeamPulseRowHtml('En jornada ahora',p.onShiftNow,'tc-pulse-chip--shift')+
+    tcTeamPulseRowHtml('Pendientes',p.pending,'tc-pulse-chip--pending')+
+    tcTeamPulseRowHtml('En progreso',p.inProgress,'tc-pulse-chip--progress')+
+    tcTeamPulseRowHtml('Vencidas',p.overdue,'tc-pulse-chip--overdue')+
+    tcTeamPulseRowHtml('Completadas totales',p.completed,'tc-pulse-chip--completed');
+}
+function tcPositionTeamPulsePopover(){
+  const btn=document.getElementById('tc-pulse-toggle');
+  const pop=document.getElementById('tc-pulse-popover');
+  if(!btn||!pop||pop.classList.contains('hidden')) return;
+  const r=btn.getBoundingClientRect();
+  const w=pop.offsetWidth||300;
+  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  let top=r.bottom+8;
+  if(top+pop.offsetHeight>window.innerHeight-12) top=Math.max(12,r.top-pop.offsetHeight-8);
+  pop.style.left=left+'px';
+  pop.style.top=top+'px';
+}
+function tcCloseTeamPulse(focusToggle){
+  const pop=document.getElementById('tc-pulse-popover');
+  const btn=document.getElementById('tc-pulse-toggle');
+  tcTeamPulseOpen=false;
+  if(pop){ pop.classList.add('hidden'); pop.setAttribute('aria-hidden','true'); }
+  if(btn){ btn.setAttribute('aria-expanded','false'); if(focusToggle) btn.focus(); }
+}
+async function tcOpenTeamPulse(){
+  tcEnsureTeamPulseListeners();
+  const pop=document.getElementById('tc-pulse-popover');
+  const btn=document.getElementById('tc-pulse-toggle');
+  const body=document.getElementById('tc-pulse-body');
+  if(!pop||!body) return;
+  tcTeamPulseOpen=true;
+  pop.classList.remove('hidden');
+  pop.setAttribute('aria-hidden','false');
+  if(btn) btn.setAttribute('aria-expanded','true');
+  body.innerHTML='<p class="tc-pulse-loading">Actualizando…</p>';
+  tcPositionTeamPulsePopover();
+  try{
+    const j=await apiJson('/api/org/timeclock/team-pulse');
+    tcRenderTeamPulseBody(j.pulse||{});
+  }catch(e){
+    body.innerHTML='<p class="tc-pulse-err">'+tcEsc(e.message||'No se pudo cargar el pulso.')+'</p>';
+  }
+  tcPositionTeamPulsePopover();
+}
+function tcToggleTeamPulse(){
+  if(tcTeamPulseOpen) tcCloseTeamPulse(false);
+  else tcOpenTeamPulse();
+}
+function tcEnsureTeamPulseListeners(){
+  if(tcTeamPulseBound) return;
+  tcTeamPulseBound=true;
+  document.addEventListener('mousedown',function(ev){
+    if(!tcTeamPulseOpen) return;
+    const pop=document.getElementById('tc-pulse-popover');
+    const btn=document.getElementById('tc-pulse-toggle');
+    if(pop&&pop.contains(ev.target)) return;
+    if(btn&&btn.contains(ev.target)) return;
+    tcCloseTeamPulse(false);
+  });
+  document.addEventListener('keydown',function(ev){
+    if(ev.key==='Escape'&&tcTeamPulseOpen) tcCloseTeamPulse(true);
+  });
+  window.addEventListener('resize',function(){
+    if(tcTeamPulseOpen) tcPositionTeamPulsePopover();
+  });
+}
 function tcOnShow(){
+  tcCloseTeamPulse(false);
   mind24RefreshEmpresaAdminDashboardChrome();
   tcLoadEmployees();
 }
@@ -5712,6 +5823,7 @@ async function tcViewJornada(id){
     if(aside){
       aside.innerHTML=tcKanbanShellHtml();
       tcKanbanEmpId=emp.id;
+      tcKanbanEmpTz=emp.timezone||'America/Mexico_City';
       tcKanbanCompletedShowAll=false;
       await tcKanbanLoad();
     }
@@ -6132,6 +6244,13 @@ function tcRenderHistoryPinned(){
 }
 let tcKanbanTasks=[];
 let tcKanbanEmpId=null;
+let tcKanbanEmpTz='America/Mexico_City';
+function tcYmdInTimeZone(iso,tz){
+  if(!iso) return '';
+  try{
+    return new Intl.DateTimeFormat('en-CA',{timeZone:tz||'America/Mexico_City',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso));
+  }catch(_){ return ''; }
+}
 let tcKanbanDragId=null;
 let tcKanbanDragMoved=false;
 let tcKanbanCompletedShowAll=false;
@@ -6269,7 +6388,7 @@ async function tcKanbanSubmitAssign(){
     return;
   }
   const body={ title:title, description:(di&&di.value||'').trim()||null };
-  if(du&&du.value) body.dueAt=new Date(du.value+'T12:00:00').toISOString();
+  if(du&&du.value) body.dueDate=du.value;
   try{
     const out=await tcAdminCreateEmployeeTask(tcKanbanEmpId, body);
     if(out&&out.task) tcKanbanTasks.push(out.task);
@@ -6295,7 +6414,7 @@ function tcKanbanOpenEdit(taskId){
   if(idEl) idEl.value=task.id;
   if(ti) ti.value=task.title||'';
   if(di) di.value=task.description||'';
-  if(du) du.value=task.dueAt?String(task.dueAt).slice(0,10):'';
+  if(du) du.value=task.dueAt?tcYmdInTimeZone(task.dueAt,tcKanbanEmpTz):'';
   if(m){ m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); if(ti) ti.focus(); }
 }
 function tcKanbanCloseEdit(){
@@ -6319,7 +6438,7 @@ async function tcKanbanSubmitEdit(){
   const body={
     title:title,
     description:(di&&di.value||'').trim()||null,
-    dueAt:du&&du.value?new Date(du.value+'T12:00:00').toISOString():null,
+    dueDate:du&&du.value?du.value:null,
   };
   const prev=tcKanbanTasks.find(function(t){ return t.id===taskId; });
   try{
@@ -6738,6 +6857,8 @@ window.tcOnShow=tcOnShow;
 window.tcToggleAddForm=tcToggleAddForm;
 window.tcCreateEmployee=tcCreateEmployee;
 window.tcLoadEmployees=tcLoadEmployees;
+window.tcToggleTeamPulse=tcToggleTeamPulse;
+window.tcCloseTeamPulse=tcCloseTeamPulse;
 window.tcCopySecretLink=tcCopySecretLink;
 window.tcClearSecretLink=tcClearSecretLink;
 window.tcRegenerate=tcRegenerate;
