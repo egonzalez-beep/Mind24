@@ -334,7 +334,65 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
 .tc-jornada-dl dd{margin:0;font-size:14px;font-weight:600;color:var(--primary);line-height:1.45;}
-@media(max-width:900px){.tc-jornada-split{flex-direction:column;gap:0;}.tc-jornada-main{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-aside{display:none;}}
+.tc-kanban-wrap{display:flex;flex-direction:column;gap:10px;min-width:0;height:100%;}
+.tc-kanban-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.tc-kanban-head h4{margin:0;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-kanban-assign-btn{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--assess-gradient);color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,.25);transition:var(--tr-fast);white-space:nowrap;}
+.tc-kanban-assign-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
+.tc-kanban-assign-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-kanban-msg{font-size:12px;color:#b45309;margin:0;padding:6px 8px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;}
+.tc-kanban-msg.hidden{display:none!important;}
+.tc-kanban-board{display:flex;gap:10px;max-height:min(320px,42vh);min-height:200px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;}
+.tc-kanban-col{flex:1 1 0;min-width:168px;max-width:100%;display:flex;flex-direction:column;background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;}
+.tc-kanban-col-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px;border-bottom:1px solid var(--slate-200);background:rgba(255,255,255,.7);}
+.tc-kanban-col-head span{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
+.tc-kanban-col-count{font-size:11px;font-weight:700;color:var(--slate-400);}
+.tc-kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;transition:background 160ms ease,border-color 160ms ease;}
+.tc-kanban-col-body.tc-kanban-col--over{background:rgba(237,233,254,.45);outline:2px dashed rgba(124,58,237,.35);outline-offset:-2px;border-radius:0 0 10px 10px;}
+.tc-kanban-col-body::-webkit-scrollbar{width:5px;}
+.tc-kanban-col-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px;}
+.tc-kanban-col-body:hover::-webkit-scrollbar-thumb{background:rgba(124,58,237,.35);}
+.tc-kanban-empty{font-size:12px;color:var(--slate-400);text-align:center;padding:16px 8px;line-height:1.45;}
+.tc-kanban-more{margin-top:4px;font-size:11px;font-weight:600;color:var(--purple-dark);background:transparent;border:none;cursor:pointer;padding:4px 0;text-align:center;width:100%;font-family:inherit;}
+.tc-kanban-more:hover{text-decoration:underline;}
+.tc-task-card{position:relative;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:10px 10px 10px 10px;cursor:grab;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:transform 160ms ease,box-shadow 160ms ease,opacity 160ms ease;}
+.tc-task-card:hover{border-color:rgba(124,58,237,.25);box-shadow:0 4px 12px rgba(15,23,42,.06);}
+.tc-task-card:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-task-card--dragging{opacity:.88;transform:scale(1.02);box-shadow:0 10px 24px rgba(15,23,42,.12);cursor:grabbing;}
+.tc-task-card-title{font-size:13px;font-weight:700;color:var(--primary);line-height:1.35;margin:0 0 4px;padding-right:22px;}
+.tc-task-card-desc{font-size:11px;color:var(--slate-500);line-height:1.4;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.tc-task-card-due{font-size:10px;font-weight:600;color:#b45309;}
+.tc-task-menu{position:absolute;top:6px;right:6px;}
+.tc-task-menu summary{list-style:none;cursor:pointer;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--slate-400);font-size:14px;line-height:1;}
+.tc-task-menu summary::-webkit-details-marker{display:none;}
+.tc-task-menu summary:hover{background:var(--slate-100);color:var(--purple-dark);}
+.tc-task-menu-panel{position:absolute;right:0;top:24px;z-index:5;min-width:160px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(15,23,42,.12);}
+.tc-task-menu-panel button{display:block;width:100%;text-align:left;border:none;background:transparent;font-family:inherit;font-size:12px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--slate-600);}
+.tc-task-menu-panel button:hover{background:var(--purple-light);color:var(--purple-dark);}
+.tc-task-modal-backdrop{position:fixed;inset:0;z-index:1250;background:rgba(15,23,42,.22);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;}
+.tc-task-modal-backdrop.hidden{display:none!important;}
+.tc-task-modal{width:min(420px,calc(100vw - 32px));background:#fff;border:1px solid var(--slate-200);border-radius:14px;box-shadow:0 24px 60px rgba(15,23,42,.16);padding:18px 18px 16px;}
+.tc-task-modal h3{margin:0 0 14px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-task-modal label{display:block;font-size:11px;font-weight:700;color:var(--slate-500);margin-bottom:4px;}
+.tc-task-modal input,.tc-task-modal textarea{width:100%;box-sizing:border-box;border:1px solid var(--slate-200);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;margin-bottom:12px;}
+.tc-task-modal textarea{min-height:72px;resize:vertical;}
+.tc-task-modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.tc-task-modal-err{font-size:12px;color:#b91c1c;margin:0 0 8px;}
+.tc-emp-tasks{margin-top:22px;padding-top:18px;border-top:1px solid var(--slate-100);}
+.tc-emp-tasks-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);margin:0 0 12px;}
+.tc-emp-tasks-section{margin-bottom:14px;}
+.tc-emp-tasks-section h3{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin:0 0 8px;}
+.tc-emp-task-card{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:12px;margin-bottom:8px;transition:opacity 220ms ease,transform 220ms ease,max-height 220ms ease;}
+.tc-emp-task-card--out{opacity:0;transform:translateY(-4px);max-height:0;padding:0;margin:0;border:none;overflow:hidden;}
+.tc-emp-task-card strong{display:block;font-size:14px;color:var(--primary);margin-bottom:4px;}
+.tc-emp-task-card p{font-size:12px;color:var(--slate-500);margin:0 0 10px;line-height:1.45;}
+.tc-emp-task-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.tc-emp-task-btn{border:1px solid var(--slate-200);background:#fff;border-radius:8px;padding:8px 12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--purple-dark);}
+.tc-emp-task-btn--primary{background:var(--assess-gradient);border:none;color:#fff;}
+.tc-emp-task-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-emp-tasks-empty{font-size:13px;color:var(--slate-500);line-height:1.5;}
+.tc-emp-tasks-toast{font-size:12px;font-weight:600;color:#15803d;margin:8px 0 0;}
+@media(max-width:900px){.tc-jornada-split{flex-direction:column;gap:18px;}.tc-jornada-main{flex:1 1 auto;max-width:none;width:100%;}.tc-jornada-aside{width:100%;}.tc-kanban-board{max-height:280px;}}
 .tc-emp-title{font-size:22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin:0 0 4px;line-height:1.2;}
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
@@ -1665,6 +1723,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
         </div>
       </div>
+      <div id="tc-task-assign-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-task-assign-title" aria-hidden="true" onclick="tcKanbanCloseAssign()">
+        <div class="tc-task-modal" onclick="event.stopPropagation()">
+          <h3 id="tc-task-assign-title">Asignar actividad</h3>
+          <p class="tc-task-modal-err hidden" id="tc-task-assign-err"></p>
+          <label for="tc-task-assign-title-input">Título *</label>
+          <input type="text" id="tc-task-assign-title-input" maxlength="200" autocomplete="off" />
+          <label for="tc-task-assign-desc-input">Descripción / indicaciones</label>
+          <textarea id="tc-task-assign-desc-input" maxlength="4000" rows="3"></textarea>
+          <label for="tc-task-assign-due-input">Fecha límite (opcional)</label>
+          <input type="date" id="tc-task-assign-due-input" />
+          <div class="tc-task-modal-actions">
+            <button type="button" class="card-action" onclick="tcKanbanCloseAssign()">Cancelar</button>
+            <button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanSubmitAssign()">Asignar actividad</button>
+          </div>
+        </div>
+      </div>
+      <div id="tc-task-edit-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-task-edit-title" aria-hidden="true" onclick="tcKanbanCloseEdit()">
+        <div class="tc-task-modal" onclick="event.stopPropagation()">
+          <h3 id="tc-task-edit-title">Editar actividad</h3>
+          <p class="tc-task-modal-err hidden" id="tc-task-edit-err"></p>
+          <input type="hidden" id="tc-task-edit-id" value="" />
+          <label for="tc-task-edit-title-input">Título *</label>
+          <input type="text" id="tc-task-edit-title-input" maxlength="200" autocomplete="off" />
+          <label for="tc-task-edit-desc-input">Descripción / indicaciones</label>
+          <textarea id="tc-task-edit-desc-input" maxlength="4000" rows="3"></textarea>
+          <label for="tc-task-edit-due-input">Fecha límite (opcional)</label>
+          <input type="date" id="tc-task-edit-due-input" />
+          <div class="tc-task-modal-actions">
+            <button type="button" class="card-action" style="color:#b91c1c;" onclick="tcKanbanArchiveCurrent()">Archivar actividad</button>
+            <button type="button" class="card-action" onclick="tcKanbanCloseEdit()">Cancelar</button>
+            <button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanSubmitEdit()">Guardar</button>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -1690,6 +1782,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <p class="tc-emp-err hidden" id="tc-emp-err"></p>
         <button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
         <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+        <section class="tc-emp-tasks" id="tc-emp-tasks" aria-labelledby="tc-emp-tasks-title">
+          <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title">Mis actividades</h2>
+          <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
+          <div id="tc-emp-tasks-body"></div>
+        </section>
         <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
       </div>
     </div>
@@ -5565,8 +5662,15 @@ async function tcViewJornada(id){
         '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
         '</dl>'+
         '</div>'+
-        '<div class="tc-jornada-aside" aria-hidden="true"></div>'+
+        '<div class="tc-jornada-aside" id="tc-jornada-aside"></div>'+
         '</div>';
+    }
+    const aside=document.getElementById('tc-jornada-aside');
+    if(aside){
+      aside.innerHTML=tcKanbanShellHtml();
+      tcKanbanEmpId=emp.id;
+      tcKanbanCompletedShowAll=false;
+      await tcKanbanLoad();
     }
     const histBtn=document.getElementById('tc-history-toggle');
     if(histBtn) histBtn.classList.remove('hidden');
@@ -5985,10 +6089,289 @@ function tcRenderHistoryPinned(){
   el.classList.remove('hidden');
   el.innerHTML=html;
 }
+let tcKanbanTasks=[];
+let tcKanbanEmpId=null;
+let tcKanbanDragId=null;
+let tcKanbanDragMoved=false;
+let tcKanbanCompletedShowAll=false;
+let tcKanbanEditTask=null;
+const TC_KANBAN_STATUSES=['PENDING','IN_PROGRESS','COMPLETED'];
+const TC_KANBAN_LABELS={PENDING:'Pendiente',IN_PROGRESS:'En progreso',COMPLETED:'Completada'};
+const TC_KANBAN_COMPLETED_CAP=8;
+function tcKanbanShellHtml(){
+  return '<div class="tc-kanban-wrap">'+
+    '<div class="tc-kanban-head"><h4>Actividades</h4>'+
+    '<button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanOpenAssign()" aria-label="Asignar actividad">+ Asignar actividad</button></div>'+
+    '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
+    '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
+}
+function tcKanbanSetMsg(text){
+  const el=document.getElementById('tc-kanban-msg');
+  if(!el) return;
+  if(!text){ el.classList.add('hidden'); el.textContent=''; return; }
+  el.textContent=text;
+  el.classList.remove('hidden');
+  window.setTimeout(function(){ if(el.textContent===text) tcKanbanSetMsg(''); }, 5000);
+}
+function tcKanbanFmtDue(iso){
+  if(!iso) return '';
+  try{
+    return 'Vence: '+new Date(iso).toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  }catch(_){ return ''; }
+}
+function tcKanbanTasksInColumn(status, excludeId){
+  return tcKanbanTasks.filter(function(t){
+    return t.status===status&&t.id!==excludeId;
+  }).sort(function(a,b){ return a.position-b.position||(a.createdAt<b.createdAt?-1:1); });
+}
+function tcKanbanComputePosition(colTasks, insertIndex){
+  if(!colTasks.length) return 1000;
+  if(insertIndex<=0) return colTasks[0].position-1000;
+  if(insertIndex>=colTasks.length) return colTasks[colTasks.length-1].position+1000;
+  const prev=colTasks[insertIndex-1].position;
+  const next=colTasks[insertIndex].position;
+  if(next-prev>1) return Math.floor((prev+next)/2);
+  return prev+500;
+}
+function tcKanbanDropIndex(colEl, clientY){
+  const cards=Array.from(colEl.querySelectorAll('.tc-task-card:not(.tc-task-card--dragging)'));
+  if(!cards.length) return 0;
+  for(let i=0;i<cards.length;i++){
+    const r=cards[i].getBoundingClientRect();
+    if(clientY<r.top+r.height/2) return i;
+  }
+  return cards.length;
+}
+function tcKanbanCardHtml(task){
+  const due=tcKanbanFmtDue(task.dueAt);
+  const desc=task.description?('<p class="tc-task-card-desc">'+tcEsc(task.description)+'</p>'):'';
+  const dueHtml=due?('<div class="tc-task-card-due">'+tcEsc(due)+'</div>'):'';
+  const moveBtns=TC_KANBAN_STATUSES.filter(function(s){ return s!==task.status; }).map(function(s){
+    return '<button type="button" onclick="event.stopPropagation();tcKanbanMoveTask(\''+task.id+'\',\''+s+'\')">Mover a '+tcEsc(TC_KANBAN_LABELS[s])+'</button>';
+  }).join('');
+  return '<article class="tc-task-card" draggable="true" tabindex="0" data-task-id="'+task.id+'" aria-label="Actividad: '+tcEsc(task.title)+'"'+
+    ' ondragstart="tcKanbanDragStart(event,\''+task.id+'\')" ondragend="tcKanbanDragEnd(event)" onclick="tcKanbanOpenEdit(\''+task.id+'\')">'+
+    '<details class="tc-task-menu" onclick="event.stopPropagation()"><summary aria-label="Opciones de actividad">⋯</summary>'+
+    '<div class="tc-task-menu-panel" role="menu">'+moveBtns+'</div></details>'+
+    '<h5 class="tc-task-card-title">'+tcEsc(task.title)+'</h5>'+desc+dueHtml+'</article>';
+}
+function tcKanbanRender(){
+  const board=document.getElementById('tc-kanban-board');
+  if(!board) return;
+  if(!tcKanbanTasks.length){
+    board.innerHTML='<div class="tc-kanban-empty" style="width:100%;padding:24px;">No hay actividades asignadas.</div>';
+    return;
+  }
+  let html='';
+  TC_KANBAN_STATUSES.forEach(function(status){
+    let list=tcKanbanTasks.filter(function(t){ return t.status===status; });
+    list.sort(function(a,b){ return a.position-b.position||(a.createdAt<b.createdAt?-1:1); });
+    const total=list.length;
+    let moreBtn='';
+    if(status==='COMPLETED'&&total>TC_KANBAN_COMPLETED_CAP&&!tcKanbanCompletedShowAll){
+      list=list.slice(0, TC_KANBAN_COMPLETED_CAP);
+      moreBtn='<button type="button" class="tc-kanban-more" onclick="tcKanbanShowMoreCompleted()">Ver más completadas ('+(total-TC_KANBAN_COMPLETED_CAP)+')</button>';
+    }
+    const cards=list.length?list.map(tcKanbanCardHtml).join(''):'<div class="tc-kanban-empty">—</div>';
+    html+='<div class="tc-kanban-col" data-status="'+status+'">'+
+      '<div class="tc-kanban-col-head"><span>'+tcEsc(TC_KANBAN_LABELS[status])+'</span><span class="tc-kanban-col-count">'+total+'</span></div>'+
+      '<div class="tc-kanban-col-body" data-drop-status="'+status+'" ondragover="tcKanbanDragOver(event)" ondragleave="tcKanbanDragLeave(event)" ondrop="tcKanbanDrop(event,\''+status+'\')">'+
+      cards+moreBtn+'</div></div>';
+  });
+  board.innerHTML=html;
+}
+async function tcKanbanLoad(){
+  if(!tcKanbanEmpId) return;
+  try{
+    const out=await tcAdminFetchEmployeeTasks(tcKanbanEmpId);
+    tcKanbanTasks=(out&&out.tasks)||[];
+    tcKanbanRender();
+  }catch(e){
+    tcKanbanSetMsg(e.message||'No se pudieron cargar las actividades.');
+  }
+}
+function tcKanbanShowMoreCompleted(){
+  tcKanbanCompletedShowAll=true;
+  tcKanbanRender();
+}
+function tcKanbanOpenAssign(){
+  const m=document.getElementById('tc-task-assign-modal');
+  const err=document.getElementById('tc-task-assign-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const ti=document.getElementById('tc-task-assign-title-input');
+  const di=document.getElementById('tc-task-assign-desc-input');
+  const du=document.getElementById('tc-task-assign-due-input');
+  if(ti) ti.value='';
+  if(di) di.value='';
+  if(du) du.value='';
+  if(m){ m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); if(ti) ti.focus(); }
+}
+function tcKanbanCloseAssign(){
+  const m=document.getElementById('tc-task-assign-modal');
+  if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+}
+async function tcKanbanSubmitAssign(){
+  if(!tcKanbanEmpId) return;
+  const ti=document.getElementById('tc-task-assign-title-input');
+  const di=document.getElementById('tc-task-assign-desc-input');
+  const du=document.getElementById('tc-task-assign-due-input');
+  const err=document.getElementById('tc-task-assign-err');
+  const title=(ti&&ti.value||'').trim();
+  if(!title){
+    if(err){ err.textContent='El título es obligatorio.'; err.classList.remove('hidden'); }
+    return;
+  }
+  const body={ title:title, description:(di&&di.value||'').trim()||null };
+  if(du&&du.value) body.dueAt=new Date(du.value+'T12:00:00').toISOString();
+  try{
+    const out=await tcAdminCreateEmployeeTask(tcKanbanEmpId, body);
+    if(out&&out.task) tcKanbanTasks.push(out.task);
+    tcKanbanRender();
+    tcKanbanCloseAssign();
+    tcKanbanSetMsg('');
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo crear la actividad.'; err.classList.remove('hidden'); }
+  }
+}
+function tcKanbanOpenEdit(taskId){
+  if(tcKanbanDragMoved) return;
+  const task=tcKanbanTasks.find(function(t){ return t.id===taskId; });
+  if(!task) return;
+  tcKanbanEditTask=task;
+  const m=document.getElementById('tc-task-edit-modal');
+  const err=document.getElementById('tc-task-edit-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const idEl=document.getElementById('tc-task-edit-id');
+  const ti=document.getElementById('tc-task-edit-title-input');
+  const di=document.getElementById('tc-task-edit-desc-input');
+  const du=document.getElementById('tc-task-edit-due-input');
+  if(idEl) idEl.value=task.id;
+  if(ti) ti.value=task.title||'';
+  if(di) di.value=task.description||'';
+  if(du) du.value=task.dueAt?String(task.dueAt).slice(0,10):'';
+  if(m){ m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); if(ti) ti.focus(); }
+}
+function tcKanbanCloseEdit(){
+  tcKanbanEditTask=null;
+  const m=document.getElementById('tc-task-edit-modal');
+  if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+}
+async function tcKanbanSubmitEdit(){
+  const idEl=document.getElementById('tc-task-edit-id');
+  const taskId=idEl&&idEl.value;
+  if(!taskId) return;
+  const ti=document.getElementById('tc-task-edit-title-input');
+  const di=document.getElementById('tc-task-edit-desc-input');
+  const du=document.getElementById('tc-task-edit-due-input');
+  const err=document.getElementById('tc-task-edit-err');
+  const title=(ti&&ti.value||'').trim();
+  if(!title){
+    if(err){ err.textContent='El título es obligatorio.'; err.classList.remove('hidden'); }
+    return;
+  }
+  const body={
+    title:title,
+    description:(di&&di.value||'').trim()||null,
+    dueAt:du&&du.value?new Date(du.value+'T12:00:00').toISOString():null,
+  };
+  const prev=tcKanbanTasks.find(function(t){ return t.id===taskId; });
+  try{
+    const out=await tcAdminUpdateWorkforceTask(taskId, body);
+    if(out&&out.task){
+      tcKanbanTasks=tcKanbanTasks.map(function(t){ return t.id===taskId?out.task:t; });
+      tcKanbanRender();
+    }
+    tcKanbanCloseEdit();
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo guardar.'; err.classList.remove('hidden'); }
+  }
+}
+async function tcKanbanArchiveCurrent(){
+  const idEl=document.getElementById('tc-task-edit-id');
+  const taskId=idEl&&idEl.value;
+  if(!taskId||!confirm('¿Archivar esta actividad?')) return;
+  try{
+    await tcAdminUpdateWorkforceTask(taskId,{ archive:true });
+    tcKanbanTasks=tcKanbanTasks.filter(function(t){ return t.id!==taskId; });
+    tcKanbanRender();
+    tcKanbanCloseEdit();
+  }catch(e){ tcKanbanSetMsg(e.message||'No se pudo archivar.'); }
+}
+function tcKanbanDragStart(ev, taskId){
+  tcKanbanDragId=taskId;
+  tcKanbanDragMoved=false;
+  ev.dataTransfer.effectAllowed='move';
+  try{ ev.dataTransfer.setData('text/plain', taskId); }catch(_){}
+  const card=ev.currentTarget;
+  if(card) card.classList.add('tc-task-card--dragging');
+}
+function tcKanbanDragEnd(ev){
+  tcKanbanDragId=null;
+  document.querySelectorAll('.tc-kanban-col--over').forEach(function(el){ el.classList.remove('tc-kanban-col--over'); });
+  if(ev.currentTarget) ev.currentTarget.classList.remove('tc-task-card--dragging');
+  window.setTimeout(function(){ tcKanbanDragMoved=false; }, 0);
+}
+function tcKanbanDragOver(ev){
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect='move';
+  const body=ev.currentTarget;
+  if(body&&body.classList) body.classList.add('tc-kanban-col--over');
+}
+function tcKanbanDragLeave(ev){
+  const body=ev.currentTarget;
+  if(body&&body.classList) body.classList.remove('tc-kanban-col--over');
+}
+async function tcKanbanApplyMove(taskId, status, insertIndex){
+  const task=tcKanbanTasks.find(function(t){ return t.id===taskId; });
+  if(!task) return;
+  const colTasks=tcKanbanTasksInColumn(status, taskId);
+  const position=tcKanbanComputePosition(colTasks, insertIndex);
+  const snapshot=tcKanbanTasks.map(function(t){ return Object.assign({}, t); });
+  const optimistic=Object.assign({}, task, { status:status, position:position, updatedAt:new Date().toISOString() });
+  if(status==='IN_PROGRESS'&&!task.startedAt) optimistic.startedAt=new Date().toISOString();
+  if(status==='COMPLETED') optimistic.completedAt=new Date().toISOString();
+  if(task.status==='COMPLETED'&&status!=='COMPLETED') optimistic.completedAt=null;
+  tcKanbanTasks=tcKanbanTasks.map(function(t){ return t.id===taskId?optimistic:t; });
+  tcKanbanRender();
+  try{
+    const out=await tcAdminUpdateWorkforceTask(taskId,{
+      status:status,
+      position:position,
+      expectedUpdatedAt:task.updatedAt,
+    });
+    if(out&&out.task){
+      tcKanbanTasks=tcKanbanTasks.map(function(t){ return t.id===taskId?out.task:t; });
+      tcKanbanRender();
+    }
+  }catch(e){
+    tcKanbanTasks=snapshot;
+    tcKanbanRender();
+    tcKanbanSetMsg(e.message||'No se pudo mover la actividad.');
+    await tcKanbanLoad();
+  }
+}
+async function tcKanbanDrop(ev, status){
+  ev.preventDefault();
+  tcKanbanDragMoved=true;
+  const body=ev.currentTarget;
+  if(body) body.classList.remove('tc-kanban-col--over');
+  const taskId=tcKanbanDragId||(function(){ try{ return ev.dataTransfer.getData('text/plain'); }catch(_){ return null; } })();
+  if(!taskId) return;
+  const idx=tcKanbanDropIndex(body, ev.clientY);
+  await tcKanbanApplyMove(taskId, status, idx);
+}
+async function tcKanbanMoveTask(taskId, status){
+  const colTasks=tcKanbanTasksInColumn(status, taskId);
+  await tcKanbanApplyMove(taskId, status, colTasks.length);
+}
 function tcCloseJornada(){
   tcCloseHistoryDialog(false);
   tcJornadaEmpId=null;
   tcHistoryPayload=null;
+  tcKanbanTasks=[];
+  tcKanbanEmpId=null;
+  tcKanbanCloseAssign();
+  tcKanbanCloseEdit();
   const histBtn=document.getElementById('tc-history-toggle');
   if(histBtn) histBtn.classList.add('hidden');
   const card=document.getElementById('tc-jornada-card');
@@ -6138,6 +6521,80 @@ async function tcEmpSendHeartbeat(){
     if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML='<strong>Señal:</strong> '+tcSignalDotHtml(tcEmpMe.webSignal,true);
   }catch(_){}
 }
+let tcEmpTasks=[];
+function tcEmpTasksToast(msg){
+  const el=document.getElementById('tc-emp-tasks-toast');
+  if(!el) return;
+  if(!msg){ el.classList.add('hidden'); el.textContent=''; return; }
+  el.textContent=msg;
+  el.classList.remove('hidden');
+  window.setTimeout(function(){ if(el.textContent===msg) tcEmpTasksToast(''); }, 3500);
+}
+function tcEmpRenderTasks(){
+  const body=document.getElementById('tc-emp-tasks-body');
+  if(!body) return;
+  const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; });
+  const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; });
+  if(!pending.length&&!prog.length){
+    body.innerHTML='<p class="tc-emp-tasks-empty">No tienes actividades pendientes.</p>';
+    return;
+  }
+  function cardHtml(task, primaryLabel, primaryStatus, secondary){
+    const desc=task.description?('<p>'+tcEsc(task.description)+'</p>'):'';
+    const due=task.dueAt?('<p style="font-size:11px;color:#b45309;margin:0 0 8px;">'+tcEsc(tcKanbanFmtDue(task.dueAt))+'</p>'):'';
+    let sec=secondary?('<button type="button" class="tc-emp-task-btn" onclick="tcEmpTaskAction(\''+task.id+'\',\'PENDING\')">Volver a pendiente</button>'):'';
+    return '<div class="tc-emp-task-card" id="tc-emp-task-'+task.id+'" data-task-id="'+task.id+'">'+
+      '<strong>'+tcEsc(task.title)+'</strong>'+desc+due+
+      '<div class="tc-emp-task-actions">'+sec+
+      '<button type="button" class="tc-emp-task-btn tc-emp-task-btn--primary" onclick="tcEmpTaskAction(\''+task.id+'\',\''+primaryStatus+'\')">'+tcEsc(primaryLabel)+'</button>'+
+      '</div></div>';
+  }
+  let html='';
+  if(pending.length){
+    html+='<div class="tc-emp-tasks-section"><h3>Pendientes</h3>';
+    pending.forEach(function(t){ html+=cardHtml(t,'Iniciar','IN_PROGRESS',false); });
+    html+='</div>';
+  }
+  if(prog.length){
+    html+='<div class="tc-emp-tasks-section"><h3>En progreso</h3>';
+    prog.forEach(function(t){ html+=cardHtml(t,'✓ Completar','COMPLETED',true); });
+    html+='</div>';
+  }
+  body.innerHTML=html;
+}
+async function tcEmpLoadTasks(){
+  const body=document.getElementById('tc-emp-tasks-body');
+  if(!body) return;
+  try{
+    const out=await tcPublicFetchTasks();
+    tcEmpTasks=(out&&out.tasks)||[];
+    tcEmpRenderTasks();
+  }catch(_){
+    body.innerHTML='<p class="tc-emp-tasks-empty">No se pudieron cargar tus actividades.</p>';
+  }
+}
+async function tcEmpTaskAction(taskId, status){
+  const task=tcEmpTasks.find(function(t){ return t.id===taskId; });
+  if(!task||tcEmpBusy) return;
+  tcEmpBusy=true;
+  try{
+    await tcPublicUpdateTaskStatus(taskId, status, task.updatedAt);
+    if(status==='COMPLETED'){
+      tcEmpTasksToast('✓ Actividad completada');
+      const card=document.getElementById('tc-emp-task-'+taskId);
+      if(card) card.classList.add('tc-emp-task-card--out');
+      window.setTimeout(function(){
+        tcEmpTasks=tcEmpTasks.filter(function(t){ return t.id!==taskId; });
+        tcEmpRenderTasks();
+      }, 240);
+    }else{
+      await tcEmpLoadTasks();
+    }
+  }catch(e){
+    tcEmpSetError(e.message||'No se pudo actualizar la actividad.');
+    await tcEmpLoadTasks();
+  }finally{ tcEmpBusy=false; }
+}
 async function tcEmpLoadMe(){
   const me=await tcPublicJson('/api/timeclock/public/me');
   tcEmpMe=me;
@@ -6145,6 +6602,7 @@ async function tcEmpLoadMe(){
   else tcEmpStartHeartbeat();
   tcEmpShowApp();
   tcEmpRender();
+  await tcEmpLoadTasks();
 }
 function tcEmpHashToken(){
   try{ return String(window.location.hash||'').replace(/^#/, '').trim(); }
@@ -6254,6 +6712,21 @@ window.tcAdminUpdateTaskStatus=tcAdminUpdateTaskStatus;
 window.tcAdminUpdateTaskPosition=tcAdminUpdateTaskPosition;
 window.tcPublicFetchTasks=tcPublicFetchTasks;
 window.tcPublicUpdateTaskStatus=tcPublicUpdateTaskStatus;
+window.tcKanbanOpenAssign=tcKanbanOpenAssign;
+window.tcKanbanCloseAssign=tcKanbanCloseAssign;
+window.tcKanbanSubmitAssign=tcKanbanSubmitAssign;
+window.tcKanbanOpenEdit=tcKanbanOpenEdit;
+window.tcKanbanCloseEdit=tcKanbanCloseEdit;
+window.tcKanbanSubmitEdit=tcKanbanSubmitEdit;
+window.tcKanbanArchiveCurrent=tcKanbanArchiveCurrent;
+window.tcKanbanDragStart=tcKanbanDragStart;
+window.tcKanbanDragEnd=tcKanbanDragEnd;
+window.tcKanbanDragOver=tcKanbanDragOver;
+window.tcKanbanDragLeave=tcKanbanDragLeave;
+window.tcKanbanDrop=tcKanbanDrop;
+window.tcKanbanMoveTask=tcKanbanMoveTask;
+window.tcKanbanShowMoreCompleted=tcKanbanShowMoreCompleted;
+window.tcEmpTaskAction=tcEmpTaskAction;
 
 // ── Init ──
 if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
