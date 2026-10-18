@@ -95,6 +95,10 @@ check(!/Tiempo de conexión/.test(indexHtml), 'no tiempo de conexión');
 check(/tc-cal-prev/.test(indexHtml) && /tc-cal-next/.test(indexHtml), 'navegación mes');
 check(/aria-label.*Mes anterior/.test(indexHtml), 'aria mes anterior');
 check(/tc-cal-popover/.test(indexHtml), 'popover hover desktop');
+check(/tc-cal-viewport/.test(indexHtml) && /tc-cal-pane/.test(indexHtml), 'transición local calendario');
+check(/tcHistorySlideDir/.test(indexHtml), 'dirección slide mes');
+check(/tc-cal-loading/.test(indexHtml) && /tcShowCalLoadingDelayed/.test(indexHtml), 'loading local sin blanquear');
+check(/tc-jornada-card-header\{[^}]*gap:\s*28px/.test(indexHtml), 'spacing Historial vs cerrar jornada');
 
 console.log(failed === 0 ? '\n✓ Timeclock session history tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);
