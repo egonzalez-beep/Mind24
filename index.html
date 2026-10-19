@@ -310,6 +310,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-icon-btn--activate:hover{background:#ecfdf5;border-color:#6ee7b7;color:#065f46;}
 .tc-icon-btn--close{width:32px;height:32px;border:none;background:var(--slate-100);color:var(--slate-600);}
 .tc-icon-btn--close:hover{background:var(--slate-200);}
+.tc-icon-btn--folder{color:var(--slate-600);}
+.tc-icon-btn--folder:hover{background:var(--purple-light);color:var(--purple-dark);border-color:rgba(124,58,237,.35);}
+.tc-docs-modal{width:min(560px,calc(100vw - 32px));max-height:min(88vh,calc(100vh - 32px));display:flex;flex-direction:column;}
+.tc-docs-modal-head{margin-bottom:4px;}
+.tc-docs-modal-kicker{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-500);margin:0 0 4px;}
+.tc-docs-modal-name{font-size:17px;font-weight:800;color:var(--primary);margin:0 0 14px;line-height:1.3;}
+.tc-docs-upload-zone{border:1px dashed var(--slate-300);border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,rgba(248,250,252,.9),rgba(255,255,255,.6));margin-bottom:14px;transition:border-color .15s,background .15s;}
+.tc-docs-upload-zone--over{border-color:var(--purple);background:rgba(237,233,254,.35);}
+.tc-docs-form{display:flex;flex-direction:column;gap:8px;}
+.tc-docs-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:520px){.tc-docs-form-row{grid-template-columns:1fr;}}
+.tc-docs-list{flex:1;overflow-y:auto;margin:0 -4px;padding:4px;min-height:80px;max-height:min(42vh,360px);}
+.tc-docs-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--slate-200);border-radius:12px;background:#fff;margin-bottom:8px;}
+.tc-docs-card-icon{width:40px;height:40px;border-radius:10px;background:var(--purple-light);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tc-docs-card-body{flex:1;min-width:0;}
+.tc-docs-card-title{font-size:14px;font-weight:700;color:var(--primary);margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc-docs-card-meta{font-size:12px;color:var(--slate-500);margin:0;}
+.tc-docs-card-actions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;}
+.tc-docs-link-btn{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:4px 6px;border-radius:6px;}
+.tc-docs-link-btn:hover{background:var(--purple-light);}
+.tc-docs-link-btn--danger{color:#b91c1c;}
+.tc-docs-link-btn--danger:hover{background:#fef2f2;}
+.tc-docs-empty{font-size:13px;color:var(--slate-500);text-align:center;padding:24px 12px;margin:0;}
 .tc-refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px!important;}
 .tc-status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .tc-status-dot--connected{background:#22c55e;}
@@ -1752,6 +1775,52 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div style="display:flex;gap:10px;margin-top:14px;">
             <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcCreateEmployee()">Crear y generar enlace</button>
             <button type="button" class="card-action" onclick="tcToggleAddForm(false)">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div id="tc-docs-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpDocs()">
+        <div class="tc-task-modal tc-docs-modal" role="dialog" aria-labelledby="tc-docs-title" aria-modal="true" onclick="event.stopPropagation()">
+          <div class="tc-docs-modal-head">
+            <p class="tc-docs-modal-kicker" id="tc-docs-title">Documentos</p>
+            <p class="tc-docs-modal-name" id="tc-docs-emp-name">—</p>
+          </div>
+          <div class="tc-docs-upload-zone" id="tc-docs-drop-zone">
+            <button type="button" class="tc-kanban-assign-btn" style="margin-bottom:10px;" onclick="tcDocsToggleForm(true)">+ Agregar documento</button>
+            <div id="tc-docs-form-wrap" class="hidden">
+              <div class="tc-docs-form">
+                <div class="tc-docs-form-row">
+                  <div>
+                    <label class="form-label" for="tc-docs-name">Nombre del documento *</label>
+                    <input type="text" id="tc-docs-name" class="form-input" maxlength="200" placeholder="Ej. Contrato laboral">
+                  </div>
+                  <div>
+                    <label class="form-label" for="tc-docs-category">Categoría</label>
+                    <select id="tc-docs-category" class="form-input">
+                      <option value="CONTRATO">Contrato</option>
+                      <option value="IDENTIFICACION">Identificación</option>
+                      <option value="COMPROBANTE">Comprobante</option>
+                      <option value="PRESTACIONES">Prestaciones</option>
+                      <option value="COTIZACION">Cotización</option>
+                      <option value="OTRO">Otro</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label" for="tc-docs-file">Archivo *</label>
+                  <input type="file" id="tc-docs-file" class="form-input" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp">
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                  <button type="button" class="tc-kanban-assign-btn" id="tc-docs-submit-btn" onclick="tcDocsSubmit()">Subir</button>
+                  <button type="button" class="card-action" onclick="tcDocsToggleForm(false)">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <p style="font-size:11px;color:var(--slate-500);margin:10px 0 0;text-align:center;">PDF o imagen · máx. 10 MB · arrastra aquí para subir</p>
+          </div>
+          <p id="tc-docs-err" class="tc-task-modal-err hidden"></p>
+          <div class="tc-docs-list" id="tc-docs-list" aria-live="polite"></div>
+          <div class="tc-task-modal-actions" style="margin-top:12px;">
+            <button type="button" class="card-action" onclick="tcCloseEmpDocs()">Cerrar</button>
           </div>
         </div>
       </div>
@@ -5724,6 +5793,188 @@ function tcSvgUserMinus(){
 function tcSvgUserCheck(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
 }
+function tcSvgFolder(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>';
+}
+function tcSvgFileDoc(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>';
+}
+var TC_DOC_CAT_LABELS={ CONTRATO:'Contrato', IDENTIFICACION:'Identificación', COMPROBANTE:'Comprobante', PRESTACIONES:'Prestaciones', COTIZACION:'Cotización', OTRO:'Otro' };
+let tcDocsEmpId=null;
+let tcDocsEmpName='';
+let tcDocsItems=[];
+function tcDocsFmtDate(iso){
+  if(!iso) return '—';
+  try{ return new Date(iso).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'}); }
+  catch(_){ return '—'; }
+}
+function tcDocsFmtSize(n){
+  const b=Number(n)||0;
+  if(b<1024) return b+' B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/(1024*1024)).toFixed(1)+' MB';
+}
+function tcDocsSetErr(msg){
+  const el=document.getElementById('tc-docs-err');
+  if(!el) return;
+  if(!msg){ el.classList.add('hidden'); el.textContent=''; return; }
+  el.classList.remove('hidden'); el.textContent=msg;
+}
+function tcDocsToggleForm(open){
+  const wrap=document.getElementById('tc-docs-form-wrap');
+  if(wrap) wrap.classList.toggle('hidden',!open);
+}
+function tcDocsRenderList(){
+  const list=document.getElementById('tc-docs-list');
+  if(!list) return;
+  if(!tcDocsItems.length){
+    list.innerHTML='<p class="tc-docs-empty">Aún no hay documentos en este expediente.</p>';
+    return;
+  }
+  list.innerHTML=tcDocsItems.map(function(d){
+    const cat=TC_DOC_CAT_LABELS[d.category]||d.category||'Otro';
+    return '<article class="tc-docs-card">'+
+      '<div class="tc-docs-card-icon">'+tcSvgFileDoc()+'</div>'+
+      '<div class="tc-docs-card-body">'+
+      '<p class="tc-docs-card-title">'+tcEsc(d.displayName||'—')+'</p>'+
+      '<p class="tc-docs-card-meta">'+tcEsc(cat)+' · '+tcEsc(tcDocsFmtDate(d.createdAt))+' · '+tcEsc(tcDocsFmtSize(d.fileSize))+'</p>'+
+      '</div>'+
+      '<div class="tc-docs-card-actions">'+
+      '<button type="button" class="tc-docs-link-btn" onclick="tcDocsView(\''+d.id+'\')">Ver</button>'+
+      '<button type="button" class="tc-docs-link-btn tc-docs-link-btn--danger" onclick="tcDocsDelete(\''+d.id+'\')">Eliminar</button>'+
+      '</div></article>';
+  }).join('');
+}
+async function tcDocsLoad(){
+  if(!tcDocsEmpId) return;
+  tcDocsSetErr('');
+  try{
+    const j=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcDocsEmpId)+'/documents');
+    tcDocsItems=j.documents||[];
+    tcDocsRenderList();
+  }catch(e){
+    tcDocsSetErr(e.message||'No se pudieron cargar los documentos.');
+  }
+}
+async function tcOpenEmpDocs(id){
+  const emp=(window.__TC_EMP_CACHE||[]).find(function(e){ return e.id===id; });
+  tcDocsEmpId=id;
+  tcDocsEmpName=emp&&emp.fullName?emp.fullName:'';
+  const nm=document.getElementById('tc-docs-emp-name');
+  if(nm) nm.textContent=tcDocsEmpName||'—';
+  tcDocsToggleForm(false);
+  tcDocsSetErr('');
+  const file=document.getElementById('tc-docs-file');
+  const name=document.getElementById('tc-docs-name');
+  if(file) file.value='';
+  if(name) name.value='';
+  const bd=document.getElementById('tc-docs-backdrop');
+  if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+  tcDocsWireDropZone();
+  await tcDocsLoad();
+}
+function tcCloseEmpDocs(){
+  tcDocsEmpId=null;
+  tcDocsItems=[];
+  tcDocsUnwireDropZone();
+  const bd=document.getElementById('tc-docs-backdrop');
+  if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+}
+function tcDocsView(docId){
+  window.open('/api/org/timeclock/documents/'+encodeURIComponent(docId)+'/file','_blank','noopener,noreferrer');
+}
+async function tcDocsDelete(docId){
+  const doc=tcDocsItems.find(function(d){ return d.id===docId; });
+  const label=doc&&doc.displayName?doc.displayName:'este documento';
+  if(!confirm('¿Eliminar “'+label+'”? Esta acción no se puede deshacer.')) return;
+  tcDocsSetErr('');
+  try{
+    await apiJson('/api/org/timeclock/documents/'+encodeURIComponent(docId),{ method:'DELETE' });
+    await tcDocsLoad();
+  }catch(e){
+    tcDocsSetErr(e.message||'No se pudo eliminar el documento.');
+  }
+}
+async function tcDocsSubmitFromFile(file){
+  if(!tcDocsEmpId||!file) return;
+  const nameEl=document.getElementById('tc-docs-name');
+  const catEl=document.getElementById('tc-docs-category');
+  let displayName=nameEl&&nameEl.value?nameEl.value.trim():'';
+  if(!displayName){
+    displayName=(file.name||'Documento').replace(/\.[^.]+$/,'').slice(0,200);
+    if(nameEl) nameEl.value=displayName;
+  }
+  const category=catEl&&catEl.value?catEl.value:'OTRO';
+  const btn=document.getElementById('tc-docs-submit-btn');
+  if(btn) btn.disabled=true;
+  tcDocsSetErr('');
+  try{
+    const fd=new FormData();
+    fd.append('displayName',displayName);
+    fd.append('category',category);
+    fd.append('file',file);
+    const r=await fetch('/api/org/timeclock/employees/'+encodeURIComponent(tcDocsEmpId)+'/documents',{ method:'POST', body:fd, credentials:'include' });
+    let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch(_){}
+    if(!r.ok) throw new Error((j&&j.message)||t||('HTTP '+r.status));
+    const fileInput=document.getElementById('tc-docs-file');
+    if(fileInput) fileInput.value='';
+    tcDocsToggleForm(false);
+    await tcDocsLoad();
+  }catch(e){
+    tcDocsSetErr(e.message||'No se pudo subir el documento.');
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+async function tcDocsSubmit(){
+  const fileInput=document.getElementById('tc-docs-file');
+  const file=fileInput&&fileInput.files&&fileInput.files[0];
+  if(!file){ tcDocsSetErr('Selecciona un archivo PDF o imagen.'); return; }
+  await tcDocsSubmitFromFile(file);
+}
+let tcDocsDropBound=false;
+function tcDocsOnDragOver(ev){
+  ev.preventDefault();
+  const z=document.getElementById('tc-docs-drop-zone');
+  if(z) z.classList.add('tc-docs-upload-zone--over');
+}
+function tcDocsOnDragLeave(ev){
+  const z=document.getElementById('tc-docs-drop-zone');
+  if(z) z.classList.remove('tc-docs-upload-zone--over');
+}
+function tcDocsOnDrop(ev){
+  ev.preventDefault();
+  const z=document.getElementById('tc-docs-drop-zone');
+  if(z) z.classList.remove('tc-docs-upload-zone--over');
+  const file=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(!file) return;
+  tcDocsToggleForm(true);
+  const fileInput=document.getElementById('tc-docs-file');
+  if(fileInput){
+    try{
+      const dt=new DataTransfer();
+      dt.items.add(file);
+      fileInput.files=dt.files;
+    }catch(_){}
+  }
+  tcDocsSubmitFromFile(file);
+}
+function tcDocsWireDropZone(){
+  const z=document.getElementById('tc-docs-drop-zone');
+  if(!z||tcDocsDropBound) return;
+  z.addEventListener('dragover',tcDocsOnDragOver);
+  z.addEventListener('dragleave',tcDocsOnDragLeave);
+  z.addEventListener('drop',tcDocsOnDrop);
+  tcDocsDropBound=true;
+}
+function tcDocsUnwireDropZone(){
+  const z=document.getElementById('tc-docs-drop-zone');
+  if(!z||!tcDocsDropBound) return;
+  z.removeEventListener('dragover',tcDocsOnDragOver);
+  z.removeEventListener('dragleave',tcDocsOnDragLeave);
+  z.removeEventListener('drop',tcDocsOnDrop);
+  tcDocsDropBound=false;
+}
 function tcDirTaskChipHtml(kind,n){
   const v=Number(n)||0;
   const cls=kind==='pending'?'tc-dir-task-chip--pending':kind==='progress'?'tc-dir-task-chip--progress':'tc-dir-task-chip--completed';
@@ -5899,6 +6150,7 @@ async function tcLoadEmployees(){
   try{
     const j=await apiJson('/api/org/timeclock/employees');
     const rows=j.employees||[];
+    window.__TC_EMP_CACHE=rows;
     if(count) count.textContent=rows.length+' colaborador'+(rows.length===1?'':'es');
     if(!tbody) return;
     if(!rows.length){
@@ -5923,6 +6175,7 @@ async function tcLoadEmployees(){
         '<td class="tc-emp-td-status">'+tcDirJornadaStatusHtml(emp)+'</td>'+
         '<td class="tc-emp-td-actions"><div class="tc-emp-actions">'+
           '<button type="button" class="tc-icon-btn" title="Editar colaborador" aria-label="Editar colaborador '+name+'" onclick="tcOpenEmpEdit(\''+emp.id+'\')">'+tcSvgPencil()+'</button>'+
+          '<button type="button" class="tc-icon-btn tc-icon-btn--folder" title="Documentos" aria-label="Documentos de '+name+'" onclick="tcOpenEmpDocs(\''+emp.id+'\')">'+tcSvgFolder()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLink()+'</button>'+
           actBtn+

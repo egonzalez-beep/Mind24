@@ -35,6 +35,7 @@ const STATUS = {
   TIME_EXPIRED: 400,
   NOT_SUBMITTED: 400,
   RATE_LIMIT: 429,
+  PARTIAL_DELETE: 500,
 };
 
 export function errorHandler(err, req, res, next) {
@@ -43,10 +44,17 @@ export function errorHandler(err, req, res, next) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Datos inválidos', details: err.flatten() });
   }
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La imagen supera el límite de 3 MB.' });
+    const isDoc = String(req.originalUrl || '').includes('/documents');
+    return res.status(400).json({
+      error: 'VALIDATION_ERROR',
+      message: isDoc ? 'El documento supera el límite de 10 MB.' : 'La imagen supera el límite de 3 MB.',
+    });
   }
   if (err.message === 'INVALID_AVATAR_FILE') {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de imagen no permitido. Use JPG, PNG o WEBP.' });
+  }
+  if (err.message === 'INVALID_DOCUMENT_FILE') {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato no permitido. Use PDF, JPG, PNG o WEBP.' });
   }
   if (err.code === 'P2002') {
     return res.status(409).json({ error: 'CONFLICT', message: 'El recurso ya existe.' });

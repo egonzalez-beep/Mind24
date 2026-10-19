@@ -60,6 +60,7 @@ model Organization {
   assessmentDefinitions AssessmentDefinition[]
   workforceEmployees    WorkforceEmployee[]
   workforceTasks        WorkforceTask[]
+  workforceDocuments    WorkforceDocument[]
 }
 
 enum RemoteWorkSessionStatus {
@@ -105,9 +106,39 @@ model WorkforceEmployee {
   events   RemoteWorkEvent[]
   tasks    WorkforceTask[]
   taskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventEmployee")
+  documents WorkforceDocument[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
+}
+
+enum WorkforceDocumentCategory {
+  CONTRATO
+  IDENTIFICACION
+  COMPROBANTE
+  PRESTACIONES
+  COTIZACION
+  OTRO
+}
+
+model WorkforceDocument {
+  id               String                    @id @default(cuid())
+  organizationId   String
+  organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employeeId       String
+  employee         WorkforceEmployee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  uploadedByUserId String
+  uploadedBy       User                      @relation(fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  displayName      String
+  category         WorkforceDocumentCategory @default(OTRO)
+  filePath         String
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  createdAt        DateTime                  @default(now())
+
+  @@index([organizationId, employeeId])
+  @@index([organizationId])
 }
 
 enum WorkforceTaskStatus {
@@ -240,6 +271,7 @@ model User {
   remoteWorkEventsActed RemoteWorkEvent[] @relation("RemoteWorkEventActor")
   workforceTasksCreated WorkforceTask[] @relation("WorkforceTaskCreatedBy")
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
+  workforceDocumentsUploaded WorkforceDocument[]
 }
 
 model Candidate {

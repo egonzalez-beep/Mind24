@@ -31,6 +31,16 @@ import {
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
 import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
+import {
+  createWorkforceDocument,
+  deleteWorkforceDocument,
+  isAllowedWorkforceDocumentFile,
+  listWorkforceDocumentsForEmployee,
+  streamWorkforceDocumentFile,
+  WORKFORCE_DOCUMENT_CATEGORIES,
+  WORKFORCE_DOCUMENT_MAX_BYTES,
+  assertWorkforceDocumentInOrg,
+} from '../services/workforceDocument.service.js';
 
 const router = Router();
 
@@ -46,6 +56,21 @@ const workforceAvatarUpload = multer({
     );
   },
 });
+
+const workforceDocumentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: WORKFORCE_DOCUMENT_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedWorkforceDocumentFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_DOCUMENT_FILE'),
+      isAllowedWorkforceDocumentFile(file.mimetype, file.originalname),
+    );
+  },
+});
+
+const workforceDocumentCategorySchema = z.enum(WORKFORCE_DOCUMENT_CATEGORIES);
 
 router.get('/team-pulse', async (req, res, next) => {
   try {
@@ -159,6 +184,78 @@ router.delete('/employees/:id/photo', async (req, res, next) => {
     const u = await assertEmpresaAdmin(req.session.userId);
     const updated = await clearWorkforceEmployeeProfilePhoto(u.organizationId, req.params.id);
     res.json({ employee: sanitizeEmployeeForAdmin(updated) });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/documents', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const documents = await listWorkforceDocumentsForEmployee(u.organizationId, req.params.id);
+    res.json({ documents });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post(
+  '/employees/:id/documents',
+  workforceDocumentUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      const u = await assertEmpresaAdmin(req.session.userId);
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un archivo PDF o imagen.';
+        throw err;
+      }
+      const fields = z
+        .object({
+          displayName: z.string().min(1).max(200),
+          category: workforceDocumentCategorySchema.default('OTRO'),
+        })
+        .parse({
+          displayName: req.body?.displayName ?? req.body?.name,
+          category: req.body?.category ?? 'OTRO',
+        });
+      const document = await createWorkforceDocument({
+        organizationId: u.organizationId,
+        employeeId: req.params.id,
+        uploadedByUserId: u.id,
+        displayName: fields.displayName,
+        category: fields.category,
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.status(201).json({ document });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/documents/:documentId/file', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const doc = await assertWorkforceDocumentInOrg(req.params.documentId, u.organizationId);
+    await streamWorkforceDocumentFile(req, res, doc, u.organizationId);
+  } catch (e) {
+    if (e?.code === 'ENOENT') {
+      res.status(404).json({ error: 'NOT_FOUND', message: 'Archivo no encontrado.' });
+      return;
+    }
+    next(e);
+  }
+});
+
+router.delete('/documents/:documentId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await deleteWorkforceDocument(u.organizationId, req.params.documentId);
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }
