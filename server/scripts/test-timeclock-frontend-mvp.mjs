@@ -70,7 +70,7 @@ check(/aria-label="Ver jornada de/.test(indexHtml), 'aria-label ver jornada');
 check(/tc-status-dot--connected/.test(indexHtml) && /tc-status-dot--background/.test(indexHtml) && /tc-status-dot--no_signal/.test(indexHtml), 'status-dot variants');
 check(/TC_SIGNAL_INFO/.test(indexHtml) && /no representa actividad laboral/.test(indexHtml), 'signal info tooltip text');
 check(!/no implica inactividad laboral/.test(indexHtml), 'no inline inactividad laboral');
-check(/tcMemberBadgeHtml/.test(indexHtml), 'member active badge helper');
+check(/tcDirJornadaStatusHtml/.test(indexHtml) && /Deshabilitado/.test(indexHtml), 'directorio jornada vs habilitado');
 check(/tc-jornada-dl/.test(indexHtml), 'jornada card dl layout');
 check(/tc-jornada-split/.test(indexHtml) && /tc-jornada-main/.test(indexHtml) && /tc-jornada-aside/.test(indexHtml), 'jornada two-column shell');
 check(!/grid-template-columns:repeat\(auto-fill,minmax\(180px/.test(indexHtml), 'jornada not horizontal grid');

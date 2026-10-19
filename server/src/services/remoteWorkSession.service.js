@@ -283,3 +283,16 @@ export async function adminCloseRemoteWorkSession({
     return { session: updated, alreadyClosed: false };
   });
 }
+
+/** One query per org: employee IDs with an open RemoteWorkSession (checkOutAt null). */
+export async function employeeIdsWithOpenShiftForOrganization(organizationId) {
+  const rows = await prisma.remoteWorkSession.findMany({
+    where: {
+      checkOutAt: null,
+      employee: { organizationId },
+    },
+    select: { employeeId: true },
+    distinct: ['employeeId'],
+  });
+  return new Set(rows.map((r) => r.employeeId));
+}

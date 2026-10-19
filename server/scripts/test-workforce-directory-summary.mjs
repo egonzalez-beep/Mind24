@@ -84,7 +84,12 @@ check(/tcDirTaskChipHtml/.test(indexHtml) && /tc-dir-task-chip/.test(indexHtml),
 check(!/tcLoadEmployees[\s\S]{0,800}emp\.timezone/.test(indexHtml), 'directorio no renderiza timezone');
 check(/taskSummary/.test(empSvc), 'listado enriquecido taskSummary');
 check(/aggregateWorkforceTaskSummariesForOrg/.test(empSvc), 'un agregado por org en listado');
+check(/employeeIdsWithOpenShiftForOrganization/.test(empSvc), 'jornada abierta agregada en listado');
+check(/hasOpenShift/.test(empSvc), 'hasOpenShift en listado');
 check(/groupBy/.test(summarySvc) && /aggregateWorkforceTaskSummariesForOrg/.test(summarySvc), 'groupBy agregado tareas');
+check(/tc-emp-th-status">Jornada/.test(indexHtml), 'columna Jornada en directorio');
+check(/tcDirJornadaStatusHtml/.test(indexHtml) && /En jornada/.test(indexHtml) && /Fuera de jornada/.test(indexHtml), 'estados jornada directorio');
+check(!/tcDirJornadaStatusHtml[\s\S]{0,200}Activo/.test(indexHtml), 'sin Activo como estado laboral');
 
 console.log('\n=== Directorio — unit merge ===\n');
 
@@ -215,9 +220,17 @@ if (dbOk) {
   const aggB = await aggregateWorkforceTaskSummariesForOrg(orgB.id);
   check(aggB.get(empB.id)?.completed === 1 && !aggB.has(empA.id), 'aislamiento multi-org agregado');
 
-  const listed = await listWorkforceEmployees(orgA.id);
-  const row = listed.find((e) => e.id === empA.id);
+  let listed = await listWorkforceEmployees(orgA.id);
+  let row = listed.find((e) => e.id === empA.id);
   check(row?.taskSummary?.pending === 1 && row.taskSummary.completed === 2, 'listWorkforceEmployees taskSummary');
+  check(row?.hasOpenShift === false, 'hasOpenShift false sin sesión');
+
+  await prisma.remoteWorkSession.create({
+    data: { employeeId: empA.id, checkInAt: now, checkOutAt: null },
+  });
+  listed = await listWorkforceEmployees(orgA.id);
+  row = listed.find((e) => e.id === empA.id);
+  check(row?.hasOpenShift === true, 'hasOpenShift true con jornada abierta');
 
   const app = createApp();
   const server = app.listen(0);
@@ -236,6 +249,7 @@ if (dbOk) {
   } finally {
     server.close();
     await prisma.workforceTask.deleteMany({ where: { organizationId: { in: [orgA.id, orgB.id] } } });
+    await prisma.remoteWorkSession.deleteMany({ where: { employeeId: empA.id } });
     await prisma.workforceEmployee.deleteMany({ where: { organizationId: { in: [orgA.id, orgB.id] } } });
     await prisma.user.deleteMany({ where: { organizationId: orgA.id } });
     await prisma.organization.deleteMany({ where: { id: { in: [orgA.id, orgB.id] } } });

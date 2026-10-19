@@ -276,6 +276,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-table td.tc-emp-td-actions .tc-emp-actions{justify-content:center;}
 .tc-dir-task-chip--progress{background:rgba(253,230,138,.55);color:#b45309;}
 .tc-dir-task-chip--completed{background:rgba(187,247,208,.55);color:#15803d;}
+.tc-dir-jornada{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.3;}
+.tc-dir-jornada--on{color:#15803d;}
+.tc-dir-jornada--on .tc-status-dot--member{background:#86efac;}
+.tc-dir-jornada--off{color:var(--slate-500);font-weight:500;}
+.tc-dir-jornada-ring{width:7px;height:7px;border:1.5px solid var(--slate-400);border-radius:50%;flex-shrink:0;box-sizing:border-box;}
+.tc-dir-jornada--disabled .tc-member-badge{margin:0;}
 .tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .tc-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid var(--slate-200);border-radius:8px;background:transparent;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);flex-shrink:0;}
 .tc-icon-btn:hover{background:var(--slate-50);border-color:var(--slate-300);}
@@ -1739,7 +1745,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="card-header"><div><div class="card-title">Directorio</div><div class="card-subtitle" id="tc-list-count">0 colaboradores</div></div><button type="button" class="card-action tc-refresh-btn" onclick="tcLoadEmployees()" title="Actualizar directorio" aria-label="Actualizar directorio de colaboradores"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Actualizar</span></button></div>
         <div class="card-body" style="overflow-x:auto;">
           <table class="tc-emp-table">
-            <thead><tr><th>Colaborador</th><th>Puesto</th><th class="tc-emp-th-num">Pendientes</th><th class="tc-emp-th-num">En progreso</th><th class="tc-emp-th-num">Completadas</th><th class="tc-emp-th-status">Estado</th><th class="tc-emp-th-actions">Acciones</th></tr></thead>
+            <thead><tr><th>Colaborador</th><th>Puesto</th><th class="tc-emp-th-num">Pendientes</th><th class="tc-emp-th-num">En progreso</th><th class="tc-emp-th-num">Completadas</th><th class="tc-emp-th-status">Jornada</th><th class="tc-emp-th-actions">Acciones</th></tr></thead>
             <tbody id="tc-emp-tbody"></tbody>
           </table>
         </div>
@@ -5558,11 +5564,14 @@ function tcDirTaskChipHtml(kind,n){
   const cls=kind==='pending'?'tc-dir-task-chip--pending':kind==='progress'?'tc-dir-task-chip--progress':'tc-dir-task-chip--completed';
   return '<span class="tc-dir-task-chip '+cls+'" aria-label="'+v+'">'+v+'</span>';
 }
-function tcMemberBadgeHtml(isActive){
-  if(isActive){
-    return '<span class="tc-member-badge"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>Activo</span>';
+function tcDirJornadaStatusHtml(emp){
+  if(!emp||!emp.isActive){
+    return '<span class="tc-dir-jornada tc-dir-jornada--disabled"><span class="tc-member-badge tc-member-badge--inactive">Deshabilitado</span></span>';
   }
-  return '<span class="tc-member-badge tc-member-badge--inactive"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>Inactivo</span>';
+  if(emp.hasOpenShift){
+    return '<span class="tc-dir-jornada tc-dir-jornada--on"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>En jornada</span>';
+  }
+  return '<span class="tc-dir-jornada tc-dir-jornada--off"><span class="tc-dir-jornada-ring" aria-hidden="true"></span>Fuera de jornada</span>';
 }
 function tcFmtDuration(sec){
   const n=Math.max(0, Number(sec)||0);
@@ -5724,7 +5733,7 @@ async function tcLoadEmployees(){
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('pending',pending)+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('progress',inProg)+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('completed',done)+'</td>'+
-        '<td class="tc-emp-td-status">'+tcMemberBadgeHtml(emp.isActive)+'</td>'+
+        '<td class="tc-emp-td-status">'+tcDirJornadaStatusHtml(emp)+'</td>'+
         '<td class="tc-emp-td-actions"><div class="tc-emp-actions">'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLink()+'</button>'+

@@ -8,6 +8,7 @@ import {
 } from './timeclockToken.service.js';
 import {
   buildAdminJornadaPayload,
+  employeeIdsWithOpenShiftForOrganization,
   getLatestSessionForEmployee,
   getOpenSessionForEmployee,
 } from './remoteWorkSession.service.js';
@@ -51,16 +52,18 @@ export function sanitizeEmployeeForAdmin(emp) {
 }
 
 export async function listWorkforceEmployees(organizationId) {
-  const [rows, summaryMap] = await Promise.all([
+  const [rows, summaryMap, openShiftIds] = await Promise.all([
     prisma.workforceEmployee.findMany({
       where: { organizationId },
       orderBy: { fullName: 'asc' },
     }),
     aggregateWorkforceTaskSummariesForOrg(organizationId),
+    employeeIdsWithOpenShiftForOrganization(organizationId),
   ]);
   return rows.map((emp) => ({
     ...sanitizeEmployeeForAdmin(emp),
     taskSummary: workforceTaskSummaryForEmployee(summaryMap, emp.id),
+    hasOpenShift: openShiftIds.has(emp.id),
   }));
 }
 
