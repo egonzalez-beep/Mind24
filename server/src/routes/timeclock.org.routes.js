@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { Router } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
@@ -19,9 +18,8 @@ import {
 import {
   clearWorkforceEmployeeProfilePhoto,
   isAllowedWorkforceAvatarFile,
-  profilePhotoContentType,
-  resolveWorkforceProfilePhotoAbs,
   saveWorkforceEmployeeProfilePhoto,
+  streamWorkforceProfilePhoto,
   WORKFORCE_AVATAR_MAX_BYTES,
 } from '../services/workforceAvatar.service.js';
 import { resolveWorkforceTaskDueAtFromInput } from '../utils/workforceDueDate.js';
@@ -124,22 +122,7 @@ router.get('/employees/:id/photo', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     const emp = await assertWorkforceEmployeeInOrg(req.params.id, u.organizationId);
-    if (!emp.profilePhotoPath) {
-      res.status(404).json({ error: 'Sin foto de perfil.' });
-      return;
-    }
-    const abs = resolveWorkforceProfilePhotoAbs(emp.profilePhotoPath, u.organizationId);
-    const stat = await fs.promises.stat(abs);
-    const etag = `"${emp.id}-${emp.updatedAt.getTime()}"`;
-    if (req.headers['if-none-match'] === etag) {
-      res.status(304).end();
-      return;
-    }
-    res.setHeader('Content-Type', profilePhotoContentType(emp.profilePhotoPath));
-    res.setHeader('Cache-Control', 'private, max-age=3600, must-revalidate');
-    res.setHeader('ETag', etag);
-    res.setHeader('Content-Length', stat.size);
-    fs.createReadStream(abs).pipe(res);
+    await streamWorkforceProfilePhoto(req, res, emp, u.organizationId);
   } catch (e) {
     if (e?.code === 'ENOENT') {
       res.status(404).json({ error: 'Archivo de foto no encontrado.' });

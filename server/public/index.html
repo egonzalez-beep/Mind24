@@ -294,6 +294,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-photo-btn--muted{color:var(--slate-500);}
 .tc-jornada-sub-row{display:flex;align-items:center;gap:8px;}
 .tc-jornada-sub-row .tc-emp-avatar{width:32px;height:32px;font-size:11px;}
+.tc-emp-greet-row{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+.tc-emp-greet-row .tc-emp-hello{margin-bottom:0;}
+.tc-emp-greet-row .tc-emp-meta{margin:2px 0 0;}
+.tc-emp-portal-avatar{width:56px;height:56px;font-size:16px;}
 .tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .tc-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid var(--slate-200);border-radius:8px;background:transparent;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);flex-shrink:0;}
 .tc-icon-btn:hover{background:var(--slate-50);border-color:var(--slate-300);}
@@ -1869,8 +1873,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
       </div>
       <div id="tc-emp-app" class="hidden">
-        <h1 class="tc-emp-hello" id="tc-emp-hello">Hola</h1>
-        <p class="tc-emp-meta" id="tc-emp-role"></p>
+        <div class="tc-emp-greet-row">
+          <div id="tc-emp-avatar-wrap" aria-hidden="true"></div>
+          <div class="tc-emp-greet-text">
+            <h1 class="tc-emp-hello" id="tc-emp-hello">Hola</h1>
+            <p class="tc-emp-meta" id="tc-emp-role"></p>
+          </div>
+        </div>
         <div class="tc-emp-clock"><span id="tc-emp-date">—</span><span id="tc-emp-now">—</span></div>
         <div class="tc-emp-status">Estado</div>
         <div class="tc-emp-state" id="tc-emp-state">Fuera de jornada</div>
@@ -5729,6 +5738,28 @@ function tcDirJornadaStatusHtml(emp){
   }
   return '<span class="tc-dir-jornada tc-dir-jornada--off"><span class="tc-dir-jornada-ring" aria-hidden="true"></span>Fuera de jornada</span>';
 }
+function tcJornadaDetailEstadoHtml(emp, jornadaOpen){
+  if(!emp||!emp.isActive) return tcDirJornadaStatusHtml(emp);
+  if(jornadaOpen){
+    return '<span class="tc-dir-jornada tc-dir-jornada--on"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>En jornada</span>';
+  }
+  return '<span class="tc-dir-jornada tc-dir-jornada--off"><span class="tc-dir-jornada-ring" aria-hidden="true"></span>Fuera de jornada</span>';
+}
+function tcEmpPublicPhotoUrl(me){
+  if(!me||!me.hasProfilePhoto) return '';
+  const v=me.profilePhotoVersion||Date.now();
+  return '/api/timeclock/public/photo?v='+v;
+}
+function tcEmpPortalAvatarInnerHtml(me){
+  const init=tcEsc(initialsFromName(me&&me.fullName));
+  const url=tcEmpPublicPhotoUrl(me);
+  if(url) return '<img class="tc-emp-avatar tc-emp-portal-avatar" src="'+url+'" alt="" width="56" height="56" loading="lazy" decoding="async">';
+  return '<span class="tc-emp-avatar tc-emp-avatar--initials tc-emp-portal-avatar" aria-hidden="true">'+init+'</span>';
+}
+function tcEmpPortalAvatarRender(me){
+  const wrap=document.getElementById('tc-emp-avatar-wrap');
+  if(wrap) wrap.innerHTML=tcEmpPortalAvatarInnerHtml(me);
+}
 function tcFmtDuration(sec){
   const n=Math.max(0, Number(sec)||0);
   const h=Math.floor(n/3600);
@@ -5953,11 +5984,24 @@ async function tcViewJornada(id){
     tcResetHistoryState(emp);
     const j=out.jornada||{};
     const sess=j.session||j.openSession||null;
+    const jornadaOpen=!!(sess&&!sess.checkOutAt);
     if(body){
       const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
       const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const altaFmt=tcFmtEmployeeAlta(emp.createdAt);
+      let dlHtml=
+        '<div><dt>Estado</dt><dd>'+tcJornadaDetailEstadoHtml(emp,jornadaOpen)+'</dd></div>'+
+        '<div><dt>Entrada</dt><dd>'+tcEsc(entFmt)+'</dd></div>';
+      if(jornadaOpen){
+        dlHtml+=
+          '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
+          '<div><dt>Última señal web</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>';
+      }else{
+        dlHtml+=
+          '<div><dt>Salida</dt><dd>'+tcEsc(outFmt)+'</dd></div>'+
+          '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>';
+      }
       body.innerHTML=
         '<div class="tc-jornada-top-row">'+
         '<div class="tc-jornada-top-left">'+
@@ -5971,11 +6015,7 @@ async function tcViewJornada(id){
         '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
-        '<div><dt>Estado</dt><dd>'+tcEsc(tcShiftLabel(j.shiftLifecycle))+'</dd></div>'+
-        '<div><dt>Entrada</dt><dd>'+tcEsc(entFmt)+'</dd></div>'+
-        '<div><dt>Salida</dt><dd>'+tcEsc(outFmt)+'</dd></div>'+
-        '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
-        '<div><dt>Última señal</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>'+
+        dlHtml+
         '</dl>'+
         '<div class="tc-jornada-meta">'+
         '<button type="button" class="tc-history-toggle tc-history-toggle--inline" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">'+tcSvgCalendarHistory()+' Historial de jornadas</button>'+
@@ -6781,6 +6821,7 @@ function tcEmpRender(){
   const btn=document.getElementById('tc-emp-primary');
   const hint=document.getElementById('tc-emp-hint');
   if(hello) hello.textContent='Hola, '+(me.fullName||'');
+  tcEmpPortalAvatarRender(me);
   const bits=[];
   if(me.position) bits.push(me.position);
   if(me.department) bits.push(me.department);

@@ -37,6 +37,7 @@ import {
   patchWorkforceTaskAsEmployee,
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
+import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service.js';
 
 const router = Router();
 
@@ -49,6 +50,9 @@ function saveSession(req) {
 function sessionToPublicMe(emp, openSession) {
   const now = new Date();
   const webSignal = openSession ? resolveCurrentWebSignal(openSession, now) : 'no_signal';
+  const hasProfilePhoto = !!emp.profilePhotoPath;
+  const profilePhotoVersion =
+    hasProfilePhoto && emp.updatedAt ? new Date(emp.updatedAt).getTime() : null;
   return {
     fullName: emp.fullName,
     position: emp.position,
@@ -58,6 +62,8 @@ function sessionToPublicMe(emp, openSession) {
     webSignal,
     webSignalLabel: webSignalLabel(webSignal),
     openSession: summarizeOpenSession(openSession, now),
+    hasProfilePhoto,
+    profilePhotoVersion,
     serverTime: now.toISOString(),
   };
 }
@@ -96,6 +102,19 @@ router.get('/me', requireTimeclockSession, async (req, res, next) => {
     const open = await getOpenSessionForEmployee(req.timeclockEmployee.id);
     res.json(sessionToPublicMe(req.timeclockEmployee, open));
   } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/photo', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const emp = req.timeclockEmployee;
+    await streamWorkforceProfilePhoto(req, res, emp, emp.organizationId);
+  } catch (e) {
+    if (e?.code === 'ENOENT') {
+      res.status(404).json({ error: 'Archivo de foto no encontrado.' });
+      return;
+    }
     next(e);
   }
 });

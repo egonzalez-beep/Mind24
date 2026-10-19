@@ -20,6 +20,7 @@ if (!process.env.DATABASE_URL) {
 
 const schema = fs.readFileSync(path.join(rootDir, 'prisma/schema.prisma'), 'utf8');
 const orgRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/timeclock.org.routes.js'), 'utf8');
+const publicRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
 const uploadPaths = fs.readFileSync(path.join(rootDir, 'src/utils/uploadPaths.js'), 'utf8');
 const evalRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/evaluations.routes.js'), 'utf8');
 const indexHtml = fs.readFileSync(path.join(rootDir, '..', 'index.html'), 'utf8');
@@ -79,6 +80,14 @@ check(/WORKFORCE_AVATAR_MAX_BYTES/.test(orgRoutes), 'límite 3MB en ruta');
 check(/tcEmpAvatarCellHtml/.test(indexHtml) && /tc-emp-avatar--initials/.test(indexHtml), 'avatar directorio + iniciales');
 check(/tc-emp-edit-backdrop/.test(indexHtml) && /Quitar foto/.test(indexHtml), 'modal editar foto');
 check(/tcEmpPhotoUrl/.test(indexHtml) && /\?v=/.test(indexHtml), 'cache bust updatedAt');
+check(/router\.get\('\/photo'/.test(publicRoutes) && /requireTimeclockSession/.test(publicRoutes), 'GET photo público con sesión checador');
+check(/streamWorkforceProfilePhoto/.test(publicRoutes) && !/\/employees\/:id\/photo/.test(publicRoutes), 'photo público sin id en URL');
+check(/hasProfilePhoto/.test(publicRoutes) && /profilePhotoVersion/.test(publicRoutes), '/me metadata foto sin path');
+const meReturnBody =
+  publicRoutes.match(/function sessionToPublicMe[\s\S]*?return \{([\s\S]*?)\};\n\}/)?.[1] || '';
+check(!/profilePhotoPath/.test(meReturnBody), '/me no expone profilePhotoPath');
+check(/tcEmpPublicPhotoUrl/.test(indexHtml) && /\/api\/timeclock\/public\/photo/.test(indexHtml), 'avatar checador vía API pública');
+check(/tc-emp-portal-avatar/.test(indexHtml) && /tc-emp-greet-row/.test(indexHtml), 'avatar portal junto al saludo');
 
 console.log('\n=== Profile photo — unit ===\n');
 

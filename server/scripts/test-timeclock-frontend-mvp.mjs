@@ -102,6 +102,9 @@ check(/Copiar enlace/.test(indexHtml) && /onclick="tcCopySecretLink\(\)"/.test(i
 check(/buildAdminJornadaPayload/.test(orgService), 'admin uses last/open jornada helper');
 check(/getLatestSessionForEmployee/.test(orgService), 'admin loads latest session if none open');
 check(/onclick="tcViewJornada/.test(indexHtml) && /<dt>Duración<\/dt>/.test(indexHtml), 'admin jornada shows duration');
+check(/tcJornadaDetailEstadoHtml/.test(indexHtml) && /Fuera de jornada/.test(indexHtml), 'detalle jornada estado homologado');
+check(/Última señal web/.test(indexHtml), 'detalle señal web solo con jornada abierta');
+check(/jornadaOpen/.test(indexHtml) && !/tcShiftLabel\(j\.shiftLifecycle\)/.test(indexHtml), 'detalle no usa Jornada finalizada en Estado');
 check(/Cerrar detalle de jornada/.test(indexHtml), 'jornada close aria-label');
 check(/tcEmployeeBoot/.test(indexHtml) && /mind24BootstrapSession/.test(indexHtml), 'boot wires /checador before admin session');
 check(/tcPublicJson/.test(indexHtml), 'public API helper distinct from admin 401 redirect');

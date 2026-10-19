@@ -159,3 +159,24 @@ export function profilePhotoContentType(relativePath) {
   if (ext === '.webp') return 'image/webp';
   return 'image/jpeg';
 }
+
+/** Sirve foto con cache privado + ETag (admin o sesión pública del mismo colaborador). */
+export async function streamWorkforceProfilePhoto(req, res, emp, organizationId) {
+  if (!emp.profilePhotoPath) {
+    res.status(404).json({ error: 'Sin foto de perfil.' });
+    return;
+  }
+  const abs = resolveWorkforceProfilePhotoAbs(emp.profilePhotoPath, organizationId);
+  const stat = await fs.promises.stat(abs);
+  const updatedMs = emp.updatedAt instanceof Date ? emp.updatedAt.getTime() : Number(emp.updatedAt) || 0;
+  const etag = `"${emp.id}-${updatedMs}"`;
+  if (req.headers['if-none-match'] === etag) {
+    res.status(304).end();
+    return;
+  }
+  res.setHeader('Content-Type', profilePhotoContentType(emp.profilePhotoPath));
+  res.setHeader('Cache-Control', 'private, max-age=3600, must-revalidate');
+  res.setHeader('ETag', etag);
+  res.setHeader('Content-Length', stat.size);
+  fs.createReadStream(abs).pipe(res);
+}
