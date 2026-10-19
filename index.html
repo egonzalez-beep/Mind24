@@ -554,6 +554,30 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tb-btn{width:36px;height:36px;border-radius:var(--r-sm);border:1.5px solid var(--slate-200);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--slate-600);transition:var(--tr-fast);position:relative;}
 .tb-btn:hover{background:var(--purple-light);color:var(--purple);border-color:rgba(124,58,237,.2);}
 .tb-notif::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--purple);border:2px solid var(--white);}
+.tb-notif.mind24-notif-has-unread::after{display:none;}
+.mind24-notif-badge{position:absolute;top:1px;right:-2px;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--purple-dark);color:#fff;font-size:10px;font-weight:800;line-height:17px;text-align:center;border:2px solid var(--white);box-sizing:border-box;}
+.mind24-notif-badge.hidden{display:none!important;}
+.mind24-notif-popover{position:fixed;z-index:1185;width:min(360px,calc(100vw - 24px));max-height:min(70vh,520px);display:flex;flex-direction:column;border-radius:14px;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
+.mind24-notif-popover.hidden{display:none!important;}
+.mind24-notif-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
+.mind24-notif-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
+.mind24-notif-mark-all{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:4px 6px;border-radius:6px;}
+.mind24-notif-mark-all:hover{background:var(--purple-light);}
+.mind24-notif-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:80px;}
+.mind24-notif-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
+.mind24-notif-item:hover{background:var(--slate-50);}
+.mind24-notif-item--unread{background:rgba(237,233,254,.35);border-color:rgba(124,58,237,.12);}
+.mind24-notif-item-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+.mind24-notif-item-dot--in{background:#86efac;box-shadow:0 0 0 3px rgba(134,239,172,.35);}
+.mind24-notif-item-dot--out{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.45);}
+.mind24-notif-item-dot--done{background:#6ee7b7;box-shadow:0 0 0 3px rgba(110,231,183,.35);}
+.mind24-notif-item-dot--overdue{background:#fca5a5;box-shadow:0 0 0 3px rgba(252,165,165,.35);}
+.mind24-notif-item-body{flex:1;min-width:0;}
+.mind24-notif-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;}
+.mind24-notif-item-time{margin:3px 0 0;font-size:11px;color:var(--slate-500);font-weight:500;}
+.mind24-notif-empty,.mind24-notif-loading{font-size:12px;color:var(--slate-400);padding:16px 8px;text-align:center;margin:0;}
+.mind24-notif-more{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:8px;border-radius:8px;margin:2px auto 0;}
+.mind24-notif-more:hover{background:var(--purple-light);}
 .page-content{padding:28px;flex:1;}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
 .stat-card{background:var(--white);border:1px solid var(--slate-200);border-radius:var(--r-lg);padding:22px 20px;transition:var(--tr);}
@@ -1344,7 +1368,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <span class="m24-cc-lbl">Créditos disponibles</span>
           <span class="m24-cc-val" id="dash-admin-credits-value">0</span>
         </div>
-        <button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button>
+        <button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button>
         <div class="s-avatar av-green" id="dash-admin-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div>
       </div>
     </div>
@@ -1647,7 +1671,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
       <div id="cev-api-banner" class="cev-api-banner hidden" role="status"></div>
@@ -1735,7 +1759,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title">Gestión de equipo</div><div class="topbar-subtitle">Asistencia y seguimiento de tareas</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif" aria-label="Notificaciones">🔔</button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar"><div><div class="topbar-title">Gestión de equipo</div><div class="topbar-subtitle">Asistencia y seguimiento de tareas</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
     <div class="page-content">
       <div class="tc-page-head">
         <div>
@@ -2267,6 +2291,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <!-- Mind Fitness (fuera de vistas para que position:fixed no quede atrapado en .hidden) -->
+<div id="mind24-notif-popover" class="mind24-notif-popover hidden" role="dialog" aria-modal="false" aria-labelledby="mind24-notif-popover-title" aria-hidden="true">
+  <div class="mind24-notif-popover-head">
+    <h3 id="mind24-notif-popover-title">Notificaciones</h3>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button type="button" class="mind24-notif-mark-all" onclick="mind24NotifMarkAllRead()">Marcar todas como leídas</button>
+      <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar" onclick="mind24NotifClose(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+  </div>
+  <div class="mind24-notif-popover-body" id="mind24-notif-body"></div>
+</div>
 <div id="m24-fitness-modal" class="m24-fitness-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="m24-fitness-title" onclick="if(event.target===this)mind24CloseFitnessModal()">
   <div class="m24-fitness-card" onclick="event.stopPropagation()">
     <button type="button" class="m24-fitness-close" onclick="mind24CloseFitnessModal()" aria-label="Cerrar">×</button>
@@ -2949,6 +2983,7 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   if(nameEl) nameEl.textContent=u.fullName||u.email||'';
   const roleEl=document.getElementById('dash-admin-role');
   if(roleEl) roleEl.textContent='Admin empresa';
+  if(typeof mind24NotifInit==='function') mind24NotifInit();
   const cChip=document.getElementById('crear-eval-credits-chip');
   const cVal=document.getElementById('crear-eval-credits-value');
   const cAv=document.getElementById('crear-eval-topbar-av');
@@ -6110,9 +6145,187 @@ function tcEnsureTeamPulseListeners(){
 }
 function tcOnShow(){
   tcCloseTeamPulse(false);
+  mind24NotifClose(false);
   mind24RefreshEmpresaAdminDashboardChrome();
   tcLoadEmployees();
 }
+const MIND24_NOTIF_POLL_MS=60000;
+let mind24NotifOpen=false;
+let mind24NotifBound=false;
+let mind24NotifPollTimer=null;
+let mind24NotifAnchorBtn=null;
+let mind24NotifItems=[];
+let mind24NotifNextCursor=null;
+let mind24NotifHasMore=false;
+function mind24NotifDotClass(type){
+  if(type==='SHIFT_CHECK_IN') return 'mind24-notif-item-dot--in';
+  if(type==='SHIFT_CHECK_OUT') return 'mind24-notif-item-dot--out';
+  if(type==='TASK_COMPLETED') return 'mind24-notif-item-dot--done';
+  if(type==='TASK_OVERDUE') return 'mind24-notif-item-dot--overdue';
+  return 'mind24-notif-item-dot--out';
+}
+function mind24NotifFmtTime(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return '—';
+  const now=Date.now();
+  const diff=Math.max(0,now-d.getTime());
+  const min=Math.floor(diff/60000);
+  if(min<1) return 'Ahora';
+  if(min<60) return 'Hace '+min+' min';
+  const hrs=Math.floor(min/60);
+  if(hrs<24) return 'Hace '+hrs+' h';
+  return d.toLocaleString('es-MX',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+}
+function mind24NotifUpdateBadges(count){
+  const n=Math.max(0,Number(count)||0);
+  document.querySelectorAll('.mind24-notif-bell').forEach(function(btn){
+    const badge=btn.querySelector('.mind24-notif-badge');
+    btn.classList.toggle('mind24-notif-has-unread',n>0);
+    if(badge){
+      if(n>0){ badge.textContent=n>99?'99+':String(n); badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    }
+  });
+}
+async function mind24NotifRefreshBadge(){
+  const u=window.__MIND24_USER;
+  if(!u||u.role!=='empresa_admin') return;
+  try{
+    const j=await apiJson('/api/org/notifications/unread-count');
+    mind24NotifUpdateBadges(j.unreadCount);
+  }catch(_){}
+}
+function mind24NotifPositionPopover(){
+  const pop=document.getElementById('mind24-notif-popover');
+  const btn=mind24NotifAnchorBtn||document.querySelector('.mind24-notif-bell');
+  if(!pop||!btn||pop.classList.contains('hidden')) return;
+  const r=btn.getBoundingClientRect();
+  const w=pop.offsetWidth||360;
+  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  let top=r.bottom+8;
+  if(top+pop.offsetHeight>window.innerHeight-12) top=Math.max(12,r.top-pop.offsetHeight-8);
+  pop.style.left=left+'px';
+  pop.style.top=top+'px';
+}
+function mind24NotifClose(focusBtn){
+  const pop=document.getElementById('mind24-notif-popover');
+  mind24NotifOpen=false;
+  if(pop){ pop.classList.add('hidden'); pop.setAttribute('aria-hidden','true'); }
+  document.querySelectorAll('.mind24-notif-bell').forEach(function(b){ b.setAttribute('aria-expanded','false'); });
+  if(focusBtn&&mind24NotifAnchorBtn) mind24NotifAnchorBtn.focus();
+}
+function mind24NotifRenderList(append){
+  const body=document.getElementById('mind24-notif-body');
+  if(!body) return;
+  if(!mind24NotifItems.length){
+    body.innerHTML='<p class="mind24-notif-empty">No hay notificaciones todavía.</p>';
+    return;
+  }
+  const html=mind24NotifItems.map(function(n){
+    const cls='mind24-notif-item'+(n.read?'':' mind24-notif-item--unread');
+    return '<button type="button" class="'+cls+'" data-notif-id="'+tcEsc(n.id)+'" onclick="mind24NotifOpenItem(\''+n.id+'\')">'+
+      '<span class="mind24-notif-item-dot '+mind24NotifDotClass(n.type)+'" aria-hidden="true"></span>'+
+      '<span class="mind24-notif-item-body"><p class="mind24-notif-item-msg">'+tcEsc(n.message)+'</p>'+
+      '<p class="mind24-notif-item-time">'+tcEsc(mind24NotifFmtTime(n.createdAt))+'</p></span></button>';
+  }).join('');
+  const more=mind24NotifHasMore?'<button type="button" class="mind24-notif-more" onclick="mind24NotifLoadMore()">Ver anteriores</button>':'';
+  body.innerHTML=html+more;
+}
+async function mind24NotifFetchList(opts){
+  const append=opts&&opts.append;
+  const cursor=append?mind24NotifNextCursor:null;
+  const j=await apiJson('/api/org/notifications'+(cursor?('?cursor='+encodeURIComponent(cursor)):''));
+  const rows=j.notifications||[];
+  mind24NotifItems=append?mind24NotifItems.concat(rows):rows;
+  mind24NotifNextCursor=j.nextCursor||null;
+  mind24NotifHasMore=!!j.hasMore;
+  mind24NotifRenderList(append);
+}
+async function mind24NotifOpenPopover(btn){
+  mind24NotifEnsureListeners();
+  mind24NotifAnchorBtn=btn||mind24NotifAnchorBtn;
+  const pop=document.getElementById('mind24-notif-popover');
+  const body=document.getElementById('mind24-notif-body');
+  if(!pop||!body) return;
+  tcCloseTeamPulse(false);
+  mind24NotifOpen=true;
+  pop.classList.remove('hidden');
+  pop.setAttribute('aria-hidden','false');
+  if(mind24NotifAnchorBtn) mind24NotifAnchorBtn.setAttribute('aria-expanded','true');
+  body.innerHTML='<p class="mind24-notif-loading">Actualizando…</p>';
+  mind24NotifPositionPopover();
+  try{
+    await mind24NotifFetchList({append:false});
+    await mind24NotifRefreshBadge();
+  }catch(e){
+    body.innerHTML='<p class="mind24-notif-empty">'+tcEsc(e.message||'No se pudieron cargar las notificaciones.')+'</p>';
+  }
+  mind24NotifPositionPopover();
+}
+function mind24NotifToggle(ev){
+  const btn=ev&&ev.currentTarget?ev.currentTarget:(ev&&ev.target?ev.target.closest('.mind24-notif-bell'):null);
+  if(mind24NotifOpen) mind24NotifClose(false);
+  else mind24NotifOpenPopover(btn);
+}
+async function mind24NotifLoadMore(){
+  try{ await mind24NotifFetchList({append:true}); }catch(_){}
+}
+async function mind24NotifMarkAllRead(){
+  try{
+    await apiJson('/api/org/notifications/read-all',{method:'POST',body:JSON.stringify({})});
+    mind24NotifItems=mind24NotifItems.map(function(n){ return Object.assign({},n,{read:true}); });
+    mind24NotifRenderList(false);
+    await mind24NotifRefreshBadge();
+  }catch(_){}
+}
+async function mind24NotifOpenItem(id){
+  const itemBefore=mind24NotifItems.find(function(n){ return n.id===id; });
+  const empId=itemBefore&&itemBefore.employeeId;
+  try{ await apiJson('/api/org/notifications/'+encodeURIComponent(id)+'/read',{method:'POST',body:JSON.stringify({})}); }catch(_){}
+  mind24NotifItems=mind24NotifItems.map(function(n){ return n.id===id?Object.assign({},n,{read:true}):n; });
+  mind24NotifRenderList(false);
+  await mind24NotifRefreshBadge();
+  mind24NotifClose(false);
+  showView('dash-timeclock');
+  if(typeof tcOnShow==='function') tcOnShow();
+  if(empId&&typeof tcViewJornada==='function'){
+    window.setTimeout(function(){ tcViewJornada(empId); },350);
+  }
+}
+function mind24NotifEnsureListeners(){
+  if(mind24NotifBound) return;
+  mind24NotifBound=true;
+  document.querySelectorAll('.mind24-notif-bell').forEach(function(btn){
+    btn.addEventListener('click',mind24NotifToggle);
+  });
+  document.addEventListener('mousedown',function(ev){
+    if(!mind24NotifOpen) return;
+    const pop=document.getElementById('mind24-notif-popover');
+    if(pop&&pop.contains(ev.target)) return;
+    if(ev.target.closest('.mind24-notif-bell')) return;
+    mind24NotifClose(false);
+  });
+  document.addEventListener('keydown',function(ev){
+    if(ev.key==='Escape'&&mind24NotifOpen) mind24NotifClose(true);
+  });
+  window.addEventListener('resize',function(){ if(mind24NotifOpen) mind24NotifPositionPopover(); });
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible') mind24NotifRefreshBadge();
+  });
+}
+function mind24NotifInit(){
+  const u=window.__MIND24_USER;
+  if(!u||u.role!=='empresa_admin') return;
+  mind24NotifEnsureListeners();
+  mind24NotifRefreshBadge();
+  if(mind24NotifPollTimer) clearInterval(mind24NotifPollTimer);
+  mind24NotifPollTimer=setInterval(mind24NotifRefreshBadge,MIND24_NOTIF_POLL_MS);
+}
+window.mind24NotifMarkAllRead=mind24NotifMarkAllRead;
+window.mind24NotifClose=mind24NotifClose;
+window.mind24NotifOpenItem=mind24NotifOpenItem;
+window.mind24NotifLoadMore=mind24NotifLoadMore;
 function tcToggleAddForm(force){
   const card=document.getElementById('tc-add-card');
   if(!card) return;

@@ -38,6 +38,7 @@ import {
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
 import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service.js';
+import { notifyShiftCheckIn, notifyShiftCheckOut } from '../services/orgNotification.service.js';
 
 const router = Router();
 
@@ -132,6 +133,9 @@ router.post(
         userAgent: ua,
         clientMetadata: req.body?.metadata ?? null,
       });
+      if (created) {
+        await notifyShiftCheckIn(req.timeclockEmployee, session.id);
+      }
       res.status(created ? 201 : 200).json({
         session: {
           id: session.id,
@@ -156,6 +160,9 @@ router.post(
   async (req, res, next) => {
     try {
       const { session, alreadyClosed } = await checkOutRemoteWorkSession(req.timeclockEmployee.id);
+      if (!alreadyClosed) {
+        await notifyShiftCheckOut(req.timeclockEmployee, session.id);
+      }
       res.status(200).json({
         session: {
           id: session.id,

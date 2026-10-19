@@ -61,6 +61,15 @@ model Organization {
   workforceEmployees    WorkforceEmployee[]
   workforceTasks        WorkforceTask[]
   workforceDocuments    WorkforceDocument[]
+  orgNotifications      OrgNotification[]
+}
+
+enum OrgNotificationType {
+  SHIFT_CHECK_IN
+  SHIFT_CHECK_OUT
+  TASK_COMPLETED
+  TASK_OVERDUE
+  PLATFORM_ANNOUNCEMENT
 }
 
 enum RemoteWorkSessionStatus {
@@ -107,6 +116,7 @@ model WorkforceEmployee {
   tasks    WorkforceTask[]
   taskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventEmployee")
   documents WorkforceDocument[]
+  orgNotifications OrgNotification[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -179,6 +189,7 @@ model WorkforceTask {
   updatedAt       DateTime            @updatedAt
 
   events WorkforceTaskEvent[]
+  orgNotifications OrgNotification[]
 
   @@index([organizationId, employeeId])
   @@index([employeeId, status, position])
@@ -227,9 +238,42 @@ model RemoteWorkSession {
   updatedAt         DateTime                  @updatedAt
 
   events RemoteWorkEvent[]
+  orgNotifications OrgNotification[]
 
   @@index([employeeId, checkInAt])
   @@index([employeeId, status])
+}
+
+model OrgNotification {
+  id                  String              @id @default(cuid())
+  organizationId      String
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type                OrgNotificationType
+  message             String
+  employeeId          String?
+  employee            WorkforceEmployee?  @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  taskId              String?
+  task                WorkforceTask?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  remoteWorkSessionId String?
+  remoteWorkSession   RemoteWorkSession?  @relation(fields: [remoteWorkSessionId], references: [id], onDelete: SetNull)
+  dedupeKey           String
+  createdAt           DateTime            @default(now())
+
+  reads OrgNotificationRead[]
+
+  @@unique([organizationId, dedupeKey])
+  @@index([organizationId, createdAt])
+}
+
+model OrgNotificationRead {
+  notificationId String
+  notification   OrgNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime        @default(now())
+
+  @@id([notificationId, userId])
+  @@index([userId])
 }
 
 model RemoteWorkEvent {
@@ -272,6 +316,7 @@ model User {
   workforceTasksCreated WorkforceTask[] @relation("WorkforceTaskCreatedBy")
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
   workforceDocumentsUploaded WorkforceDocument[]
+  orgNotificationReads       OrgNotificationRead[]
 }
 
 model Candidate {

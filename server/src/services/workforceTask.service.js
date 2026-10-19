@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { notifyTaskCompletedByEmployee } from './orgNotification.service.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
 
 export const WORKFORCE_TASK_STATUSES = ['PENDING', 'IN_PROGRESS', 'COMPLETED'];
@@ -65,7 +66,7 @@ async function nextPositionForColumn(employeeId, status, tx = prisma) {
 }
 
 async function recordTaskEvent(tx, payload) {
-  await tx.workforceTaskEvent.create({ data: payload });
+  return tx.workforceTaskEvent.create({ data: payload });
 }
 
 export async function assertWorkforceTaskInOrg(taskId, organizationId) {
@@ -252,6 +253,7 @@ export async function patchWorkforceTaskAsEmployee({
   return prisma.$transaction(async (tx) => {
     const existing = await tx.workforceTask.findFirst({
       where: { id: taskId, employeeId, archivedAt: null },
+      include: { employee: { select: { fullName: true } } },
     });
     if (!existing) {
       const err = new Error('NOT_FOUND');
@@ -283,7 +285,7 @@ export async function patchWorkforceTaskAsEmployee({
       data,
     });
 
-    await recordTaskEvent(tx, {
+    const event = await recordTaskEvent(tx, {
       taskId: updated.id,
       type: 'TASK_STATUS_CHANGED',
       actorType: 'EMPLOYEE',
@@ -292,6 +294,17 @@ export async function patchWorkforceTaskAsEmployee({
       fromStatus: existing.status,
       toStatus: updated.status,
     });
+
+    if (updated.status === 'COMPLETED') {
+      await notifyTaskCompletedByEmployee(tx, {
+        organizationId: existing.organizationId,
+        employeeId,
+        employeeName: existing.employee?.fullName,
+        taskId: updated.id,
+        taskTitle: updated.title,
+        taskEventId: event.id,
+      });
+    }
 
     return serializeWorkforceTask(updated);
   });
