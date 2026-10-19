@@ -313,7 +313,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-icon-btn--folder{color:var(--slate-600);}
 .tc-icon-btn--folder:hover{background:var(--purple-light);color:var(--purple-dark);border-color:rgba(124,58,237,.35);}
 .tc-docs-modal{width:min(560px,calc(100vw - 32px));max-height:min(88vh,calc(100vh - 32px));display:flex;flex-direction:column;}
-.tc-docs-modal-head{margin-bottom:4px;}
+.tc-docs-modal-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.tc-docs-modal-head-row .tc-docs-modal-name{margin-bottom:0;}
 .tc-docs-modal-kicker{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-500);margin:0 0 4px;}
 .tc-docs-modal-name{font-size:17px;font-weight:800;color:var(--primary);margin:0 0 14px;line-height:1.3;}
 .tc-docs-upload-zone{border:1px dashed var(--slate-300);border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,rgba(248,250,252,.9),rgba(255,255,255,.6));margin-bottom:14px;transition:border-color .15s,background .15s;}
@@ -352,7 +353,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-aside{grid-column:2;min-width:0;display:flex;flex-direction:column;}
 .tc-jornada-card-header--compact{padding:10px 22px 0!important;margin-bottom:0!important;justify-content:flex-end!important;}
 .tc-jornada-top-left{grid-column:1;min-width:200px;max-width:min(320px,34vw);width:max-content;}
-.tc-jornada-top-right{grid-column:2;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tc-jornada-top-right{grid-column:2;min-width:0;display:flex;align-items:flex-start;justify-content:flex-start;gap:12px;flex-wrap:wrap;}
+.tc-jornada-act-head{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
+.tc-kanban-add-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border:none;border-radius:8px;background:var(--assess-gradient);color:#fff;font-family:inherit;font-size:17px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,.22);transition:var(--tr-fast);padding:0;flex-shrink:0;}
+.tc-kanban-add-btn:hover{filter:brightness(1.06);transform:translateY(-1px);}
+.tc-kanban-add-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-jornada-meta{margin-top:16px;padding-top:14px;border-top:1px solid var(--slate-100);display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
 .tc-jornada-alta{font-size:11px;color:var(--slate-400);line-height:1.4;}
 .tc-history-toggle--inline{margin-top:2px;}
@@ -1780,9 +1785,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div id="tc-docs-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpDocs()">
         <div class="tc-task-modal tc-docs-modal" role="dialog" aria-labelledby="tc-docs-title" aria-modal="true" onclick="event.stopPropagation()">
-          <div class="tc-docs-modal-head">
-            <p class="tc-docs-modal-kicker" id="tc-docs-title">Documentos</p>
-            <p class="tc-docs-modal-name" id="tc-docs-emp-name">—</p>
+          <div class="tc-docs-modal-head-row">
+            <div>
+              <p class="tc-docs-modal-kicker" id="tc-docs-title">Documentos</p>
+              <p class="tc-docs-modal-name" id="tc-docs-emp-name">—</p>
+            </div>
+            <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar" onclick="tcCloseEmpDocs()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
           <div class="tc-docs-upload-zone" id="tc-docs-drop-zone">
             <button type="button" class="tc-kanban-assign-btn" style="margin-bottom:10px;" onclick="tcDocsToggleForm(true)">+ Agregar documento</button>
@@ -1819,9 +1827,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
           <p id="tc-docs-err" class="tc-task-modal-err hidden"></p>
           <div class="tc-docs-list" id="tc-docs-list" aria-live="polite"></div>
-          <div class="tc-task-modal-actions" style="margin-top:12px;">
-            <button type="button" class="card-action" onclick="tcCloseEmpDocs()">Cerrar</button>
-          </div>
         </div>
       </div>
       <div id="tc-emp-edit-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpEdit()">
@@ -6262,9 +6267,10 @@ async function tcViewJornada(id){
         '<div class="card-subtitle tc-jornada-sub-row" id="tc-jornada-sub">'+tcEmpAvatarInnerHtml(emp)+'<span>'+tcEsc(emp.fullName||'—')+'</span></div>'+
         '</div>'+
         '<div class="tc-jornada-top-right">'+
+        '<div class="tc-jornada-act-head">'+
         '<div class="tc-jornada-top-title tc-jornada-top-title--act">Actividades</div>'+
-        '<button type="button" class="tc-kanban-assign-btn" onclick="tcKanbanOpenAssign()" aria-label="Asignar actividad">+ Asignar actividad</button>'+
-        '</div></div>'+
+        '<button type="button" class="tc-kanban-add-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">+</button>'+
+        '</div></div></div>'+
         '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
