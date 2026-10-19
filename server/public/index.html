@@ -1302,11 +1302,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <h2 class="modal-title">Aplicar Evaluación</h2>
     <p class="modal-subtitle">Correo y código que te envió la empresa.</p>
     <div class="form-group"><label class="form-label">Nombre completo</label><input type="text" id="eval-nombre" class="form-input" placeholder="Nombre Apellido" autocomplete="name"></div>
-    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com" autocomplete="email"></div>
+    <div class="form-group"><label class="form-label">Correo electrónico (usuario)</label><input type="email" id="eval-correo" class="form-input" placeholder="tu@correo.com" autocomplete="email"></div>
     <div class="form-group"><label class="form-label">Código de acceso</label><input type="text" id="eval-codigo" class="form-input" placeholder="12345" style="font-weight:700;letter-spacing:.2em;text-align:center;font-size:18px;" maxlength="12" inputmode="numeric"></div>
     <button type="button" class="form-submit form-submit-purple" onclick="iniciarEvaluacion(event)">Continuar →</button>
     <p id="eval-access-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;text-align:center;"></p>
-    <p style="font-size:12px;color:var(--slate-500);text-align:center;margin-top:12px;"><a href="#" onclick="event.preventDefault();closeModal('modal-evaluacion');openModal('modal-login-candidato');" style="color:var(--purple);font-weight:600;">Ya tengo cuenta MIND24 →</a></p>
   </div>
 </div>
 
@@ -3240,6 +3239,7 @@ function closeModal(id){
     m.style.transition='';
     m.style.visibility='hidden';
   }
+  if(id==='modal-evaluacion') mind24ClearApplyEvalDeepLink();
   const anyOpen=document.querySelector('.modal-overlay:not(.hidden),.m24-fitness-overlay:not(.hidden),.cev-success-overlay:not(.hidden)');
   if(!anyOpen){
     document.body.style.overflow='';
@@ -3248,6 +3248,8 @@ function closeModal(id){
   if(id==='modal-empresa'){['emp-s0','emp-s1','emp-s2','emp-s3','emp-s-crear'].forEach((s,i)=>{const el=document.getElementById(s);if(el)el.classList.toggle('hidden',i!==0);});}
 }
 function closeAllModals(){
+  const evalModal=document.getElementById('modal-evaluacion');
+  const evalWasOpen=evalModal&&!evalModal.classList.contains('hidden');
   document.querySelectorAll('.modal-overlay').forEach(function(m){
     m.classList.add('hidden');
     m.style.pointerEvents='none';
@@ -3266,8 +3268,51 @@ function closeAllModals(){
     document.body.style.overflow='';
     document.body.style.pointerEvents='';
   }
+  if(evalWasOpen) mind24ClearApplyEvalDeepLink();
 }
 function closeModalOnBg(e,id){ if(e.target.classList.contains('modal-overlay'))closeModal(id); }
+const MIND24_APPLY_EVAL_PARAM='apply';
+const MIND24_APPLY_EVAL_VALUE='evaluation';
+function mind24PublicApplyEvalUrl(){
+  const base=String(window.MIND24_PUBLIC_APP_URL||window.location.origin+'/').replace(/\/?$/,'/');
+  return base+'?'+MIND24_APPLY_EVAL_PARAM+'='+MIND24_APPLY_EVAL_VALUE;
+}
+function mind24ApplyEvalDeepLinkRequested(){
+  try{
+    const q=new URLSearchParams(window.location.search);
+    return q.get(MIND24_APPLY_EVAL_PARAM)===MIND24_APPLY_EVAL_VALUE;
+  }catch(_){ return false; }
+}
+function mind24ClearApplyEvalDeepLink(){
+  try{
+    const u=new URL(window.location.href);
+    if(!u.searchParams.has(MIND24_APPLY_EVAL_PARAM)) return;
+    u.searchParams.delete(MIND24_APPLY_EVAL_PARAM);
+    const qs=u.searchParams.toString();
+    const next=u.pathname+(qs?('?'+qs):'')+(u.hash||'');
+    history.replaceState(null,'',next);
+  }catch(_){}
+}
+function mind24OpenApplyEvalModalFromDeepLink(){
+  if(window.__MIND24_APPLY_EVAL_OPENED) return;
+  window.__MIND24_APPLY_EVAL_OPENED=true;
+  const landing=document.getElementById('view-landing');
+  if(landing&&landing.classList.contains('hidden')) showView('landing');
+  openModal('modal-evaluacion');
+  window.setTimeout(function(){
+    const el=document.getElementById('eval-nombre');
+    if(el) el.focus();
+  },80);
+}
+function mind24MaybeOpenApplyEvalDeepLink(){
+  if(!mind24ApplyEvalDeepLinkRequested()) return;
+  const u=window.__MIND24_USER;
+  if(u){
+    mind24ClearApplyEvalDeepLink();
+    return;
+  }
+  mind24OpenApplyEvalModalFromDeepLink();
+}
 function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
 // ── Nav scroll ──
 window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNav'); const land=document.getElementById('view-landing'); if(!land.classList.contains('hidden'))nav.classList.toggle('scrolled',window.scrollY>20); });
@@ -3402,11 +3447,10 @@ function crearEvalValidateBeforeSubmit(){
   return ok;
 }
 function crearEvalBuildAccessSpeech(candidateName, email, shortCode){
-  const base=String(window.MIND24_PUBLIC_APP_URL||'https://mind24-production.up.railway.app/').replace(/\/?$/,'/');
   return (
     '📄 ¡Hola, '+candidateName+'! Tus pruebas psicométricas están listas.\n\n'+
     'Hemos habilitado tu acceso a la plataforma para continuar con tu proceso de selección.\n\n'+
-    '🔗 Ingresa aquí: '+base+'\n'+
+    '🔗 Ingresa aquí: '+mind24PublicApplyEvalUrl()+'\n'+
     '📧 Tu usuario: '+email+'\n'+
     '🔑 Tu código de acceso: '+shortCode+'\n\n'+
     'Mucho éxito en tu evaluación. 🚀'
@@ -7589,6 +7633,7 @@ if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
   if(!marker){
     const cached=mind24ReadPersistedUser();
     if(cached) mind24ClearPersistedSession();
+    mind24MaybeOpenApplyEvalDeepLink();
     return;
   }
   try{
@@ -7597,8 +7642,13 @@ if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
     window.__MIND24_USER=me.user;
     mind24PersistSessionUser(me.user);
     const role=String(me.user.role||'').toLowerCase();
-    if(role==='candidato'){ await openCandidatoLobby(); return; }
+    if(role==='candidato'){
+      mind24ClearApplyEvalDeepLink();
+      await openCandidatoLobby();
+      return;
+    }
     if(role==='empresa_admin'){
+      mind24ClearApplyEvalDeepLink();
       mind24RefreshEmpresaAdminDashboardChrome();
       const last = mind24ReadLastView();
       const pioneerDefault = mind24DefaultEmpresaAdminView();
@@ -7606,9 +7656,15 @@ if(typeof crearEvalSyncModSummary==='function') crearEvalSyncModSummary();
       showView(ok ? last : pioneerDefault);
       return;
     }
-    if(role==='master_admin'){ showView('dash-superadmin'); try{ await refreshSuperadminDashboard(); }catch(_){ } return; }
+    if(role==='master_admin'){
+      mind24ClearApplyEvalDeepLink();
+      showView('dash-superadmin');
+      try{ await refreshSuperadminDashboard(); }catch(_){ }
+      return;
+    }
   }catch(_e){
     mind24ClearPersistedSession();
+    mind24MaybeOpenApplyEvalDeepLink();
   }
 })();
 </script>
