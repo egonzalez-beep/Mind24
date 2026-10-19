@@ -1,4 +1,6 @@
+import fs from 'fs';
 import { Router } from 'express';
+import multer from 'multer';
 import { z } from 'zod';
 import { assertEmpresaAdmin } from '../services/candidate.service.js';
 import {
@@ -11,8 +13,17 @@ import {
   getWorkforceEmployeeForOrg,
   listWorkforceEmployees,
   regenerateWorkforceEmployeeToken,
+  sanitizeEmployeeForAdmin,
   updateWorkforceEmployee,
 } from '../services/workforceEmployee.service.js';
+import {
+  clearWorkforceEmployeeProfilePhoto,
+  isAllowedWorkforceAvatarFile,
+  profilePhotoContentType,
+  resolveWorkforceProfilePhotoAbs,
+  saveWorkforceEmployeeProfilePhoto,
+  WORKFORCE_AVATAR_MAX_BYTES,
+} from '../services/workforceAvatar.service.js';
 import { resolveWorkforceTaskDueAtFromInput } from '../utils/workforceDueDate.js';
 import {
   assertWorkforceTaskInOrg,
@@ -24,6 +35,19 @@ import {
 import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
 
 const router = Router();
+
+const workforceAvatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: WORKFORCE_AVATAR_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedWorkforceAvatarFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_AVATAR_FILE'),
+      isAllowedWorkforceAvatarFile(file.mimetype, file.originalname),
+    );
+  },
+});
 
 router.get('/team-pulse', async (req, res, next) => {
   try {
@@ -91,6 +115,67 @@ router.get('/employees/:id/sessions', async (req, res, next) => {
       toKey: to,
     });
     res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/photo', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const emp = await assertWorkforceEmployeeInOrg(req.params.id, u.organizationId);
+    if (!emp.profilePhotoPath) {
+      res.status(404).json({ error: 'Sin foto de perfil.' });
+      return;
+    }
+    const abs = resolveWorkforceProfilePhotoAbs(emp.profilePhotoPath, u.organizationId);
+    const stat = await fs.promises.stat(abs);
+    const etag = `"${emp.id}-${emp.updatedAt.getTime()}"`;
+    if (req.headers['if-none-match'] === etag) {
+      res.status(304).end();
+      return;
+    }
+    res.setHeader('Content-Type', profilePhotoContentType(emp.profilePhotoPath));
+    res.setHeader('Cache-Control', 'private, max-age=3600, must-revalidate');
+    res.setHeader('ETag', etag);
+    res.setHeader('Content-Length', stat.size);
+    fs.createReadStream(abs).pipe(res);
+  } catch (e) {
+    if (e?.code === 'ENOENT') {
+      res.status(404).json({ error: 'Archivo de foto no encontrado.' });
+      return;
+    }
+    next(e);
+  }
+});
+
+router.post('/employees/:id/photo', workforceAvatarUpload.single('photo'), async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    if (!req.file?.buffer?.length) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message = 'Selecciona una imagen JPG, PNG o WEBP.';
+      throw err;
+    }
+    const updated = await saveWorkforceEmployeeProfilePhoto({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      buffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+      originalName: req.file.originalname,
+    });
+    res.json({ employee: sanitizeEmployeeForAdmin(updated) });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/employees/:id/photo', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const updated = await clearWorkforceEmployeeProfilePhoto(u.organizationId, req.params.id);
+    res.json({ employee: sanitizeEmployeeForAdmin(updated) });
   } catch (e) {
     next(e);
   }

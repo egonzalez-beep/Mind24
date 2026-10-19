@@ -97,6 +97,7 @@ model WorkforceEmployee {
   isActive        Boolean  @default(true)
   accessTokenHash String   @unique
   tokenVersion    Int      @default(1)
+  profilePhotoPath String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

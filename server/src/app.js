@@ -44,6 +44,7 @@ export function createApp() {
   );
   app.use(express.json({ limit: '400kb' }));
   fs.mkdirSync(uploadStorage.audiosDirAbs, { recursive: true });
+  fs.mkdirSync(path.join(uploadsRootAbs, 'workforce-avatars'), { recursive: true });
   console.log(
     `[uploads] persistent=${uploadStorage.persistent} source=${uploadStorage.source} root=${uploadsRootAbs} audios=${uploadStorage.audiosDirAbs}`,
   );
@@ -70,8 +71,8 @@ export function createApp() {
     );
   }
   app.use(
-    '/uploads',
-    express.static(uploadsRootAbs, {
+    '/uploads/audios',
+    express.static(uploadStorage.audiosDirAbs, {
       setHeaders: (res, filePath) => {
         const ext = path.extname(filePath).toLowerCase();
         if (ext === '.webm') res.setHeader('Content-Type', 'audio/webm');

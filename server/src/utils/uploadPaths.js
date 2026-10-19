@@ -65,6 +65,10 @@ export function resolveAudiosDirAbs() {
   return path.join(resolveUploadsRootAbs(), 'audios');
 }
 
+export function resolveWorkforceAvatarsDirAbs() {
+  return path.join(resolveUploadsRootAbs(), 'workforce-avatars');
+}
+
 /** Metadatos para logs y healthcheck. */
 export function getUploadStorageMeta() {
   const uploadsRootAbs = resolveUploadsRootAbs();

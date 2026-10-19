@@ -46,6 +46,7 @@ export function sanitizeEmployeeForAdmin(emp) {
     timezone: emp.timezone,
     isActive: emp.isActive,
     tokenVersion: emp.tokenVersion,
+    profilePhotoPath: emp.profilePhotoPath ?? null,
     createdAt: emp.createdAt,
     updatedAt: emp.updatedAt,
   };

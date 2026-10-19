@@ -282,6 +282,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-dir-jornada--off{color:var(--slate-500);font-weight:500;}
 .tc-dir-jornada-ring{width:7px;height:7px;border:1.5px solid var(--slate-400);border-radius:50%;flex-shrink:0;box-sizing:border-box;}
 .tc-dir-jornada--disabled .tc-member-badge{margin:0;}
+.tc-emp-name-cell{display:flex;align-items:center;gap:10px;min-width:0;}
+.tc-emp-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;object-fit:cover;background:var(--slate-100);border:1px solid var(--slate-200);}
+.tc-emp-avatar--initials{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--purple-dark);background:linear-gradient(145deg,rgba(237,233,254,.95),rgba(224,231,255,.85));letter-spacing:.02em;}
+.tc-emp-name-stack{min-width:0;}
+.tc-emp-edit-photo{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--slate-100);}
+.tc-emp-edit-photo .tc-emp-avatar{width:56px;height:56px;font-size:15px;}
+.tc-emp-edit-photo-actions{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+.tc-emp-photo-btn{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:0;}
+.tc-emp-photo-btn:hover{text-decoration:underline;}
+.tc-emp-photo-btn--muted{color:var(--slate-500);}
+.tc-jornada-sub-row{display:flex;align-items:center;gap:8px;}
+.tc-jornada-sub-row .tc-emp-avatar{width:32px;height:32px;font-size:11px;}
 .tc-emp-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .tc-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid var(--slate-200);border-radius:8px;background:transparent;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);flex-shrink:0;}
 .tc-icon-btn:hover{background:var(--slate-50);border-color:var(--slate-300);}
@@ -1736,6 +1748,42 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div style="display:flex;gap:10px;margin-top:14px;">
             <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcCreateEmployee()">Crear y generar enlace</button>
             <button type="button" class="card-action" onclick="tcToggleAddForm(false)">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div id="tc-emp-edit-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpEdit()">
+        <div class="tc-task-modal" style="width:min(460px,calc(100vw - 32px));" role="dialog" aria-labelledby="tc-emp-edit-title" aria-modal="true">
+          <h3 id="tc-emp-edit-title">Editar colaborador</h3>
+          <input type="hidden" id="tc-emp-edit-id">
+          <div class="tc-emp-edit-photo">
+            <div id="tc-emp-edit-avatar-wrap"></div>
+            <div class="tc-emp-edit-photo-actions">
+              <label class="tc-emp-photo-btn"><input type="file" id="tc-emp-edit-photo-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden onchange="tcEmpPhotoFileSelected(event)">Cambiar foto</label>
+              <button type="button" class="tc-emp-photo-btn tc-emp-photo-btn--muted hidden" id="tc-emp-edit-photo-remove" onclick="tcEmpRemovePhoto()">Quitar foto</button>
+            </div>
+          </div>
+          <label class="form-label">Nombre completo</label>
+          <input type="text" id="tc-emp-edit-name" class="form-input" maxlength="200">
+          <label class="form-label">Puesto</label>
+          <input type="text" id="tc-emp-edit-position" class="form-input" maxlength="200">
+          <label class="form-label">Departamento</label>
+          <input type="text" id="tc-emp-edit-dept" class="form-input" maxlength="200">
+          <label class="form-label">Código interno</label>
+          <input type="text" id="tc-emp-edit-code" class="form-input" maxlength="64">
+          <label class="form-label">Zona horaria</label>
+          <select id="tc-emp-edit-tz" class="form-input">
+            <option value="America/Mexico_City">America/Mexico_City</option>
+            <option value="America/Tijuana">America/Tijuana</option>
+            <option value="America/Hermosillo">America/Hermosillo</option>
+            <option value="America/Cancun">America/Cancun</option>
+            <option value="America/Monterrey">America/Monterrey</option>
+            <option value="America/Chihuahua">America/Chihuahua</option>
+            <option value="UTC">UTC</option>
+          </select>
+          <p id="tc-emp-edit-err" class="tc-task-modal-err hidden"></p>
+          <div class="tc-task-modal-actions">
+            <button type="button" class="card-action" onclick="tcCloseEmpEdit()">Cancelar</button>
+            <button type="button" class="tc-kanban-assign-btn" onclick="tcSaveEmpEdit()">Guardar</button>
           </div>
         </div>
       </div>
@@ -5541,6 +5589,114 @@ function tcSignalDotHtml(code, withInfo){
 function tcSvgEye(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
+function tcSvgPencil(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+}
+function tcEmpPhotoUrl(emp){
+  if(!emp||!emp.profilePhotoPath) return '';
+  const v=emp.updatedAt?new Date(emp.updatedAt).getTime():Date.now();
+  return '/api/org/timeclock/employees/'+encodeURIComponent(emp.id)+'/photo?v='+v;
+}
+function tcEmpAvatarInnerHtml(emp){
+  const init=tcEsc(initialsFromName(emp&&emp.fullName));
+  const url=tcEmpPhotoUrl(emp);
+  if(url) return '<img class="tc-emp-avatar" src="'+url+'" alt="" width="38" height="38" loading="lazy" decoding="async">';
+  return '<span class="tc-emp-avatar tc-emp-avatar--initials" aria-hidden="true">'+init+'</span>';
+}
+function tcEmpAvatarCellHtml(emp){
+  return '<div class="tc-emp-name-cell"><div>'+tcEmpAvatarInnerHtml(emp)+'</div><div class="tc-emp-name-stack"><strong>'+tcEsc(emp.fullName)+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</div></div>';
+}
+function tcEmpEditAvatarRender(emp){
+  const wrap=document.getElementById('tc-emp-edit-avatar-wrap');
+  const rm=document.getElementById('tc-emp-edit-photo-remove');
+  if(wrap) wrap.innerHTML=tcEmpAvatarInnerHtml(emp);
+  if(rm) rm.classList.toggle('hidden',!(emp&&emp.profilePhotoPath));
+}
+let tcEditEmpCache=null;
+async function tcOpenEmpEdit(id){
+  const bd=document.getElementById('tc-emp-edit-backdrop');
+  const err=document.getElementById('tc-emp-edit-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  try{
+    const j=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
+    const emp=j.employee||{};
+    tcEditEmpCache=emp;
+    const idEl=document.getElementById('tc-emp-edit-id');
+    if(idEl) idEl.value=emp.id||id;
+    const n=document.getElementById('tc-emp-edit-name'); if(n) n.value=emp.fullName||'';
+    const p=document.getElementById('tc-emp-edit-position'); if(p) p.value=emp.position||'';
+    const d=document.getElementById('tc-emp-edit-dept'); if(d) d.value=emp.department||'';
+    const c=document.getElementById('tc-emp-edit-code'); if(c) c.value=emp.employeeCode||'';
+    const tz=document.getElementById('tc-emp-edit-tz'); if(tz&&emp.timezone) tz.value=emp.timezone;
+    const fi=document.getElementById('tc-emp-edit-photo-input'); if(fi) fi.value='';
+    tcEmpEditAvatarRender(emp);
+    if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+  }catch(e){
+    alert(e.message||'No se pudo abrir el colaborador.');
+  }
+}
+function tcCloseEmpEdit(){
+  tcEditEmpCache=null;
+  const bd=document.getElementById('tc-emp-edit-backdrop');
+  if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+}
+async function tcSaveEmpEdit(){
+  const id=(document.getElementById('tc-emp-edit-id')||{}).value;
+  const err=document.getElementById('tc-emp-edit-err');
+  if(!id) return;
+  const body={
+    fullName:((document.getElementById('tc-emp-edit-name')||{}).value||'').trim(),
+    position:((document.getElementById('tc-emp-edit-position')||{}).value||'').trim()||null,
+    department:((document.getElementById('tc-emp-edit-dept')||{}).value||'').trim()||null,
+    employeeCode:((document.getElementById('tc-emp-edit-code')||{}).value||'').trim()||null,
+    timezone:((document.getElementById('tc-emp-edit-tz')||{}).value||'').trim(),
+  };
+  if(!body.fullName){
+    if(err){ err.textContent='El nombre es obligatorio.'; err.classList.remove('hidden'); }
+    return;
+  }
+  try{
+    await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id),{ method:'PATCH', body:JSON.stringify(body) });
+    tcCloseEmpEdit();
+    await tcLoadEmployees();
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo guardar.'; err.classList.remove('hidden'); }
+  }
+}
+async function tcEmpPhotoFileSelected(ev){
+  const file=ev&&ev.target&&ev.target.files&&ev.target.files[0];
+  const id=(document.getElementById('tc-emp-edit-id')||{}).value;
+  const err=document.getElementById('tc-emp-edit-err');
+  if(!file||!id) return;
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const fd=new FormData();
+  fd.append('photo',file);
+  try{
+    const res=await fetch('/api/org/timeclock/employees/'+encodeURIComponent(id)+'/photo',{ method:'POST', body:fd, credentials:'include' });
+    const j=await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error(j.message||'No se pudo subir la foto.');
+    tcEditEmpCache=j.employee||tcEditEmpCache;
+    tcEmpEditAvatarRender(tcEditEmpCache);
+    await tcLoadEmployees();
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo subir la foto.'; err.classList.remove('hidden'); }
+  }
+  if(ev.target) ev.target.value='';
+}
+async function tcEmpRemovePhoto(){
+  const id=(document.getElementById('tc-emp-edit-id')||{}).value;
+  const err=document.getElementById('tc-emp-edit-err');
+  if(!id) return;
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  try{
+    const j=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id)+'/photo',{ method:'DELETE' });
+    tcEditEmpCache=j.employee||tcEditEmpCache;
+    tcEmpEditAvatarRender(tcEditEmpCache);
+    await tcLoadEmployees();
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo quitar la foto.'; err.classList.remove('hidden'); }
+  }
+}
 function tcSvgCalendarHistory(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>';
 }
@@ -5728,13 +5884,14 @@ async function tcLoadEmployees(){
       const inProg=sum.inProgress!=null?sum.inProgress:0;
       const done=sum.completed!=null?sum.completed:0;
       return '<tr>'+
-        '<td><strong>'+name+'</strong>'+(emp.employeeCode?'<div style="font-size:12px;color:var(--slate-400);">'+tcEsc(emp.employeeCode)+'</div>':'')+'</td>'+
+        '<td>'+tcEmpAvatarCellHtml(emp)+'</td>'+
         '<td>'+tcEsc(emp.position||'—')+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('pending',pending)+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('progress',inProg)+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('completed',done)+'</td>'+
         '<td class="tc-emp-td-status">'+tcDirJornadaStatusHtml(emp)+'</td>'+
         '<td class="tc-emp-td-actions"><div class="tc-emp-actions">'+
+          '<button type="button" class="tc-icon-btn" title="Editar colaborador" aria-label="Editar colaborador '+name+'" onclick="tcOpenEmpEdit(\''+emp.id+'\')">'+tcSvgPencil()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLink()+'</button>'+
           actBtn+
@@ -5805,7 +5962,7 @@ async function tcViewJornada(id){
         '<div class="tc-jornada-top-row">'+
         '<div class="tc-jornada-top-left">'+
         '<div class="tc-jornada-top-title">Jornada</div>'+
-        '<div class="card-subtitle" id="tc-jornada-sub">'+tcEsc(emp.fullName||'—')+'</div>'+
+        '<div class="card-subtitle tc-jornada-sub-row" id="tc-jornada-sub">'+tcEmpAvatarInnerHtml(emp)+'<span>'+tcEsc(emp.fullName||'—')+'</span></div>'+
         '</div>'+
         '<div class="tc-jornada-top-right">'+
         '<div class="tc-jornada-top-title tc-jornada-top-title--act">Actividades</div>'+
@@ -6866,6 +7023,11 @@ window.tcOnShow=tcOnShow;
 window.tcToggleAddForm=tcToggleAddForm;
 window.tcCreateEmployee=tcCreateEmployee;
 window.tcLoadEmployees=tcLoadEmployees;
+window.tcOpenEmpEdit=tcOpenEmpEdit;
+window.tcCloseEmpEdit=tcCloseEmpEdit;
+window.tcSaveEmpEdit=tcSaveEmpEdit;
+window.tcEmpRemovePhoto=tcEmpRemovePhoto;
+window.tcEmpPhotoFileSelected=tcEmpPhotoFileSelected;
 window.tcToggleTeamPulse=tcToggleTeamPulse;
 window.tcCloseTeamPulse=tcCloseTeamPulse;
 window.tcCopySecretLink=tcCopySecretLink;
