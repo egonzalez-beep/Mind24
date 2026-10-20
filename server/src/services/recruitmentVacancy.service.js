@@ -2,7 +2,7 @@ import { prisma } from '../db/client.js';
 import { RECRUITMENT_VACANCY_STATUSES } from './recruitmentStage.service.js';
 
 export function emptyApplicationSummary() {
-  return { total: 0, inProcess: 0, finalists: 0, hired: 0 };
+  return { total: 0, inProcess: 0, finalists: 0, hired: 0, rejected: 0 };
 }
 
 function summarizeApplications(applications) {
@@ -12,9 +12,103 @@ function summarizeApplications(applications) {
     const key = app.stage?.key;
     if (key === 'HIRED') summary.hired += 1;
     if (key === 'FINALIST') summary.finalists += 1;
+    if (key === 'REJECTED') summary.rejected += 1;
     if (key !== 'HIRED' && key !== 'REJECTED') summary.inProcess += 1;
   }
   return summary;
+}
+
+export function localTodayDateKey(now = new Date()) {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function localDateKeyFromIso(iso) {
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return localTodayDateKey();
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const d = String(dt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Diferencia en días calendario (toKey − fromKey). */
+export function calendarDayDiff(fromKey, toKey) {
+  const parse = (key) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key).trim());
+    if (!m) return null;
+    return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  };
+  const a = parse(fromKey);
+  const b = parse(toKey);
+  if (a == null || b == null) return 0;
+  return Math.round((b - a) / 86_400_000);
+}
+
+export function computeCoveragePercent(hired, positionsTotal) {
+  const positions = Math.max(1, Number(positionsTotal) || 1);
+  const h = Math.max(0, Number(hired) || 0);
+  return Math.min(100, Math.round((h / positions) * 100));
+}
+
+export function computeRejectionRatePercent(rejected, total) {
+  const t = Number(total) || 0;
+  if (t === 0) return null;
+  return Math.round((Math.max(0, Number(rejected) || 0) / t) * 100);
+}
+
+export function formatTargetObjectiveLabel(targetCoverageDateYmd, todayKey = localTodayDateKey()) {
+  if (!targetCoverageDateYmd) return 'Sin fecha objetivo';
+  const diff = calendarDayDiff(todayKey, targetCoverageDateYmd);
+  if (diff > 0) return `${diff} día${diff === 1 ? '' : 's'} restantes`;
+  if (diff === 0) return 'Vence hoy';
+  const past = -diff;
+  return `Vencida hace ${past} día${past === 1 ? '' : 's'}`;
+}
+
+export function buildExecutiveSnapshot(vacancyRow, applicationSummary, todayKey = localTodayDateKey()) {
+  const summary = applicationSummary ?? emptyApplicationSummary();
+  const positionsTotal = vacancyRow.positionsTotal;
+  const hired = summary.hired ?? 0;
+  const rejectionRatePercent = computeRejectionRatePercent(summary.rejected, summary.total);
+  const openedKey = localDateKeyFromIso(vacancyRow.openedAt.toISOString());
+  const daysOpen = Math.max(0, calendarDayDiff(openedKey, todayKey));
+  const targetYmd = formatTargetCoverageDate(vacancyRow);
+
+  return {
+    coveragePercent: computeCoveragePercent(hired, positionsTotal),
+    coveragePositionsText: `${hired} / ${positionsTotal}`,
+    inProcess: summary.inProcess ?? 0,
+    rejectionRatePercent,
+    rejectionDisplay: rejectionRatePercent == null ? 'Sin datos' : `${rejectionRatePercent}%`,
+    targetDisplay: formatTargetObjectiveLabel(targetYmd, todayKey),
+    daysOpen,
+  };
+}
+
+async function buildStageDistributionForVacancy(organizationId, vacancyId) {
+  const [stages, grouped] = await Promise.all([
+    prisma.recruitmentStage.findMany({
+      where: { organizationId, isActive: true },
+      orderBy: { position: 'asc' },
+      select: { id: true, key: true, name: true, position: true },
+    }),
+    prisma.recruitmentApplication.groupBy({
+      by: ['stageId'],
+      where: { organizationId, vacancyId },
+      _count: { _all: true },
+    }),
+  ]);
+  const countByStageId = new Map(grouped.map((g) => [g.stageId, g._count._all]));
+  return stages.map((stage) => ({
+    stageId: stage.id,
+    key: stage.key,
+    name: stage.name,
+    position: stage.position,
+    count: countByStageId.get(stage.id) ?? 0,
+  }));
 }
 
 async function buildApplicationSummariesByVacancyId(organizationId, vacancyIds) {
@@ -97,6 +191,8 @@ export function serializeRecruitmentVacancy(row, extras = {}) {
     updatedAt: row.updatedAt.toISOString(),
     applicationSummary: extras.applicationSummary ?? emptyApplicationSummary(),
     primaryAssignee: extras.primaryAssignee ?? null,
+    executiveSnapshot: extras.executiveSnapshot ?? null,
+    stageDistribution: extras.stageDistribution ?? null,
   };
 }
 
@@ -181,7 +277,19 @@ export async function listRecruitmentVacancies(organizationId, { status } = {}) 
 
 export async function getRecruitmentVacancy(organizationId, vacancyId) {
   const row = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
-  const [vacancy] = await enrichVacancies(organizationId, [row]);
+  const ids = [row.id];
+  const [summaryMap, assigneeMap, stageDistribution] = await Promise.all([
+    buildApplicationSummariesByVacancyId(organizationId, ids),
+    buildPrimaryAssigneesByVacancyId(organizationId, ids),
+    buildStageDistributionForVacancy(organizationId, vacancyId),
+  ]);
+  const applicationSummary = summaryMap.get(row.id) ?? emptyApplicationSummary();
+  const vacancy = serializeRecruitmentVacancy(row, {
+    applicationSummary,
+    primaryAssignee: assigneeMap.get(row.id) ?? null,
+    executiveSnapshot: buildExecutiveSnapshot(row, applicationSummary),
+    stageDistribution,
+  });
   return vacancy;
 }
 

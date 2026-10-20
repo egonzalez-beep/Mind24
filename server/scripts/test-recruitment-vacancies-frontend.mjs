@@ -81,9 +81,24 @@ check(/rec-vac-docs-list/.test(indexHtml), 'sección archivos');
 check(/recVacDocsSubmit/.test(indexHtml), 'upload archivos vacante');
 check(/Podrás agregar archivos después/.test(indexHtml), 'hint sin upload en alta');
 
+console.log('\n=== Recruitment 1B.5 — tablero ejecutivo ===\n');
+
+const detailModalBlock =
+  indexHtml.match(/id="modal-rec-vacancy-detail"[\s\S]*?id="modal-evaluacion"/)?.[0] || '';
+check(/rec-detail-edit-btn/.test(detailModalBlock), 'editar icono lápiz');
+check(/rec-exec-kpis/.test(detailModalBlock), 'KPIs ejecutivos en detalle');
+check(/rec-detail-jd-trigger/.test(detailModalBlock), 'JD acordeón');
+check(/recDetailResetAccordions/.test(indexHtml), 'acordeones reset al abrir');
+check(/rec-detail-funnel/.test(detailModalBlock), 'funnel distribution UI');
+check(/Distribución del proceso/.test(detailModalBlock), 'título funnel');
+check(/Información general/.test(detailModalBlock), 'bloque información general');
+check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
+
 console.log('\n=== Backend summary ===\n');
 
 check(/applicationSummary/.test(vacancyService), 'applicationSummary en servicio');
+check(/executiveSnapshot/.test(vacancyService), 'executiveSnapshot en GET vacante');
+check(/rejected/.test(vacancyService), 'rejected en summary');
 
 console.log('\n=== Regresiones ===\n');
 
