@@ -62,6 +62,12 @@ model Organization {
   workforceTasks        WorkforceTask[]
   workforceDocuments    WorkforceDocument[]
   orgNotifications      OrgNotification[]
+  recruitmentCandidates RecruitmentCandidate[]
+  recruitmentVacancies  RecruitmentVacancy[]
+  recruitmentStages     RecruitmentStage[]
+  recruitmentApplications RecruitmentApplication[]
+  recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
+  recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
 }
 
 enum OrgNotificationType {
@@ -117,6 +123,7 @@ model WorkforceEmployee {
   taskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventEmployee")
   documents WorkforceDocument[]
   orgNotifications OrgNotification[]
+  recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -317,6 +324,7 @@ model User {
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
   workforceDocumentsUploaded WorkforceDocument[]
   orgNotificationReads       OrgNotificationRead[]
+  recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
 }
 
 model Candidate {
@@ -466,4 +474,150 @@ model CandidateResponse {
 
   @@unique([attemptId, questionId])
   @@index([attemptId])
+}
+
+enum RecruitmentVacancyStatus {
+  ACTIVE
+  PAUSED
+  COVERED
+  CLOSED
+}
+
+enum RecruitmentVacancyAssigneeRole {
+  PRIMARY
+  SUPPORT
+}
+
+/// Candidato de reclutamiento (dominio separado de evaluaciones psicométricas).
+model RecruitmentCandidate {
+  id             String    @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fullName       String
+  profile        String
+  phone          String
+  whatsapp       String?
+  email          String?
+  city           String?
+  state          String?
+  source         String?
+  notes          String?   @db.Text
+  archivedAt     DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  applications RecruitmentApplication[]
+
+  @@index([organizationId])
+  @@index([organizationId, fullName])
+  @@index([organizationId, email])
+  @@index([organizationId, phone])
+  @@index([organizationId, archivedAt])
+}
+
+model RecruitmentVacancy {
+  id              String                   @id @default(cuid())
+  organizationId  String
+  organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title           String
+  clientName      String
+  location        String?
+  positionsTotal  Int
+  openedAt        DateTime                 @db.Timestamptz(6)
+  status          RecruitmentVacancyStatus @default(ACTIVE)
+  jobDescription  String?                  @db.Text
+  notes           String?                  @db.Text
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  applications RecruitmentApplication[]
+  assignees    RecruitmentVacancyAssignee[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, openedAt])
+}
+
+model RecruitmentVacancyAssignee {
+  id             String                         @id @default(cuid())
+  organizationId String
+  organization   Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vacancyId      String
+  vacancy        RecruitmentVacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  employeeId     String
+  employee       WorkforceEmployee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  role           RecruitmentVacancyAssigneeRole
+  createdAt      DateTime                       @default(now())
+
+  @@unique([vacancyId, employeeId])
+  @@index([organizationId])
+  @@index([vacancyId])
+  @@index([organizationId, vacancyId])
+}
+
+/// Etapa configurable del pipeline por organización.
+model RecruitmentStage {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  key            String
+  name           String
+  position       Int
+  isTerminal     Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  applicationsAtStage RecruitmentApplication[]
+  stageEventsFrom     RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventFrom")
+  stageEventsTo       RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventTo")
+
+  @@unique([organizationId, key])
+  @@index([organizationId, position])
+  @@index([organizationId, isActive])
+}
+
+/// Postulación: candidato + vacante + proceso en una etapa.
+model RecruitmentApplication {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidateId    String
+  candidate      RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId      String
+  vacancy        RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  stageId        String
+  stage          RecruitmentStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  position       Int
+  appliedAt      DateTime @db.Timestamptz(6)
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  stageEvents RecruitmentApplicationStageEvent[]
+
+  @@unique([candidateId, vacancyId])
+  @@index([organizationId])
+  @@index([organizationId, vacancyId])
+  @@index([organizationId, stageId])
+  @@index([vacancyId, stageId, position])
+  @@index([organizationId, candidateId])
+}
+
+model RecruitmentApplicationStageEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applicationId   String
+  application     RecruitmentApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStageId     String?
+  fromStage       RecruitmentStage? @relation("RecruitmentStageEventFrom", fields: [fromStageId], references: [id], onDelete: SetNull)
+  toStageId       String
+  toStage         RecruitmentStage @relation("RecruitmentStageEventTo", fields: [toStageId], references: [id], onDelete: Restrict)
+  changedByUserId String?
+  changedBy       User? @relation("RecruitmentStageEventUser", fields: [changedByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+
+  @@index([applicationId, createdAt])
+  @@index([organizationId])
 }

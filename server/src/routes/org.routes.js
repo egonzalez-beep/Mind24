@@ -20,12 +20,14 @@ import {
 import { filterAssignableModuleKeys } from '../utils/moduleCatalog.js';
 import timeclockOrgRoutes from './timeclock.org.routes.js';
 import orgNotificationsRoutes from './org.notifications.routes.js';
+import orgRecruitmentRoutes from './org.recruitment.routes.js';
 
 const router = Router();
 
 router.use(requireAuth, requireRole('empresa_admin'), requireEmpresaPortal);
 
 router.use(orgNotificationsRoutes);
+router.use('/recruitment', orgRecruitmentRoutes);
 router.use('/timeclock', timeclockOrgRoutes);
 
 router.get('/candidates', async (req, res, next) => {
