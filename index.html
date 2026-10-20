@@ -246,6 +246,70 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
 .tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
 .tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rec-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+.rec-page-head-actions{display:flex;align-items:center;gap:10px;}
+.rec-btn-new{border:1px solid rgba(124,58,237,.35);background:#fff;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.rec-btn-new:hover{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
+.rec-section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin-bottom:12px;}
+.rec-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.rec-filter-chip{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;transition:var(--tr-fast);}
+.rec-filter-chip:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
+.rec-filter-chip.active{background:var(--purple-light);border-color:rgba(124,58,237,.45);color:var(--purple-dark);}
+.rec-carousel-wrap{position:relative;margin-bottom:20px;}
+.rec-carousel{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 12px;scroll-behavior:smooth;scrollbar-width:thin;}
+.rec-carousel::-webkit-scrollbar{height:6px;}
+.rec-carousel::-webkit-scrollbar-thumb{background:rgba(124,58,237,.25);border-radius:999px;}
+.rec-vac-card{flex:0 0 calc(25% - 11px);min-width:220px;max-width:280px;background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:14px 14px 12px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 2px 8px rgba(15,23,42,.04);}
+.rec-vac-card:hover{border-color:rgba(124,58,237,.35);box-shadow:0 6px 18px rgba(124,58,237,.08);}
+.rec-vac-card.selected{border-color:rgba(124,58,237,.55);background:linear-gradient(180deg,rgba(124,58,237,.06) 0%,#fff 42%);box-shadow:0 8px 22px rgba(124,58,237,.12);}
+.rec-vac-card-title{font-size:14px;font-weight:700;color:var(--primary);line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-vac-card-client{font-size:12px;color:var(--slate-600);margin-bottom:2px;}
+.rec-vac-card-loc{font-size:11px;color:var(--slate-500);margin-bottom:10px;min-height:14px;}
+.rec-vac-card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.rec-status-badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;}
+.rec-status-badge--ACTIVE{background:rgba(16,185,129,.12);color:#047857;}
+.rec-status-badge--PAUSED{background:rgba(245,158,11,.14);color:#b45309;}
+.rec-status-badge--COVERED{background:rgba(59,130,246,.12);color:#1d4ed8;}
+.rec-status-badge--CLOSED{background:rgba(100,116,139,.14);color:#475569;}
+.rec-vac-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:10px;color:var(--slate-500);}
+.rec-vac-stat-val{display:block;font-size:13px;font-weight:700;color:var(--primary);}
+.rec-vac-coverage{font-size:11px;color:var(--slate-600);margin-top:10px;padding-top:8px;border-top:1px solid var(--slate-100);}
+.rec-workspace{background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 12px rgba(15,23,42,.04);margin-top:18px;}
+.rec-workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+.rec-workspace-title{font-size:20px;font-weight:800;color:var(--primary);letter-spacing:-.4px;line-height:1.25;}
+.rec-workspace-sub{font-size:13px;color:var(--slate-600);margin:0 0 12px;}
+.rec-workspace-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;font-size:12px;color:var(--slate-600);margin-bottom:18px;}
+.rec-workspace-meta .rec-status-badge{font-size:10px;}
+.rec-ws-responsible{color:var(--slate-600);}
+.rec-ws-pulse{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--slate-100);}
+.rec-ws-kpi{background:linear-gradient(180deg,rgba(124,58,237,.04) 0%,#fff 100%);border:1px solid rgba(124,58,237,.08);border-radius:12px;padding:10px 12px;min-height:64px;}
+.rec-ws-kpi-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);margin-bottom:4px;}
+.rec-ws-kpi-val{font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.3px;line-height:1.2;}
+.rec-ws-kpi-sub{font-size:11px;color:var(--slate-500);margin-top:4px;}
+.rec-ws-kpi--coverage .rec-ws-kpi-val{font-size:15px;}
+.rec-ws-cov-bar{height:3px;border-radius:999px;background:var(--slate-100);margin-top:8px;overflow:hidden;}
+.rec-ws-cov-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(124,58,237,.45),rgba(124,58,237,.75));max-width:100%;}
+.rec-ws-accordion{margin-bottom:16px;}
+.rec-ws-acc-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:var(--primary);padding:10px 0;cursor:pointer;text-align:left;}
+.rec-ws-acc-trigger:hover{color:var(--purple-dark);}
+.rec-ws-acc-chevron{width:18px;height:18px;flex-shrink:0;transition:transform .2s ease;color:var(--slate-500);}
+.rec-ws-acc-trigger[aria-expanded="true"] .rec-ws-acc-chevron{transform:rotate(180deg);}
+.rec-ws-acc-body{font-size:13px;line-height:1.65;color:var(--slate-700);white-space:pre-wrap;padding:0 0 12px;border-bottom:1px solid var(--slate-100);}
+.rec-ws-acc-body.empty{color:var(--slate-400);font-style:normal;}
+.rec-ws-notes-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin-bottom:8px;}
+.rec-ws-notes-body{font-size:13px;line-height:1.6;color:var(--slate-700);white-space:pre-wrap;}
+.rec-ws-notes-body.empty{color:var(--slate-400);}
+.rec-pipeline-slot{min-height:0;margin-top:4px;}
+.rec-btn-edit{border:none;background:transparent;color:var(--purple);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;flex-shrink:0;}
+.rec-btn-edit:hover{text-decoration:underline;}
+@media(max-width:960px){.rec-ws-pulse{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:720px){.rec-ws-pulse{grid-template-columns:repeat(2,minmax(0,1fr));}.rec-workspace{padding:16px;}}
+.rec-empty{text-align:center;padding:48px 24px;background:#fff;border:1px dashed var(--slate-200);border-radius:16px;}
+.rec-empty p{font-size:14px;color:var(--slate-500);margin-bottom:16px;}
+.rec-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.rec-modal-grid .rec-span-2{grid-column:1/-1;}
+@media(max-width:720px){.rec-vac-card{flex:0 0 78%;}.rec-modal-grid{grid-template-columns:1fr;}}
+.sidebar-item-cta-recruitment{border:1px solid rgba(124,58,237,.22)!important;background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(255,255,255,.95))!important;}
 .tc-pulse-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,58,237,.28);background:rgba(255,255,255,.92);color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);white-space:nowrap;}
 .tc-pulse-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.45);}
 .tc-pulse-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
@@ -1294,6 +1358,42 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
+<div id="modal-rec-vacancy" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-rec-vacancy')">
+  <div class="modal-card" style="max-width:560px;max-height:min(90vh,640px);overflow-y:auto;" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('modal-rec-vacancy')">✕</button>
+    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
+    <div class="modal-badge modal-badge-purple">Reclutamiento</div>
+    <h2 class="modal-title" id="rec-modal-title">Nueva vacante</h2>
+    <p class="modal-subtitle" id="rec-modal-subtitle">Registra los datos de la vacante.</p>
+    <input type="hidden" id="rec-form-vacancy-id">
+    <input type="hidden" id="rec-form-prev-assignee-id">
+    <div class="rec-modal-grid">
+      <div class="rec-span-2"><label class="form-label">Título *</label><input type="text" id="rec-form-title" class="form-input" maxlength="300" placeholder="Ej. Supervisor de Obra"></div>
+      <div><label class="form-label">Cliente / empresa *</label><input type="text" id="rec-form-client" class="form-input" maxlength="300"></div>
+      <div><label class="form-label">Ubicación</label><input type="text" id="rec-form-location" class="form-input" maxlength="300" placeholder="Opcional"></div>
+      <div><label class="form-label">Número de posiciones *</label><input type="number" id="rec-form-positions" class="form-input" min="1" max="9999" value="1"></div>
+      <div><label class="form-label">Fecha de apertura *</label><input type="datetime-local" id="rec-form-opened" class="form-input"></div>
+      <div><label class="form-label">Estado *</label>
+        <select id="rec-form-status" class="form-input">
+          <option value="ACTIVE">Activa</option>
+          <option value="PAUSED">En pausa</option>
+          <option value="COVERED">Cubierta</option>
+          <option value="CLOSED">Cerrada</option>
+        </select>
+      </div>
+      <div><label class="form-label">Responsable</label>
+        <select id="rec-form-responsible" class="form-input">
+          <option value="">Sin responsable</option>
+        </select>
+      </div>
+      <div class="rec-span-2"><label class="form-label">Job Description</label><textarea id="rec-form-jd" class="form-input" rows="6" maxlength="100000" placeholder="Perfil, requisitos, actividades…"></textarea><p style="font-size:11px;color:var(--slate-500);margin-top:6px;">Perfil, requisitos, actividades, condiciones y detalles de la vacante.</p></div>
+      <div class="rec-span-2"><label class="form-label">Notas</label><textarea id="rec-form-notes" class="form-input" rows="3" maxlength="20000"></textarea></div>
+    </div>
+    <p id="rec-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;text-align:center;"></p>
+    <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-form-submit" onclick="recSubmitVacancy()">Guardar vacante</button>
+  </div>
+</div>
+
 <div id="modal-evaluacion" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-evaluacion')">
   <div class="modal-card">
     <button class="modal-close" onclick="closeModal('modal-evaluacion')">✕</button>
@@ -1663,6 +1763,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" id="cev-sidebar-medida-cta" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
       <button type="button" id="cev-sidebar-timeclock-cta" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
+      <button type="button" id="cev-sidebar-recruitment-cta" class="sidebar-item sidebar-item-cta-recruitment" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -1738,6 +1839,80 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
+<!-- ════════════════════ DASH RECLUTAMIENTO ════════════════════ -->
+<div id="view-dash-recruitment" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','resultados');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📊</span><span>Resultados</span></button>
+      <div class="sidebar-section-label">Cuenta</div>
+      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-recruitment active" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-green" id="rec-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="rec-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
+      <button class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div><div class="topbar-title">Reclutamiento</div><div class="topbar-subtitle">Vacantes y candidatos</div></div>
+      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
+    </div>
+    <div class="page-content">
+      <div class="rec-page-head">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin-bottom:4px;">Reclutamiento</h2>
+          <p style="font-size:14px;color:var(--slate-500);margin:0;">Vacantes y candidatos</p>
+        </div>
+        <div class="rec-page-head-actions">
+          <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
+        </div>
+      </div>
+      <div id="rec-main-block">
+        <div class="rec-section-label">Mis vacantes</div>
+        <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
+        <div id="rec-empty" class="rec-empty hidden">
+          <p id="rec-empty-msg">Todavía no hay vacantes registradas.</p>
+          <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
+        </div>
+        <div id="rec-carousel-wrap" class="rec-carousel-wrap hidden">
+          <div class="rec-carousel" id="rec-vacancy-carousel" role="list"></div>
+        </div>
+        <div id="rec-selected-panel" class="rec-workspace hidden">
+          <div class="rec-workspace-head">
+            <div class="rec-workspace-title" id="rec-selected-title">—</div>
+            <button type="button" class="rec-btn-edit" onclick="recOpenVacancyModal('edit')">Editar</button>
+          </div>
+          <p class="rec-workspace-sub" id="rec-selected-sub">—</p>
+          <div class="rec-workspace-meta">
+            <span class="rec-status-badge rec-status-badge--ACTIVE" id="rec-ws-status-badge">—</span>
+            <span class="rec-ws-responsible" id="rec-selected-responsible">Responsable: —</span>
+          </div>
+          <div class="rec-ws-pulse" id="rec-ws-pulse" aria-label="Pulso de vacante"></div>
+          <div class="rec-ws-accordion">
+            <button type="button" class="rec-ws-acc-trigger" id="rec-ws-jd-trigger" aria-expanded="false" aria-controls="rec-ws-jd-body" onclick="recToggleJdAccordion()">
+              <span>Descripción de la vacante</span>
+              <svg class="rec-ws-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="rec-ws-acc-body hidden empty" id="rec-ws-jd-body" role="region" aria-labelledby="rec-ws-jd-trigger"></div>
+          </div>
+          <div class="rec-ws-notes">
+            <div class="rec-ws-notes-label">Notas</div>
+            <div class="rec-ws-notes-body empty" id="rec-ws-notes-body">Sin notas adicionales.</div>
+          </div>
+          <div class="rec-pipeline-slot" id="rec-pipeline-slot"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
 <!-- ════════════════════ DASH GESTIÓN DE EQUIPO ════════════════════ -->
 <div id="view-dash-timeclock" class="app-shell hidden">
   <aside class="sidebar">
@@ -1751,6 +1926,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-timeclock active" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-recruitment" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green" id="tc-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="tc-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
@@ -2335,8 +2511,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
-const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-timeclock':'view-dash-timeclock', timeclock:'view-timeclock', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
-const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-timeclock','dash-psicologo','dash-empleado']);
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-recruitment':'view-dash-recruitment', 'dash-timeclock':'view-dash-timeclock', timeclock:'view-timeclock', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
+const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-recruitment','dash-timeclock','dash-psicologo','dash-empleado']);
 const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
 const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
 const MIND24_ASPEN_PW_STORAGE='mind24_aspen_pw_v1';
@@ -2997,6 +3173,12 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   if(tcAv) tcAv.textContent=ini;
   if(tcName) tcName.textContent=u.fullName||u.email||'';
   if(tcTbAv) tcTbAv.textContent=ini;
+  const recAv=document.getElementById('rec-sidebar-av');
+  const recName=document.getElementById('rec-sidebar-name');
+  const recTbAv=document.getElementById('rec-topbar-av');
+  if(recAv) recAv.textContent=ini;
+  if(recName) recName.textContent=u.fullName||u.email||'';
+  if(recTbAv) recTbAv.textContent=ini;
   mind24SyncCrearEvalShell();
   mind24UpdateAspenPioneerVisibility();
   const dashCev=document.getElementById('dash-admin-nav-crear-eval');
@@ -3203,6 +3385,9 @@ function showView(name) {
   }
   if(name==='dash-timeclock'){
     setTimeout(function(){ tcOnShow(); },0);
+  }
+  if(name==='dash-recruitment'){
+    setTimeout(function(){ recOnShow(); },0);
   }
   if(name==='timeclock'){
     const landingNav=document.getElementById('mainNav');
@@ -6187,6 +6372,381 @@ function tcEnsureTeamPulseListeners(){
     if(tcTeamPulseOpen) tcPositionTeamPulsePopover();
   });
 }
+const REC_VACANCY_STATUS_LABELS={ACTIVE:'Activa',PAUSED:'En pausa',COVERED:'Cubierta',CLOSED:'Cerrada'};
+const REC_FILTER_CHIPS=[{key:'ALL',label:'Todas'},{key:'ACTIVE',label:'Activas'},{key:'PAUSED',label:'En pausa'},{key:'COVERED',label:'Cubiertas'},{key:'CLOSED',label:'Cerradas'}];
+function recEnsureState(){
+  if(!window.__REC_STATE) window.__REC_STATE={allVacancies:[],selectedId:null,filter:'ACTIVE',employees:[],employeesLoaded:false};
+  return window.__REC_STATE;
+}
+function recVacancyStatusLabel(st){ return REC_VACANCY_STATUS_LABELS[st]||st; }
+function recFmtDateShort(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+}
+function recDatetimeLocalToIso(val){
+  if(!val) return new Date().toISOString();
+  const d=new Date(val);
+  if(Number.isNaN(d.getTime())) return new Date().toISOString();
+  return d.toISOString();
+}
+function recFixDatetimeLocal(iso){
+  const d=new Date(iso||Date.now());
+  if(Number.isNaN(d.getTime())) return '';
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+function recGetDisplayVacancies(){
+  const st=recEnsureState();
+  const all=st.allVacancies||[];
+  const f=st.filter||'ACTIVE';
+  if(f==='ALL') return all;
+  let list=all.filter(v=>v.status===f);
+  if(f==='ACTIVE'&&list.length===0&&all.length>0) list=all.slice();
+  return list;
+}
+function recVacancyOpenedMs(v){
+  const t=Date.parse(v&&v.openedAt?v.openedAt:'');
+  return Number.isNaN(t)?0:t;
+}
+function recPickDefaultSelection(allVacancies){
+  const all=allVacancies||[];
+  if(!all.length) return null;
+  const actives=all.filter(v=>v.status==='ACTIVE');
+  const pool=actives.length?actives:all;
+  const sorted=pool.slice().sort((a,b)=>recVacancyOpenedMs(b)-recVacancyOpenedMs(a));
+  return sorted[0]?sorted[0].id:null;
+}
+function recResolveSelectionInList(list, preferredId){
+  if(!list||!list.length) return null;
+  if(preferredId&&list.some(v=>v.id===preferredId)) return preferredId;
+  return list[0].id;
+}
+function recCoverageMetrics(hired, positionsTotal){
+  const h=Math.max(0,Number(hired)||0);
+  const p=Math.max(1,Number(positionsTotal)||1);
+  const pct=Math.min(100,Math.round((h/p)*100));
+  return {text:h+' / '+p+' posiciones',pct:h,p:p};
+}
+function recToggleJdAccordion(forceOpen){
+  const trigger=document.getElementById('rec-ws-jd-trigger');
+  const body=document.getElementById('rec-ws-jd-body');
+  if(!trigger||!body) return;
+  const open=typeof forceOpen==='boolean'?forceOpen:trigger.getAttribute('aria-expanded')!=='true';
+  trigger.setAttribute('aria-expanded',open?'true':'false');
+  body.classList.toggle('hidden',!open);
+}
+function recRenderWorkspacePulse(v){
+  const el=document.getElementById('rec-ws-pulse');
+  if(!el||!v) return;
+  const sum=v.applicationSummary||{};
+  const cov=recCoverageMetrics(sum.hired,v.positionsTotal);
+  el.innerHTML='';
+  const specs=[
+    {label:'Candidatos',val:sum.total||0,sub:''},
+    {label:'En proceso',val:sum.inProcess||0,sub:''},
+    {label:'Finalistas',val:sum.finalists||0,sub:''},
+    {label:'Contratados',val:sum.hired||0,sub:''},
+    {label:'Cobertura',val:cov.text,sub:'',coverage:true,pct:cov.pct},
+  ];
+  specs.forEach(function(spec){
+    const kpi=document.createElement('div');
+    kpi.className='rec-ws-kpi'+(spec.coverage?' rec-ws-kpi--coverage':'');
+    kpi.innerHTML='<div class="rec-ws-kpi-label"></div><div class="rec-ws-kpi-val"></div>';
+    kpi.querySelector('.rec-ws-kpi-label').textContent=spec.label;
+    kpi.querySelector('.rec-ws-kpi-val').textContent=String(spec.val);
+    if(spec.coverage){
+      const bar=document.createElement('div');
+      bar.className='rec-ws-cov-bar';
+      const fill=document.createElement('div');
+      fill.className='rec-ws-cov-bar-fill';
+      fill.style.width=spec.pct+'%';
+      bar.appendChild(fill);
+      kpi.appendChild(bar);
+    }
+    el.appendChild(kpi);
+  });
+}
+function recRenderFilters(){
+  const bar=document.getElementById('rec-filter-bar');
+  if(!bar) return;
+  const st=recEnsureState();
+  bar.innerHTML='';
+  REC_FILTER_CHIPS.forEach(function(chip){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='rec-filter-chip'+(st.filter===chip.key?' active':'');
+    btn.textContent=chip.label;
+    btn.setAttribute('role','tab');
+    btn.setAttribute('aria-selected',st.filter===chip.key?'true':'false');
+    btn.onclick=function(){ recSetFilter(chip.key); };
+    bar.appendChild(btn);
+  });
+}
+function recSetFilter(key){
+  const st=recEnsureState();
+  st.filter=key;
+  recRenderFilters();
+  recRenderCarousel();
+}
+function recRenderCarousel(){
+  const st=recEnsureState();
+  const list=recGetDisplayVacancies();
+  const empty=document.getElementById('rec-empty');
+  const wrap=document.getElementById('rec-carousel-wrap');
+  const track=document.getElementById('rec-vacancy-carousel');
+  const panel=document.getElementById('rec-selected-panel');
+  if(!empty||!wrap||!track) return;
+  if(!st.allVacancies.length){
+    empty.classList.remove('hidden');
+    document.getElementById('rec-empty-msg').textContent='Todavía no hay vacantes registradas.';
+    wrap.classList.add('hidden');
+    if(panel) panel.classList.add('hidden');
+    track.innerHTML='';
+    return;
+  }
+  if(!list.length){
+    empty.classList.remove('hidden');
+    document.getElementById('rec-empty-msg').textContent='No hay vacantes con este filtro.';
+    wrap.classList.add('hidden');
+    if(panel) panel.classList.add('hidden');
+    track.innerHTML='';
+    return;
+  }
+  empty.classList.add('hidden');
+  wrap.classList.remove('hidden');
+  st.selectedId=recResolveSelectionInList(list,st.selectedId);
+  track.innerHTML='';
+  list.forEach(function(v){
+    const sum=v.applicationSummary||{};
+    const card=document.createElement('button');
+    card.type='button';
+    card.className='rec-vac-card'+(v.id===st.selectedId?' selected':'');
+    card.setAttribute('role','listitem');
+    card.dataset.vacancyId=v.id;
+    card.onclick=function(){ recSelectVacancy(v.id); };
+    const hired=sum.hired||0;
+    const pos=v.positionsTotal||0;
+    card.innerHTML=
+      '<div class="rec-vac-card-title"></div>'+
+      '<div class="rec-vac-card-client"></div>'+
+      '<div class="rec-vac-card-loc"></div>'+
+      '<div class="rec-vac-card-meta"><span class="rec-status-badge rec-status-badge--'+v.status+'"></span></div>'+
+      '<div class="rec-vac-stats">'+
+        '<div><span class="rec-vac-stat-val">'+(sum.total||0)+'</span>Candidatos</div>'+
+        '<div><span class="rec-vac-stat-val">'+(sum.finalists||0)+'</span>Finalistas</div>'+
+        '<div><span class="rec-vac-stat-val">'+hired+'</span>Contratados</div>'+
+        '<div><span class="rec-vac-stat-val">'+(sum.inProcess||0)+'</span>En proceso</div>'+
+      '</div>'+
+      '<div class="rec-vac-coverage">Cobertura '+hired+' / '+pos+'</div>';
+    card.querySelector('.rec-vac-card-title').textContent=v.title||'—';
+    card.querySelector('.rec-vac-card-client').textContent=v.clientName||'—';
+    card.querySelector('.rec-vac-card-loc').textContent=v.location||'';
+    card.querySelector('.rec-status-badge').textContent=recVacancyStatusLabel(v.status);
+    track.appendChild(card);
+  });
+  recRenderSelectedPanel();
+}
+function recSelectVacancy(id){
+  recEnsureState().selectedId=id;
+  document.querySelectorAll('.rec-vac-card').forEach(function(card){
+    card.classList.toggle('selected',card.dataset.vacancyId===id);
+  });
+  recRenderSelectedPanel();
+}
+function recFindVacancy(id){
+  return (recEnsureState().allVacancies||[]).find(v=>v.id===id)||null;
+}
+function recRenderSelectedPanel(){
+  const panel=document.getElementById('rec-selected-panel');
+  const st=recEnsureState();
+  const list=recGetDisplayVacancies();
+  if(list.length&&!list.some(x=>x.id===st.selectedId)) st.selectedId=recResolveSelectionInList(list,st.selectedId);
+  const v=recFindVacancy(st.selectedId);
+  if(!panel||!v||!list.length){ if(panel) panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  const t=document.getElementById('rec-selected-title');
+  const sub=document.getElementById('rec-selected-sub');
+  const resp=document.getElementById('rec-selected-responsible');
+  const badge=document.getElementById('rec-ws-status-badge');
+  if(t) t.textContent=v.title||'—';
+  if(sub) sub.textContent=[v.clientName,v.location].filter(Boolean).join(' · ')||'—';
+  const pa=v.primaryAssignee&&v.primaryAssignee.employee;
+  if(resp) resp.textContent=pa?('Responsable: '+pa.fullName):'Responsable: Sin responsable';
+  if(badge){
+    badge.textContent=recVacancyStatusLabel(v.status);
+    badge.className='rec-status-badge rec-status-badge--'+(v.status||'ACTIVE');
+  }
+  recRenderWorkspacePulse(v);
+  recToggleJdAccordion(false);
+  const jdBody=document.getElementById('rec-ws-jd-body');
+  if(jdBody){
+    const jd=(v.jobDescription||'').trim();
+    jdBody.textContent=jd||'Sin descripción registrada.';
+    jdBody.classList.toggle('empty',!jd);
+  }
+  const notesBody=document.getElementById('rec-ws-notes-body');
+  if(notesBody){
+    const notes=(v.notes||'').trim();
+    notesBody.textContent=notes||'Sin notas adicionales.';
+    notesBody.classList.toggle('empty',!notes);
+  }
+}
+async function recLoadEmployees(){
+  const st=recEnsureState();
+  if(st.employeesLoaded) return st.employees;
+  try{
+    const j=await apiJson('/api/org/timeclock/employees');
+    st.employees=(j.employees||[]).filter(e=>e.isActive!==false);
+    st.employeesLoaded=true;
+  }catch(e){
+    st.employees=[];
+    console.warn('[recruitment] employees',e);
+  }
+  return st.employees;
+}
+function recFillResponsibleSelect(selectedEmployeeId){
+  const sel=document.getElementById('rec-form-responsible');
+  if(!sel) return;
+  const st=recEnsureState();
+  sel.innerHTML='<option value="">Sin responsable</option>';
+  st.employees.forEach(function(emp){
+    const opt=document.createElement('option');
+    opt.value=emp.id;
+    opt.textContent=emp.fullName+(emp.position?(' · '+emp.position):'');
+    sel.appendChild(opt);
+  });
+  sel.value=selectedEmployeeId||'';
+}
+async function recLoadVacancies(selectId){
+  const st=recEnsureState();
+  try{
+    const j=await apiJson('/api/org/recruitment/vacancies');
+    st.allVacancies=j.vacancies||[];
+    if(selectId) st.selectedId=selectId;
+    else if(!st.selectedId||!st.allVacancies.some(v=>v.id===st.selectedId)){
+      st.selectedId=recPickDefaultSelection(st.allVacancies);
+    }
+    recRenderFilters();
+    recRenderCarousel();
+  }catch(e){
+    console.error('[recruitment] vacancies',e);
+    st.allVacancies=[];
+    recRenderFilters();
+    recRenderCarousel();
+  }
+}
+async function recOpenVacancyModal(mode){
+  const err=document.getElementById('rec-form-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  await recLoadEmployees();
+  const titleEl=document.getElementById('rec-modal-title');
+  const subEl=document.getElementById('rec-modal-subtitle');
+  const idEl=document.getElementById('rec-form-vacancy-id');
+  const prevAssignee=document.getElementById('rec-form-prev-assignee-id');
+  if(mode==='edit'){
+    const v=recFindVacancy(recEnsureState().selectedId);
+    if(!v) return;
+    if(titleEl) titleEl.textContent='Editar vacante';
+    if(subEl) subEl.textContent='Actualiza los datos de la vacante.';
+    if(idEl) idEl.value=v.id;
+    document.getElementById('rec-form-title').value=v.title||'';
+    document.getElementById('rec-form-client').value=v.clientName||'';
+    document.getElementById('rec-form-location').value=v.location||'';
+    document.getElementById('rec-form-positions').value=String(v.positionsTotal||1);
+    document.getElementById('rec-form-opened').value=recFixDatetimeLocal(v.openedAt);
+    document.getElementById('rec-form-status').value=v.status||'ACTIVE';
+    document.getElementById('rec-form-jd').value=v.jobDescription||'';
+    document.getElementById('rec-form-notes').value=v.notes||'';
+    const empId=v.primaryAssignee?v.primaryAssignee.employeeId:'';
+    if(prevAssignee) prevAssignee.value=v.primaryAssignee?v.primaryAssignee.assigneeId:'';
+    recFillResponsibleSelect(empId);
+  }else{
+    if(titleEl) titleEl.textContent='Nueva vacante';
+    if(subEl) subEl.textContent='Registra los datos de la vacante.';
+    if(idEl) idEl.value='';
+    if(prevAssignee) prevAssignee.value='';
+    document.getElementById('rec-form-title').value='';
+    document.getElementById('rec-form-client').value='';
+    document.getElementById('rec-form-location').value='';
+    document.getElementById('rec-form-positions').value='1';
+    document.getElementById('rec-form-opened').value=recFixDatetimeLocal(new Date().toISOString());
+    document.getElementById('rec-form-status').value='ACTIVE';
+    document.getElementById('rec-form-jd').value='';
+    document.getElementById('rec-form-notes').value='';
+    recFillResponsibleSelect('');
+  }
+  openModal('modal-rec-vacancy');
+}
+async function recSyncPrimaryAssignee(vacancyId, employeeId, prevAssigneeId){
+  if(employeeId){
+    await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/assignees',{
+      method:'POST',
+      body:JSON.stringify({employeeId:employeeId,role:'PRIMARY'}),
+    });
+    return;
+  }
+  if(prevAssigneeId){
+    await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/assignees/'+encodeURIComponent(prevAssigneeId),{
+      method:'DELETE',
+    });
+  }
+}
+async function recSubmitVacancy(){
+  const err=document.getElementById('rec-form-err');
+  const btn=document.getElementById('rec-form-submit');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const title=(document.getElementById('rec-form-title').value||'').trim();
+  const clientName=(document.getElementById('rec-form-client').value||'').trim();
+  const positionsTotal=parseInt(document.getElementById('rec-form-positions').value,10);
+  const openedRaw=document.getElementById('rec-form-opened').value;
+  if(!title||!clientName||!openedRaw||!Number.isInteger(positionsTotal)||positionsTotal<1){
+    if(err){ err.textContent='Completa los campos obligatorios (título, cliente, posiciones, fecha).'; err.classList.remove('hidden'); }
+    return;
+  }
+  const body={
+    title:title,
+    clientName:clientName,
+    location:(document.getElementById('rec-form-location').value||'').trim()||null,
+    positionsTotal:positionsTotal,
+    openedAt:recDatetimeLocalToIso(openedRaw),
+    status:document.getElementById('rec-form-status').value||'ACTIVE',
+    jobDescription:(document.getElementById('rec-form-jd').value||'').trim()||null,
+    notes:(document.getElementById('rec-form-notes').value||'').trim()||null,
+  };
+  const vacancyId=(document.getElementById('rec-form-vacancy-id').value||'').trim();
+  const employeeId=(document.getElementById('rec-form-responsible').value||'').trim();
+  const prevAssigneeId=(document.getElementById('rec-form-prev-assignee-id').value||'').trim();
+  if(btn) btn.disabled=true;
+  try{
+    let savedId=vacancyId;
+    if(vacancyId){
+      await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId),{method:'PATCH',body:JSON.stringify(body)});
+    }else{
+      const created=await apiJson('/api/org/recruitment/vacancies',{method:'POST',body:JSON.stringify(body)});
+      savedId=created.vacancy&&created.vacancy.id;
+    }
+    if(savedId) await recSyncPrimaryAssignee(savedId, employeeId, prevAssigneeId);
+    closeModal('modal-rec-vacancy');
+    await recLoadVacancies(savedId||null);
+  }catch(e){
+    if(err){
+      err.textContent=(e&&e.message)||'No se pudo guardar la vacante.';
+      err.classList.remove('hidden');
+    }
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+function recOnShow(){
+  mind24NotifClose(false);
+  mind24RefreshEmpresaAdminDashboardChrome();
+  if(typeof mind24NotifInit==='function') mind24NotifInit();
+  const st=recEnsureState();
+  st.filter=st.filter||'ACTIVE';
+  recLoadVacancies(st.selectedId||null);
+}
 function tcOnShow(){
   tcCloseTeamPulse(false);
   mind24NotifClose(false);
@@ -7576,6 +8136,14 @@ async function tcPublicUpdateTaskStatus(taskId, status, expectedUpdatedAt){
   if(expectedUpdatedAt) body.expectedUpdatedAt=expectedUpdatedAt;
   return tcPublicJson('/api/timeclock/public/tasks/'+encodeURIComponent(taskId),{method:'PATCH',body:JSON.stringify(body)});
 }
+window.recOnShow=recOnShow;
+window.recLoadVacancies=recLoadVacancies;
+window.recOpenVacancyModal=recOpenVacancyModal;
+window.recSubmitVacancy=recSubmitVacancy;
+window.recSetFilter=recSetFilter;
+window.recToggleJdAccordion=recToggleJdAccordion;
+window.recPickDefaultSelection=recPickDefaultSelection;
+window.recCoverageMetrics=recCoverageMetrics;
 window.tcOnShow=tcOnShow;
 window.tcToggleAddForm=tcToggleAddForm;
 window.tcCreateEmployee=tcCreateEmployee;

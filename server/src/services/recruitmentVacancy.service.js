@@ -1,7 +1,65 @@
 import { prisma } from '../db/client.js';
 import { RECRUITMENT_VACANCY_STATUSES } from './recruitmentStage.service.js';
 
-export function serializeRecruitmentVacancy(row) {
+export function emptyApplicationSummary() {
+  return { total: 0, inProcess: 0, finalists: 0, hired: 0 };
+}
+
+function summarizeApplications(applications) {
+  const summary = emptyApplicationSummary();
+  for (const app of applications) {
+    summary.total += 1;
+    const key = app.stage?.key;
+    if (key === 'HIRED') summary.hired += 1;
+    if (key === 'FINALIST') summary.finalists += 1;
+    if (key !== 'HIRED' && key !== 'REJECTED') summary.inProcess += 1;
+  }
+  return summary;
+}
+
+async function buildApplicationSummariesByVacancyId(organizationId, vacancyIds) {
+  const map = new Map(vacancyIds.map((id) => [id, emptyApplicationSummary()]));
+  if (!vacancyIds.length) return map;
+
+  const applications = await prisma.recruitmentApplication.findMany({
+    where: { organizationId, vacancyId: { in: vacancyIds } },
+    select: { vacancyId: true, stage: { select: { key: true } } },
+  });
+
+  const byVacancy = new Map();
+  for (const id of vacancyIds) byVacancy.set(id, []);
+  for (const app of applications) {
+    const bucket = byVacancy.get(app.vacancyId);
+    if (bucket) bucket.push(app);
+  }
+  for (const [id, apps] of byVacancy) {
+    map.set(id, summarizeApplications(apps));
+  }
+  return map;
+}
+
+async function buildPrimaryAssigneesByVacancyId(organizationId, vacancyIds) {
+  const map = new Map();
+  if (!vacancyIds.length) return map;
+
+  const rows = await prisma.recruitmentVacancyAssignee.findMany({
+    where: { organizationId, vacancyId: { in: vacancyIds }, role: 'PRIMARY' },
+    include: {
+      employee: { select: { id: true, fullName: true, position: true, department: true } },
+    },
+  });
+  for (const row of rows) {
+    map.set(row.vacancyId, {
+      assigneeId: row.id,
+      employeeId: row.employeeId,
+      role: row.role,
+      employee: row.employee,
+    });
+  }
+  return map;
+}
+
+export function serializeRecruitmentVacancy(row, extras = {}) {
   return {
     id: row.id,
     title: row.title,
@@ -14,7 +72,23 @@ export function serializeRecruitmentVacancy(row) {
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    applicationSummary: extras.applicationSummary ?? emptyApplicationSummary(),
+    primaryAssignee: extras.primaryAssignee ?? null,
   };
+}
+
+async function enrichVacancies(organizationId, rows) {
+  const ids = rows.map((r) => r.id);
+  const [summaryMap, assigneeMap] = await Promise.all([
+    buildApplicationSummariesByVacancyId(organizationId, ids),
+    buildPrimaryAssigneesByVacancyId(organizationId, ids),
+  ]);
+  return rows.map((row) =>
+    serializeRecruitmentVacancy(row, {
+      applicationSummary: summaryMap.get(row.id) ?? emptyApplicationSummary(),
+      primaryAssignee: assigneeMap.get(row.id) ?? null,
+    }),
+  );
 }
 
 export async function assertRecruitmentVacancyInOrg(vacancyId, organizationId) {
@@ -63,7 +137,8 @@ export async function createRecruitmentVacancy(organizationId, payload) {
       notes: payload.notes?.trim() || null,
     },
   });
-  return serializeRecruitmentVacancy(row);
+  const [vacancy] = await enrichVacancies(organizationId, [row]);
+  return vacancy;
 }
 
 export async function listRecruitmentVacancies(organizationId, { status } = {}) {
@@ -75,12 +150,13 @@ export async function listRecruitmentVacancies(organizationId, { status } = {}) 
     where,
     orderBy: [{ openedAt: 'desc' }, { createdAt: 'desc' }],
   });
-  return rows.map(serializeRecruitmentVacancy);
+  return enrichVacancies(organizationId, rows);
 }
 
 export async function getRecruitmentVacancy(organizationId, vacancyId) {
   const row = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
-  return serializeRecruitmentVacancy(row);
+  const [vacancy] = await enrichVacancies(organizationId, [row]);
+  return vacancy;
 }
 
 export async function updateRecruitmentVacancy(organizationId, vacancyId, patch) {
@@ -116,5 +192,6 @@ export async function updateRecruitmentVacancy(organizationId, vacancyId, patch)
     where: { id: vacancyId },
     data,
   });
-  return serializeRecruitmentVacancy(row);
+  const [vacancy] = await enrichVacancies(organizationId, [row]);
+  return vacancy;
 }

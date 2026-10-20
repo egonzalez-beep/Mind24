@@ -111,6 +111,8 @@ check(/\/applications/.test(recruitmentRoutes), 'rutas applications');
 check(RECRUITMENT_DEFAULT_STAGES.length === 9, '9 etapas default');
 check(RECRUITMENT_DEFAULT_STAGES[0].key === 'NEW', 'etapa NEW');
 check(RECRUITMENT_VACANCY_STATUSES.join(',') === 'ACTIVE,PAUSED,COVERED,CLOSED', 'status vacante');
+const vacancySvc = fs.readFileSync(path.join(rootDir, 'src/services/recruitmentVacancy.service.js'), 'utf8');
+check(/applicationSummary/.test(vacancySvc) && /buildApplicationSummariesByVacancyId/.test(vacancySvc), 'resumen vacantes agregado');
 check(/@@unique\(\[organizationId, key\]\)/.test(schema), 'unique organizationId+key en Stage');
 check(/skipDuplicates:\s*true/.test(recruitmentStageServiceSrc), 'seed stages skipDuplicates');
 check(
@@ -397,6 +399,14 @@ if (dbOk) {
       cookie: adminCookie,
     });
     check(otherVac.res.status === 200, 'GET vacante by id');
+    check(otherVac.data.vacancy?.applicationSummary != null, 'GET vacante incluye applicationSummary');
+
+    const listVac = await jsonFetch(base, '/api/org/recruitment/vacancies', { cookie: adminCookie });
+    check(
+      listVac.data.vacancies?.[0]?.applicationSummary &&
+        typeof listVac.data.vacancies[0].applicationSummary.total === 'number',
+      'list vacancies con summary',
+    );
   } finally {
     server.close();
     await cleanupRecruitmentOrg([orgA.id, orgB.id]);
