@@ -246,8 +246,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
 .tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
 .tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.rec-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
-.rec-page-head-actions{display:flex;align-items:center;gap:10px;}
+.rec-section-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
 .rec-btn-new{border:1px solid rgba(124,58,237,.35);background:#fff;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-btn-new:hover{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
 .rec-section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin-bottom:12px;}
@@ -1372,7 +1371,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div><label class="form-label">Cliente / empresa *</label><input type="text" id="rec-form-client" class="form-input" maxlength="300"></div>
       <div><label class="form-label">Ubicación</label><input type="text" id="rec-form-location" class="form-input" maxlength="300" placeholder="Opcional"></div>
       <div><label class="form-label">Número de posiciones *</label><input type="number" id="rec-form-positions" class="form-input" min="1" max="9999" value="1"></div>
-      <div><label class="form-label">Fecha de apertura *</label><input type="datetime-local" id="rec-form-opened" class="form-input"></div>
+      <div><label class="form-label">Fecha de apertura *</label><input type="date" id="rec-form-opened" class="form-input"></div>
       <div><label class="form-label">Estado *</label>
         <select id="rec-form-status" class="form-input">
           <option value="ACTIVE">Activa</option>
@@ -1865,17 +1864,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
     </div>
     <div class="page-content">
-      <div class="rec-page-head">
-        <div>
-          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin-bottom:4px;">Reclutamiento</h2>
-          <p style="font-size:14px;color:var(--slate-500);margin:0;">Vacantes y candidatos</p>
-        </div>
-        <div class="rec-page-head-actions">
+      <div id="rec-main-block">
+        <div class="rec-section-top">
+          <div class="rec-section-label" style="margin-bottom:0;">Mis vacantes</div>
           <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
         </div>
-      </div>
-      <div id="rec-main-block">
-        <div class="rec-section-label">Mis vacantes</div>
         <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
         <div id="rec-empty" class="rec-empty hidden">
           <p id="rec-empty-msg">Todavía no hay vacantes registradas.</p>
@@ -6385,17 +6378,21 @@ function recFmtDateShort(iso){
   if(Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
 }
-function recDatetimeLocalToIso(val){
-  if(!val) return new Date().toISOString();
-  const d=new Date(val);
-  if(Number.isNaN(d.getTime())) return new Date().toISOString();
-  return d.toISOString();
-}
-function recFixDatetimeLocal(iso){
+function recDateInputValue(iso){
   const d=new Date(iso||Date.now());
   if(Number.isNaN(d.getTime())) return '';
   const p=n=>String(n).padStart(2,'0');
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function recDateInputToIso(val){
+  const today=recDateInputValue(new Date().toISOString());
+  const raw=val?String(val).trim():today;
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if(!m) return new Date().toISOString();
+  const y=Number(m[1]);
+  const mo=Number(m[2])-1;
+  const day=Number(m[3]);
+  return new Date(y, mo, day, 12, 0, 0, 0).toISOString();
 }
 function recGetDisplayVacancies(){
   const st=recEnsureState();
@@ -6535,9 +6532,9 @@ function recRenderCarousel(){
       '<div class="rec-vac-card-meta"><span class="rec-status-badge rec-status-badge--'+v.status+'"></span></div>'+
       '<div class="rec-vac-stats">'+
         '<div><span class="rec-vac-stat-val">'+(sum.total||0)+'</span>Candidatos</div>'+
+        '<div><span class="rec-vac-stat-val">'+(sum.inProcess||0)+'</span>En proceso</div>'+
         '<div><span class="rec-vac-stat-val">'+(sum.finalists||0)+'</span>Finalistas</div>'+
         '<div><span class="rec-vac-stat-val">'+hired+'</span>Contratados</div>'+
-        '<div><span class="rec-vac-stat-val">'+(sum.inProcess||0)+'</span>En proceso</div>'+
       '</div>'+
       '<div class="rec-vac-coverage">Cobertura '+hired+' / '+pos+'</div>';
     card.querySelector('.rec-vac-card-title').textContent=v.title||'—';
@@ -6655,7 +6652,7 @@ async function recOpenVacancyModal(mode){
     document.getElementById('rec-form-client').value=v.clientName||'';
     document.getElementById('rec-form-location').value=v.location||'';
     document.getElementById('rec-form-positions').value=String(v.positionsTotal||1);
-    document.getElementById('rec-form-opened').value=recFixDatetimeLocal(v.openedAt);
+    document.getElementById('rec-form-opened').value=recDateInputValue(v.openedAt);
     document.getElementById('rec-form-status').value=v.status||'ACTIVE';
     document.getElementById('rec-form-jd').value=v.jobDescription||'';
     document.getElementById('rec-form-notes').value=v.notes||'';
@@ -6671,7 +6668,7 @@ async function recOpenVacancyModal(mode){
     document.getElementById('rec-form-client').value='';
     document.getElementById('rec-form-location').value='';
     document.getElementById('rec-form-positions').value='1';
-    document.getElementById('rec-form-opened').value=recFixDatetimeLocal(new Date().toISOString());
+    document.getElementById('rec-form-opened').value=recDateInputValue(new Date().toISOString());
     document.getElementById('rec-form-status').value='ACTIVE';
     document.getElementById('rec-form-jd').value='';
     document.getElementById('rec-form-notes').value='';
@@ -6710,7 +6707,7 @@ async function recSubmitVacancy(){
     clientName:clientName,
     location:(document.getElementById('rec-form-location').value||'').trim()||null,
     positionsTotal:positionsTotal,
-    openedAt:recDatetimeLocalToIso(openedRaw),
+    openedAt:recDateInputToIso(openedRaw),
     status:document.getElementById('rec-form-status').value||'ACTIVE',
     jobDescription:(document.getElementById('rec-form-jd').value||'').trim()||null,
     notes:(document.getElementById('rec-form-notes').value||'').trim()||null,
@@ -8144,6 +8141,8 @@ window.recSetFilter=recSetFilter;
 window.recToggleJdAccordion=recToggleJdAccordion;
 window.recPickDefaultSelection=recPickDefaultSelection;
 window.recCoverageMetrics=recCoverageMetrics;
+window.recDateInputValue=recDateInputValue;
+window.recDateInputToIso=recDateInputToIso;
 window.tcOnShow=tcOnShow;
 window.tcToggleAddForm=tcToggleAddForm;
 window.tcCreateEmployee=tcCreateEmployee;

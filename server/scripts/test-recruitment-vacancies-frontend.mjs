@@ -29,6 +29,15 @@ console.log('\n=== Recruitment 1B.1 — frontend estático ===\n');
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
 check(/dash-recruitment/.test(indexHtml) && /VIEWS_NEED_EMPRESA_ADMIN/.test(indexHtml), 'vista en VIEWS admin');
 check(/Reclutamiento/.test(indexHtml) && /Vacantes y candidatos/.test(indexHtml), 'header copy');
+check(/rec-section-top/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'sin encabezado duplicado en body');
+check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
+check(/recDateInputToIso/.test(indexHtml) && /recDateInputValue/.test(indexHtml), 'helpers fecha sin hora UI');
+check(
+  /En proceso[\s\S]*Finalistas[\s\S]*Contratados/.test(
+    indexHtml.match(/function recRenderCarousel[\s\S]*?recRenderSelectedPanel\(\)/)?.[0] || '',
+  ),
+  'orden métricas cards homologado',
+);
 check(/rec-vacancy-carousel/.test(indexHtml) && /rec-vac-card/.test(indexHtml), 'carrusel cards');
 check(/rec-filter-chip/.test(indexHtml) && /REC_FILTER_CHIPS/.test(indexHtml), 'filtros chips');
 check(/modal-rec-vacancy/.test(indexHtml) && /rec-form-jd/.test(indexHtml), 'modal vacante');
