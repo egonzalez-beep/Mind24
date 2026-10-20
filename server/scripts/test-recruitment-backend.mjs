@@ -97,6 +97,8 @@ check(/model RecruitmentVacancy/.test(schema), 'modelo RecruitmentVacancy');
 check(/model RecruitmentApplication/.test(schema), 'modelo RecruitmentApplication');
 check(/model RecruitmentStage/.test(schema), 'modelo RecruitmentStage');
 check(/model RecruitmentVacancyAssignee/.test(schema), 'modelo RecruitmentVacancyAssignee');
+check(/model RecruitmentVacancyDocument/.test(schema), 'modelo RecruitmentVacancyDocument');
+check(/targetCoverageDate/.test(schema), 'targetCoverageDate en schema');
 check(/model RecruitmentApplicationStageEvent/.test(schema), 'modelo StageEvent');
 const recruitmentCandidateBlock = schema.match(/model RecruitmentCandidate \{[\s\S]*?\n\}/)?.[0] || '';
 check(!/\bstatus\b/.test(recruitmentCandidateBlock), 'sin status en Candidate');
@@ -132,6 +134,7 @@ try {
 }
 
 async function cleanupRecruitmentOrg(orgIds) {
+  await prisma.recruitmentVacancyDocument.deleteMany({ where: { organizationId: { in: orgIds } } });
   await prisma.recruitmentApplicationStageEvent.deleteMany({
     where: { organizationId: { in: orgIds } },
   });

@@ -59,6 +59,28 @@ async function buildPrimaryAssigneesByVacancyId(organizationId, vacancyIds) {
   return map;
 }
 
+function formatTargetCoverageDate(row) {
+  if (!row.targetCoverageDate) return null;
+  const d = row.targetCoverageDate;
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function parseTargetCoverageDate(value) {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value).trim());
+  if (!m) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'targetCoverageDate inválido; use YYYY-MM-DD.';
+    throw err;
+  }
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+}
+
 export function serializeRecruitmentVacancy(row, extras = {}) {
   return {
     id: row.id,
@@ -67,6 +89,7 @@ export function serializeRecruitmentVacancy(row, extras = {}) {
     location: row.location,
     positionsTotal: row.positionsTotal,
     openedAt: row.openedAt.toISOString(),
+    targetCoverageDate: formatTargetCoverageDate(row),
     status: row.status,
     jobDescription: row.jobDescription,
     notes: row.notes,
@@ -135,6 +158,9 @@ export async function createRecruitmentVacancy(organizationId, payload) {
       status: payload.status && RECRUITMENT_VACANCY_STATUSES.includes(payload.status) ? payload.status : 'ACTIVE',
       jobDescription: payload.jobDescription?.trim() || null,
       notes: payload.notes?.trim() || null,
+      ...(payload.targetCoverageDate !== undefined
+        ? { targetCoverageDate: parseTargetCoverageDate(payload.targetCoverageDate) }
+        : {}),
     },
   });
   const [vacancy] = await enrichVacancies(organizationId, [row]);
@@ -187,6 +213,9 @@ export async function updateRecruitmentVacancy(organizationId, vacancyId, patch)
   }
   if (patch.jobDescription !== undefined) data.jobDescription = patch.jobDescription?.trim() || null;
   if (patch.notes !== undefined) data.notes = patch.notes?.trim() || null;
+  if (patch.targetCoverageDate !== undefined) {
+    data.targetCoverageDate = parseTargetCoverageDate(patch.targetCoverageDate);
+  }
 
   const row = await prisma.recruitmentVacancy.update({
     where: { id: vacancyId },

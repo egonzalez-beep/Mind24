@@ -68,6 +68,7 @@ model Organization {
   recruitmentApplications RecruitmentApplication[]
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
+  recruitmentVacancyDocuments RecruitmentVacancyDocument[]
 }
 
 enum OrgNotificationType {
@@ -323,6 +324,7 @@ model User {
   workforceTasksCreated WorkforceTask[] @relation("WorkforceTaskCreatedBy")
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
   workforceDocumentsUploaded WorkforceDocument[]
+  recruitmentVacancyDocumentsUploaded RecruitmentVacancyDocument[]
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
 }
@@ -515,27 +517,59 @@ model RecruitmentCandidate {
   @@index([organizationId, archivedAt])
 }
 
+enum RecruitmentVacancyDocumentCategory {
+  PROFILE
+  ROUTES
+  FORM
+  COMMERCIAL_PROPOSAL
+  CLIENT_DOCUMENT
+  OTHER
+}
+
 model RecruitmentVacancy {
-  id              String                   @id @default(cuid())
-  organizationId  String
-  organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  title           String
-  clientName      String
-  location        String?
-  positionsTotal  Int
-  openedAt        DateTime                 @db.Timestamptz(6)
-  status          RecruitmentVacancyStatus @default(ACTIVE)
-  jobDescription  String?                  @db.Text
-  notes           String?                  @db.Text
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
+  id                  String                   @id @default(cuid())
+  organizationId      String
+  organization        Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title               String
+  clientName          String
+  location            String?
+  positionsTotal      Int
+  openedAt            DateTime                 @db.Timestamptz(6)
+  targetCoverageDate  DateTime?                @db.Date
+  status              RecruitmentVacancyStatus @default(ACTIVE)
+  jobDescription      String?                  @db.Text
+  notes               String?                  @db.Text
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
 
   applications RecruitmentApplication[]
   assignees    RecruitmentVacancyAssignee[]
+  documents    RecruitmentVacancyDocument[]
 
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, openedAt])
+}
+
+model RecruitmentVacancyDocument {
+  id               String                             @id @default(cuid())
+  organizationId   String
+  organization     Organization                       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vacancyId        String
+  vacancy          RecruitmentVacancy                 @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  uploadedByUserId String
+  uploadedBy       User                               @relation(fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  displayName      String
+  category         RecruitmentVacancyDocumentCategory @default(OTHER)
+  filePath         String
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  createdAt        DateTime                           @default(now())
+
+  @@index([organizationId, vacancyId])
+  @@index([organizationId])
+  @@index([vacancyId])
 }
 
 model RecruitmentVacancyAssignee {

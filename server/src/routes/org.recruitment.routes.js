@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { z } from 'zod';
 import { assertEmpresaAdmin } from '../services/candidate.service.js';
 import {
@@ -24,8 +25,20 @@ import {
   setVacancyAssignee,
 } from '../services/recruitmentVacancyAssignee.service.js';
 import { RECRUITMENT_VACANCY_STATUSES } from '../services/recruitmentStage.service.js';
+import {
+  RECRUITMENT_VACANCY_DOCUMENT_CATEGORIES,
+  RECRUITMENT_VACANCY_DOCUMENT_MAX_BYTES,
+  createRecruitmentVacancyDocument,
+  deleteRecruitmentVacancyDocument,
+  isAllowedRecruitmentVacancyDocumentFile,
+  listRecruitmentVacancyDocuments,
+  assertRecruitmentVacancyDocumentInOrg,
+  streamRecruitmentVacancyDocumentFile,
+} from '../services/recruitmentVacancyDocument.service.js';
 
 const router = Router();
+
+const dateOnlySchema = z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.null()]);
 
 const vacancyCreateSchema = z.object({
   title: z.string().min(1).max(300),
@@ -33,10 +46,26 @@ const vacancyCreateSchema = z.object({
   location: z.string().max(300).optional().nullable(),
   positionsTotal: z.number().int().min(1).max(9999),
   openedAt: z.string().datetime().optional(),
+  targetCoverageDate: dateOnlySchema.optional(),
   status: z.enum(['ACTIVE', 'PAUSED', 'COVERED', 'CLOSED']).optional(),
   jobDescription: z.string().max(100_000).optional().nullable(),
   notes: z.string().max(20_000).optional().nullable(),
 });
+
+const recruitmentVacancyDocumentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_VACANCY_DOCUMENT_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedRecruitmentVacancyDocumentFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_DOCUMENT_FILE'),
+      isAllowedRecruitmentVacancyDocumentFile(file.mimetype, file.originalname),
+    );
+  },
+});
+
+const recruitmentVacancyDocumentCategorySchema = z.enum(RECRUITMENT_VACANCY_DOCUMENT_CATEGORIES);
 
 const vacancyPatchSchema = vacancyCreateSchema.partial();
 
@@ -100,6 +129,78 @@ router.patch('/vacancies/:id', async (req, res, next) => {
     const body = vacancyPatchSchema.parse(req.body);
     const vacancy = await updateRecruitmentVacancy(u.organizationId, req.params.id, body);
     res.json({ vacancy });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/vacancies/:vacancyId/documents', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const documents = await listRecruitmentVacancyDocuments(u.organizationId, req.params.vacancyId);
+    res.json({ documents });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post(
+  '/vacancies/:vacancyId/documents',
+  recruitmentVacancyDocumentUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      const u = await assertEmpresaAdmin(req.session.userId);
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un archivo admitido (PDF, imagen u Office).';
+        throw err;
+      }
+      const fields = z
+        .object({
+          displayName: z.string().min(1).max(200),
+          category: recruitmentVacancyDocumentCategorySchema.default('OTHER'),
+        })
+        .parse({
+          displayName: req.body?.displayName ?? req.body?.name,
+          category: req.body?.category ?? 'OTHER',
+        });
+      const document = await createRecruitmentVacancyDocument({
+        organizationId: u.organizationId,
+        vacancyId: req.params.vacancyId,
+        uploadedByUserId: u.id,
+        displayName: fields.displayName,
+        category: fields.category,
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.status(201).json({ document });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/vacancy-documents/:documentId/file', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const doc = await assertRecruitmentVacancyDocumentInOrg(req.params.documentId, u.organizationId);
+    await streamRecruitmentVacancyDocumentFile(req, res, doc, u.organizationId);
+  } catch (e) {
+    if (e?.code === 'ENOENT') {
+      res.status(404).json({ error: 'NOT_FOUND', message: 'Archivo no encontrado.' });
+      return;
+    }
+    next(e);
+  }
+});
+
+router.delete('/vacancy-documents/:documentId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await deleteRecruitmentVacancyDocument(u.organizationId, req.params.documentId);
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }

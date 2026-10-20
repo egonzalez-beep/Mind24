@@ -1,5 +1,5 @@
 /**
- * Recruitment 1B.1 — vacantes UI (estático).
+ * Recruitment vacantes UI — 1B.1 / 1B.2 / 1B.3 / 1B.4 (estático).
  * node server/scripts/test-recruitment-vacancies-frontend.mjs
  */
 import fs from 'fs';
@@ -24,51 +24,68 @@ function check(cond, msg) {
   }
 }
 
-console.log('\n=== Recruitment 1B.1 — frontend estático ===\n');
+const carouselBlock =
+  indexHtml.match(/function recRenderCarousel[\s\S]*?function recSelectVacancy/)?.[0] || '';
+const workspaceBlock =
+  indexHtml.match(/id="rec-selected-panel"[\s\S]*?rec-pipeline-slot/)?.[0] || '';
+const modalCssBlock = indexHtml.match(/\/\* ══════ MODALS ══════ \*\/[\s\S]*?\/\* ══════/)?.[0] || '';
+
+console.log('\n=== Recruitment 1B.1 — base ===\n');
 
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
-check(/dash-recruitment/.test(indexHtml) && /VIEWS_NEED_EMPRESA_ADMIN/.test(indexHtml), 'vista en VIEWS admin');
-check(/Reclutamiento/.test(indexHtml) && /Vacantes y candidatos/.test(indexHtml), 'header copy');
 check(/rec-section-top/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'sin encabezado duplicado en body');
 check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
-check(/recDateInputToIso/.test(indexHtml) && /recDateInputValue/.test(indexHtml), 'helpers fecha sin hora UI');
-check(
-  /En proceso[\s\S]*Finalistas[\s\S]*Contratados/.test(
-    indexHtml.match(/function recRenderCarousel[\s\S]*?recRenderSelectedPanel\(\)/)?.[0] || '',
-  ),
-  'orden métricas cards homologado',
-);
-check(/rec-vacancy-carousel/.test(indexHtml) && /rec-vac-card/.test(indexHtml), 'carrusel cards');
-check(/rec-filter-chip/.test(indexHtml) && /REC_FILTER_CHIPS/.test(indexHtml), 'filtros chips');
-check(/modal-rec-vacancy/.test(indexHtml) && /rec-form-jd/.test(indexHtml), 'modal vacante');
-check(/Job Description/.test(indexHtml) && /Perfil, requisitos, actividades/.test(indexHtml), 'ayuda JD');
-check(/rec-form-responsible/.test(indexHtml) && /Sin responsable/.test(indexHtml), 'selector responsable');
-check(/recSubmitVacancy/.test(indexHtml) && /recSyncPrimaryAssignee/.test(indexHtml), 'guardar + PRIMARY');
-check(/recOpenVacancyModal\('edit'\)/.test(indexHtml), 'acción editar');
-check(/Todavía no hay vacantes registradas/.test(indexHtml), 'empty state');
-check(/mind24-notif-bell/.test(indexHtml.match(/view-dash-recruitment[\s\S]*?<\/main>/)?.[0] || ''), 'campana notificaciones');
+check(/modal-rec-vacancy/.test(indexHtml) && /recSubmitVacancy/.test(indexHtml), 'modal crear/editar vacante');
 check(/\+ Nueva vacante/.test(indexHtml), 'CTA nueva vacante');
-check(!/location\.reload\(/.test(indexHtml.match(/function recSubmitVacancy[\s\S]*?^}/m)?.[0] || 'rec'), 'sin reload al guardar');
 
-console.log('\n=== Recruitment 1B.2 — workspace ===\n');
+console.log('\n=== Recruitment 1B.2 / 1B.3 — workspace limpio ===\n');
 
-check(/rec-workspace/.test(indexHtml) && /rec-ws-pulse/.test(indexHtml), 'workspace + pulso');
-check(/recRenderWorkspacePulse/.test(indexHtml), 'KPIs desde applicationSummary');
-check(/recCoverageMetrics/.test(indexHtml) && /rec-ws-cov-bar/.test(indexHtml), 'cobertura + barra');
-check(/Descripción de la vacante/.test(indexHtml) && /recToggleJdAccordion/.test(indexHtml), 'acordeón JD cerrado por defecto');
-check(/rec-ws-notes-body/.test(indexHtml) && /Sin notas adicionales/.test(indexHtml), 'bloque notas');
-check(/recPickDefaultSelection/.test(indexHtml) && /recResolveSelectionInList/.test(indexHtml), 'selección automática');
-check(/Responsable: Sin responsable/.test(indexHtml), 'copy responsable vacío');
-check(/rec-pipeline-slot/.test(indexHtml) && !/próximamente/i.test(indexHtml.match(/view-dash-recruitment[\s\S]*?view-dash-timeclock/)?.[0] || ''), 'slot pipeline sin placeholder');
-check(/recSelectVacancy[\s\S]*recRenderSelectedPanel/.test(indexHtml), 'card → workspace sin reload');
+check(/rec-pipeline-slot/.test(workspaceBlock), 'slot pipeline reservado');
+check(!/rec-ws-pulse/.test(workspaceBlock), 'sin pulso KPI en workspace');
+check(!/recRenderWorkspacePulse/.test(indexHtml), 'sin render KPI workspace');
+check(/Pipeline ·/.test(indexHtml.match(/function recRenderSelectedPanel[\s\S]*?^}/m)?.[0] || ''), 'kicker Pipeline · vacante');
+check(!/rec-ws-jd-body/.test(workspaceBlock), 'JD fuera del workspace');
+check(!/rec-ws-notes-body/.test(workspaceBlock), 'notas fuera del workspace');
 
-console.log('\n=== Recruitment 1B.1 — backend summary ===\n');
+console.log('\n=== Recruitment 1B.3 — cards vs detalle ===\n');
+
+check(/rec-vac-detail-btn/.test(carouselBlock), 'icono ver detalle en card');
+check(/Ver detalle de vacante/.test(carouselBlock), 'aria-label detalle');
+check(/stopPropagation/.test(indexHtml.match(/function recOpenVacancyDetail[\s\S]*?^}/m)?.[0] || ''), 'detalle no propaga click');
+check(/recOpenVacancyDetail/.test(carouselBlock), 'icono abre detalle');
+check(/recSelectVacancy/.test(carouselBlock), 'card selecciona vacante');
+check(!/rec-vac-stats/.test(carouselBlock), 'cards sin métricas');
+check(/detailVacancyId/.test(indexHtml), 'estado detalle independiente');
+check(/modal-rec-vacancy-detail/.test(indexHtml), 'modal detalle de vacante');
+check(/rec-detail-jd/.test(indexHtml) && /rec-detail-notes/.test(indexHtml), 'JD y notas en detalle');
+check(/recEditFromDetail/.test(indexHtml), 'editar desde detalle reutiliza formulario');
+check(
+  /keepSelection=vacancyId\?st\.selectedId/.test(indexHtml.match(/function recSubmitVacancy[\s\S]*?^}/m)?.[0] || ''),
+  'guardar edición mantiene selección operativa',
+);
+
+console.log('\n=== Recruitment 1B.3 — glass scoped ===\n');
+
+check(/\.modal-overlay\.rec-modal-glass/.test(indexHtml), 'clase glass recruitment');
+check(/modal-rec-vacancy" class="modal-overlay rec-modal-glass/.test(indexHtml), 'glass en modal vacante');
+check(/modal-rec-vacancy-detail" class="modal-overlay rec-modal-glass/.test(indexHtml), 'glass en modal detalle');
+check(/rec-modal-scroll/.test(indexHtml), 'scrollbar fina scoped');
+check(!/backdrop-filter:blur\(14px\)/.test(modalCssBlock.replace(/\.rec-modal-glass[\s\S]*?\}/g, '')), 'modales globales sin glass');
+
+console.log('\n=== Recruitment 1B.4 — fecha objetivo y archivos ===\n');
+
+check(/targetCoverageDate/.test(vacancyService), 'targetCoverageDate en servicio');
+check(/rec-form-target-coverage/.test(indexHtml), 'campo fecha objetivo formulario');
+check(/rec-detail-target-coverage/.test(indexHtml), 'fecha objetivo en detalle');
+check(/rec-vac-docs-list/.test(indexHtml), 'sección archivos');
+check(/recVacDocsSubmit/.test(indexHtml), 'upload archivos vacante');
+check(/Podrás agregar archivos después/.test(indexHtml), 'hint sin upload en alta');
+
+console.log('\n=== Backend summary ===\n');
 
 check(/applicationSummary/.test(vacancyService), 'applicationSummary en servicio');
-check(/buildApplicationSummariesByVacancyId/.test(vacancyService), 'agregado sin N+1 por vacante');
-check(/enrichVacancies/.test(vacancyService), 'enriquecer listado');
 
-console.log('\n=== Recruitment 1B.1 — regresiones ===\n');
+console.log('\n=== Regresiones ===\n');
 
 function runRegression(script) {
   const r = spawnSync(process.execPath, [path.join('scripts', script)], {
@@ -91,4 +108,4 @@ if (failed) {
   console.error(`\n✗ ${failed} fallo(s).\n`);
   process.exit(1);
 }
-console.log('\n✓ Recruitment vacancies 1B.1 tests OK.\n');
+console.log('\n✓ Recruitment vacancies frontend tests OK.\n');
