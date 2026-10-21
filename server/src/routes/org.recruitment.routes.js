@@ -24,7 +24,15 @@ import {
   removeVacancyAssignee,
   setVacancyAssignee,
 } from '../services/recruitmentVacancyAssignee.service.js';
-import { RECRUITMENT_VACANCY_STATUSES } from '../services/recruitmentStage.service.js';
+import {
+  RECRUITMENT_VACANCY_STATUSES,
+  createOrganizationRecruitmentStage,
+} from '../services/recruitmentStage.service.js';
+import {
+  getVacancyStageConfiguration,
+  updateVacancyStageConfiguration,
+  listActiveOrganizationRecruitmentStages,
+} from '../services/recruitmentVacancyStage.service.js';
 import {
   RECRUITMENT_VACANCY_DOCUMENT_CATEGORIES,
   RECRUITMENT_VACANCY_DOCUMENT_MAX_BYTES,
@@ -85,6 +93,27 @@ const candidatePatchSchema = candidateCreateSchema.partial().extend({
   archived: z.boolean().optional(),
 });
 
+router.get('/stages', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const stages = await listActiveOrganizationRecruitmentStages(u.organizationId);
+    res.json({ stages });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/stages', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ name: z.string().min(1).max(120) }).parse(req.body);
+    const stage = await createOrganizationRecruitmentStage(u.organizationId, body.name);
+    res.status(201).json({ stage });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post('/vacancies', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
@@ -108,6 +137,31 @@ router.get('/vacancies', async (req, res, next) => {
     }
     const vacancies = await listRecruitmentVacancies(u.organizationId, { status });
     res.json({ vacancies });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/vacancies/:vacancyId/stages', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const config = await getVacancyStageConfiguration(u.organizationId, req.params.vacancyId);
+    res.json(config);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.put('/vacancies/:vacancyId/stages', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ stageIds: z.array(z.string().min(1)).min(1) }).parse(req.body);
+    const vacancyStages = await updateVacancyStageConfiguration(
+      u.organizationId,
+      req.params.vacancyId,
+      body.stageIds,
+    );
+    res.json({ vacancyStages });
   } catch (e) {
     next(e);
   }

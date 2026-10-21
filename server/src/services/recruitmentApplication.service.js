@@ -1,11 +1,12 @@
 import { prisma } from '../db/client.js';
 import { assertRecruitmentCandidateInOrg, serializeRecruitmentCandidate } from './recruitmentCandidate.service.js';
 import { assertRecruitmentVacancyInOrg } from './recruitmentVacancy.service.js';
+import { getStageByKeyForOrg, serializeRecruitmentStage } from './recruitmentStage.service.js';
 import {
-  assertRecruitmentStageInOrg,
-  getStageByKeyForOrg,
-  serializeRecruitmentStage,
-} from './recruitmentStage.service.js';
+  assertNewStageEnabledForVacancy,
+  assertStageEnabledForVacancy,
+  ensureVacancyRecruitmentStages,
+} from './recruitmentVacancyStage.service.js';
 
 const POSITION_GAP = 1000;
 
@@ -85,7 +86,8 @@ export async function createRecruitmentApplication({
   }
 
   return prisma.$transaction(async (tx) => {
-    const newStage = await getStageByKeyForOrg(organizationId, 'NEW', tx);
+    await ensureVacancyRecruitmentStages(organizationId, vacancyId, tx);
+    const newStage = await assertNewStageEnabledForVacancy(organizationId, vacancyId, tx);
     const position = await nextPositionInStage(vacancyId, newStage.id, tx);
     const appliedAt = new Date();
     const app = await tx.recruitmentApplication.create({
@@ -138,7 +140,7 @@ export async function updateRecruitmentApplication({
 
     let nextStageId = existing.stageId;
     if (stageId != null && stageId !== existing.stageId) {
-      await assertRecruitmentStageInOrg(stageId, organizationId, tx);
+      await assertStageEnabledForVacancy(organizationId, existing.vacancyId, stageId, tx);
       nextStageId = stageId;
       data.stageId = stageId;
       if (position == null) {

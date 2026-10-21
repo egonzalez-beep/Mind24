@@ -1,5 +1,9 @@
 import { prisma } from '../db/client.js';
 import { RECRUITMENT_VACANCY_STATUSES } from './recruitmentStage.service.js';
+import {
+  listEnabledVacancyStagesForDistribution,
+  seedVacancyStagesFromOrganizationCatalog,
+} from './recruitmentVacancyStage.service.js';
 
 export function emptyApplicationSummary() {
   return { total: 0, inProcess: 0, finalists: 0, hired: 0, rejected: 0 };
@@ -89,12 +93,8 @@ export function buildExecutiveSnapshot(vacancyRow, applicationSummary, todayKey 
 }
 
 async function buildStageDistributionForVacancy(organizationId, vacancyId) {
-  const [stages, grouped] = await Promise.all([
-    prisma.recruitmentStage.findMany({
-      where: { organizationId, isActive: true },
-      orderBy: { position: 'asc' },
-      select: { id: true, key: true, name: true, position: true },
-    }),
+  const [enabledRows, grouped] = await Promise.all([
+    listEnabledVacancyStagesForDistribution(organizationId, vacancyId),
     prisma.recruitmentApplication.groupBy({
       by: ['stageId'],
       where: { organizationId, vacancyId },
@@ -102,12 +102,12 @@ async function buildStageDistributionForVacancy(organizationId, vacancyId) {
     }),
   ]);
   const countByStageId = new Map(grouped.map((g) => [g.stageId, g._count._all]));
-  return stages.map((stage) => ({
-    stageId: stage.id,
-    key: stage.key,
-    name: stage.name,
-    position: stage.position,
-    count: countByStageId.get(stage.id) ?? 0,
+  return enabledRows.map((row) => ({
+    stageId: row.stageId,
+    key: row.stage.key,
+    name: row.stage.name,
+    position: row.position,
+    count: countByStageId.get(row.stageId) ?? 0,
   }));
 }
 
@@ -243,21 +243,28 @@ export async function createRecruitmentVacancy(organizationId, payload) {
     err.message = 'positionsTotal debe ser al menos 1.';
     throw err;
   }
-  const row = await prisma.recruitmentVacancy.create({
-    data: {
-      organizationId,
-      title: payload.title.trim(),
-      clientName: payload.clientName.trim(),
-      location: payload.location?.trim() || null,
-      positionsTotal,
-      openedAt: parseOpenedAt(payload.openedAt),
-      status: payload.status && RECRUITMENT_VACANCY_STATUSES.includes(payload.status) ? payload.status : 'ACTIVE',
-      jobDescription: payload.jobDescription?.trim() || null,
-      notes: payload.notes?.trim() || null,
-      ...(payload.targetCoverageDate !== undefined
-        ? { targetCoverageDate: parseTargetCoverageDate(payload.targetCoverageDate) }
-        : {}),
-    },
+  const row = await prisma.$transaction(async (tx) => {
+    const created = await tx.recruitmentVacancy.create({
+      data: {
+        organizationId,
+        title: payload.title.trim(),
+        clientName: payload.clientName.trim(),
+        location: payload.location?.trim() || null,
+        positionsTotal,
+        openedAt: parseOpenedAt(payload.openedAt),
+        status:
+          payload.status && RECRUITMENT_VACANCY_STATUSES.includes(payload.status)
+            ? payload.status
+            : 'ACTIVE',
+        jobDescription: payload.jobDescription?.trim() || null,
+        notes: payload.notes?.trim() || null,
+        ...(payload.targetCoverageDate !== undefined
+          ? { targetCoverageDate: parseTargetCoverageDate(payload.targetCoverageDate) }
+          : {}),
+      },
+    });
+    await seedVacancyStagesFromOrganizationCatalog(organizationId, created.id, tx);
+    return created;
   });
   const [vacancy] = await enrichVacancies(organizationId, [row]);
   return vacancy;

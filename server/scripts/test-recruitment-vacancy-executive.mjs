@@ -89,7 +89,8 @@ function runRegression(script) {
 
 runRegression('test-recruitment-vacancies-frontend.mjs');
 runRegression('test-recruitment-vacancy-documents.mjs');
-runRegression('test-recruitment-backend.mjs');
+runRegression('test-recruitment-custom-stages.mjs');
+runRegression('test-recruitment-vacancy-stages.mjs');
 
 if (failed) {
   console.error(`\n✗ ${failed} fallo(s).\n`);

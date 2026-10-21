@@ -69,6 +69,7 @@ model Organization {
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
   recruitmentVacancyDocuments RecruitmentVacancyDocument[]
+  recruitmentVacancyStages RecruitmentVacancyStage[]
 }
 
 enum OrgNotificationType {
@@ -545,10 +546,34 @@ model RecruitmentVacancy {
   applications RecruitmentApplication[]
   assignees    RecruitmentVacancyAssignee[]
   documents    RecruitmentVacancyDocument[]
+  vacancyStages RecruitmentVacancyStage[]
 
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, openedAt])
+}
+
+/// Funnel de etapas habilitadas y ordenadas por vacante.
+model RecruitmentVacancyStage {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vacancyId      String
+  vacancy        RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  stageId        String
+  stage          RecruitmentStage   @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  position       Int
+  isEnabled      Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([vacancyId, stageId])
+  @@index([organizationId])
+  @@index([vacancyId])
+  @@index([organizationId, vacancyId])
+  @@index([stageId])
+  @@index([vacancyId, isEnabled])
+  @@index([vacancyId, position])
 }
 
 model RecruitmentVacancyDocument {
@@ -603,6 +628,7 @@ model RecruitmentStage {
   updatedAt      DateTime @updatedAt
 
   applicationsAtStage RecruitmentApplication[]
+  vacancyStages       RecruitmentVacancyStage[]
   stageEventsFrom     RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventFrom")
   stageEventsTo       RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventTo")
 

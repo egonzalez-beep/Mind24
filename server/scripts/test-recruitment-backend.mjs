@@ -139,6 +139,7 @@ async function cleanupRecruitmentOrg(orgIds) {
     where: { organizationId: { in: orgIds } },
   });
   await prisma.recruitmentApplication.deleteMany({ where: { organizationId: { in: orgIds } } });
+  await prisma.recruitmentVacancyStage.deleteMany({ where: { organizationId: { in: orgIds } } });
   await prisma.recruitmentVacancyAssignee.deleteMany({ where: { organizationId: { in: orgIds } } });
   await prisma.recruitmentVacancy.deleteMany({ where: { organizationId: { in: orgIds } } });
   await prisma.recruitmentCandidate.deleteMany({ where: { organizationId: { in: orgIds } } });

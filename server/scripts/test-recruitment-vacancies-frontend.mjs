@@ -91,6 +91,15 @@ check(/rec-detail-jd-trigger/.test(detailModalBlock), 'JD acordeón');
 check(/recDetailResetAccordions/.test(indexHtml), 'acordeones reset al abrir');
 check(/rec-detail-funnel/.test(detailModalBlock), 'funnel distribution UI');
 check(/Distribución del proceso/.test(detailModalBlock), 'título funnel');
+check(/Etapas del proceso/.test(detailModalBlock), 'sección etapas del proceso');
+check(/recStagesOpenEditor/.test(indexHtml), 'configurador abre editor');
+check(/recStagesSave/.test(indexHtml) && /Guardar etapas/.test(detailModalBlock), 'guardar etapas PUT');
+check(/recStagesMoveRow/.test(indexHtml), 'fallback mover arriba/abajo');
+check(/recStageIsRequiredKey|REC_REQUIRED_STAGE_KEYS/.test(indexHtml), 'etapas obligatorias UI');
+check(/recStagesSubmitNewStage/.test(indexHtml), 'crear stage custom desde UI');
+check(/recStagesPickExisting/.test(indexHtml), 'agregar stage existente');
+check(/recStagesCancelEditor/.test(indexHtml), 'cancelar editor');
+check(/rec-stage-drag/.test(indexHtml), 'drag handle CSS');
 check(/Información general/.test(detailModalBlock), 'bloque información general');
 check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
 
