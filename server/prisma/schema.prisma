@@ -70,6 +70,7 @@ model Organization {
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
   recruitmentVacancyDocuments RecruitmentVacancyDocument[]
   recruitmentVacancyStages RecruitmentVacancyStage[]
+  recruitmentCandidateResumes RecruitmentCandidateResume[]
 }
 
 enum OrgNotificationType {
@@ -326,6 +327,7 @@ model User {
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
   workforceDocumentsUploaded WorkforceDocument[]
   recruitmentVacancyDocumentsUploaded RecruitmentVacancyDocument[]
+  recruitmentCandidateResumesUploaded RecruitmentCandidateResume[]
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
 }
@@ -510,12 +512,36 @@ model RecruitmentCandidate {
   updatedAt      DateTime  @updatedAt
 
   applications RecruitmentApplication[]
+  resume       RecruitmentCandidateResume?
 
   @@index([organizationId])
   @@index([organizationId, fullName])
   @@index([organizationId, email])
   @@index([organizationId, phone])
   @@index([organizationId, archivedAt])
+  @@index([organizationId, profile])
+  @@index([organizationId, source])
+  @@index([organizationId, createdAt])
+}
+
+/// CV actual del candidato (un archivo por candidato en V1).
+model RecruitmentCandidateResume {
+  id               String               @id @default(cuid())
+  organizationId   String
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidateId      String               @unique
+  candidate        RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  uploadedByUserId String
+  uploadedBy       User                 @relation(fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  filePath         String
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, candidateId])
 }
 
 enum RecruitmentVacancyDocumentCategory {

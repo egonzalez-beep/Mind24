@@ -77,6 +77,10 @@ export function resolveRecruitmentVacancyDocumentsDirAbs() {
   return path.join(resolveUploadsRootAbs(), 'recruitment-vacancies');
 }
 
+export function resolveRecruitmentCandidateResumesDirAbs() {
+  return path.join(resolveUploadsRootAbs(), 'recruitment-candidates');
+}
+
 /** Metadatos para logs y healthcheck. */
 export function getUploadStorageMeta() {
   const uploadsRootAbs = resolveUploadsRootAbs();

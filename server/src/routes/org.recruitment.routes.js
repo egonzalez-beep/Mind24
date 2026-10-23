@@ -9,6 +9,15 @@ import {
   updateRecruitmentCandidate,
 } from '../services/recruitmentCandidate.service.js';
 import {
+  RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES,
+  assertRecruitmentCandidateResumeInOrg,
+  deleteRecruitmentCandidateResume,
+  getRecruitmentCandidateResume,
+  isAllowedRecruitmentCandidateResumeFile,
+  streamRecruitmentCandidateResumeFile,
+  uploadRecruitmentCandidateResume,
+} from '../services/recruitmentCandidateResume.service.js';
+import {
   createRecruitmentVacancy,
   getRecruitmentVacancy,
   listRecruitmentVacancies,
@@ -69,6 +78,19 @@ const recruitmentVacancyDocumentUpload = multer({
         ? null
         : new Error('INVALID_DOCUMENT_FILE'),
       isAllowedRecruitmentVacancyDocumentFile(file.mimetype, file.originalname),
+    );
+  },
+});
+
+const recruitmentCandidateResumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_RESUME_FILE'),
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname),
     );
   },
 });
@@ -316,8 +338,85 @@ router.get('/candidates', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     const includeArchived = req.query.includeArchived === '1' || req.query.includeArchived === 'true';
-    const candidates = await listRecruitmentCandidates(u.organizationId, { includeArchived });
-    res.json({ candidates });
+    const result = await listRecruitmentCandidates(u.organizationId, {
+      includeArchived,
+      q: req.query.q,
+      profile: req.query.profile,
+      source: req.query.source,
+      limit: req.query.limit,
+      cursor: req.query.cursor,
+    });
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/candidates/:candidateId/resume', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const resume = await getRecruitmentCandidateResume(u.organizationId, req.params.candidateId);
+    res.json({ resume });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post(
+  '/candidates/:candidateId/resume',
+  recruitmentCandidateResumeUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      const u = await assertEmpresaAdmin(req.session.userId);
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un CV admitido (PDF, DOC, DOCX o imagen).';
+        throw err;
+      }
+      const resume = await uploadRecruitmentCandidateResume({
+        organizationId: u.organizationId,
+        candidateId: req.params.candidateId,
+        uploadedByUserId: u.id,
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.status(201).json({ resume });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/candidates/:candidateId/resume/file', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const doc = await assertRecruitmentCandidateResumeInOrg(
+      u.organizationId,
+      req.params.candidateId,
+    );
+    await streamRecruitmentCandidateResumeFile(
+      req,
+      res,
+      doc,
+      u.organizationId,
+      req.params.candidateId,
+    );
+  } catch (e) {
+    if (e?.code === 'ENOENT') {
+      res.status(404).json({ error: 'NOT_FOUND', message: 'Archivo no encontrado.' });
+      return;
+    }
+    next(e);
+  }
+});
+
+router.delete('/candidates/:candidateId/resume', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await deleteRecruitmentCandidateResume(u.organizationId, req.params.candidateId);
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }
