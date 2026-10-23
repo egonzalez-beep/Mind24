@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { assertEmpresaAdmin } from '../services/candidate.service.js';
 import {
   createRecruitmentCandidate,
+  findPotentialDuplicateRecruitmentCandidates,
   getRecruitmentCandidate,
   listRecruitmentCandidates,
   updateRecruitmentCandidate,
@@ -318,6 +319,41 @@ router.delete('/vacancies/:vacancyId/assignees/:assigneeId', async (req, res, ne
     const u = await assertEmpresaAdmin(req.session.userId);
     await removeVacancyAssignee(u.organizationId, req.params.vacancyId, req.params.assigneeId);
     res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/candidates/check-duplicates', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
+        phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+      })
+      .parse(req.body ?? {});
+    const email = body.email && String(body.email).trim() ? body.email : undefined;
+    const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
+    if (!email && !phone) {
+      res.json({ candidates: [] });
+      return;
+    }
+    const candidates = await findPotentialDuplicateRecruitmentCandidates(u.organizationId, {
+      email,
+      phone,
+    });
+    res.json({
+      candidates: candidates.map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        profile: c.profile,
+        phone: c.phone,
+        whatsapp: c.whatsapp,
+        email: c.email,
+        archivedAt: c.archivedAt,
+      })),
+    });
   } catch (e) {
     next(e);
   }

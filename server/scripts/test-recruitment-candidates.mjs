@@ -85,6 +85,8 @@ check(/buildApplicationSummariesByCandidateId/.test(candidateSvc), 'applicationS
 check(/nextCursor/.test(candidateSvc), 'paginación cursor');
 check(/findPotentialDuplicateRecruitmentCandidates/.test(candidateSvc), 'helper duplicados');
 check(/router\.get\('\/candidates'/.test(routes) && /req\.query\.q/.test(routes), 'GET list q');
+check(/router\.post\('\/candidates\/check-duplicates'/.test(routes), 'POST check-duplicates');
+check(/findPotentialDuplicateRecruitmentCandidates/.test(routes), 'check-duplicates usa helper');
 check(!/status/.test(schema.match(/model RecruitmentCandidate \{[\s\S]*?\n\}/)?.[0] || ''), 'sin status en Candidate');
 
 console.log('\n=== Recruitment 1D.1 — integración (DB) ===\n');

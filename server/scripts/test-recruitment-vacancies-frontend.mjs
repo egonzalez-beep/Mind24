@@ -101,6 +101,17 @@ check(/recStagesPickExisting/.test(indexHtml), 'agregar stage existente');
 check(/recStagesCancelEditor/.test(indexHtml), 'cancelar editor');
 check(/rec-stage-drag/.test(indexHtml), 'drag handle CSS');
 check(/Información general/.test(detailModalBlock), 'bloque información general');
+
+console.log('\n=== Recruitment 1D.2 — cartera candidatos ===\n');
+
+check(/rec-module-nav/.test(indexHtml), 'nav Vacantes/Candidatos');
+check(/recSwitchModuleTab/.test(indexHtml), 'switch módulo recruitment');
+check(/Cartera de candidatos/.test(indexHtml), 'título cartera');
+check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
+check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
+check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');
+check(/check-duplicates/.test(indexHtml), 'preflight duplicados UI');
+check(/recCandUploadCvFile/.test(indexHtml), 'upload CV UI');
 check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
 
 console.log('\n=== Backend summary ===\n');
