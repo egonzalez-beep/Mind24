@@ -504,6 +504,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-ws-notes-body{font-size:13px;line-height:1.6;color:var(--slate-700);white-space:pre-wrap;}
 .rec-ws-notes-body.empty{color:var(--slate-400);}
 .rec-pipeline-slot{min-height:0;margin-top:4px;}
+.rec-kanban-err{font-size:12px;color:#DC2626;margin:0 0 8px;}
+.rec-kanban-board{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;}
+.rec-kanban-board::-webkit-scrollbar{height:6px;}
+.rec-kanban-board::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
+.rec-kanban-col{flex:0 0 min(268px,82vw);background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;padding:10px 10px 8px;max-height:min(440px,52vh);display:flex;flex-direction:column;}
+.rec-kanban-col-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.rec-kanban-col-title{font-size:12px;font-weight:700;color:var(--primary);line-height:1.35;margin:0;}
+.rec-kanban-col-count{font-size:10px;font-weight:700;color:var(--slate-600);background:#fff;border:1px solid var(--slate-200);padding:3px 8px;border-radius:999px;flex-shrink:0;}
+.rec-kanban-col-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:56px;}
+.rec-kanban-col--over{border-color:rgba(124,58,237,.4);background:rgba(245,243,255,.75);box-shadow:inset 0 0 0 1px rgba(124,58,237,.12);}
+.rec-kanban-card{background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:9px 10px 9px 26px;cursor:grab;position:relative;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:var(--tr-fast);}
+.rec-kanban-card:hover{border-color:rgba(124,58,237,.28);}
+.rec-kanban-card--dragging{opacity:.55;cursor:grabbing;}
+.rec-kanban-card-handle{position:absolute;left:7px;top:9px;color:var(--slate-400);font-size:13px;line-height:1;user-select:none;}
+.rec-kanban-card-name{font-size:13px;font-weight:800;color:var(--primary);margin:0 0 3px;line-height:1.3;}
+.rec-kanban-card-meta{font-size:11px;color:var(--slate-600);margin:0;line-height:1.35;}
+.rec-kanban-card-sub{font-size:10px;color:var(--slate-500);margin:4px 0 0;line-height:1.35;}
+.rec-kanban-empty-msg{font-size:13px;color:var(--slate-500);margin:0 0 10px;line-height:1.45;}
+.rec-kanban-loading{font-size:13px;color:var(--slate-500);padding:12px 4px;}
 .rec-btn-edit{border:none;background:transparent;color:var(--purple);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;flex-shrink:0;}
 .rec-btn-edit:hover{text-decoration:underline;}
 @media(max-width:720px){.rec-workspace{padding:16px;}}
@@ -6845,6 +6864,12 @@ function recEnsureState(){
       candDupePendingBody:null,
       detailCandidateId:null,
       detailCandidate:null,
+      kanbanStages:[],
+      kanbanApplications:[],
+      kanbanLoading:false,
+      kanbanError:null,
+      kanbanDragAppId:null,
+      kanbanSuppressClick:false,
     };
   }
   return window.__REC_STATE;
@@ -7662,6 +7687,177 @@ function recRenderSelectedPanel(){
   panel.classList.remove('hidden');
   const kicker=document.getElementById('rec-ws-op-kicker');
   if(kicker) kicker.textContent='Pipeline · '+(v.title||'—');
+  recKanbanLoad(v.id);
+}
+function recKanbanSetErr(msg){
+  const st=recEnsureState();
+  st.kanbanError=msg||null;
+  const el=document.getElementById('rec-kanban-err');
+  if(el){
+    if(msg){ el.textContent=msg; el.classList.remove('hidden'); }
+    else{ el.textContent=''; el.classList.add('hidden'); }
+  }
+}
+function recKanbanCardContact(c){
+  if(!c) return '';
+  return c.whatsapp||c.phone||'';
+}
+function recKanbanCardLocation(c){
+  if(!c) return '';
+  return [c.city,c.state].filter(Boolean).join(', ');
+}
+async function recKanbanLoad(vacancyId){
+  const slot=document.getElementById('rec-pipeline-slot');
+  const st=recEnsureState();
+  if(!vacancyId||!slot){
+    st.kanbanStages=[]; st.kanbanApplications=[];
+    if(slot) slot.innerHTML='';
+    return;
+  }
+  st.kanbanLoading=true;
+  recKanbanSetErr('');
+  slot.innerHTML='<p class="rec-kanban-loading">Cargando pipeline…</p>';
+  try{
+    const cfg=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
+    const appsJ=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications');
+    const stages=(cfg.vacancyStages||[]).filter(function(vs){ return vs.isEnabled!==false; });
+    stages.sort(function(a,b){ return (a.position||0)-(b.position||0); });
+    st.kanbanStages=stages;
+    st.kanbanApplications=appsJ.applications||[];
+    recKanbanRender(vacancyId);
+  }catch(e){
+    st.kanbanStages=[]; st.kanbanApplications=[];
+    slot.innerHTML='';
+    recKanbanSetErr((e&&e.message)||'No se pudo cargar el pipeline.');
+  }finally{
+    st.kanbanLoading=false;
+  }
+}
+function recKanbanRender(vacancyId){
+  const slot=document.getElementById('rec-pipeline-slot');
+  const st=recEnsureState();
+  if(!slot) return;
+  const stages=st.kanbanStages||[];
+  const apps=st.kanbanApplications||[];
+  if(!stages.length){
+    slot.innerHTML='<p class="rec-kanban-empty-msg">Configura las etapas del proceso para esta vacante.</p>';
+    return;
+  }
+  const byStage=new Map();
+  stages.forEach(function(vs){
+    const sid=(vs.stage&&vs.stage.id)||vs.stageId;
+    if(sid) byStage.set(sid,[]);
+  });
+  apps.forEach(function(app){
+    const sid=app.stageId||(app.stage&&app.stage.id);
+    if(byStage.has(sid)) byStage.get(sid).push(app);
+  });
+  const totalApps=apps.length;
+  let html='<p id="rec-kanban-err" class="rec-kanban-err hidden"></p>';
+  if(!totalApps) html+='<p class="rec-kanban-empty-msg">Aún no hay candidatos asignados a esta vacante.</p>';
+  html+='<div class="rec-kanban-board" role="region" aria-label="Pipeline por etapas">';
+  stages.forEach(function(vs){
+    const stage=vs.stage||{};
+    const sid=stage.id||vs.stageId;
+    const colApps=byStage.get(sid)||[];
+    html+='<div class="rec-kanban-col" data-stage-id="'+tcEsc(sid)+'" ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)">'+
+      '<div class="rec-kanban-col-head"><p class="rec-kanban-col-title">'+tcEsc(stage.name||stage.key||'Etapa')+'</p>'+
+      '<span class="rec-kanban-col-count">'+colApps.length+'</span></div>'+
+      '<div class="rec-kanban-col-body">';
+    colApps.forEach(function(app){
+      const c=app.candidate||{};
+      const loc=recKanbanCardLocation(c);
+      const src=c.source?(c.source==='Otro'&&c.sourceOther?'Otro · '+c.sourceOther:c.source):'';
+      html+='<div class="rec-kanban-card" draggable="true" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
+        ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
+        '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
+        '<p class="rec-kanban-card-name">'+tcEsc(c.fullName||'—')+'</p>'+
+        '<p class="rec-kanban-card-meta">'+tcEsc(typeof recCandProfilePrimaryLabel==='function'?recCandProfilePrimaryLabel(c):(c.profile||'—'))+'</p>'+
+        '<p class="rec-kanban-card-sub">'+tcEsc(recKanbanCardContact(c))+(src?' · '+tcEsc(src):'')+(loc?' · '+tcEsc(loc):'')+'</p></div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
+  slot.innerHTML=html;
+  if(st.kanbanError) recKanbanSetErr(st.kanbanError);
+}
+function recKanbanCardDragStart(ev){
+  const st=recEnsureState();
+  const card=ev.currentTarget;
+  const appId=card.getAttribute('data-app-id');
+  st.kanbanDragAppId=appId;
+  card.classList.add('rec-kanban-card--dragging');
+  if(ev.dataTransfer){
+    ev.dataTransfer.setData('text/plain',appId);
+    ev.dataTransfer.effectAllowed='move';
+  }
+}
+function recKanbanCardDragEnd(ev){
+  const st=recEnsureState();
+  st.kanbanDragAppId=null;
+  st.kanbanSuppressClick=true;
+  setTimeout(function(){ st.kanbanSuppressClick=false; }, 50);
+  if(ev.currentTarget) ev.currentTarget.classList.remove('rec-kanban-card--dragging');
+  document.querySelectorAll('.rec-kanban-col--over').forEach(function(el){ el.classList.remove('rec-kanban-col--over'); });
+}
+function recKanbanColDragOver(ev){
+  ev.preventDefault();
+  if(ev.dataTransfer) ev.dataTransfer.dropEffect='move';
+  const col=ev.currentTarget.closest('.rec-kanban-col');
+  if(col) col.classList.add('rec-kanban-col--over');
+}
+function recKanbanColDragLeave(ev){
+  const col=ev.currentTarget.closest('.rec-kanban-col');
+  if(col&&!col.contains(ev.relatedTarget)) col.classList.remove('rec-kanban-col--over');
+}
+async function recKanbanColDrop(ev){
+  ev.preventDefault();
+  const st=recEnsureState();
+  const col=ev.currentTarget.closest('.rec-kanban-col');
+  const targetStageId=col&&col.getAttribute('data-stage-id');
+  if(col) col.classList.remove('rec-kanban-col--over');
+  const appId=(ev.dataTransfer&&ev.dataTransfer.getData('text/plain'))||st.kanbanDragAppId;
+  if(!appId||!targetStageId) return;
+  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
+  if(!app||app.stageId===targetStageId||(app.stage&&app.stage.id===targetStageId)) return;
+  const fromStageId=app.stageId||(app.stage&&app.stage.id);
+  const vacancyId=st.selectedId;
+  const candidateId=app.candidateId||(app.candidate&&app.candidate.id);
+  app.stageId=targetStageId;
+  if(app.stage) app.stage.id=targetStageId;
+  recKanbanRender(vacancyId);
+  try{
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
+      method:'PATCH',
+      body:JSON.stringify({ stageId:targetStageId }),
+    });
+    recKanbanSetErr('');
+    await recKanbanRefreshRelated(vacancyId,candidateId);
+  }catch(e){
+    app.stageId=fromStageId;
+    recKanbanSetErr((e&&e.message)||'No se pudo mover el candidato de etapa.');
+    recKanbanRender(vacancyId);
+  }
+}
+function recKanbanCardClick(ev,candidateId){
+  const st=recEnsureState();
+  if(st.kanbanSuppressClick) return;
+  if(candidateId) recCandOpenDetail(candidateId);
+}
+async function recKanbanRefreshRelated(vacancyId,candidateId){
+  await recKanbanLoad(vacancyId);
+  const st=recEnsureState();
+  if(candidateId&&st.detailCandidateId===candidateId){
+    try{
+      const c=await recCandFetchDetail(candidateId);
+      st.detailCandidate=c;
+      recCandRenderDetail(c,false);
+    }catch(_e){}
+  }
+  const detailModal=document.getElementById('modal-rec-vacancy-detail');
+  if(detailModal&&!detailModal.classList.contains('hidden')&&st.detailVacancyId===vacancyId){
+    await recFetchAndRenderVacancyDetail(vacancyId);
+  }
 }
 async function recLoadEmployees(){
   const st=recEnsureState();
@@ -8189,9 +8385,11 @@ function recCandRenderDetail(c,loading){
       else cls+=' rec-cand-process-card--active';
       const vac=a.vacancy||{};
       const dt=(a.updatedAt||a.appliedAt||'').slice(0,10);
-      return '<div class="'+cls+'"><div style="font-weight:700;color:var(--primary);font-size:13px;">'+tcEsc(vac.title||'—')+'</div>'+
-        '<div style="font-size:12px;color:var(--slate-600);margin-top:2px;">'+tcEsc(vac.clientName||'')+' · '+tcEsc(recVacancyStatusLabel(vac.status))+'</div>'+
-        '<div style="font-size:12px;color:var(--slate-700);margin-top:6px;">Etapa: <strong>'+tcEsc((a.stage&&a.stage.name)||'—')+'</strong></div>'+
+      const inPipeline=st.selectedId&&vac.id===st.selectedId&&st.moduleTab!=='candidates';
+      return '<div class="'+cls+'"><div style="font-weight:700;color:var(--primary);font-size:13px;">'+tcEsc(vac.title||'—')+
+        (inPipeline?' <span style="font-size:10px;font-weight:700;color:var(--purple-dark);">· Vacante activa</span>':'')+'</div>'+
+        '<div style="font-size:12px;color:var(--slate-600);margin-top:2px;">'+tcEsc(vac.clientName||'')+' · Proceso: '+tcEsc(recVacancyStatusLabel(vac.status))+'</div>'+
+        '<div style="font-size:12px;color:var(--slate-700);margin-top:6px;">Etapa actual: <strong>'+tcEsc((a.stage&&a.stage.name)||'—')+'</strong></div>'+
         '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Actualizado '+tcEsc(dt)+'</div></div>';
     }).join('');
   }
@@ -8475,6 +8673,7 @@ async function recCandCreateAndOpen(body){
     if(vacId){
       try{
         await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null);
+        if(recEnsureState().selectedId===vacId) recKanbanLoad(vacId);
       }catch(e){
         await recCandOpenDetail(j.candidate.id);
         recCandSetOpErr('El candidato fue creado, pero no pudo asignarse a la vacante.');
@@ -8530,6 +8729,7 @@ async function recCandSubmitAddVacancy(){
     st.detailCandidate=c;
     recCandRenderDetail(c,false);
     await recCandLoadList(false);
+    if(st.selectedId===vacId&&st.moduleTab!=='candidates') recKanbanLoad(vacId);
   }catch(e){
     if(err){ err.textContent=(e&&e.message)||'No se pudo crear la postulación.'; err.classList.remove('hidden'); }
   }finally{

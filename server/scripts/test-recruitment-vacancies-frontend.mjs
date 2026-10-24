@@ -40,7 +40,7 @@ check(/\+ Nueva vacante/.test(indexHtml), 'CTA nueva vacante');
 
 console.log('\n=== Recruitment 1B.2 / 1B.3 — workspace limpio ===\n');
 
-check(/rec-pipeline-slot/.test(workspaceBlock), 'slot pipeline reservado');
+check(/recKanbanLoad/.test(indexHtml) && /rec-kanban-board/.test(indexHtml), 'Kanban operativo en workspace');
 check(!/rec-ws-pulse/.test(workspaceBlock), 'sin pulso KPI en workspace');
 check(!/recRenderWorkspacePulse/.test(indexHtml), 'sin render KPI workspace');
 check(/Pipeline ·/.test(indexHtml.match(/function recRenderSelectedPanel[\s\S]*?^}/m)?.[0] || ''), 'kicker Pipeline · vacante');

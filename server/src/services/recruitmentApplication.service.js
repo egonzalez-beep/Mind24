@@ -142,7 +142,7 @@ export async function listRecruitmentApplicationsForVacancy(organizationId, vaca
   const rows = await prisma.recruitmentApplication.findMany({
     where: { organizationId, vacancyId },
     include: { candidate: true, stage: true },
-    orderBy: [{ stageId: 'asc' }, { position: 'asc' }, { appliedAt: 'asc' }],
+    orderBy: [{ updatedAt: 'desc' }, { position: 'asc' }, { appliedAt: 'desc' }],
   });
   return rows.map(serializeApplication);
 }
