@@ -1,4 +1,14 @@
 import { prisma } from '../db/client.js';
+import {
+  normalizeRecruitmentCandidateFullName,
+  prepareRecruitmentCandidateWritePayload,
+  resolveRecruitmentCandidatePhoneFields,
+  resolveRecruitmentCandidateProfileFields,
+  resolveRecruitmentCandidateProfileSecondary,
+  resolveRecruitmentCandidateSourceFields,
+} from './recruitmentCandidateCatalog.service.js';
+
+export { normalizeRecruitmentCandidateFullName } from './recruitmentCandidateCatalog.service.js';
 
 function serializeResumeMetadata(row) {
   if (!row) return null;
@@ -42,12 +52,15 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     id: row.id,
     fullName: row.fullName,
     profile: row.profile,
+    profileOther: row.profileOther,
+    profileSecondary: row.profileSecondary,
     phone: row.phone,
     whatsapp: row.whatsapp,
     email: row.email,
     city: row.city,
     state: row.state,
     source: row.source,
+    sourceOther: row.sourceOther,
     notes: row.notes,
     archivedAt: row.archivedAt ? row.archivedAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
@@ -253,18 +266,22 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
 }
 
 export async function createRecruitmentCandidate(organizationId, payload) {
+  const prepared = prepareRecruitmentCandidateWritePayload(payload, { partial: false });
   const row = await prisma.recruitmentCandidate.create({
     data: {
       organizationId,
-      fullName: payload.fullName.trim(),
-      profile: payload.profile.trim(),
-      phone: payload.phone.trim(),
-      whatsapp: trimOrNull(payload.whatsapp),
-      email: normalizeRecruitmentCandidateEmail(payload.email),
-      city: trimOrNull(payload.city),
-      state: trimOrNull(payload.state),
-      source: trimOrNull(payload.source),
-      notes: trimOrNull(payload.notes),
+      fullName: prepared.fullName,
+      profile: prepared.profile,
+      profileOther: trimOrNull(prepared.profileOther),
+      profileSecondary: trimOrNull(prepared.profileSecondary),
+      phone: prepared.phone,
+      whatsapp: prepared.whatsapp,
+      email: normalizeRecruitmentCandidateEmail(prepared.email),
+      city: trimOrNull(prepared.city),
+      state: trimOrNull(prepared.state),
+      source: trimOrNull(prepared.source),
+      sourceOther: trimOrNull(prepared.sourceOther),
+      notes: trimOrNull(prepared.notes),
     },
   });
   return serializeRecruitmentCandidate(row, {
@@ -304,18 +321,46 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
 }
 
 export async function updateRecruitmentCandidate(organizationId, candidateId, patch) {
-  await assertRecruitmentCandidateInOrg(candidateId, organizationId);
+  const existing = await assertRecruitmentCandidateInOrg(candidateId, organizationId);
   const data = {};
-  if (patch.fullName != null) data.fullName = patch.fullName.trim();
-  if (patch.profile != null) data.profile = patch.profile.trim();
-  if (patch.phone != null) data.phone = patch.phone.trim();
-  if (patch.whatsapp !== undefined) data.whatsapp = trimOrNull(patch.whatsapp);
+  if (patch.fullName != null) {
+    data.fullName = normalizeRecruitmentCandidateFullName(patch.fullName);
+  }
+  if (patch.profile != null) {
+    const pf = resolveRecruitmentCandidateProfileFields(patch.profile, patch.profileOther);
+    data.profile = pf.profile;
+    data.profileOther = pf.profileOther;
+  }
+  if (patch.profileSecondary !== undefined) {
+    data.profileSecondary = resolveRecruitmentCandidateProfileSecondary(
+      patch.profileSecondary,
+      patch.profileSecondaryOther,
+    );
+  }
+  const phones = resolveRecruitmentCandidatePhoneFields({
+    whatsapp:
+      patch.whatsapp !== undefined
+        ? patch.whatsapp
+        : existing.whatsapp || existing.phone,
+    phone:
+      patch.phone !== undefined
+        ? patch.phone
+        : existing.whatsapp && existing.phone !== existing.whatsapp
+          ? existing.phone
+          : null,
+  });
+  data.whatsapp = phones.whatsapp;
+  data.phone = phones.phone;
   if (patch.email !== undefined) {
     data.email = normalizeRecruitmentCandidateEmail(patch.email);
   }
   if (patch.city !== undefined) data.city = trimOrNull(patch.city);
   if (patch.state !== undefined) data.state = trimOrNull(patch.state);
-  if (patch.source !== undefined) data.source = trimOrNull(patch.source);
+  if (patch.source !== undefined) {
+    const sf = resolveRecruitmentCandidateSourceFields(patch.source, patch.sourceOther);
+    data.source = sf.source;
+    data.sourceOther = sf.sourceOther;
+  }
   if (patch.notes !== undefined) data.notes = trimOrNull(patch.notes);
   if (patch.archived === true) data.archivedAt = new Date();
   if (patch.archived === false) data.archivedAt = null;

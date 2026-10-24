@@ -64,6 +64,7 @@ export async function createRecruitmentApplication({
   vacancyId,
   candidateId,
   changedByUserId,
+  initialStageId,
 }) {
   await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId);
@@ -108,6 +109,29 @@ export async function createRecruitmentApplication({
       toStageId: newStage.id,
       changedByUserId,
     });
+
+    const targetStageId =
+      initialStageId && String(initialStageId).trim() && initialStageId !== newStage.id
+        ? initialStageId
+        : null;
+    if (targetStageId) {
+      await assertStageEnabledForVacancy(organizationId, vacancyId, targetStageId, tx);
+      const position = await nextPositionInStage(vacancyId, targetStageId, tx);
+      const moved = await tx.recruitmentApplication.update({
+        where: { id: app.id },
+        data: { stageId: targetStageId, position },
+        include: { candidate: true, stage: true },
+      });
+      await recordStageEvent(tx, {
+        organizationId,
+        applicationId: app.id,
+        fromStageId: newStage.id,
+        toStageId: targetStageId,
+        changedByUserId,
+      });
+      return serializeApplication(moved);
+    }
+
     return serializeApplication(app);
   });
 }

@@ -100,21 +100,82 @@ const recruitmentVacancyDocumentCategorySchema = z.enum(RECRUITMENT_VACANCY_DOCU
 
 const vacancyPatchSchema = vacancyCreateSchema.partial();
 
-const candidateCreateSchema = z.object({
-  fullName: z.string().min(2).max(200),
+const candidateContactRefine = (data, ctx) => {
+  const wa = data.whatsapp != null ? String(data.whatsapp).trim() : '';
+  const ph = data.phone != null ? String(data.phone).trim() : '';
+  if (!wa && !ph) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Indica WhatsApp o teléfono de contacto.',
+      path: ['whatsapp'],
+    });
+  }
+  if (wa && wa.length > 0 && wa.length < 5) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'WhatsApp no válido.',
+      path: ['whatsapp'],
+    });
+  }
+  if (ph && ph.length > 0 && ph.length < 5) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Teléfono no válido.',
+      path: ['phone'],
+    });
+  }
+};
+
+const candidateWriteFields = {
+  fullName: z.string().min(1).max(200),
   profile: z.string().min(1).max(300),
-  phone: z.string().min(5).max(40),
+  profileOther: z.string().max(300).optional().nullable(),
+  profileSecondary: z.string().max(300).optional().nullable(),
+  profileSecondaryOther: z.string().max(300).optional().nullable(),
   whatsapp: z.string().max(40).optional().nullable(),
-  email: z.string().email().optional().nullable(),
+  phone: z.string().max(40).optional().nullable(),
+  email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   city: z.string().max(120).optional().nullable(),
   state: z.string().max(120).optional().nullable(),
   source: z.string().max(120).optional().nullable(),
+  sourceOther: z.string().max(120).optional().nullable(),
   notes: z.string().max(20_000).optional().nullable(),
-});
+};
 
-const candidatePatchSchema = candidateCreateSchema.partial().extend({
-  archived: z.boolean().optional(),
-});
+const candidateCreateSchema = z.object(candidateWriteFields).superRefine(candidateContactRefine);
+
+const candidatePatchSchema = z
+  .object({
+    ...candidateWriteFields,
+    fullName: z.string().min(1).max(200).optional(),
+    profile: z.string().min(1).max(300).optional(),
+  })
+  .partial()
+  .extend({
+    archived: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.whatsapp !== undefined) {
+      const wa = data.whatsapp != null ? String(data.whatsapp).trim() : '';
+      if (wa && wa.length < 5) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WhatsApp no válido.',
+          path: ['whatsapp'],
+        });
+      }
+    }
+    if (data.phone !== undefined) {
+      const ph = data.phone != null ? String(data.phone).trim() : '';
+      if (ph && ph.length < 5) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Teléfono no válido.',
+          path: ['phone'],
+        });
+      }
+    }
+  });
 
 router.get('/stages', async (req, res, next) => {
   try {
@@ -482,12 +543,18 @@ router.patch('/candidates/:id', async (req, res, next) => {
 router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const body = z.object({ candidateId: z.string().min(1) }).parse(req.body);
+    const body = z
+      .object({
+        candidateId: z.string().min(1),
+        stageId: z.string().min(1).optional(),
+      })
+      .parse(req.body);
     const application = await createRecruitmentApplication({
       organizationId: u.organizationId,
       vacancyId: req.params.vacancyId,
       candidateId: body.candidateId,
       changedByUserId: u.id,
+      initialStageId: body.stageId,
     });
     res.status(201).json({ application });
   } catch (e) {

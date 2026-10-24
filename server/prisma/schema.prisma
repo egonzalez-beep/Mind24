@@ -498,15 +498,18 @@ model RecruitmentCandidate {
   id             String    @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  fullName       String
-  profile        String
-  phone          String
-  whatsapp       String?
-  email          String?
-  city           String?
-  state          String?
-  source         String?
-  notes          String?   @db.Text
+  fullName          String
+  profile           String
+  profileOther      String?
+  profileSecondary  String?
+  phone             String
+  whatsapp          String?
+  email             String?
+  city              String?
+  state             String?
+  source            String?
+  sourceOther       String?
+  notes             String?   @db.Text
   archivedAt     DateTime? @db.Timestamptz(6)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

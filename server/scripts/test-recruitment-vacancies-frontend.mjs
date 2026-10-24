@@ -114,6 +114,20 @@ check(/check-duplicates/.test(indexHtml), 'preflight duplicados UI');
 check(/recCandUploadCvFile/.test(indexHtml), 'upload CV UI');
 check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
 
+console.log('\n=== Recruitment 1D.2.1 — flujo candidato/vacante ===\n');
+
+check(/recCandAssignToVacancy/.test(indexHtml), 'asignar candidato a vacante UI');
+check(/modal-rec-candidate-add-vacancy/.test(indexHtml), 'modal añadir a vacante');
+check(/rec-cand-form-vacancy/.test(indexHtml), 'vacante opcional en alta');
+check(/rec-cand-form-stage/.test(indexHtml), 'etapa inicial en alta');
+check(/REC_CAND_PROFILE_OPTS/.test(indexHtml), 'catálogo profile UI');
+check(/REC_CAND_SOURCE_OPTS/.test(indexHtml), 'catálogo source UI');
+check(/Teléfono secundario/.test(indexHtml), 'whatsapp prioritario UX');
+check(/rec-cand-form-profile2/.test(indexHtml) && !/Próximamente/.test(indexHtml.match(/rec-cand-form-profile2[\s\S]{0,200}/)?.[0]||''), 'profileSecondary habilitado');
+check(/recCandSetOpErr/.test(indexHtml), 'mensaje fallo parcial vacante');
+check(/Indica el WhatsApp del candidato/.test(indexHtml), 'UI exige WhatsApp');
+check(/id="rec-cand-profile"[^>]*select|select id="rec-cand-profile"/.test(indexHtml), 'filtro profile select');
+
 console.log('\n=== Backend summary ===\n');
 
 check(/applicationSummary/.test(vacancyService), 'applicationSummary en servicio');

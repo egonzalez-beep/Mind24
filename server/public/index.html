@@ -324,6 +324,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-row-name-line .rec-cand-row-name{margin:0;flex:1;min-width:0;}
 .rec-cand-form-modal{max-width:min(640px,calc(100vw - 32px));padding:26px 28px 28px;background:#FAFBFF;}
 .rec-cand-form-modal .modal-close{top:18px;right:18px;}
+.rec-cand-form-section{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:14px 0 8px;grid-column:1/-1;}
+.rec-cand-form-section:first-of-type{margin-top:0;}
+.rec-cand-form-other{margin-top:6px;}
+.rec-cand-form-hint{font-size:11px;color:var(--slate-500);margin:4px 0 0;line-height:1.35;}
+.rec-cand-add-vac-modal{max-width:min(480px,calc(100vw - 32px));padding:24px 26px 26px;background:#FAFBFF;}
 .rec-cand-dupe-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px;max-height:240px;overflow-y:auto;}
 .rec-cand-dupe-item{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:var(--tr-fast);}
 .rec-cand-dupe-item:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);}
@@ -1737,8 +1742,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
     <div class="rec-detail-block">
       <h4>Información</h4>
+      <p id="rec-cand-detail-op-err" class="hidden" style="font-size:13px;color:#DC2626;margin:0 0 10px;"></p>
       <div class="rec-detail-info-grid" id="rec-cand-info-grid"></div>
-      <div style="margin-top:10px;display:flex;flex-wrap:gap:8px;">
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+        <button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button>
         <button type="button" class="rec-stage-act" id="rec-cand-archive-btn" onclick="recCandToggleArchive()">—</button>
       </div>
     </div>
@@ -1760,19 +1767,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-form')" aria-label="Cerrar">✕</button>
     <h2 class="modal-title" id="rec-cand-form-title" style="margin-bottom:16px;">Nuevo candidato</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="rec-cand-form-grid">
+      <p class="rec-cand-form-section">Datos del candidato</p>
       <div style="grid-column:1/-1;"><label class="form-label">Nombre completo *</label><input type="text" id="rec-cand-form-name" class="form-input" maxlength="200"></div>
-      <div style="grid-column:1/-1;"><label class="form-label">Perfil *</label><input type="text" id="rec-cand-form-profile" class="form-input" maxlength="300" placeholder="Ej. Supervisor de producción"></div>
-      <div><label class="form-label">Teléfono *</label><input type="tel" id="rec-cand-form-phone" class="form-input" maxlength="40"></div>
-      <div><label class="form-label">WhatsApp</label><input type="tel" id="rec-cand-form-whatsapp" class="form-input" maxlength="40"></div>
+      <div><label class="form-label">WhatsApp *</label><input type="tel" id="rec-cand-form-whatsapp" class="form-input" maxlength="40" autocomplete="tel"></div>
+      <div><label class="form-label">Teléfono secundario</label><input type="tel" id="rec-cand-form-phone" class="form-input" maxlength="40" autocomplete="tel"></div>
       <div><label class="form-label">Email</label><input type="email" id="rec-cand-form-email" class="form-input" maxlength="200"></div>
-      <div><label class="form-label">Fuente</label><input type="text" id="rec-cand-form-source" class="form-input" maxlength="120"></div>
       <div><label class="form-label">Ciudad</label><input type="text" id="rec-cand-form-city" class="form-input" maxlength="120"></div>
       <div><label class="form-label">Estado</label><input type="text" id="rec-cand-form-state" class="form-input" maxlength="120"></div>
+      <p class="rec-cand-form-section">Clasificación</p>
+      <div><label class="form-label">Perfil principal *</label><select id="rec-cand-form-profile" class="form-input"></select>
+        <div id="rec-cand-form-profile-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-profile-other" class="form-input" maxlength="300" placeholder="Especifica el perfil"></div></div>
+      <div><label class="form-label">Perfil secundario</label><select id="rec-cand-form-profile2" class="form-input"><option value="">— Ninguno —</option></select>
+        <div id="rec-cand-form-profile2-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-profile2-other" class="form-input" maxlength="300" placeholder="Especifica el perfil secundario"></div></div>
+      <div><label class="form-label">Fuente</label><select id="rec-cand-form-source" class="form-input"><option value="">— Sin especificar —</option></select>
+        <div id="rec-cand-form-source-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-source-other" class="form-input" maxlength="120" placeholder="Especifica la fuente"></div></div>
       <div style="grid-column:1/-1;"><label class="form-label">Notas</label><textarea id="rec-cand-form-notes" class="form-input" rows="3" maxlength="20000"></textarea></div>
+      <p class="rec-cand-form-section" id="rec-cand-form-process-section">Proceso</p>
+      <div id="rec-cand-form-vac-wrap"><label class="form-label">Asignar a vacante</label><select id="rec-cand-form-vacancy" class="form-input"><option value="">— Solo cartera —</option></select></div>
+      <div id="rec-cand-form-stage-wrap" class="hidden"><label class="form-label">Etapa inicial</label><select id="rec-cand-form-stage" class="form-input"></select></div>
     </div>
     <input type="hidden" id="rec-cand-form-id">
     <p id="rec-cand-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;text-align:center;"></p>
     <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-cand-form-submit" onclick="recCandSubmitForm()">Guardar</button>
+  </div>
+</div>
+
+<div id="modal-rec-candidate-add-vacancy" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-add-vacancy')">
+  <div class="modal-card rec-cand-add-vac-modal" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-add-vacancy')" aria-label="Cerrar">✕</button>
+    <h2 class="modal-title" style="font-size:18px;margin-bottom:12px;">Añadir a vacante</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div><label class="form-label">Vacante</label><select id="rec-cand-add-vac-select" class="form-input"></select></div>
+      <div><label class="form-label">Etapa inicial</label><select id="rec-cand-add-vac-stage" class="form-input"></select></div>
+    </div>
+    <p id="rec-cand-add-vac-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
+    <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-cand-add-vac-submit" onclick="recCandSubmitAddVacancy()">Guardar</button>
   </div>
 </div>
 
@@ -2303,11 +2332,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
           <div class="rec-cand-filter-item">
             <label for="rec-cand-profile">Perfil</label>
-            <input type="text" id="rec-cand-profile" class="form-input" placeholder="Ej. Chofer">
+            <select id="rec-cand-profile" class="form-input"><option value="">Todos</option></select>
           </div>
           <div class="rec-cand-filter-item">
             <label for="rec-cand-source">Fuente</label>
-            <input type="text" id="rec-cand-source" class="form-input" placeholder="Ej. Referido">
+            <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
           </div>
           <label class="rec-cand-arch-toggle"><input type="checkbox" id="rec-cand-archived"> Mostrar archivados</label>
         </div>
@@ -7837,12 +7866,163 @@ function recCandFmtBytes(n){
 function recCandLocationLine(c){
   return [c.city,c.state].filter(Boolean).join(', ')||'';
 }
+var REC_CAND_SOURCE_OPTS=['Indeed','OCC','Computrabajo','LinkedIn','Facebook / Meta','Referido','Bolsa de empleo','Base propia','Otro'];
+var REC_CAND_PROFILE_OPTS=['Ventas','Atención a clientes','Administrativo','Contabilidad / Finanzas','Recursos Humanos','Logística / Almacén','Mantenimiento','Producción / Operativo','Calidad','Seguridad','Transporte','Tecnología','Otro'];
+function recCandCatalogInits(){
+  if(window.__REC_CAND_CATALOG_INIT) return;
+  window.__REC_CAND_CATALOG_INIT=true;
+  function fill(selId,opts,allLabel){
+    const el=document.getElementById(selId);
+    if(!el||el.options.length>1) return;
+    el.innerHTML='<option value="">'+tcEsc(allLabel)+'</option>'+opts.map(function(o){ return '<option value="'+tcEsc(o)+'">'+tcEsc(o)+'</option>'; }).join('');
+  }
+  fill('rec-cand-profile',REC_CAND_PROFILE_OPTS,'Todos');
+  fill('rec-cand-source',REC_CAND_SOURCE_OPTS,'Todas');
+  const prof=document.getElementById('rec-cand-form-profile');
+  if(prof&&prof.options.length===0){
+    prof.innerHTML=REC_CAND_PROFILE_OPTS.map(function(o){ return '<option value="'+tcEsc(o)+'">'+tcEsc(o)+'</option>'; }).join('');
+  }
+  const prof2=document.getElementById('rec-cand-form-profile2');
+  if(prof2&&prof2.options.length<=1){
+    prof2.innerHTML='<option value="">— Ninguno —</option>'+REC_CAND_PROFILE_OPTS.map(function(o){ return '<option value="'+tcEsc(o)+'">'+tcEsc(o)+'</option>'; }).join('');
+  }
+  const src=document.getElementById('rec-cand-form-source');
+  if(src&&src.options.length<=1){
+    src.innerHTML='<option value="">— Sin especificar —</option>'+REC_CAND_SOURCE_OPTS.map(function(o){ return '<option value="'+tcEsc(o)+'">'+tcEsc(o)+'</option>'; }).join('');
+  }
+  const pSel=document.getElementById('rec-cand-form-profile');
+  const sSel=document.getElementById('rec-cand-form-source');
+  if(pSel&&!pSel.__otherBound){
+    pSel.__otherBound=true;
+    pSel.addEventListener('change',function(){ recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap'); });
+  }
+  const p2Sel=document.getElementById('rec-cand-form-profile2');
+  if(p2Sel&&!p2Sel.__otherBound){
+    p2Sel.__otherBound=true;
+    p2Sel.addEventListener('change',function(){ recCandToggleOtherWrap('rec-cand-form-profile2','rec-cand-form-profile2-other-wrap'); });
+  }
+  if(sSel&&!sSel.__otherBound){
+    sSel.__otherBound=true;
+    sSel.addEventListener('change',function(){ recCandToggleOtherWrap('rec-cand-form-source','rec-cand-form-source-other-wrap'); });
+  }
+  const vacSel=document.getElementById('rec-cand-form-vacancy');
+  if(vacSel&&!vacSel.__bound){
+    vacSel.__bound=true;
+    vacSel.addEventListener('change',function(){ recCandFormVacancyChanged(vacSel.value); });
+  }
+}
+function recCandToggleOtherWrap(selectId,wrapId){
+  const sel=document.getElementById(selectId);
+  const wrap=document.getElementById(wrapId);
+  if(!sel||!wrap) return;
+  wrap.classList.toggle('hidden',sel.value!=='Otro');
+}
+function recCandSplitCatalogValue(stored,opts,storedOther){
+  if(stored==='Otro') return { select:'Otro', other:storedOther||'' };
+  if(!stored) return { select:'', other:'' };
+  if(opts.indexOf(stored)>=0) return { select:stored, other:'' };
+  return { select:'Otro', other:stored };
+}
+function recCandProfilePrimaryLabel(c){
+  if(!c) return '—';
+  if(c.profile==='Otro'&&c.profileOther) return 'Otro · '+c.profileOther;
+  return c.profile||'—';
+}
+function recCandSourceLabel(c){
+  if(!c||!c.source) return '—';
+  if(c.source==='Otro'&&c.sourceOther) return 'Otro · '+c.sourceOther;
+  return c.source;
+}
+function recCandSetOpErr(msg){
+  const el=document.getElementById('rec-cand-detail-op-err');
+  if(!el) return;
+  if(msg){ el.textContent=msg; el.classList.remove('hidden'); }
+  else{ el.textContent=''; el.classList.add('hidden'); }
+}
 function recCandContactLine(c){
   const parts=[];
-  if(c.phone) parts.push(c.phone);
-  if(c.whatsapp&&c.whatsapp!==c.phone) parts.push('WA '+c.whatsapp);
+  const wa=c.whatsapp||'';
+  const ph=c.phone||'';
+  if(wa) parts.push('WA '+wa);
+  else if(ph) parts.push(ph);
+  if(ph&&wa&&ph!==wa) parts.push('Tel. '+ph);
   if(c.email) parts.push(c.email);
   return parts.join(' · ')||'—';
+}
+function recCandSecondaryPhone(c){
+  if(!c) return '—';
+  const wa=c.whatsapp||'';
+  const ph=c.phone||'';
+  if(ph&&wa&&ph!==wa) return ph;
+  if(ph&&!wa) return ph;
+  return '—';
+}
+async function recCandEnsureVacancyPickerOptions(selectEl){
+  if(!selectEl) return;
+  const st=recEnsureState();
+  if(!st.allVacancies||!st.allVacancies.length){
+    try{
+      const j=await apiJson('/api/org/recruitment/vacancies');
+      st.allVacancies=j.vacancies||[];
+    }catch(_e){ st.allVacancies=[]; }
+  }
+  const list=(st.allVacancies||[]).slice().sort(function(a,b){
+    const sa=a.status==='ACTIVE'?0:1;
+    const sb=b.status==='ACTIVE'?0:1;
+    if(sa!==sb) return sa-sb;
+    return String(a.title||'').localeCompare(String(b.title||''),'es');
+  });
+  const prev=selectEl.value;
+  const isForm=selectEl.id==='rec-cand-form-vacancy';
+  selectEl.innerHTML=(isForm?'<option value="">— Solo cartera —</option>':'<option value="">— Selecciona vacante —</option>')+
+    list.map(function(v){
+      const label=(v.title||'—')+(v.clientName?' · '+v.clientName:'')+(v.status&&v.status!=='ACTIVE'?' ('+recVacancyStatusLabel(v.status)+')':'');
+      return '<option value="'+tcEsc(v.id)+'">'+tcEsc(label)+'</option>';
+    }).join('');
+  if(prev) selectEl.value=prev;
+}
+async function recCandLoadEnabledStagesForVacancy(vacancyId){
+  if(!vacancyId) return [];
+  const j=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
+  const rows=(j.vacancyStages||j.config?.vacancyStages||[]).filter(function(vs){ return vs.isEnabled!==false; });
+  rows.sort(function(a,b){ return (a.position||0)-(b.position||0); });
+  return rows;
+}
+function recCandFillStageSelect(selectEl,stageRows,preferredStageId){
+  if(!selectEl) return;
+  selectEl.innerHTML=stageRows.map(function(vs){
+    const st=vs.stage||{};
+    return '<option value="'+tcEsc(st.id||vs.stageId)+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
+  }).join('');
+  let def=preferredStageId;
+  if(!def){
+    const newRow=stageRows.find(function(vs){ return (vs.stage&&vs.stage.key)==='NEW'; });
+    def=newRow?(newRow.stage.id||newRow.stageId):null;
+  }
+  if(def) selectEl.value=def;
+}
+async function recCandFormVacancyChanged(vacancyId){
+  const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
+  const stageSel=document.getElementById('rec-cand-form-stage');
+  if(!vacancyId){
+    if(stageWrap) stageWrap.classList.add('hidden');
+    return;
+  }
+  if(stageWrap) stageWrap.classList.remove('hidden');
+  try{
+    const rows=await recCandLoadEnabledStagesForVacancy(vacancyId);
+    recCandFillStageSelect(stageSel,rows,null);
+  }catch(e){
+    if(stageSel) stageSel.innerHTML='';
+  }
+}
+async function recCandAssignToVacancy(candidateId,vacancyId,stageId){
+  const body={ candidateId:candidateId };
+  if(stageId) body.stageId=stageId;
+  return apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
+    method:'POST',
+    body:JSON.stringify(body),
+  });
 }
 function recCandBuildListQuery(st, cursor){
   const f=st.candFilters||{};
@@ -7857,6 +8037,7 @@ function recCandBuildListQuery(st, cursor){
 }
 function recCandBindFilters(){
   const st=recEnsureState();
+  recCandCatalogInits();
   if(st.candFiltersBound) return;
   st.candFiltersBound=true;
   st.candFilters={ q:'', profile:'', source:'', includeArchived:false };
@@ -7869,8 +8050,8 @@ function recCandBindFilters(){
   const sEl=document.getElementById('rec-cand-source');
   const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); scheduleReload(); });
-  if(pEl) pEl.addEventListener('input',function(){ st.candFilters.profile=pEl.value.trim(); scheduleReload(); });
-  if(sEl) sEl.addEventListener('input',function(){ st.candFilters.source=sEl.value.trim(); scheduleReload(); });
+  if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandLoadList(false); });
+  if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandLoadList(false); });
   if(aEl) aEl.addEventListener('change',function(){ st.candFilters.includeArchived=!!aEl.checked; recCandLoadList(false); });
 }
 async function recCandLoadList(append){
@@ -7924,7 +8105,7 @@ function recCandRenderList(loadingOnly){
   list.innerHTML=st.candidates.map(function(c){
     const sum=c.applicationSummary||{};
     const loc=recCandLocationLine(c);
-    const meta=[c.profile,loc].filter(Boolean).join(' · ');
+    const meta=[recCandProfilePrimaryLabel(c),loc].filter(function(x){ return x&&x!=='—'; }).join(' · ');
     const arch=c.archivedAt?' rec-cand-row--archived':'';
     return '<button type="button" class="rec-cand-row'+arch+'" role="listitem" onclick="recCandOpenDetail(\''+c.id+'\')">'+
       '<span class="rec-cand-avatar">'+tcEsc(recCandInitials(c.fullName))+'</span>'+
@@ -7950,6 +8131,7 @@ async function recCandOpenDetail(id){
   const st=recEnsureState();
   st.detailCandidateId=id;
   openModal('modal-rec-candidate-detail');
+  recCandSetOpErr('');
   recCandRenderDetail(null,true);
   try{
     const c=await recCandFetchDetail(id);
@@ -7967,10 +8149,11 @@ function recCandRenderDetail(c,loading){
   if(!c) return;
   const st=recEnsureState();
   st.detailCandidate=c;
+  recCandSetOpErr('');
   document.getElementById('rec-cand-detail-avatar').textContent=recCandInitials(c.fullName);
   const nameEl=document.getElementById('rec-cand-detail-name');
   if(nameEl) nameEl.textContent=(c.fullName||'—')+(c.archivedAt?' · Archivado':'');
-  const subParts=[c.profile,recCandLocationLine(c)].filter(Boolean);
+  const subParts=[recCandProfilePrimaryLabel(c),recCandLocationLine(c)].filter(function(x){ return x&&x!=='—'; });
   const contact=recCandContactLine(c);
   if(contact&&contact!=='—') subParts.push(contact);
   document.getElementById('rec-cand-detail-subline').textContent=subParts.join(' · ')||'—';
@@ -7982,8 +8165,10 @@ function recCandRenderDetail(c,loading){
   const grid=document.getElementById('rec-cand-info-grid');
   if(grid){
     const fields=[
-      ['Teléfono',c.phone],['WhatsApp',c.whatsapp||'—'],['Email',c.email||'—'],
-      ['Ciudad',c.city||'—'],['Estado',c.state||'—'],['Fuente',c.source||'—'],
+      ['WhatsApp',c.whatsapp||c.phone||'—'],['Teléfono secundario',recCandSecondaryPhone(c)],
+      ['Email',c.email||'—'],['Perfil principal',recCandProfilePrimaryLabel(c)],
+      ['Perfil secundario',c.profileSecondary||'—'],['Ciudad',c.city||'—'],['Estado',c.state||'—'],
+      ['Fuente',recCandSourceLabel(c)],
     ];
     grid.innerHTML=fields.map(function(pair){
       return '<div class="rec-detail-field rec-info-tile"><label>'+tcEsc(pair[0])+'</label><span>'+tcEsc(pair[1]||'—')+'</span></div>';
@@ -8102,24 +8287,56 @@ async function recCandDeleteCv(){
   }catch(e){ recCandSetCvErr((e&&e.message)||'No se pudo eliminar.'); }
 }
 function recCandOpenForm(mode,candidate){
+  recCandCatalogInits();
   const title=document.getElementById('rec-cand-form-title');
   const idEl=document.getElementById('rec-cand-form-id');
   if(title) title.textContent=mode==='edit'?'Editar candidato':'Nuevo candidato';
   const set=function(id,v){ const el=document.getElementById(id); if(el) el.value=v!=null?String(v):''; };
-  if(mode==='edit'&&candidate){
+  const procSec=document.getElementById('rec-cand-form-process-section');
+  const vacWrap=document.getElementById('rec-cand-form-vac-wrap');
+  const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
+  const isEdit=mode==='edit'&&candidate;
+  if(procSec) procSec.classList.toggle('hidden',!!isEdit);
+  if(vacWrap) vacWrap.classList.toggle('hidden',!!isEdit);
+  if(stageWrap&&(isEdit||!document.getElementById('rec-cand-form-vacancy')?.value)) stageWrap.classList.add('hidden');
+  recCandEnsureVacancyPickerOptions(document.getElementById('rec-cand-form-vacancy'));
+  if(isEdit){
     if(idEl) idEl.value=candidate.id;
     set('rec-cand-form-name',candidate.fullName);
-    set('rec-cand-form-profile',candidate.profile);
-    set('rec-cand-form-phone',candidate.phone);
-    set('rec-cand-form-whatsapp',candidate.whatsapp);
+    const prof=recCandSplitCatalogValue(candidate.profile,REC_CAND_PROFILE_OPTS,candidate.profileOther);
+    set('rec-cand-form-profile',prof.select||REC_CAND_PROFILE_OPTS[0]);
+    set('rec-cand-form-profile-other',prof.other);
+    recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
+    const sec=recCandSplitCatalogValue(candidate.profileSecondary,REC_CAND_PROFILE_OPTS,null);
+    set('rec-cand-form-profile2',sec.select);
+    set('rec-cand-form-profile2-other',sec.other);
+    recCandToggleOtherWrap('rec-cand-form-profile2','rec-cand-form-profile2-other-wrap');
+    const src=recCandSplitCatalogValue(candidate.source,REC_CAND_SOURCE_OPTS,candidate.sourceOther);
+    set('rec-cand-form-source',src.select);
+    set('rec-cand-form-source-other',src.other);
+    recCandToggleOtherWrap('rec-cand-form-source','rec-cand-form-source-other-wrap');
+    set('rec-cand-form-whatsapp',candidate.whatsapp||candidate.phone);
+    set('rec-cand-form-phone',recCandSecondaryPhone(candidate)==='—'?'':recCandSecondaryPhone(candidate));
     set('rec-cand-form-email',candidate.email);
-    set('rec-cand-form-source',candidate.source);
     set('rec-cand-form-city',candidate.city);
     set('rec-cand-form-state',candidate.state);
     set('rec-cand-form-notes',candidate.notes);
+    set('rec-cand-form-vacancy','');
   }else{
     if(idEl) idEl.value='';
-    ['rec-cand-form-name','rec-cand-form-profile','rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-source','rec-cand-form-city','rec-cand-form-state','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    set('rec-cand-form-name','');
+    set('rec-cand-form-profile',REC_CAND_PROFILE_OPTS[0]);
+    set('rec-cand-form-profile-other','');
+    recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
+    set('rec-cand-form-profile2','');
+    set('rec-cand-form-profile2-other','');
+    recCandToggleOtherWrap('rec-cand-form-profile2','rec-cand-form-profile2-other-wrap');
+    set('rec-cand-form-source','');
+    set('rec-cand-form-source-other','');
+    recCandToggleOtherWrap('rec-cand-form-source','rec-cand-form-source-other-wrap');
+    ['rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-city','rec-cand-form-state','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    set('rec-cand-form-vacancy','');
+    if(stageWrap) stageWrap.classList.add('hidden');
   }
   const err=document.getElementById('rec-cand-form-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
@@ -8130,18 +8347,44 @@ function recCandEditFromDetail(){
   if(st.detailCandidate) recCandOpenForm('edit',st.detailCandidate);
 }
 function recCandReadFormBody(){
-  const g=function(id){ return (document.getElementById(id).value||'').trim(); };
+  const g=function(id){ const el=document.getElementById(id); return el?(el.value||'').trim():''; };
+  const vacancyId=g('rec-cand-form-vacancy');
+  const stageId=g('rec-cand-form-stage');
   return {
     fullName:g('rec-cand-form-name'),
     profile:g('rec-cand-form-profile'),
-    phone:g('rec-cand-form-phone'),
-    whatsapp:g('rec-cand-form-whatsapp')||null,
+    profileOther:g('rec-cand-form-profile-other')||null,
+    profileSecondary:g('rec-cand-form-profile2')||null,
+    profileSecondaryOther:g('rec-cand-form-profile2-other')||null,
+    whatsapp:g('rec-cand-form-whatsapp'),
+    phone:g('rec-cand-form-phone')||null,
     email:g('rec-cand-form-email')||null,
     source:g('rec-cand-form-source')||null,
+    sourceOther:g('rec-cand-form-source-other')||null,
     city:g('rec-cand-form-city')||null,
     state:g('rec-cand-form-state')||null,
     notes:g('rec-cand-form-notes')||null,
+    _vacancyId:vacancyId||null,
+    _stageId:stageId||null,
   };
+}
+function recCandApiCandidateBody(body){
+  const o={
+    fullName:body.fullName,
+    profile:body.profile,
+    profileOther:body.profileOther,
+    profileSecondary:body.profileSecondary,
+    profileSecondaryOther:body.profileSecondaryOther,
+    whatsapp:body.whatsapp,
+    phone:body.phone,
+    email:body.email,
+    source:body.source,
+    sourceOther:body.sourceOther,
+    city:body.city,
+    state:body.state,
+    notes:body.notes,
+  };
+  return o;
 }
 async function recCandSubmitForm(){
   const err=document.getElementById('rec-cand-form-err');
@@ -8149,10 +8392,18 @@ async function recCandSubmitForm(){
   const id=(document.getElementById('rec-cand-form-id').value||'').trim();
   const body=recCandReadFormBody();
   if(err){ err.classList.add('hidden'); }
+  if(!id&&!body.whatsapp){
+    if(err){ err.textContent='Indica el WhatsApp del candidato.'; err.classList.remove('hidden'); }
+    return;
+  }
   if(btn) btn.disabled=true;
   try{
     if(id){
-      await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(body)});
+      if(!body.whatsapp){
+        if(err){ err.textContent='Indica el WhatsApp del candidato.'; err.classList.remove('hidden'); }
+        return;
+      }
+      await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(recCandApiCandidateBody(body))});
       closeModal('modal-rec-candidate-form');
       await recCandLoadList(false);
       if(recEnsureState().detailCandidateId===id){
@@ -8162,8 +8413,9 @@ async function recCandSubmitForm(){
       return;
     }
     const st=recEnsureState();
-    if(body.email||body.phone){
-      const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:body.phone||null})});
+    const dupPhone=body.whatsapp||body.phone;
+    if(body.email||dupPhone){
+      const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null})});
       if((dup.candidates||[]).length){
         st.candDupePendingBody=body;
         st.candDupeSelectedId=dup.candidates[0].id;
@@ -8213,11 +8465,76 @@ async function recCandDupeCreateAnyway(){
   st.candDupePendingBody=null;
 }
 async function recCandCreateAndOpen(body){
-  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(body)});
+  const vacId=body._vacancyId;
+  const stageId=body._stageId;
+  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(recCandApiCandidateBody(body))});
   closeModal('modal-rec-candidate-form');
   recSwitchModuleTab('candidates');
   await recCandLoadList(false);
-  if(j.candidate&&j.candidate.id) await recCandOpenDetail(j.candidate.id);
+  if(j.candidate&&j.candidate.id){
+    if(vacId){
+      try{
+        await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null);
+      }catch(e){
+        await recCandOpenDetail(j.candidate.id);
+        recCandSetOpErr('El candidato fue creado, pero no pudo asignarse a la vacante.');
+        return;
+      }
+    }
+    await recCandOpenDetail(j.candidate.id);
+  }
+}
+async function recCandOpenAddVacancyModal(){
+  const st=recEnsureState();
+  if(!st.detailCandidateId) return;
+  recCandCatalogInits();
+  const err=document.getElementById('rec-cand-add-vac-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const vacSel=document.getElementById('rec-cand-add-vac-select');
+  await recCandEnsureVacancyPickerOptions(vacSel);
+  openModal('modal-rec-candidate-add-vacancy');
+  if(vacSel&&vacSel.value) await recCandAddVacancySelectChanged();
+  else{
+    const stageSel=document.getElementById('rec-cand-add-vac-stage');
+    if(stageSel) stageSel.innerHTML='';
+  }
+  if(vacSel&&!vacSel.__addBound){
+    vacSel.__addBound=true;
+    vacSel.addEventListener('change',function(){ recCandAddVacancySelectChanged(); });
+  }
+}
+async function recCandAddVacancySelectChanged(){
+  const vacId=(document.getElementById('rec-cand-add-vac-select')?.value||'').trim();
+  const stageSel=document.getElementById('rec-cand-add-vac-stage');
+  if(!vacId||!stageSel) return;
+  const rows=await recCandLoadEnabledStagesForVacancy(vacId);
+  recCandFillStageSelect(stageSel,rows,null);
+}
+async function recCandSubmitAddVacancy(){
+  const st=recEnsureState();
+  const err=document.getElementById('rec-cand-add-vac-err');
+  const btn=document.getElementById('rec-cand-add-vac-submit');
+  const candidateId=st.detailCandidateId;
+  const vacId=(document.getElementById('rec-cand-add-vac-select')?.value||'').trim();
+  const stageId=(document.getElementById('rec-cand-add-vac-stage')?.value||'').trim();
+  if(err){ err.classList.add('hidden'); }
+  if(!candidateId||!vacId){
+    if(err){ err.textContent='Selecciona una vacante.'; err.classList.remove('hidden'); }
+    return;
+  }
+  if(btn) btn.disabled=true;
+  try{
+    await recCandAssignToVacancy(candidateId,vacId,stageId||null);
+    closeModal('modal-rec-candidate-add-vacancy');
+    const c=await recCandFetchDetail(candidateId);
+    st.detailCandidate=c;
+    recCandRenderDetail(c,false);
+    await recCandLoadList(false);
+  }catch(e){
+    if(err){ err.textContent=(e&&e.message)||'No se pudo crear la postulación.'; err.classList.remove('hidden'); }
+  }finally{
+    if(btn) btn.disabled=false;
+  }
 }
 async function recCandToggleArchive(){
   const st=recEnsureState();

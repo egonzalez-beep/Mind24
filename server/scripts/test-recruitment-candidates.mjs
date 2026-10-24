@@ -88,6 +88,15 @@ check(/router\.get\('\/candidates'/.test(routes) && /req\.query\.q/.test(routes)
 check(/router\.post\('\/candidates\/check-duplicates'/.test(routes), 'POST check-duplicates');
 check(/findPotentialDuplicateRecruitmentCandidates/.test(routes), 'check-duplicates usa helper');
 check(!/status/.test(schema.match(/model RecruitmentCandidate \{[\s\S]*?\n\}/)?.[0] || ''), 'sin status en Candidate');
+check(/recruitmentCandidateCatalog\.service/.test(candidateSvc), 'catálogo en candidate service');
+check(/initialStageId/.test(fs.readFileSync(path.join(rootDir, 'src/services/recruitmentApplication.service.js'), 'utf8')), 'initialStageId application');
+check(/profileSecondary/.test(schema), 'profileSecondary en schema');
+check(/superRefine\(candidateContactRefine\)/.test(routes), 'contacto whatsapp o phone en POST');
+const patchSchemaBlock = routes.split('const candidatePatchSchema')[1]?.split('router.get')[0] || '';
+check(
+  !patchSchemaBlock.includes('candidateContactRefine(data'),
+  'PATCH no exige contacto en payload',
+);
 
 console.log('\n=== Recruitment 1D.1 — integración (DB) ===\n');
 
@@ -113,6 +122,7 @@ if (dbOk) {
   for (const mig of [
     '20261020180000_recruitment_vacancy_stages',
     '20261020200000_recruitment_candidate_resume',
+    '20261023120000_recruitment_candidate_profile_fields',
   ]) {
     try {
       await prisma.$executeRawUnsafe(
@@ -157,8 +167,8 @@ if (dbOk) {
       cookie,
       body: {
         fullName: 'Juan Pérez',
-        profile: 'Chofer',
-        phone: '5512345678',
+        profile: 'Transporte',
+        whatsapp: '5512345678',
         email: `juan-${suffix}@example.com`,
         source: 'Referido',
       },
@@ -172,6 +182,43 @@ if (dbOk) {
       body: { city: 'CDMX', notes: '  nota  ' },
     });
     check(patch.res.status === 200 && patch.data.candidate?.city === 'CDMX', 'editar candidato');
+
+    const patchCityOnly = await jsonFetch(base, `/api/org/recruitment/candidates/${candidateId}`, {
+      method: 'PATCH',
+      cookie,
+      body: { city: 'Querétaro' },
+    });
+    check(
+      patchCityOnly.res.status === 200 && patchCityOnly.data.candidate?.city === 'Querétaro',
+      'PATCH parcial solo city sin contacto en body',
+    );
+    check(patchCityOnly.data.candidate?.whatsapp === '5512345678', 'PATCH parcial conserva whatsapp');
+
+    const otroCreate = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie,
+      body: {
+        fullName: 'Otro Clean',
+        profile: 'Otro',
+        profileOther: 'Texto legacy perfil',
+        whatsapp: '5511223344',
+        source: 'Otro',
+        sourceOther: 'FB Ads',
+      },
+    });
+    const otroId = otroCreate.data.candidate?.id;
+    check(otroCreate.data.candidate?.profileOther === 'Texto legacy perfil', 'Otro con profileOther');
+
+    const canonPatch = await jsonFetch(base, `/api/org/recruitment/candidates/${otroId}`, {
+      method: 'PATCH',
+      cookie,
+      body: { profile: 'Ventas', source: 'Indeed' },
+    });
+    check(canonPatch.res.status === 200, 'Otro a canónico PATCH');
+    check(canonPatch.data.candidate?.profile === 'Ventas', 'profile canónico');
+    check(canonPatch.data.candidate?.profileOther == null, 'profileOther limpiado');
+    check(canonPatch.data.candidate?.source === 'Indeed', 'source canónico');
+    check(canonPatch.data.candidate?.sourceOther == null, 'sourceOther limpiado');
 
     await ensureOrganizationRecruitmentStages(orgA.id);
     const vac1 = await jsonFetch(base, '/api/org/recruitment/vacancies', {
@@ -229,7 +276,7 @@ if (dbOk) {
 
     const byProfile = await jsonFetch(
       base,
-      '/api/org/recruitment/candidates?profile=Chofer',
+      '/api/org/recruitment/candidates?profile=Transporte',
       { cookie },
     );
     check(byProfile.data.candidates.some((c) => c.id === candidateId), 'filtro profile');
