@@ -487,6 +487,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-row-name-line{display:flex;align-items:center;gap:8px;min-width:0;margin-bottom:2px;}
 .rec-cand-row-name-line .rec-cand-row-name{margin:0;flex:1;min-width:0;}
 .rec-cand-form-modal{max-width:min(720px,calc(100vw - 32px));padding:22px 26px 20px;background:#FAFBFF;}
+.rec-vac-form-subtitle{font-size:13px;color:var(--slate-500);margin:4px 0 0;line-height:1.45;max-width:36em;}
+.rec-vac-form-first-section{margin-top:0!important;padding-top:0!important;border-top:none!important;}
+.rec-vac-form-jd-hint{font-size:11px;color:var(--slate-500);margin:6px 0 0;line-height:1.35;}
+.rec-form-vac-docs-drop{cursor:pointer;text-align:center;}
+.rec-form-vac-docs-drop.tc-docs-upload-zone--over{border-color:rgba(124,58,237,.45);background:rgba(245,243,255,.55);}
+.rec-form-vac-pending-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;margin-top:8px;}
+.rec-form-vac-pending-row .rec-form-vac-pending-name{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--slate-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-form-vac-pending-row .rec-form-vac-pending-meta{font-size:11px;color:var(--slate-500);}
 .rec-cand-form-modal .modal-close{top:16px;right:16px;}
 .rec-cand-form-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;padding-right:36px;}
 .rec-cand-form-header-main{display:flex;align-items:flex-start;gap:12px;min-width:0;}
@@ -1852,40 +1860,115 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <div id="modal-rec-vacancy" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-vacancy')">
-  <div class="modal-card rec-modal-scroll" style="max-width:560px;max-height:min(90vh,640px);overflow-y:auto;" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeModal('modal-rec-vacancy')">✕</button>
-    <div class="modal-logo"><div class="modal-logo-icon"></div><span class="modal-logo-text">MIND<span>24</span></span></div>
-    <div class="modal-badge modal-badge-purple">Reclutamiento</div>
-    <h2 class="modal-title" id="rec-modal-title">Nueva vacante</h2>
-    <p class="modal-subtitle" id="rec-modal-subtitle">Registra los datos de la vacante.</p>
+  <div class="modal-card rec-modal-scroll rec-cand-form-modal" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="closeModal('modal-rec-vacancy')" aria-label="Cerrar">✕</button>
+    <header class="rec-cand-form-header">
+      <div class="rec-cand-form-header-main">
+        <div class="rec-cand-form-header-icon" id="rec-vac-form-header-icon" aria-hidden="true"></div>
+        <div>
+          <p class="rec-cand-form-kicker">Reclutamiento</p>
+          <h2 class="modal-title" id="rec-modal-title">Nueva vacante</h2>
+          <p class="rec-vac-form-subtitle" id="rec-modal-subtitle">Define la posición y organiza su cobertura.</p>
+        </div>
+      </div>
+    </header>
     <input type="hidden" id="rec-form-vacancy-id">
     <input type="hidden" id="rec-form-prev-assignee-id">
-    <div class="rec-modal-grid">
-      <div class="rec-span-2"><label class="form-label">Título *</label><input type="text" id="rec-form-title" class="form-input" maxlength="300" placeholder="Ej. Supervisor de Obra"></div>
-      <div><label class="form-label">Cliente / empresa *</label><input type="text" id="rec-form-client" class="form-input" maxlength="300"></div>
-      <div><label class="form-label">Ubicación</label><input type="text" id="rec-form-location" class="form-input" maxlength="300" placeholder="Opcional"></div>
-      <div><label class="form-label">Número de posiciones *</label><input type="number" id="rec-form-positions" class="form-input" min="1" max="9999" value="1"></div>
-      <div><label class="form-label">Fecha de apertura *</label><input type="date" id="rec-form-opened" class="form-input"></div>
-      <div><label class="form-label">Fecha objetivo de cobertura</label><input type="date" id="rec-form-target-coverage" class="form-input"><p style="font-size:11px;color:var(--slate-500);margin-top:6px;">Opcional.</p></div>
-      <div><label class="form-label">Estado *</label>
-        <select id="rec-form-status" class="form-input">
-          <option value="ACTIVE">Activa</option>
-          <option value="PAUSED">En pausa</option>
-          <option value="COVERED">Cubierta</option>
-          <option value="CLOSED">Cerrada</option>
-        </select>
+    <div class="rec-cand-form-body">
+      <div class="rec-cand-form-section-head rec-vac-form-first-section">
+        <span class="rec-cand-form-section-icon" id="rec-vac-form-info-icon" aria-hidden="true"></span>
+        <span class="rec-cand-form-section-title">Información principal</span>
       </div>
-      <div><label class="form-label">Responsable</label>
-        <select id="rec-form-responsible" class="form-input">
-          <option value="">Sin responsable</option>
-        </select>
+      <div class="rec-cand-form-grid-row">
+        <div class="rec-cand-form-span-full">
+          <label class="form-label">Título de la vacante *</label>
+          <input type="text" id="rec-form-title" class="form-input" maxlength="300" placeholder="Ej. Supervisor de Producción">
+        </div>
+        <div>
+          <label class="form-label">Cliente / empresa *</label>
+          <input type="text" id="rec-form-client" class="form-input" maxlength="300">
+        </div>
+        <div>
+          <label class="form-label">Ubicación</label>
+          <input type="text" id="rec-form-location" class="form-input" maxlength="300" placeholder="Opcional">
+        </div>
       </div>
-      <div class="rec-span-2"><label class="form-label">Job Description</label><textarea id="rec-form-jd" class="form-input" rows="6" maxlength="100000" placeholder="Perfil, requisitos, actividades…"></textarea><p style="font-size:11px;color:var(--slate-500);margin-top:6px;">Perfil, requisitos, actividades, condiciones y detalles de la vacante.</p></div>
-      <div class="rec-span-2"><label class="form-label">Notas</label><textarea id="rec-form-notes" class="form-input" rows="3" maxlength="20000"></textarea></div>
-      <div class="rec-span-2"><p id="rec-form-files-hint" style="font-size:12px;color:var(--slate-500);margin:0;">Podrás agregar archivos después de crear la vacante.</p></div>
+      <div id="rec-vac-form-coverage-block" class="rec-cand-form-process-block">
+        <div class="rec-cand-form-section-head">
+          <span class="rec-cand-form-section-icon" id="rec-vac-form-coverage-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">Cobertura</span>
+        </div>
+        <div class="rec-cand-form-grid-row rec-cand-form-grid-row--3">
+          <div>
+            <label class="form-label">Número de posiciones *</label>
+            <input type="number" id="rec-form-positions" class="form-input" min="1" max="9999" value="1">
+          </div>
+          <div>
+            <label class="form-label">Fecha de apertura *</label>
+            <input type="date" id="rec-form-opened" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Fecha objetivo de cobertura</label>
+            <input type="date" id="rec-form-target-coverage" class="form-input">
+            <p class="rec-cand-form-hint">Opcional.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rec-cand-form-section-head">
+        <span class="rec-cand-form-section-icon" id="rec-vac-form-mgmt-icon" aria-hidden="true"></span>
+        <span class="rec-cand-form-section-title">Gestión</span>
+      </div>
+      <div class="rec-cand-form-grid-row">
+        <div>
+          <label class="form-label">Estado *</label>
+          <select id="rec-form-status" class="form-input">
+            <option value="ACTIVE">Activa</option>
+            <option value="PAUSED">En pausa</option>
+            <option value="COVERED">Cubierta</option>
+            <option value="CLOSED">Cerrada</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Responsable</label>
+          <select id="rec-form-responsible" class="form-input">
+            <option value="">Seleccionar responsable</option>
+          </select>
+        </div>
+      </div>
+      <div class="rec-cand-form-section-head">
+        <span class="rec-cand-form-section-icon" id="rec-vac-form-desc-icon" aria-hidden="true"></span>
+        <span class="rec-cand-form-section-title">Descripción de la vacante</span>
+      </div>
+      <div>
+        <label class="form-label">Descripción / Job Description</label>
+        <textarea id="rec-form-jd" class="form-input" rows="5" maxlength="100000" placeholder="Perfil, requisitos, actividades…"></textarea>
+        <p class="rec-vac-form-jd-hint">Responsabilidades, requisitos y condiciones principales.</p>
+      </div>
+      <div class="rec-cand-form-section-head">
+        <span class="rec-cand-form-section-icon" id="rec-vac-form-files-icon" aria-hidden="true"></span>
+        <span class="rec-cand-form-section-title">Archivos</span>
+      </div>
+      <div id="rec-form-vac-docs-panel" class="rec-cand-form-cv-panel rec-detail-files-panel">
+        <div id="rec-form-vac-docs-drop" class="rec-cand-cv-drop tc-docs-upload-zone rec-form-vac-docs-drop" role="button" tabindex="0" onclick="recFormVacDocsPickFile()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();recFormVacDocsPickFile();}">
+          <div class="rec-cand-form-cv-upload-icon" id="rec-form-vac-docs-upload-icon" aria-hidden="true"></div>
+          <p class="rec-cand-form-cv-hint"><strong>Arrastra archivos aquí</strong> o selecciona un archivo</p>
+          <p class="rec-cand-form-cv-meta">PDF, Word, Excel o imagen · máx. 10 MB</p>
+        </div>
+        <input type="file" id="rec-form-vac-docs-file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,application/pdf,image/*" onchange="recFormVacDocsOnFileInput(event)">
+        <div id="rec-form-vac-docs-list" class="rec-detail-files-list"></div>
+      </div>
+      <p id="rec-form-vac-docs-err" class="hidden" style="font-size:12px;color:#DC2626;margin:8px 0 0;"></p>
+      <div class="rec-cand-form-section-head">
+        <span class="rec-cand-form-section-icon" id="rec-vac-form-notes-icon" aria-hidden="true"></span>
+        <span class="rec-cand-form-section-title">Notas internas</span>
+      </div>
+      <textarea id="rec-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Notas internas para el equipo de reclutamiento…"></textarea>
     </div>
-    <p id="rec-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:12px;text-align:center;"></p>
-    <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-form-submit" onclick="recSubmitVacancy()">Guardar vacante</button>
+    <p id="rec-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;text-align:center;"></p>
+    <footer class="rec-cand-form-footer">
+      <button type="button" class="rec-stages-ghost-btn" onclick="closeModal('modal-rec-vacancy')">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-form-submit" onclick="recSubmitVacancy()">Crear vacante</button>
+    </footer>
   </div>
 </div>
 
@@ -7231,6 +7314,9 @@ const REC_VAC_DOC_CATEGORY_LABELS={
   OTHER:'Otro',
 };
 let recVacDocsItems=[];
+let recFormVacPendingFiles=[];
+let recFormVacDocsItems=[];
+let recFormVacDocsDropBound=false;
 let recVacDocsDropBound=false;
 const REC_FILTER_CHIPS=[{key:'ALL',label:'Todas'},{key:'ACTIVE',label:'Activas'},{key:'PAUSED',label:'En pausa'},{key:'COVERED',label:'Cubiertas'},{key:'CLOSED',label:'Cerradas'}];
 function recEnsureState(){
@@ -8001,21 +8087,23 @@ async function recVacDocsDelete(docId){
     recVacDocsSetErr(e.message||'No se pudo eliminar el archivo.');
   }
 }
-async function recVacDocsSubmitFromFile(file){
+async function recVacDocsSubmitFromFile(file,opts){
+  opts=opts||{};
   const st=recEnsureState();
-  const vacId=st.detailVacancyId;
+  const vacId=opts.vacancyId||st.detailVacancyId;
   if(!vacId||!file) return;
   const nameEl=document.getElementById('rec-vac-docs-name');
   const catEl=document.getElementById('rec-vac-docs-category');
-  let displayName=nameEl&&nameEl.value?nameEl.value.trim():'';
+  let displayName=opts.displayName||(nameEl&&nameEl.value?nameEl.value.trim():'');
   if(!displayName){
     displayName=(file.name||'Documento').replace(/\.[^.]+$/,'').slice(0,200);
     if(nameEl) nameEl.value=displayName;
   }
-  const category=catEl&&catEl.value?catEl.value:'OTHER';
+  const category=opts.category||(catEl&&catEl.value?catEl.value:'OTHER');
   const btn=document.getElementById('rec-vac-docs-submit-btn');
-  if(btn) btn.disabled=true;
-  recVacDocsSetErr('');
+  if(btn&&!opts.skipDetailBtn) btn.disabled=true;
+  const setErr=opts.setErr||recVacDocsSetErr;
+  setErr('');
   try{
     const fd=new FormData();
     fd.append('displayName',displayName);
@@ -8027,13 +8115,218 @@ async function recVacDocsSubmitFromFile(file){
     const fileInput=document.getElementById('rec-vac-docs-file');
     if(fileInput) fileInput.value='';
     if(nameEl) nameEl.value='';
-    recVacDocsToggleForm(false);
-    await recVacDocsLoad();
+    if(!opts.skipDetailReload){
+      recVacDocsToggleForm(false);
+      await recVacDocsLoad();
+    }
+    if(opts.afterUpload) await opts.afterUpload(vacId,j);
   }catch(e){
-    recVacDocsSetErr(e.message||'No se pudo subir el archivo.');
+    setErr(e.message||'No se pudo subir el archivo.');
+    throw e;
   }finally{
-    if(btn) btn.disabled=false;
+    if(btn&&!opts.skipDetailBtn) btn.disabled=false;
   }
+}
+function recFormVacDocsSetErr(msg){
+  const el=document.getElementById('rec-form-vac-docs-err');
+  if(!el) return;
+  if(msg){ el.textContent=msg; el.classList.remove('hidden'); }
+  else{ el.textContent=''; el.classList.add('hidden'); }
+}
+function recFormVacDocsVacancyId(){
+  return (document.getElementById('rec-form-vacancy-id')?.value||'').trim();
+}
+function recFormVacDocsRenderList(){
+  const list=document.getElementById('rec-form-vac-docs-list');
+  if(!list) return;
+  const vacId=recFormVacDocsVacancyId();
+  let html='';
+  if(!vacId&&recFormVacPendingFiles.length){
+    html=recFormVacPendingFiles.map(function(file,idx){
+      const name=(file.name||'Archivo').replace(/\.[^.]+$/,'');
+      const size=typeof tcDocsFmtSize==='function'?tcDocsFmtSize(file.size):'';
+      return '<div class="rec-form-vac-pending-row">'+
+        '<span class="rec-cand-form-section-icon" style="color:var(--purple);" aria-hidden="true">'+recVacFormIconSvg('file')+'</span>'+
+        '<div class="rec-form-vac-pending-name">'+tcEsc(name)+'</div>'+
+        '<span class="rec-form-vac-pending-meta">'+tcEsc(size)+' · Pendiente</span>'+
+        '<button type="button" class="rec-file-link rec-file-link--danger" onclick="recFormVacDocsRemovePending('+idx+')">Quitar</button>'+
+        '</div>';
+    }).join('');
+  }else if(recFormVacDocsItems.length){
+    html=recFormVacDocsItems.map(function(d){
+      const cat=REC_VAC_DOC_CATEGORY_LABELS[d.category]||d.category||'Otro';
+      return '<div class="rec-file-row">'+
+        '<div class="rec-file-icon"><span class="rec-doc-file-mark">DOC</span></div>'+
+        '<div class="rec-file-body">'+
+        '<p class="rec-file-title">'+tcEsc(d.displayName||'Documento')+'</p>'+
+        '<p class="rec-file-meta">'+tcEsc(cat)+' · '+tcEsc(tcDocsFmtDate(d.createdAt))+' · '+tcEsc(tcDocsFmtSize(d.fileSize))+'</p>'+
+        '</div>'+
+        '<div class="rec-file-actions">'+
+        '<button type="button" class="rec-file-link" onclick="recVacDocsView(\''+d.id+'\')">Ver</button>'+
+        '<button type="button" class="rec-file-link rec-file-link--danger" onclick="recFormVacDocsDelete(\''+d.id+'\')">Eliminar</button>'+
+        '</div></div>';
+    }).join('');
+  }else{
+    html='';
+  }
+  list.innerHTML=html;
+}
+function recFormVacDocsRemovePending(idx){
+  recFormVacPendingFiles.splice(idx,1);
+  recFormVacDocsRenderList();
+}
+async function recFormVacDocsLoad(vacancyId){
+  const vacId=vacancyId||recFormVacDocsVacancyId();
+  recFormVacDocsSetErr('');
+  if(!vacId){
+    recFormVacDocsItems=[];
+    recFormVacDocsRenderList();
+    return;
+  }
+  try{
+    const j=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacId)+'/documents');
+    recFormVacDocsItems=j.documents||[];
+    recFormVacDocsRenderList();
+  }catch(e){
+    recFormVacDocsItems=[];
+    recFormVacDocsRenderList();
+    recFormVacDocsSetErr(e.message||'No se pudieron cargar los archivos.');
+  }
+}
+function recFormVacDocsPickFile(){
+  const input=document.getElementById('rec-form-vac-docs-file');
+  if(input) input.click();
+}
+function recFormVacDocsOnFileInput(ev){
+  const file=ev.target&&ev.target.files&&ev.target.files[0];
+  if(file) recFormVacDocsHandleFile(file);
+  if(ev.target) ev.target.value='';
+}
+async function recFormVacDocsHandleFile(file){
+  if(!file) return;
+  recFormVacDocsSetErr('');
+  const vacId=recFormVacDocsVacancyId();
+  if(vacId){
+    try{
+      await recVacDocsSubmitFromFile(file,{
+        vacancyId:vacId,
+        skipDetailReload:true,
+        skipDetailBtn:true,
+        setErr:recFormVacDocsSetErr,
+        afterUpload:function(){ return recFormVacDocsLoad(vacId); },
+      });
+    }catch(_e){}
+    return;
+  }
+  recFormVacPendingFiles.push(file);
+  recFormVacDocsRenderList();
+}
+async function recFormVacDocsUploadPending(vacancyId){
+  if(!vacancyId||!recFormVacPendingFiles.length) return;
+  const queue=recFormVacPendingFiles.slice();
+  recFormVacPendingFiles=[];
+  for(let i=0;i<queue.length;i++){
+    try{
+      await recVacDocsSubmitFromFile(queue[i],{
+        vacancyId:vacancyId,
+        skipDetailReload:true,
+        skipDetailBtn:true,
+        setErr:recFormVacDocsSetErr,
+      });
+    }catch(_e){
+      recFormVacPendingFiles=queue.slice(i);
+      recFormVacDocsRenderList();
+      throw _e;
+    }
+  }
+}
+async function recFormVacDocsDelete(docId){
+  const doc=recFormVacDocsItems.find(function(d){ return d.id===docId; });
+  const label=doc&&doc.displayName?doc.displayName:'este archivo';
+  if(!confirm('¿Eliminar “'+label+'”? Esta acción no se puede deshacer.')) return;
+  recFormVacDocsSetErr('');
+  try{
+    await apiJson('/api/org/recruitment/vacancy-documents/'+encodeURIComponent(docId),{ method:'DELETE' });
+    await recFormVacDocsLoad();
+  }catch(e){
+    recFormVacDocsSetErr(e.message||'No se pudo eliminar el archivo.');
+  }
+}
+function recFormVacDocsOnDragOver(ev){
+  ev.preventDefault();
+  const z=document.getElementById('rec-form-vac-docs-drop');
+  if(z) z.classList.add('tc-docs-upload-zone--over');
+}
+function recFormVacDocsOnDragLeave(){
+  const z=document.getElementById('rec-form-vac-docs-drop');
+  if(z) z.classList.remove('tc-docs-upload-zone--over');
+}
+function recFormVacDocsOnDrop(ev){
+  ev.preventDefault();
+  recFormVacDocsOnDragLeave();
+  const file=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(file) recFormVacDocsHandleFile(file);
+}
+function recFormVacDocsWireDropZone(){
+  if(recFormVacDocsDropBound) return;
+  const z=document.getElementById('rec-form-vac-docs-drop');
+  if(!z) return;
+  recFormVacDocsDropBound=true;
+  z.addEventListener('dragover',recFormVacDocsOnDragOver);
+  z.addEventListener('dragleave',recFormVacDocsOnDragLeave);
+  z.addEventListener('drop',recFormVacDocsOnDrop);
+}
+function recFormVacDocsUnwireDropZone(){
+  if(!recFormVacDocsDropBound) return;
+  const z=document.getElementById('rec-form-vac-docs-drop');
+  recFormVacDocsDropBound=false;
+  if(!z) return;
+  z.removeEventListener('dragover',recFormVacDocsOnDragOver);
+  z.removeEventListener('dragleave',recFormVacDocsOnDragLeave);
+  z.removeEventListener('drop',recFormVacDocsOnDrop);
+}
+function recVacFormIconSvg(kind){
+  if(kind==='briefcase'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M12 12v.01"/></svg>';
+  }
+  if(kind==='info'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>';
+  }
+  if(kind==='coverage'){
+    return recCandFormIconSvg('person');
+  }
+  if(kind==='management'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  }
+  if(kind==='description'){
+    return recCandFormIconSvg('notes');
+  }
+  if(kind==='file'){
+    return recCandFormIconSvg('file');
+  }
+  if(kind==='upload'){
+    return recCandFormIconSvg('upload');
+  }
+  if(kind==='notes'){
+    return recCandFormIconSvg('notes');
+  }
+  return recCandFormIconSvg(kind);
+}
+function recVacFormApplyDecorIcons(){
+  const map={
+    'rec-vac-form-header-icon':'briefcase',
+    'rec-vac-form-info-icon':'info',
+    'rec-vac-form-coverage-icon':'coverage',
+    'rec-vac-form-mgmt-icon':'management',
+    'rec-vac-form-desc-icon':'description',
+    'rec-vac-form-files-icon':'file',
+    'rec-form-vac-docs-upload-icon':'upload',
+    'rec-vac-form-notes-icon':'notes',
+  };
+  Object.keys(map).forEach(function(id){
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=recVacFormIconSvg(map[id]);
+  });
 }
 async function recVacDocsSubmit(){
   const fileInput=document.getElementById('rec-vac-docs-file');
@@ -8640,7 +8933,7 @@ function recFillResponsibleSelect(selectedEmployeeId){
   const sel=document.getElementById('rec-form-responsible');
   if(!sel) return;
   const st=recEnsureState();
-  sel.innerHTML='<option value="">Sin responsable</option>';
+  sel.innerHTML='<option value="">Seleccionar responsable</option>';
   st.employees.forEach(function(emp){
     const opt=document.createElement('option');
     opt.value=emp.id;
@@ -8670,9 +8963,13 @@ async function recLoadVacancies(selectId){
 async function recOpenVacancyModal(mode,vacancyIdOverride){
   const err=document.getElementById('rec-form-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
+  recFormVacDocsSetErr('');
+  recVacFormApplyDecorIcons();
+  recFormVacDocsWireDropZone();
   await recLoadEmployees();
   const titleEl=document.getElementById('rec-modal-title');
   const subEl=document.getElementById('rec-modal-subtitle');
+  const submitBtn=document.getElementById('rec-form-submit');
   const idEl=document.getElementById('rec-form-vacancy-id');
   const prevAssignee=document.getElementById('rec-form-prev-assignee-id');
   if(mode==='edit'){
@@ -8680,9 +8977,9 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     const v=recFindVacancy(editId);
     if(!v) return;
     if(titleEl) titleEl.textContent='Editar vacante';
-    if(subEl) subEl.textContent='Actualiza los datos de la vacante.';
-    const filesHintEdit=document.getElementById('rec-form-files-hint');
-    if(filesHintEdit) filesHintEdit.classList.add('hidden');
+    if(subEl) subEl.textContent='Define la posición y organiza su cobertura.';
+    if(submitBtn) submitBtn.textContent='Guardar cambios';
+    recFormVacPendingFiles=[];
     if(idEl) idEl.value=v.id;
     document.getElementById('rec-form-title').value=v.title||'';
     document.getElementById('rec-form-client').value=v.clientName||'';
@@ -8697,13 +8994,16 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     const empId=v.primaryAssignee?v.primaryAssignee.employeeId:'';
     if(prevAssignee) prevAssignee.value=v.primaryAssignee?v.primaryAssignee.assigneeId:'';
     recFillResponsibleSelect(empId);
+    await recFormVacDocsLoad(v.id);
   }else{
     if(titleEl) titleEl.textContent='Nueva vacante';
-    if(subEl) subEl.textContent='Registra los datos de la vacante.';
+    if(subEl) subEl.textContent='Define la posición y organiza su cobertura.';
+    if(submitBtn) submitBtn.textContent='Crear vacante';
     if(idEl) idEl.value='';
     if(prevAssignee) prevAssignee.value='';
-    const filesHint=document.getElementById('rec-form-files-hint');
-    if(filesHint) filesHint.classList.remove('hidden');
+    recFormVacPendingFiles=[];
+    recFormVacDocsItems=[];
+    recFormVacDocsRenderList();
     document.getElementById('rec-form-title').value='';
     document.getElementById('rec-form-client').value='';
     document.getElementById('rec-form-location').value='';
@@ -8769,6 +9069,19 @@ async function recSubmitVacancy(){
       savedId=created.vacancy&&created.vacancy.id;
     }
     if(savedId) await recSyncPrimaryAssignee(savedId, employeeId, prevAssigneeId);
+    if(savedId&&recFormVacPendingFiles.length){
+      try{
+        await recFormVacDocsUploadPending(savedId);
+      }catch(_uploadErr){
+        if(err){
+          err.textContent='Vacante guardada, pero algunos archivos no se pudieron subir.';
+          err.classList.remove('hidden');
+        }
+        await recLoadVacancies(savedId);
+        return;
+      }
+    }
+    recFormVacPendingFiles=[];
     closeModal('modal-rec-vacancy');
     const st=recEnsureState();
     const keepSelection=vacancyId?st.selectedId:(savedId||st.selectedId);

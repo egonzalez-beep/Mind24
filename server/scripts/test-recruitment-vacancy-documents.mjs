@@ -121,7 +121,8 @@ check(!/filePath/.test(docServiceSrc.match(/sanitizeRecruitmentVacancyDocumentFo
 check(/rec-form-target-coverage/.test(indexHtml), 'formulario fecha objetivo');
 check(/rec-detail-target-coverage/.test(indexHtml), 'detalle fecha objetivo');
 check(/rec-vac-docs-list/.test(indexHtml), 'UI archivos en detalle');
-check(/Podrás agregar archivos después/.test(indexHtml), 'hint alta vacante');
+check(/rec-form-vac-docs-drop/.test(indexHtml) && /recFormVacDocsUploadPending/.test(indexHtml), 'archivos en alta vacante');
+check(/recFormVacDocsLoad/.test(indexHtml), 'archivos existentes en editar vacante');
 check(/rec-modal-glass/.test(indexHtml), 'glass scoped recruitment');
 check(!/rec-ws-pulse/.test(indexHtml.match(/id="rec-selected-panel"[\s\S]*?rec-pipeline-slot/)?.[0] || ''), 'workspace sin KPIs');
 check(/rec-pipeline-header/.test(indexHtml) && /recUpdatePipelineHeader/.test(indexHtml), 'header pipeline compacto');

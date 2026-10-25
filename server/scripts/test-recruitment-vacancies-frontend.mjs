@@ -79,7 +79,10 @@ check(/rec-form-target-coverage/.test(indexHtml), 'campo fecha objetivo formular
 check(/rec-detail-target-coverage/.test(indexHtml), 'fecha objetivo en detalle');
 check(/rec-vac-docs-list/.test(indexHtml), 'sección archivos');
 check(/recVacDocsSubmit/.test(indexHtml), 'upload archivos vacante');
-check(/Podrás agregar archivos después/.test(indexHtml), 'hint sin upload en alta');
+check(/rec-form-vac-docs-drop/.test(indexHtml) && /recFormVacDocsHandleFile/.test(indexHtml), 'upload archivos en formulario vacante');
+check(/rec-vac-form-coverage-block/.test(indexHtml) && /Información principal/.test(indexHtml), 'formulario vacante premium por secciones');
+check(!/modal-logo[\s\S]{0,80}modal-rec-vacancy/.test(indexHtml.match(/id="modal-rec-vacancy"[\s\S]*?id="modal-rec-vacancy-detail"/)?.[0]||''), 'sin logo MIND24 en modal vacante');
+check(/Crear vacante/.test(indexHtml) && /Guardar cambios/.test(indexHtml), 'CTAs create/edit vacante');
 
 console.log('\n=== Recruitment 1B.5 — tablero ejecutivo ===\n');
 
