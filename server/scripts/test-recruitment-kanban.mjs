@@ -37,6 +37,8 @@ check(/listRecruitmentApplicationsForVacancy/.test(routes), 'servicio list appli
 check(/recKanbanLoad/.test(indexHtml), 'carga Kanban UI');
 check(/rec-kanban-board/.test(indexHtml), 'tablero Kanban CSS');
 check(/recKanbanColDrop/.test(indexHtml), 'drop entre columnas');
+check(/function recKanbanStageIconSvg/.test(indexHtml), 'iconos etapa colapsada');
+check(/recKanbanToggleCol/.test(indexHtml), 'expand/collapse columnas');
 check(/recKanbanRefreshRelated/.test(indexHtml), 'refresh ficha y detalle vacante');
 check(/PATCH.*\/applications\/:id/.test(routes) || /router\.patch\('\/applications\/:id'/.test(routes), 'PATCH mover etapa');
 check(/updatedAt.*desc/.test(appSvc), 'orden applications por updatedAt');

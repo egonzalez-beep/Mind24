@@ -139,7 +139,13 @@ check(/rec-kanban-col-title-group/.test(indexHtml) && /rec-kanban-col-collapse-b
 check(/#view-dash-recruitment .rec-pipeline-slot/.test(indexHtml), 'Kanban flex viewport en Vacantes');
 check(/rec-kanban-card-avatar/.test(indexHtml) && /recKanbanRelativeUpdated/.test(indexHtml), 'tarjetas Kanban premium');
 check(/function recRenderFilters[\s\S]*count/.test(indexHtml), 'contadores en filtros de estado');
-check(/rec-vac-selected-badge/.test(indexHtml), 'badge vacante seleccionada');
+check(!/rec-vac-selected-badge/.test(indexHtml), 'sin badge Seleccionada en vacantes');
+check(/rec-vac-card\.selected/.test(indexHtml) && /classList\.toggle\('selected'/.test(indexHtml), 'vacante activa por clase selected');
+check(/function recKanbanStageIconSvg/.test(indexHtml), 'helper iconos etapa Kanban');
+check(/rec-kanban-col-icon-compact/.test(indexHtml), 'columna colapsada con icono compacto');
+check(!/rec-kanban-col-title-vertical/.test(indexHtml), 'sin texto vertical truncado en columnas');
+check(/colTip=stageName\+' · '\+colApps\.length\+' candidatos'/.test(indexHtml), 'tooltip etapa colapsada con contador');
+check(/CLIENT_INTERVIEW:/.test(indexHtml) && /recKanbanStageIconSvg\(stage\)/.test(indexHtml), 'mapping stage.key en Kanban');
 
 console.log('\n=== Backend summary ===\n');
 
