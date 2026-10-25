@@ -60,6 +60,12 @@ import {
   updateRecruitmentCandidateNote,
 } from '../services/recruitmentCandidateNote.service.js';
 import {
+  createRecruitmentVacancyNote,
+  listRecruitmentVacancyNotes,
+  softDeleteRecruitmentVacancyNote,
+  updateRecruitmentVacancyNote,
+} from '../services/recruitmentVacancyNote.service.js';
+import {
   assignRecruitmentCandidateTag,
   listRecruitmentCandidateTags,
   removeRecruitmentCandidateTagAssignment,
@@ -279,6 +285,62 @@ router.patch('/vacancies/:id', async (req, res, next) => {
     const body = vacancyPatchSchema.parse(req.body);
     const vacancy = await updateRecruitmentVacancy(u.organizationId, req.params.id, body);
     res.json({ vacancy });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/vacancies/:vacancyId/notes', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const notes = await listRecruitmentVacancyNotes(u.organizationId, req.params.vacancyId);
+    res.json({ notes });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/vacancies/:vacancyId/notes', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ body: z.string().min(1).max(20_000) }).parse(req.body ?? {});
+    const note = await createRecruitmentVacancyNote(
+      u.organizationId,
+      req.params.vacancyId,
+      u.id,
+      body.body,
+    );
+    res.status(201).json({ note });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/vacancies/:vacancyId/notes/:noteId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ body: z.string().min(1).max(20_000) }).parse(req.body ?? {});
+    const note = await updateRecruitmentVacancyNote(
+      u.organizationId,
+      req.params.vacancyId,
+      req.params.noteId,
+      body.body,
+    );
+    res.json({ note });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/vacancies/:vacancyId/notes/:noteId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await softDeleteRecruitmentVacancyNote(
+      u.organizationId,
+      req.params.vacancyId,
+      req.params.noteId,
+    );
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }

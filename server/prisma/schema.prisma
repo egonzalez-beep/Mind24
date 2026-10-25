@@ -72,6 +72,7 @@ model Organization {
   recruitmentVacancyStages RecruitmentVacancyStage[]
   recruitmentCandidateResumes RecruitmentCandidateResume[]
   recruitmentCandidateNotes RecruitmentCandidateNote[]
+  recruitmentVacancyNotes RecruitmentVacancyNote[]
   recruitmentCandidateTags RecruitmentCandidateTag[]
   recruitmentCandidateTagAssignments RecruitmentCandidateTagAssignment[]
 }
@@ -334,6 +335,7 @@ model User {
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteAuthor")
+  recruitmentVacancyNotesAuthored RecruitmentVacancyNote[] @relation("RecruitmentVacancyNoteAuthor")
   recruitmentCandidateTagAssignmentsCreated RecruitmentCandidateTagAssignment[] @relation("RecruitmentCandidateTagAssignedBy")
 }
 
@@ -554,6 +556,26 @@ model RecruitmentCandidateNote {
   @@index([organizationId, candidateId, deletedAt])
 }
 
+model RecruitmentVacancyNote {
+  id             String               @id @default(cuid())
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vacancyId      String
+  vacancy        RecruitmentVacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  authorUserId   String?
+  author         User?                @relation("RecruitmentVacancyNoteAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  body           String               @db.Text
+  legacyImport   Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  editedAt       DateTime?            @db.Timestamptz(6)
+  deletedAt      DateTime?            @db.Timestamptz(6)
+
+  @@index([organizationId, vacancyId])
+  @@index([vacancyId, createdAt])
+  @@index([organizationId, vacancyId, deletedAt])
+}
+
 model RecruitmentCandidateTag {
   id             String   @id @default(cuid())
   organizationId String
@@ -636,6 +658,7 @@ model RecruitmentVacancy {
   assignees    RecruitmentVacancyAssignee[]
   documents    RecruitmentVacancyDocument[]
   vacancyStages RecruitmentVacancyStage[]
+  notesRows    RecruitmentVacancyNote[]
 
   @@index([organizationId])
   @@index([organizationId, status])

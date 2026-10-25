@@ -2000,11 +2000,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div id="rec-form-vac-docs-list" class="rec-detail-files-list"></div>
       </div>
       <p id="rec-form-vac-docs-err" class="hidden" style="font-size:12px;color:#DC2626;margin:8px 0 0;"></p>
-      <div class="rec-cand-form-section-head">
-        <span class="rec-cand-form-section-icon" id="rec-vac-form-notes-icon" aria-hidden="true"></span>
-        <span class="rec-cand-form-section-title">Notas internas</span>
-      </div>
-      <textarea id="rec-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Notas internas para el equipo de reclutamiento…"></textarea>
     </div>
     <p id="rec-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;text-align:center;"></p>
     <footer class="rec-cand-form-footer">
@@ -2124,13 +2119,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div class="rec-exec-aside">
         <div class="rec-detail-notes-card" id="rec-detail-notes-block">
-          <div class="rec-exec-section-head" style="margin-bottom:8px;">
-            <div class="rec-exec-section-head-main">
-              <span class="rec-exec-section-icon" id="rec-detail-notes-icon" aria-hidden="true"></span>
-              <h4 class="rec-exec-section-title">Notas internas</h4>
-            </div>
-          </div>
-          <p id="rec-detail-notes-body" class="rec-detail-notes-body-static empty" role="region">Sin notas internas.</p>
+          <div id="rec-detail-notes-host"></div>
         </div>
         <div class="rec-exec-panel-card" id="rec-detail-files-block">
           <div class="rec-exec-section-head" style="margin-bottom:8px;">
@@ -7695,6 +7684,7 @@ async function recFetchAndRenderVacancyDetail(vacancyId){
   st.detailVacancyId=vacancyId;
   recRenderVacancyDetail();
   recVacDocsLoad();
+  recVacLoadDetailNotes();
   try{
     const j=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId));
     if(j.vacancy){
@@ -7707,6 +7697,8 @@ async function recFetchAndRenderVacancyDetail(vacancyId){
 }
 async function recOpenVacancyDetail(vacancyId,ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const st=recEnsureState();
+  st.detailVacNotesComposerOpen=false;
   recVacDocsFillCategorySelect();
   recVacDocsToggleForm(false);
   recVacDetailApplyDecorIcons();
@@ -7714,6 +7706,112 @@ async function recOpenVacancyDetail(vacancyId,ev){
   recStagesResetEditor();
   openModal('modal-rec-vacancy-detail');
   await recFetchAndRenderVacancyDetail(vacancyId);
+}
+function recVacNotesSetErr(msg){
+  const el=document.getElementById('rec-vac-notes-err');
+  if(!el) return;
+  if(msg){ el.textContent=msg; el.classList.remove('hidden'); }
+  else{ el.textContent=''; el.classList.add('hidden'); }
+}
+function recVacRenderNotesCard(notes,loading){
+  const host=document.getElementById('rec-detail-notes-host');
+  if(!host) return;
+  const st=recEnsureState();
+  const list=notes||st.detailVacNotes||[];
+  const n=list.length;
+  let body='';
+  if(loading) body='<p class="rec-cand-obs-empty">Cargando…</p>';
+  else if(!n) body='<p class="rec-cand-obs-empty">Sin notas internas todavía.</p>';
+  else{
+    body=list.map(function(note){
+      const edited=note.editedAt?' · Editada':'';
+      return '<div class="rec-cand-obs-item" data-note-id="'+tcEsc(note.id)+'">'+
+        '<p class="rec-cand-obs-meta">'+tcEsc(note.authorName||'—')+' · '+tcEsc(recCandFmtObsTime(note.createdAt))+edited+'</p>'+
+        '<p class="rec-cand-obs-body" id="rec-vac-obs-body-'+tcEsc(note.id)+'">'+tcEsc(note.body)+'</p>'+
+        '<div class="rec-cand-obs-actions">'+
+        '<button type="button" class="rec-cand-obs-icon-btn" title="Editar" aria-label="Editar" onclick="recVacEditNote(\''+tcEsc(note.id)+'\')">'+recCandObsIconEdit()+'</button>'+
+        '<button type="button" class="rec-cand-obs-icon-btn" title="Eliminar" aria-label="Eliminar" onclick="recVacDeleteNote(\''+tcEsc(note.id)+'\')">'+recCandObsIconTrash()+'</button>'+
+        '</div></div>';
+    }).join('');
+  }
+  const composerOpen=st.detailVacNotesComposerOpen;
+  host.innerHTML=
+    '<div class="rec-cand-observations-head" style="margin-bottom:10px;">'+
+    '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">'+
+    '<span class="rec-exec-section-icon" id="rec-detail-notes-icon" aria-hidden="true"></span>'+
+    '<h4 class="rec-exec-section-title" style="margin:0;">Notas internas</h4></div>'+
+    (n?'<span class="rec-cand-obs-count">'+n+'</span>':'')+
+    '<button type="button" class="rec-cand-obs-add" onclick="recVacToggleNotesComposer(true)">+ Añadir</button></div>'+
+    body+
+    (composerOpen?'<div class="rec-cand-obs-composer"><textarea id="rec-vac-notes-composer-ta" class="form-input" maxlength="20000" placeholder="Escribe una nota interna…"></textarea>'+
+    '<div class="rec-cand-obs-composer-actions"><button type="button" class="rec-stages-ghost-btn" onclick="recVacToggleNotesComposer(false)">Cancelar</button>'+
+    '<button type="button" class="form-submit form-submit-purple" style="margin:0;padding:8px 14px;font-size:12px;" onclick="recVacSubmitNewNote()">Guardar</button></div></div>':'')+
+    '<p id="rec-vac-notes-err" class="hidden" style="font-size:12px;color:#DC2626;margin:10px 0 0;"></p>';
+  const iconEl=document.getElementById('rec-detail-notes-icon');
+  if(iconEl) iconEl.innerHTML=recVacDetailIconSvg('notes');
+}
+function recVacToggleNotesComposer(open){
+  recEnsureState().detailVacNotesComposerOpen=!!open;
+  recVacNotesSetErr('');
+  recVacRenderNotesCard();
+  if(open){
+    const ta=document.getElementById('rec-vac-notes-composer-ta');
+    if(ta) ta.focus();
+  }
+}
+async function recVacLoadDetailNotes(){
+  const st=recEnsureState();
+  const vacId=st.detailVacancyId;
+  if(!vacId) return;
+  st.detailVacNotes=[];
+  recVacRenderNotesCard([],true);
+  try{
+    const j=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacId)+'/notes');
+    st.detailVacNotes=j.notes||[];
+    recVacRenderNotesCard(st.detailVacNotes,false);
+  }catch(e){
+    recVacRenderNotesCard([],false);
+    recVacNotesSetErr((e&&e.message)||'No se pudieron cargar las notas.');
+  }
+}
+async function recVacSubmitNewNote(){
+  const st=recEnsureState();
+  const vacId=st.detailVacancyId;
+  const ta=document.getElementById('rec-vac-notes-composer-ta');
+  const body=(ta&&ta.value||'').trim();
+  if(!vacId||!body) return;
+  recVacNotesSetErr('');
+  try{
+    await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacId)+'/notes',{method:'POST',body:JSON.stringify({ body:body })});
+    st.detailVacNotesComposerOpen=false;
+    await recVacLoadDetailNotes();
+  }catch(e){ recVacNotesSetErr((e&&e.message)||'No se pudo guardar la nota.'); }
+}
+async function recVacEditNote(noteId){
+  const st=recEnsureState();
+  const vacId=st.detailVacancyId;
+  const note=(st.detailVacNotes||[]).find(function(n){ return n.id===noteId; });
+  if(!vacId||!note) return;
+  const next=window.prompt('Editar nota:',note.body);
+  if(next==null) return;
+  const body=String(next).trim();
+  if(!body) return;
+  recVacNotesSetErr('');
+  try{
+    await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacId)+'/notes/'+encodeURIComponent(noteId),{method:'PATCH',body:JSON.stringify({ body:body })});
+    await recVacLoadDetailNotes();
+  }catch(e){ recVacNotesSetErr((e&&e.message)||'No se pudo editar.'); }
+}
+async function recVacDeleteNote(noteId){
+  const st=recEnsureState();
+  const vacId=st.detailVacancyId;
+  if(!vacId||!noteId) return;
+  if(!window.confirm('¿Eliminar esta nota?')) return;
+  recVacNotesSetErr('');
+  try{
+    await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacId)+'/notes/'+encodeURIComponent(noteId),{method:'DELETE'});
+    await recVacLoadDetailNotes();
+  }catch(e){ recVacNotesSetErr((e&&e.message)||'No se pudo eliminar.'); }
 }
 function recFmtDateNumeric(dateOnly){
   if(!dateOnly) return '—';
@@ -8152,12 +8250,6 @@ function recRenderVacancyDetail(){
     jdBody.textContent=jd||'Sin descripción registrada.';
     jdBody.classList.toggle('empty',!jd);
   }
-  const notesBody=document.getElementById('rec-detail-notes-body');
-  if(notesBody){
-    const notes=(v.notes||'').trim();
-    notesBody.textContent=notes||'Sin notas internas.';
-    notesBody.classList.toggle('empty',!notes);
-  }
 }
 function recVacDocsFillCategorySelect(){
   const sel=document.getElementById('rec-vac-docs-category');
@@ -8471,7 +8563,6 @@ function recVacFormApplyDecorIcons(){
     'rec-vac-form-desc-icon':'description',
     'rec-vac-form-files-icon':'file',
     'rec-form-vac-docs-upload-icon':'upload',
-    'rec-vac-form-notes-icon':'notes',
   };
   Object.keys(map).forEach(function(id){
     const el=document.getElementById(id);
@@ -9127,7 +9218,7 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     const v=recFindVacancy(editId);
     if(!v) return;
     if(titleEl) titleEl.textContent='Editar vacante';
-    if(subEl) subEl.textContent='Define la posición y organiza su cobertura.';
+    if(subEl){ subEl.textContent=''; subEl.classList.add('hidden'); }
     if(submitBtn) submitBtn.textContent='Guardar cambios';
     recFormVacPendingFiles=[];
     if(idEl) idEl.value=v.id;
@@ -9140,14 +9231,13 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     if(targetCov) targetCov.value=v.targetCoverageDate||'';
     document.getElementById('rec-form-status').value=v.status||'ACTIVE';
     document.getElementById('rec-form-jd').value=v.jobDescription||'';
-    document.getElementById('rec-form-notes').value=v.notes||'';
     const empId=v.primaryAssignee?v.primaryAssignee.employeeId:'';
     if(prevAssignee) prevAssignee.value=v.primaryAssignee?v.primaryAssignee.assigneeId:'';
     recFillResponsibleSelect(empId);
     await recFormVacDocsLoad(v.id);
   }else{
     if(titleEl) titleEl.textContent='Nueva vacante';
-    if(subEl) subEl.textContent='Define la posición y organiza su cobertura.';
+    if(subEl){ subEl.textContent='Define la posición y organiza su cobertura.'; subEl.classList.remove('hidden'); }
     if(submitBtn) submitBtn.textContent='Crear vacante';
     if(idEl) idEl.value='';
     if(prevAssignee) prevAssignee.value='';
@@ -9163,7 +9253,6 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     if(targetCovNew) targetCovNew.value='';
     document.getElementById('rec-form-status').value='ACTIVE';
     document.getElementById('rec-form-jd').value='';
-    document.getElementById('rec-form-notes').value='';
     recFillResponsibleSelect('');
   }
   openModal('modal-rec-vacancy');
@@ -9203,7 +9292,6 @@ async function recSubmitVacancy(){
     openedAt:recDateInputToIso(openedRaw),
     status:document.getElementById('rec-form-status').value||'ACTIVE',
     jobDescription:(document.getElementById('rec-form-jd').value||'').trim()||null,
-    notes:(document.getElementById('rec-form-notes').value||'').trim()||null,
     targetCoverageDate:targetRaw||null,
   };
   const vacancyId=(document.getElementById('rec-form-vacancy-id').value||'').trim();
