@@ -134,6 +134,8 @@ check(/rec-global-q/.test(indexHtml) && !/rec-vac-local-q/.test(indexHtml) && /B
 check(/recVacCardIconSvg/.test(indexHtml) && /rec-vac-card-chip/.test(indexHtml), 'cards vacante compactas con iconos SVG');
 check(/recCarouselScroll/.test(indexHtml) && /rec-carousel-range/.test(indexHtml), 'carrusel con rango y flechas');
 check(/recKanbanToggleCol/.test(indexHtml) && /rec-kanban-col--collapsed/.test(indexHtml), 'columnas Kanban compactables');
+check(/rec-kanban-col-title-group/.test(indexHtml) && /rec-kanban-col-collapse-btn/.test(indexHtml), 'stage title + count agrupados y control violeta');
+check(/#view-dash-recruitment .rec-pipeline-slot/.test(indexHtml), 'Kanban flex viewport en Vacantes');
 check(/rec-kanban-card-avatar/.test(indexHtml) && /recKanbanRelativeUpdated/.test(indexHtml), 'tarjetas Kanban premium');
 check(/function recRenderFilters[\s\S]*count/.test(indexHtml), 'contadores en filtros de estado');
 check(/rec-vac-selected-badge/.test(indexHtml), 'badge vacante seleccionada');
