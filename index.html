@@ -302,6 +302,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-badge-active{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.12);color:#047857;flex-shrink:0;}
 .rec-detail-edit-btn.rec-cand-toolbar-add{color:var(--purple-dark);border-color:rgba(124,58,237,.25);}
 .rec-detail-edit-btn.rec-cand-toolbar-add:hover{background:rgba(245,243,255,.9);border-color:var(--purple);color:var(--purple);}
+.rec-cand-toolbar-menu-wrap{position:relative;}
+.rec-cand-toolbar-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:188px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.1);padding:6px;z-index:5;}
+.rec-cand-toolbar-menu-item{display:block;width:100%;text-align:left;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--slate-700);padding:9px 12px;border-radius:8px;cursor:pointer;}
+.rec-cand-toolbar-menu-item:hover{background:rgba(245,243,255,.85);color:var(--purple-dark);}
 .rec-cand-body-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,32%);gap:20px 22px;margin-top:4px;align-items:start;}
 .rec-cand-body-main{display:flex;flex-direction:column;gap:14px;min-width:0;}
 .rec-cand-body-aside{display:flex;flex-direction:column;gap:12px;min-width:0;}
@@ -344,7 +348,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-rail-step--hired.rec-cand-rail-step--current .rec-cand-rail-node::after{background:#10B981;}
 .rec-cand-rail-step--rej.rec-cand-rail-step--current .rec-cand-rail-node{border-color:#F43F5E;box-shadow:0 0 0 3px rgba(244,63,94,.18);}
 .rec-cand-rail-step--rej.rec-cand-rail-step--current .rec-cand-rail-node::after{background:#F43F5E;}
-.rec-cand-rail-label{font-size:10px;font-weight:600;color:var(--slate-500);text-align:center;line-height:1.25;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;}
+.rec-cand-rail-label{font-size:10px;font-weight:600;color:var(--slate-500);text-align:center;line-height:1.25;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;padding:0 1px;}
 .rec-cand-rail-step--current .rec-cand-rail-label{color:var(--purple-dark);font-weight:700;}
 .rec-cand-rail-current-hint{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);margin-top:-2px;}
 .rec-cand-pipeline-empty{padding:18px 20px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.65);margin:0 0 16px;text-align:center;}
@@ -388,7 +392,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-outcome--rej{color:var(--slate-600);}
 .rec-cand-summary-meta{font-size:11px;color:var(--slate-500);margin:4px 0 0;line-height:1.4;}
 .rec-cand-summary-meta--aside{text-align:left;padding:0 2px;}
-.rec-cand-detail-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-100);text-align:center;}
 .rec-cand-detail-skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;margin-bottom:8px;}
 .rec-cand-detail-skel--hero{height:120px;border-radius:14px;margin-bottom:12px;}
 .rec-cand-detail-skel--short{max-width:55%;}
@@ -1831,6 +1834,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="rec-detail-toolbar">
       <button type="button" class="rec-detail-edit-btn rec-cand-toolbar-add" id="rec-cand-toolbar-add-vac" onclick="recCandOpenAddVacancyModal()" aria-label="Añadir a vacante" title="Añadir a vacante"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
       <button type="button" class="rec-detail-edit-btn" id="rec-cand-detail-edit-btn" onclick="recCandEditFromDetail()" aria-label="Editar candidato" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <div class="rec-cand-toolbar-menu-wrap">
+        <button type="button" class="rec-detail-edit-btn" id="rec-cand-toolbar-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="rec-cand-toolbar-menu" onclick="recCandToggleToolbarMenu(event)" title="Más acciones" aria-label="Más acciones"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+        <div id="rec-cand-toolbar-menu" class="rec-cand-toolbar-menu hidden" role="menu" onclick="event.stopPropagation()">
+          <button type="button" class="rec-cand-toolbar-menu-item" id="rec-cand-archive-btn" role="menuitem" onclick="recCandArchiveFromMenu()">Archivar candidato</button>
+        </div>
+      </div>
       <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-detail')" aria-label="Cerrar">✕</button>
     </div>
     <div class="rec-cand-detail-header">
@@ -1869,9 +1878,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <aside class="rec-cand-body-aside" id="rec-cand-body-aside"></aside>
-    </div>
-    <div class="rec-cand-detail-footer">
-      <button type="button" class="rec-stages-ghost-btn" id="rec-cand-archive-btn" onclick="recCandToggleArchive()">—</button>
     </div>
   </div>
 </div>
@@ -8337,9 +8343,11 @@ function recCandBuildLabeledStageRailHtml(stageRows,currentStageId){
     if(i===idx&&sk==='REJECTED') cls+=' rec-cand-rail-step--rej';
     let nodeInner=i<idx?checkSvg:(i===idx?'':'');
     const hint=i===idx?'<span class="rec-cand-rail-current-hint">Etapa actual</span>':'';
-    return '<div class="'+cls+'" role="listitem" title="'+tcEsc(name)+'">'+
-      '<div class="rec-cand-rail-node">'+nodeInner+'</div>'+
-      '<span class="rec-cand-rail-label">'+tcEsc(name)+'</span>'+hint+'</div>';
+    let ariaState=i<idx?'Completada':(i===idx?'Etapa actual':'Pendiente');
+    const ariaLabel=ariaState+': '+name;
+    return '<div class="'+cls+'" role="listitem" title="'+tcEsc(name)+'" aria-label="'+tcEsc(ariaLabel)+'">'+
+      '<div class="rec-cand-rail-node" aria-hidden="true">'+nodeInner+'</div>'+
+      '<span class="rec-cand-rail-label" title="'+tcEsc(name)+'">'+tcEsc(name)+'</span>'+hint+'</div>';
   }).join('')+'</div>';
 }
 function recCandFillHeroStageSelect(selectEl,stageRows,currentStageId){
@@ -8415,8 +8423,31 @@ function recCandHeroHtml(app){
     '<div id="rec-cand-hero-rail"></div>'+
     '<p class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</p></article>';
 }
+function recCandCloseToolbarMenu(){
+  const menu=document.getElementById('rec-cand-toolbar-menu');
+  const btn=document.getElementById('rec-cand-toolbar-menu-btn');
+  if(menu) menu.classList.add('hidden');
+  if(btn) btn.setAttribute('aria-expanded','false');
+}
+function recCandToggleToolbarMenu(ev){
+  if(ev) ev.stopPropagation();
+  const menu=document.getElementById('rec-cand-toolbar-menu');
+  const btn=document.getElementById('rec-cand-toolbar-menu-btn');
+  if(!menu||!btn) return;
+  const willOpen=menu.classList.contains('hidden');
+  recCandCloseToolbarMenu();
+  if(willOpen){
+    menu.classList.remove('hidden');
+    btn.setAttribute('aria-expanded','true');
+  }
+}
+function recCandArchiveFromMenu(){
+  recCandCloseToolbarMenu();
+  recCandToggleArchive();
+}
 function recCandGoToPipeline(vacancyId){
   if(!vacancyId) return;
+  recCandCloseToolbarMenu();
   closeModal('modal-rec-candidate-detail');
   recSwitchModuleTab('vacancies');
   recSelectVacancy(vacancyId);
@@ -8782,6 +8813,11 @@ async function recCandFetchDetail(id){
 async function recCandOpenDetail(id){
   const st=recEnsureState();
   st.detailCandidateId=id;
+  recCandCloseToolbarMenu();
+  if(!window.__recCandMenuDocBound){
+    document.addEventListener('click',recCandCloseToolbarMenu);
+    window.__recCandMenuDocBound=true;
+  }
   openModal('modal-rec-candidate-detail');
   recCandSetOpErr('');
   recCandSetCvErr('');

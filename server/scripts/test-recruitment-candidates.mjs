@@ -118,7 +118,11 @@ check(/recCandSummaryMetaLine/.test(indexHtml), 'applicationSummary compacto');
 check(!/rec-cand-mini-kpis/.test(indexHtml), 'sin KPI cards protagonistas');
 check(/rec-vac-detail-btn.*recCandOpenCv|recCandOpenCv\(\).*rec-vac-detail-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'CV acciones icono');
 check(/id="rec-cand-toolbar-add-vac"/.test(indexHtml), '+ Añadir a vacante icono toolbar');
-check(/id="rec-cand-archive-btn".*rec-stages-ghost-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'archivar discreto footer');
+check(/rec-cand-toolbar-menu/.test(indexHtml) && /id="rec-cand-archive-btn"/.test(indexHtml), 'archivar en menú toolbar');
+check(!/rec-cand-detail-footer/.test(indexHtml), 'sin footer archivar');
+const railFn = indexHtml.match(/function recCandBuildLabeledStageRailHtml[\s\S]*?function recCandFillHeroStageSelect/)?.[0] || '';
+check(/ariaState=/.test(railFn) && /tcEsc\(ariaLabel\)/.test(railFn), 'rail aria-label por etapa');
+check(/rec-cand-rail-label" title=/.test(railFn), 'rail label title tooltip');
 
 console.log('\n=== Recruitment 1F.2 — cierre visual ficha (estático) ===\n');
 
