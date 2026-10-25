@@ -69,6 +69,9 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     ...(extras.primaryActiveProcess !== undefined
       ? { primaryActiveProcess: extras.primaryActiveProcess }
       : {}),
+    ...(extras.tags != null ? { tags: extras.tags } : {}),
+    ...(extras.tagExtraCount != null ? { tagExtraCount: extras.tagExtraCount } : {}),
+    ...(extras.assignedTags != null ? { assignedTags: extras.assignedTags } : {}),
   };
 }
 
@@ -228,6 +231,7 @@ function buildCandidateListWhere(organizationId, options) {
     q,
     profile,
     source,
+    tagId,
     cursor,
   } = options;
 
@@ -261,6 +265,15 @@ function buildCandidateListWhere(organizationId, options) {
   const sourceTrim = trimOrNull(source);
   if (sourceTrim) {
     and.push({ source: { equals: sourceTrim, mode: 'insensitive' } });
+  }
+
+  const tagTrim = trimOrNull(tagId);
+  if (tagTrim) {
+    and.push({
+      tagAssignments: {
+        some: { organizationId, tagId: tagTrim },
+      },
+    });
   }
 
   const decoded = cursor ? decodeListCursor(cursor) : null;
@@ -316,14 +329,19 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
     pageIds,
     options.contextVacancyId || null,
   );
+  const { buildTagPreviewsByCandidateId } = await import('./recruitmentCandidateTag.service.js');
+  const tagPreviewMap = await buildTagPreviewsByCandidateId(organizationId, pageIds, 2);
 
   return {
-    candidates: page.map((r) =>
-      serializeRecruitmentCandidate(r, {
+    candidates: page.map((r) => {
+      const tp = tagPreviewMap.get(r.id) || { tags: [], extraCount: 0 };
+      return serializeRecruitmentCandidate(r, {
         applicationSummary: summaryMap.get(r.id),
         primaryActiveProcess: previewMap.get(r.id) || null,
-      }),
-    ),
+        tags: tp.tags,
+        tagExtraCount: tp.extraCount,
+      });
+    }),
     nextCursor,
   };
 }
@@ -344,7 +362,6 @@ export async function createRecruitmentCandidate(organizationId, payload) {
       state: trimOrNull(prepared.state),
       source: trimOrNull(prepared.source),
       sourceOther: trimOrNull(prepared.sourceOther),
-      notes: trimOrNull(prepared.notes),
     },
   });
   return serializeRecruitmentCandidate(row, {
@@ -373,10 +390,15 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
   ]);
 
   const summaryMap = await buildApplicationSummariesByCandidateId(organizationId, [candidateId]);
+  const { listRecruitmentCandidateTagAssignments } = await import(
+    './recruitmentCandidateTag.service.js'
+  );
+  const assignedTags = await listRecruitmentCandidateTagAssignments(organizationId, candidateId);
 
   return {
     ...serializeRecruitmentCandidate(candidateRow, {
       applicationSummary: summaryMap.get(candidateId),
+      assignedTags,
     }),
     resume: serializeResumeMetadata(resumeRow),
     applications: applications.map(serializeCandidateApplicationProcess),
@@ -424,7 +446,6 @@ export async function updateRecruitmentCandidate(organizationId, candidateId, pa
     data.source = sf.source;
     data.sourceOther = sf.sourceOther;
   }
-  if (patch.notes !== undefined) data.notes = trimOrNull(patch.notes);
   if (patch.archived === true) data.archivedAt = new Date();
   if (patch.archived === false) data.archivedAt = null;
 

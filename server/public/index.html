@@ -346,6 +346,44 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-body-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,32%);gap:20px 22px;margin-top:4px;align-items:start;}
 .rec-cand-body-main{display:flex;flex-direction:column;gap:14px;min-width:0;}
 .rec-cand-body-aside{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.rec-cand-detail-title{position:relative;}
+.rec-cand-detail-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;}
+.rec-cand-tag-picker{position:absolute;top:calc(100% + 4px);left:0;min-width:min(280px,92vw);max-width:320px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.12);padding:8px;z-index:30;max-height:240px;overflow-y:auto;}
+.rec-cand-tag-picker-item{display:flex;align-items:center;gap:8px;width:100%;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--slate-800);padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left;}
+.rec-cand-tag-picker-item:hover:not(:disabled){background:rgba(245,243,255,.75);}
+.rec-cand-tag-picker-item:disabled{opacity:.55;cursor:default;}
+.rec-cand-tag-picker-item .rec-cand-tag{margin:0;pointer-events:none;}
+.rec-cand-tag-picker-empty{font-size:12px;color:var(--slate-500);padding:8px 10px;margin:0;}
+.rec-cand-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid transparent;line-height:1.3;max-width:100%;}
+.rec-cand-tag--violet{background:rgba(245,243,255,.9);border-color:rgba(124,58,237,.22);color:#5B21B6;}
+.rec-cand-tag--green{background:rgba(236,253,245,.85);border-color:rgba(16,185,129,.25);color:#047857;}
+.rec-cand-tag--amber{background:rgba(255,251,235,.9);border-color:rgba(245,158,11,.28);color:#B45309;}
+.rec-cand-tag--coral{background:rgba(255,241,242,.9);border-color:rgba(244,63,94,.25);color:#BE123C;}
+.rec-cand-tag--blue{background:rgba(239,246,255,.9);border-color:rgba(59,130,246,.25);color:#1D4ED8;}
+.rec-cand-tag--slate{background:rgba(248,250,252,.95);border-color:rgba(148,163,184,.35);color:#475569;}
+.rec-cand-tag-x{border:none;background:transparent;padding:0 0 0 2px;margin:0;cursor:pointer;font-size:13px;line-height:1;color:inherit;opacity:.55;}
+.rec-cand-tag-x:hover{opacity:1;}
+.rec-cand-tag-add{border:1px dashed rgba(124,58,237,.35);background:#fff;color:var(--purple-dark);font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;cursor:pointer;font-family:inherit;}
+.rec-cand-tag-add:hover{background:var(--purple-light);}
+.rec-cand-row-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.rec-cand-tag-more{font-size:10px;font-weight:700;color:var(--slate-500);padding:2px 6px;}
+.rec-cand-observations-card{background:linear-gradient(180deg,rgba(255,253,245,.95),rgba(255,251,235,.55));border:1px solid rgba(234,179,8,.18);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(15,23,42,.03);}
+.rec-cand-observations-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.rec-cand-observations-head h4{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#92400E;margin:0;flex:1;}
+.rec-cand-obs-count{font-size:10px;font-weight:700;color:#B45309;background:rgba(254,243,199,.6);padding:2px 7px;border-radius:999px;}
+.rec-cand-obs-add{font-size:11px;font-weight:700;color:#B45309;border:none;background:transparent;cursor:pointer;font-family:inherit;padding:4px 6px;border-radius:6px;}
+.rec-cand-obs-add:hover{background:rgba(254,243,199,.45);}
+.rec-cand-obs-item{padding:10px 0;border-top:1px solid rgba(234,179,8,.12);}
+.rec-cand-obs-item:first-of-type{border-top:none;padding-top:0;}
+.rec-cand-obs-meta{font-size:11px;font-weight:600;color:#78716C;margin:0 0 4px;}
+.rec-cand-obs-body{font-size:13px;color:var(--slate-800);margin:0;line-height:1.45;white-space:pre-wrap;}
+.rec-cand-obs-actions{display:flex;gap:4px;margin-top:6px;}
+.rec-cand-obs-icon-btn{border:1px solid rgba(234,179,8,.2);background:rgba(255,255,255,.65);border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#78716C;padding:0;}
+.rec-cand-obs-icon-btn:hover{border-color:rgba(234,179,8,.45);color:#92400E;}
+.rec-cand-obs-composer{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(234,179,8,.25);}
+.rec-cand-obs-composer textarea{min-height:72px;font-size:13px;}
+.rec-cand-obs-composer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;}
+.rec-cand-obs-empty{font-size:12px;color:#78716C;margin:0;}
 .rec-cand-panel-card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
 .rec-cand-panel-card h4{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:0 0 12px;}
 .rec-cand-detail-avatar{width:48px;height:48px;border-radius:12px;background:var(--purple-light);color:var(--purple-dark);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -1990,6 +2028,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <span id="rec-cand-detail-arch-badge" class="rec-cand-badge-arch hidden">Archivado</span>
         </div>
         <p class="rec-cand-detail-sub" id="rec-cand-detail-subline">—</p>
+        <div id="rec-cand-detail-tags" class="rec-cand-detail-tags"></div>
+        <div id="rec-cand-tag-picker" class="rec-cand-tag-picker hidden" role="listbox" aria-label="Etiquetas disponibles"></div>
       </div>
     </div>
     <div id="rec-cand-pipeline-host"></div>
@@ -1999,14 +2039,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="rec-cand-panel-card" id="rec-cand-expediente-block">
           <h4>Expediente ejecutivo</h4>
           <div id="rec-cand-expediente" class="rec-cand-expediente"></div>
-        </div>
-        <div id="rec-cand-notes-block" class="rec-cand-panel-card hidden">
-          <button type="button" class="rec-detail-acc-trigger" id="rec-cand-notes-trigger" aria-expanded="false" aria-controls="rec-cand-notes-body" onclick="recCandDetailToggleAcc('notes')" style="margin:0;padding:0;border:none;background:transparent;width:100%;">
-            <span>Observaciones clave</span>
-            <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <p id="rec-cand-notes-preview" class="rec-cand-obs-preview hidden"></p>
-          <p id="rec-cand-notes-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-notes-trigger"></p>
         </div>
         <div class="rec-cand-panel-card">
           <h4>CV y documentos</h4>
@@ -2124,11 +2156,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <input type="file" id="rec-cand-form-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
         <p id="rec-cand-form-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
       </div>
-      <div class="rec-cand-form-section-head">
-        <span class="rec-cand-form-section-icon" id="rec-cand-form-notes-icon" aria-hidden="true"></span>
-        <span class="rec-cand-form-section-title">Notas</span>
+      <div id="rec-cand-form-notes-section">
+        <div class="rec-cand-form-section-head">
+          <span class="rec-cand-form-section-icon" id="rec-cand-form-notes-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">Notas</span>
+        </div>
+        <textarea id="rec-cand-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Agrega notas relevantes sobre el candidato…"></textarea>
+        <p class="rec-cand-form-hint" style="margin-top:6px;">Se guardará como observación colaborativa en la ficha.</p>
       </div>
-      <textarea id="rec-cand-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Agrega notas relevantes sobre el candidato…"></textarea>
     </div>
     <input type="hidden" id="rec-cand-form-id">
     <p id="rec-cand-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;text-align:center;"></p>
@@ -2698,6 +2733,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <div class="rec-cand-toolbar-field">
               <label for="rec-cand-source">Fuente</label>
               <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
+            </div>
+            <div class="rec-cand-toolbar-field">
+              <label for="rec-cand-tag">Etiqueta</label>
+              <select id="rec-cand-tag" class="form-input"><option value="">Todas</option></select>
             </div>
             <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Archivados</label>
           </div>
@@ -8952,8 +8991,8 @@ function recCandRenderDetailLoading(){
   if(host) host.innerHTML='<div class="rec-cand-detail-skel rec-cand-detail-skel--hero" aria-hidden="true"></div>';
   const exp=document.getElementById('rec-cand-expediente');
   if(exp) exp.innerHTML='<div class="rec-cand-detail-skel"></div><div class="rec-cand-detail-skel rec-cand-detail-skel--short"></div>';
-  const notesBlock=document.getElementById('rec-cand-notes-block');
-  if(notesBlock) notesBlock.classList.add('hidden');
+  const tagsBox=document.getElementById('rec-cand-detail-tags');
+  if(tagsBox) tagsBox.innerHTML='';
   const aside=document.getElementById('rec-cand-body-aside');
   if(aside) aside.innerHTML='';
   const cvPanel=document.getElementById('rec-cand-cv-panel');
@@ -8990,29 +9029,216 @@ function recCandRenderExpediente(c){
     recCandExpCell('location','Ubicación','<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p>')+
     recCandExpCell('source','Fuente',srcInner);
 }
-function recCandRenderNotesBlock(c){
-  const block=document.getElementById('rec-cand-notes-block');
-  const body=document.getElementById('rec-cand-notes-body');
-  const preview=document.getElementById('rec-cand-notes-preview');
-  const trigger=document.getElementById('rec-cand-notes-trigger');
-  if(!block||!body) return;
-  const notes=(c.notes||'').trim();
-  if(!notes){
-    block.classList.add('hidden');
-    body.textContent='';
-    if(preview){ preview.textContent=''; preview.classList.add('hidden'); }
-    if(trigger) trigger.setAttribute('aria-expanded','false');
-    body.classList.add('hidden');
+function recCandFmtObsTime(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return '—';
+  const now=new Date();
+  const sameDay=d.toDateString()===now.toDateString();
+  const t=d.toLocaleTimeString('es-MX',{hour:'numeric',minute:'2-digit'});
+  if(sameDay) return 'Hoy '+t;
+  return d.toLocaleString('es-MX',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+}
+function recCandTagPillHtml(tag,opts){
+  opts=opts||{};
+  const ck=tag.colorKey||'slate';
+  let h='<span class="rec-cand-tag rec-cand-tag--'+tcEsc(ck)+'">'+tcEsc(tag.name||'—');
+  if(opts.removable&&tag.tagId){
+    h+='<button type="button" class="rec-cand-tag-x" onclick="event.stopPropagation();recCandRemoveTag(\''+tcEsc(tag.tagId)+'\')" aria-label="Quitar etiqueta">×</button>';
+  }else if(opts.removable&&tag.id){
+    h+='<button type="button" class="rec-cand-tag-x" onclick="event.stopPropagation();recCandRemoveTag(\''+tcEsc(tag.id)+'\')" aria-label="Quitar etiqueta">×</button>';
+  }
+  h+='</span>';
+  return h;
+}
+function recCandRowTagsHtml(c){
+  const tags=c.tags||[];
+  const extra=Number(c.tagExtraCount)||0;
+  if(!tags.length&&!extra) return '';
+  let inner=tags.map(function(t){ return recCandTagPillHtml(t,false); }).join('');
+  if(extra>0) inner+='<span class="rec-cand-tag-more">+'+extra+'</span>';
+  return '<div class="rec-cand-row-tags">'+inner+'</div>';
+}
+async function recCandEnsureTagCatalog(){
+  const st=recEnsureState();
+  if(st.candTagCatalog&&st.candTagCatalog.length) return st.candTagCatalog;
+  try{
+    const j=await apiJson('/api/org/recruitment/candidate-tags');
+    st.candTagCatalog=j.tags||[];
+  }catch(_e){ st.candTagCatalog=[]; }
+  const sel=document.getElementById('rec-cand-tag');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Todas</option>'+(st.candTagCatalog||[]).map(function(t){
+      return '<option value="'+tcEsc(t.id)+'">'+tcEsc(t.name)+'</option>';
+    }).join('');
+    if(cur) sel.value=cur;
+  }
+  return st.candTagCatalog;
+}
+function recCandRenderDetailTags(c){
+  const box=document.getElementById('rec-cand-detail-tags');
+  if(!box) return;
+  const assigned=(c&&c.assignedTags)||[];
+  let html=assigned.map(function(a){ return recCandTagPillHtml({ id:a.tagId, name:a.name, colorKey:a.colorKey },{ removable:true }); }).join('');
+  html+='<button type="button" class="rec-cand-tag-add" id="rec-cand-tag-add-btn" onclick="recCandOpenTagPicker(event)">+ Etiqueta</button>';
+  box.innerHTML=html;
+}
+function recCandCloseTagPicker(){
+  const el=document.getElementById('rec-cand-tag-picker');
+  if(el) el.classList.add('hidden');
+}
+function recCandBindTagPickerOutside(){
+  if(window.__recCandTagPickerOutside) return;
+  window.__recCandTagPickerOutside=true;
+  document.addEventListener('click',function(ev){
+    const picker=document.getElementById('rec-cand-tag-picker');
+    const addBtn=document.getElementById('rec-cand-tag-add-btn');
+    if(!picker||picker.classList.contains('hidden')) return;
+    if(picker.contains(ev.target)||(addBtn&&addBtn.contains(ev.target))) return;
+    recCandCloseTagPicker();
+  });
+}
+async function recCandAssignTagFromPicker(tagId){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  if(!cid||!tagId) return;
+  recCandCloseTagPicker();
+  try{
+    await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/tags',{method:'POST',body:JSON.stringify({ tagId:tagId })});
+    const fresh=await recCandFetchDetail(cid);
+    st.detailCandidate=fresh;
+    recCandRenderDetailTags(fresh);
+    await recCandLoadList(false);
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo asignar la etiqueta.'); }
+}
+async function recCandOpenTagPicker(ev){
+  if(ev) ev.stopPropagation();
+  recCandBindTagPickerOutside();
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  const picker=document.getElementById('rec-cand-tag-picker');
+  if(!cid||!picker) return;
+  await recCandEnsureTagCatalog();
+  const assigned=new Set((st.detailCandidate&&st.detailCandidate.assignedTags||[]).map(function(a){ return a.tagId; }));
+  const tags=st.candTagCatalog||[];
+  if(!tags.length){
+    picker.innerHTML='<p class="rec-cand-tag-picker-empty">No hay etiquetas disponibles.</p>';
+    picker.classList.remove('hidden');
     return;
   }
-  block.classList.remove('hidden');
-  body.textContent=notes;
-  if(preview){
-    preview.textContent=notes;
-    preview.classList.remove('hidden');
+  picker.innerHTML=tags.map(function(t){
+    const on=assigned.has(t.id);
+    return '<button type="button" class="rec-cand-tag-picker-item" role="option" aria-disabled="'+(on?'true':'false')+'"'+(on?' disabled':'')+' onclick="recCandAssignTagFromPicker(\''+tcEsc(t.id)+'\')">'+
+      recCandTagPillHtml({ name:t.name, colorKey:t.colorKey },false)+
+      (on?'<span style="font-size:11px;font-weight:600;color:var(--slate-500);margin-left:auto;">Asignada</span>':'')+
+      '</button>';
+  }).join('');
+  picker.classList.remove('hidden');
+}
+async function recCandRemoveTag(tagId){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  if(!cid||!tagId) return;
+  try{
+    await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/tags/'+encodeURIComponent(tagId),{method:'DELETE'});
+    const fresh=await recCandFetchDetail(cid);
+    st.detailCandidate=fresh;
+    recCandRenderDetailTags(fresh);
+    await recCandLoadList(false);
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo quitar la etiqueta.'); }
+}
+function recCandObsIconEdit(){ return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'; }
+function recCandObsIconTrash(){ return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>'; }
+function recCandRenderObservationsCard(notes,loading){
+  const host=document.getElementById('rec-cand-observations-host');
+  if(!host) return;
+  const st=recEnsureState();
+  const list=notes||st.detailNotes||[];
+  const n=list.length;
+  let body='';
+  if(loading) body='<p class="rec-cand-obs-empty">Cargando…</p>';
+  else if(!n) body='<p class="rec-cand-obs-empty">Sin observaciones todavía.</p>';
+  else{
+    body=list.map(function(note){
+      const edited=note.editedAt?' · Editada':'';
+      return '<div class="rec-cand-obs-item" data-note-id="'+tcEsc(note.id)+'">'+
+        '<p class="rec-cand-obs-meta">'+tcEsc(note.authorName||'—')+' · '+tcEsc(recCandFmtObsTime(note.createdAt))+edited+'</p>'+
+        '<p class="rec-cand-obs-body" id="rec-cand-obs-body-'+tcEsc(note.id)+'">'+tcEsc(note.body)+'</p>'+
+        '<div class="rec-cand-obs-actions">'+
+        '<button type="button" class="rec-cand-obs-icon-btn" title="Editar" aria-label="Editar" onclick="recCandEditNote(\''+tcEsc(note.id)+'\')">'+recCandObsIconEdit()+'</button>'+
+        '<button type="button" class="rec-cand-obs-icon-btn" title="Eliminar" aria-label="Eliminar" onclick="recCandDeleteNote(\''+tcEsc(note.id)+'\')">'+recCandObsIconTrash()+'</button>'+
+        '</div></div>';
+    }).join('');
   }
-  if(trigger){ trigger.setAttribute('aria-expanded','false'); }
-  body.classList.add('hidden');
+  const composerOpen=st.detailObsComposerOpen;
+  host.innerHTML='<div class="rec-cand-observations-card">'+
+    '<div class="rec-cand-observations-head"><h4>Observaciones</h4>'+(n?'<span class="rec-cand-obs-count">'+n+'</span>':'')+
+    '<button type="button" class="rec-cand-obs-add" onclick="recCandToggleObsComposer(true)">+ Añadir</button></div>'+
+    body+
+    (composerOpen?'<div class="rec-cand-obs-composer"><textarea id="rec-cand-obs-composer-ta" class="form-input" maxlength="20000" placeholder="Escribe una observación…"></textarea>'+
+    '<div class="rec-cand-obs-composer-actions"><button type="button" class="rec-stages-ghost-btn" onclick="recCandToggleObsComposer(false)">Cancelar</button>'+
+    '<button type="button" class="form-submit form-submit-purple" style="margin:0;padding:8px 14px;font-size:12px;" onclick="recCandSubmitNewNote()">Guardar</button></div></div>':'')+
+    '</div>';
+}
+function recCandToggleObsComposer(open){
+  recEnsureState().detailObsComposerOpen=!!open;
+  recCandRenderObservationsCard();
+  if(open){
+    const ta=document.getElementById('rec-cand-obs-composer-ta');
+    if(ta) ta.focus();
+  }
+}
+async function recCandLoadDetailNotes(){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  if(!cid) return;
+  st.detailNotes=[];
+  recCandRenderObservationsCard([],true);
+  try{
+    const j=await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/notes');
+    st.detailNotes=j.notes||[];
+    recCandRenderObservationsCard(st.detailNotes,false);
+  }catch(e){
+    recCandRenderObservationsCard([],false);
+    recCandSetOpErr((e&&e.message)||'No se pudieron cargar las observaciones.');
+  }
+}
+async function recCandSubmitNewNote(){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  const ta=document.getElementById('rec-cand-obs-composer-ta');
+  const body=(ta&&ta.value||'').trim();
+  if(!cid||!body) return;
+  try{
+    await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/notes',{method:'POST',body:JSON.stringify({ body:body })});
+    st.detailObsComposerOpen=false;
+    await recCandLoadDetailNotes();
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo guardar la observación.'); }
+}
+async function recCandEditNote(noteId){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  const note=(st.detailNotes||[]).find(function(n){ return n.id===noteId; });
+  if(!cid||!note) return;
+  const next=window.prompt('Editar observación:',note.body);
+  if(next==null) return;
+  const body=String(next).trim();
+  if(!body) return;
+  try{
+    await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/notes/'+encodeURIComponent(noteId),{method:'PATCH',body:JSON.stringify({ body:body })});
+    await recCandLoadDetailNotes();
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo editar.'); }
+}
+async function recCandDeleteNote(noteId){
+  const st=recEnsureState();
+  const cid=st.detailCandidateId;
+  if(!cid||!noteId) return;
+  if(!window.confirm('¿Eliminar esta observación?')) return;
+  try{
+    await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(cid)+'/notes/'+encodeURIComponent(noteId),{method:'DELETE'});
+    await recCandLoadDetailNotes();
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo eliminar.'); }
 }
 function recCandAsideRowHtml(a){
   const vac=a.vacancy||{};
@@ -9025,8 +9251,7 @@ function recCandAsideRowHtml(a){
 }
 function recCandHistoryAsideHtml(closedApps){
   if(!closedApps.length) return '';
-  return '<div class="rec-cand-aside-hist"><h5>Historial · '+closedApps.length+'</h5>'+
-    closedApps.map(function(a){
+  return closedApps.map(function(a){
       const vac=a.vacancy||{};
       const sk=recCandAppStageKey(a);
       const hired=sk==='HIRED';
@@ -9037,7 +9262,7 @@ function recCandHistoryAsideHtml(closedApps){
         '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
         '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+' · '+tcEsc(dt)+'</p></span>'+
         '<span class="rec-cand-history-outcome '+ocCls+'">'+outcome+'</span></div>';
-    }).join('')+'</div>';
+    }).join('');
 }
 function recCandToggleAsidePanel(btn){
   const panel=document.getElementById('rec-cand-aside-panel');
@@ -9055,16 +9280,18 @@ function recCandRenderAside(others,closedApps,sumLine){
       '<div class="rec-cand-aside-head"><h4>Otros procesos · '+others.length+'</h4>'+
       '<button type="button" class="rec-cand-aside-toggle" id="rec-cand-aside-toggle" aria-expanded="true" aria-controls="rec-cand-aside-panel" onclick="recCandToggleAsidePanel(this)" title="Mostrar u ocultar">'+
       '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button></div>'+
-      '<div id="rec-cand-aside-panel">'+others.map(recCandAsideRowHtml).join('')+
-      recCandHistoryAsideHtml(closedApps)+'</div></div>';
-  }else if(closedApps&&closedApps.length){
-    html+='<div class="rec-cand-panel-card rec-cand-aside-card"><h4>Historial de procesos</h4>'+
+      '<div id="rec-cand-aside-panel">'+others.map(recCandAsideRowHtml).join('')+'</div></div>';
+  }
+  if(closedApps&&closedApps.length){
+    html+='<div class="rec-cand-panel-card rec-cand-aside-card"><h4>Historial de procesos · '+closedApps.length+'</h4>'+
       recCandHistoryAsideHtml(closedApps)+'</div>';
   }
+  html+='<div id="rec-cand-observations-host"></div>';
   if(sumLine){
     html+='<p id="rec-cand-summary-meta" class="rec-cand-summary-meta rec-cand-summary-meta--aside">'+tcEsc(sumLine)+'</p>';
   }
   aside.innerHTML=html;
+  recCandRenderObservationsCard(recEnsureState().detailNotes||[],false);
 }
 async function recCandRenderPipelineSection(c){
   const host=document.getElementById('rec-cand-pipeline-host');
@@ -9190,6 +9417,7 @@ function recCandBuildListQuery(st, cursor){
   if(f.profile) qs.set('profile',f.profile);
   if(f.source) qs.set('source',f.source);
   if(f.archivedOnly) qs.set('archivedOnly','true');
+  if(f.tagId) qs.set('tagId',f.tagId);
   if(st.selectedId) qs.set('contextVacancyId',st.selectedId);
   qs.set('limit','25');
   if(cursor) qs.set('cursor',cursor);
@@ -9251,7 +9479,7 @@ function recCandFormApplyDecorIcons(){
 }
 function recCandHasActiveFilters(f){
   f=f||{};
-  return !!(f.q||f.profile||f.source||f.archivedOnly);
+  return !!(f.q||f.profile||f.source||f.archivedOnly||f.tagId);
 }
 function recCandUpdateFiltersUi(){
   const st=recEnsureState();
@@ -9260,14 +9488,16 @@ function recCandUpdateFiltersUi(){
 }
 function recCandClearFilters(){
   const st=recEnsureState();
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'' };
   const qEl=document.getElementById('rec-cand-q');
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
+  const tEl=document.getElementById('rec-cand-tag');
   const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.value='';
   if(pEl) pEl.value='';
   if(sEl) sEl.value='';
+  if(tEl) tEl.value='';
   if(aEl) aEl.checked=false;
   recCandUpdateFiltersUi();
   recCandLoadList(false);
@@ -9315,6 +9545,7 @@ function recCandBuildPortfolioRowHtml(c, st){
     '<div class="rec-cand-row-name-line"><p class="rec-cand-row-name">'+tcEsc(c.fullName||'—')+'</p>'+(c.archivedAt?'<span class="rec-cand-badge-arch">Archivado</span>':'')+'</div>'+
     (prof?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('briefcase')+'</span><span class="rec-cand-row-line-text">'+tcEsc(prof)+'</span></div>':'')+
     (loc?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('pin')+'</span><span class="rec-cand-row-line-text">'+tcEsc(loc)+'</span></div>':'')+
+    recCandRowTagsHtml(c)+
     '</span><span class="rec-cand-row-sep" aria-hidden="true"></span>'+
     '<span class="rec-cand-row-block rec-cand-row-block--contact">'+contactHtml+'</span>'+
     '<span class="rec-cand-row-sep" aria-hidden="true"></span>'+
@@ -9328,7 +9559,8 @@ function recCandBindFilters(){
   recCandCatalogInits();
   if(st.candFiltersBound) return;
   st.candFiltersBound=true;
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'' };
+  recCandEnsureTagCatalog();
   function scheduleReload(){
     clearTimeout(st.candSearchTimer);
     st.candSearchTimer=setTimeout(function(){ recCandLoadList(false); },300);
@@ -9336,10 +9568,12 @@ function recCandBindFilters(){
   const qEl=document.getElementById('rec-cand-q');
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
+  const tEl=document.getElementById('rec-cand-tag');
   const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); recCandUpdateFiltersUi(); scheduleReload(); });
   if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(tEl) tEl.addEventListener('change',function(){ st.candFilters.tagId=tEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(aEl) aEl.addEventListener('change',function(){ st.candFilters.archivedOnly=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
   recCandUpdateFiltersUi();
 }
@@ -9390,7 +9624,7 @@ function recCandRenderList(loadingOnly){
   }
   if(!n){
     const f=st.candFilters||{};
-    const hasFilter=!!(f.q||f.profile||f.source||f.archivedOnly);
+    const hasFilter=!!(f.q||f.profile||f.source||f.archivedOnly||f.tagId);
     let emptyMsg='Aún no hay candidatos en la cartera.';
     if(hasFilter) emptyMsg='No hay candidatos que coincidan con tu búsqueda.';
     list.innerHTML='<div class="rec-cand-empty"><p style="margin:0;color:var(--slate-600);">'+emptyMsg+'</p></div>';
@@ -9448,8 +9682,9 @@ async function recCandRenderDetail(c,loading){
   const sumLine=recCandSummaryMetaLine(c.applicationSummary);
   recCandRenderAside(st.detailOtherActiveApps||[],parts.closed,sumLine);
   recCandRenderExpediente(c);
-  recCandRenderNotesBlock(c);
+  recCandRenderDetailTags(c);
   recCandRenderCvPanel(c);
+  recCandLoadDetailNotes();
   const archBtn=document.getElementById('rec-cand-archive-btn');
   if(archBtn) archBtn.textContent=c.archivedAt?'Reactivar candidato':'Archivar candidato';
 }
@@ -9608,10 +9843,12 @@ function recCandOpenForm(mode,candidate){
   const set=function(id,v){ const el=document.getElementById(id); if(el) el.value=v!=null?String(v):''; };
   const procBlock=document.getElementById('rec-cand-form-process-block');
   const cvSection=document.getElementById('rec-cand-form-cv-section');
+  const notesSection=document.getElementById('rec-cand-form-notes-section');
   const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
   const isEdit=mode==='edit'&&candidate;
   if(procBlock) procBlock.classList.toggle('hidden',!!isEdit);
   if(cvSection) cvSection.classList.toggle('hidden',!!isEdit);
+  if(notesSection) notesSection.classList.toggle('hidden',!!isEdit);
   if(stageWrap&&(isEdit||!document.getElementById('rec-cand-form-vacancy')?.value)) stageWrap.classList.add('hidden');
   recCandEnsureVacancyPickerOptions(document.getElementById('rec-cand-form-vacancy'));
   if(isEdit){
@@ -9634,7 +9871,6 @@ function recCandOpenForm(mode,candidate){
     set('rec-cand-form-email',candidate.email);
     set('rec-cand-form-city',candidate.city);
     set('rec-cand-form-state',candidate.state);
-    set('rec-cand-form-notes',candidate.notes);
     set('rec-cand-form-vacancy','');
     recEnsureState().candFormPendingCvFile=null;
   }else{
@@ -9687,7 +9923,7 @@ function recCandReadFormBody(){
   };
 }
 function recCandApiCandidateBody(body){
-  const o={
+  return {
     fullName:body.fullName,
     profile:body.profile,
     profileOther:body.profileOther,
@@ -9700,8 +9936,12 @@ function recCandApiCandidateBody(body){
     sourceOther:body.sourceOther,
     city:body.city,
     state:body.state,
-    notes:body.notes,
   };
+}
+function recCandApiCandidateCreateBody(body){
+  const o=recCandApiCandidateBody(body);
+  const note=(body.notes||'').trim();
+  if(note) o.notes=note;
   return o;
 }
 async function recCandSubmitForm(){
@@ -9789,7 +10029,7 @@ async function recCandCreateAndOpen(body){
   const stageId=body._stageId;
   const pendingCv=st.candFormPendingCvFile;
   st.candFormPendingCvFile=null;
-  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(recCandApiCandidateBody(body))});
+  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(recCandApiCandidateCreateBody(body))});
   closeModal('modal-rec-candidate-form');
   recSwitchModuleTab('candidates');
   await recCandLoadList(false);

@@ -167,7 +167,7 @@ check(/rec-cand-body-grid/.test(indexHtml), 'layout dos columnas');
 check(/Expediente ejecutivo/.test(indexHtml), 'expediente ejecutivo card');
 check(/rec-cand-exp-icon/.test(indexHtml), 'iconos expediente');
 check(/CV y documentos/.test(indexHtml), 'CV y documentos card');
-check(/Observaciones clave/.test(indexHtml), 'observaciones clave');
+check(/rec-cand-observations-card/.test(indexHtml) && /recCandLoadDetailNotes/.test(indexHtml), 'observaciones colaborativas');
 check(/rec-cand-body-aside/.test(indexHtml), 'columna lateral');
 check(/Otros procesos/.test(indexHtml), 'otros procesos lateral');
 check(!/Actividad reciente/.test(indexHtml), 'sin activity feed');

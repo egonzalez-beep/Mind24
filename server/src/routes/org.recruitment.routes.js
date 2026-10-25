@@ -53,6 +53,17 @@ import {
   assertRecruitmentVacancyDocumentInOrg,
   streamRecruitmentVacancyDocumentFile,
 } from '../services/recruitmentVacancyDocument.service.js';
+import {
+  createRecruitmentCandidateNote,
+  listRecruitmentCandidateNotes,
+  softDeleteRecruitmentCandidateNote,
+  updateRecruitmentCandidateNote,
+} from '../services/recruitmentCandidateNote.service.js';
+import {
+  assignRecruitmentCandidateTag,
+  listRecruitmentCandidateTags,
+  removeRecruitmentCandidateTagAssignment,
+} from '../services/recruitmentCandidateTag.service.js';
 
 const router = Router();
 
@@ -151,6 +162,7 @@ const candidatePatchSchema = z
     profile: z.string().min(1).max(300).optional(),
   })
   .partial()
+  .omit({ notes: true })
   .extend({
     archived: z.boolean().optional(),
   })
@@ -424,7 +436,18 @@ router.post('/candidates', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     const body = candidateCreateSchema.parse(req.body);
-    const candidate = await createRecruitmentCandidate(u.organizationId, body);
+    const initialNote =
+      typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim() : null;
+    const { notes: _legacyNotes, ...createPayload } = body;
+    const candidate = await createRecruitmentCandidate(u.organizationId, createPayload);
+    if (initialNote) {
+      await createRecruitmentCandidateNote(
+        u.organizationId,
+        candidate.id,
+        u.id,
+        initialNote,
+      );
+    }
     res.status(201).json({ candidate });
   } catch (e) {
     next(e);
@@ -440,12 +463,17 @@ router.get('/candidates', async (req, res, next) => {
       typeof req.query.contextVacancyId === 'string' && req.query.contextVacancyId.trim()
         ? req.query.contextVacancyId.trim()
         : null;
+    const tagId =
+      typeof req.query.tagId === 'string' && req.query.tagId.trim()
+        ? req.query.tagId.trim()
+        : null;
     const result = await listRecruitmentCandidates(u.organizationId, {
       includeArchived,
       archivedOnly,
       q: req.query.q,
       profile: req.query.profile,
       source: req.query.source,
+      tagId,
       limit: req.query.limit,
       cursor: req.query.cursor,
       contextVacancyId,
@@ -520,6 +548,102 @@ router.delete('/candidates/:candidateId/resume', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     await deleteRecruitmentCandidateResume(u.organizationId, req.params.candidateId);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/candidate-tags', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const tags = await listRecruitmentCandidateTags(u.organizationId);
+    res.json({ tags });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/candidates/:candidateId/notes', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const notes = await listRecruitmentCandidateNotes(u.organizationId, req.params.candidateId);
+    res.json({ notes });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/candidates/:candidateId/notes', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ body: z.string().min(1).max(20_000) }).parse(req.body ?? {});
+    const note = await createRecruitmentCandidateNote(
+      u.organizationId,
+      req.params.candidateId,
+      u.id,
+      body.body,
+    );
+    res.status(201).json({ note });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/candidates/:candidateId/notes/:noteId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ body: z.string().min(1).max(20_000) }).parse(req.body ?? {});
+    const note = await updateRecruitmentCandidateNote(
+      u.organizationId,
+      req.params.candidateId,
+      req.params.noteId,
+      body.body,
+    );
+    res.json({ note });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/candidates/:candidateId/notes/:noteId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await softDeleteRecruitmentCandidateNote(
+      u.organizationId,
+      req.params.candidateId,
+      req.params.noteId,
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/candidates/:candidateId/tags', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z.object({ tagId: z.string().min(1) }).parse(req.body ?? {});
+    const assignment = await assignRecruitmentCandidateTag(
+      u.organizationId,
+      req.params.candidateId,
+      body.tagId,
+      u.id,
+    );
+    res.status(201).json({ assignment });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/candidates/:candidateId/tags/:tagId', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    await removeRecruitmentCandidateTagAssignment(
+      u.organizationId,
+      req.params.candidateId,
+      req.params.tagId,
+    );
     res.json({ ok: true });
   } catch (e) {
     next(e);

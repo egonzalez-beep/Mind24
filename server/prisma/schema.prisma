@@ -71,6 +71,9 @@ model Organization {
   recruitmentVacancyDocuments RecruitmentVacancyDocument[]
   recruitmentVacancyStages RecruitmentVacancyStage[]
   recruitmentCandidateResumes RecruitmentCandidateResume[]
+  recruitmentCandidateNotes RecruitmentCandidateNote[]
+  recruitmentCandidateTags RecruitmentCandidateTag[]
+  recruitmentCandidateTagAssignments RecruitmentCandidateTagAssignment[]
 }
 
 enum OrgNotificationType {
@@ -330,6 +333,8 @@ model User {
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[]
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
+  recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteAuthor")
+  recruitmentCandidateTagAssignmentsCreated RecruitmentCandidateTagAssignment[] @relation("RecruitmentCandidateTagAssignedBy")
 }
 
 model Candidate {
@@ -516,6 +521,8 @@ model RecruitmentCandidate {
 
   applications RecruitmentApplication[]
   resume       RecruitmentCandidateResume?
+  notesRows    RecruitmentCandidateNote[]
+  tagAssignments RecruitmentCandidateTagAssignment[]
 
   @@index([organizationId])
   @@index([organizationId, fullName])
@@ -525,6 +532,59 @@ model RecruitmentCandidate {
   @@index([organizationId, profile])
   @@index([organizationId, source])
   @@index([organizationId, createdAt])
+}
+
+model RecruitmentCandidateNote {
+  id             String               @id @default(cuid())
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidateId    String
+  candidate      RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  authorUserId   String?
+  author         User?                @relation("RecruitmentCandidateNoteAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  body           String               @db.Text
+  legacyImport   Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  editedAt       DateTime?            @db.Timestamptz(6)
+  deletedAt      DateTime?            @db.Timestamptz(6)
+
+  @@index([organizationId, candidateId])
+  @@index([candidateId, createdAt])
+  @@index([organizationId, candidateId, deletedAt])
+}
+
+model RecruitmentCandidateTag {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  colorKey       String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assignments RecruitmentCandidateTagAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId, isActive])
+}
+
+model RecruitmentCandidateTagAssignment {
+  id              String               @id @default(cuid())
+  organizationId  String
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidateId     String
+  candidate       RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  tagId           String
+  tag             RecruitmentCandidateTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdByUserId String?
+  createdBy       User?                @relation("RecruitmentCandidateTagAssignedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime             @default(now())
+
+  @@unique([candidateId, tagId])
+  @@index([organizationId, candidateId])
+  @@index([organizationId, tagId])
 }
 
 /// CV actual del candidato (un archivo por candidato en V1).
