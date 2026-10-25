@@ -34,6 +34,7 @@ console.log('\n=== Recruitment 1B.1 — base ===\n');
 
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
 check(/rec-topbar-cluster/.test(indexHtml) && /rec-module-nav--inline/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'tabs Vacantes/Candidatos en topbar');
+check(/rec-tab-metrics/.test(indexHtml) && /rec-pane-metrics/.test(indexHtml), 'pestaña Métricas en reclutamiento');
 check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
 check(/modal-rec-vacancy/.test(indexHtml) && /recSubmitVacancy/.test(indexHtml), 'modal crear/editar vacante');
 check(/\+ Nueva vacante/.test(indexHtml), 'CTA nueva vacante');

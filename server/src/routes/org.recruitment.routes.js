@@ -65,6 +65,7 @@ import {
   softDeleteRecruitmentVacancyNote,
   updateRecruitmentVacancyNote,
 } from '../services/recruitmentVacancyNote.service.js';
+import { getRecruitmentMetricsForRequest } from '../services/recruitmentMetrics.service.js';
 import {
   assignRecruitmentCandidateTag,
   listRecruitmentCandidateTags,
@@ -222,6 +223,18 @@ router.post('/vacancies', async (req, res, next) => {
     const body = vacancyCreateSchema.parse(req.body);
     const vacancy = await createRecruitmentVacancy(u.organizationId, body);
     res.status(201).json({ vacancy });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/metrics', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const year = req.query.year != null ? req.query.year : null;
+    const month = req.query.month != null ? req.query.month : null;
+    const metrics = await getRecruitmentMetricsForRequest(u.organizationId, year, month);
+    res.json({ metrics });
   } catch (e) {
     next(e);
   }
