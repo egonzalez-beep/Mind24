@@ -224,6 +224,7 @@ function decodeListCursor(cursor) {
 function buildCandidateListWhere(organizationId, options) {
   const {
     includeArchived = false,
+    archivedOnly = false,
     q,
     profile,
     source,
@@ -231,7 +232,11 @@ function buildCandidateListWhere(organizationId, options) {
   } = options;
 
   const and = [{ organizationId }];
-  if (!includeArchived) and.push({ archivedAt: null });
+  if (archivedOnly === true) {
+    and.push({ archivedAt: { not: null } });
+  } else if (!includeArchived) {
+    and.push({ archivedAt: null });
+  }
 
   const qTrim = trimOrNull(q);
   if (qTrim) {
@@ -279,11 +284,16 @@ function buildCandidateListWhere(organizationId, options) {
 
 export async function listRecruitmentCandidates(organizationId, options = {}) {
   const includeArchived = options.includeArchived === true;
+  const archivedOnly = options.archivedOnly === true;
   let limit = Number(options.limit);
   if (!Number.isFinite(limit) || limit < 1) limit = RECRUITMENT_CANDIDATE_LIST_DEFAULT_LIMIT;
   limit = Math.min(RECRUITMENT_CANDIDATE_LIST_MAX_LIMIT, Math.floor(limit));
 
-  const where = buildCandidateListWhere(organizationId, { ...options, includeArchived });
+  const where = buildCandidateListWhere(organizationId, {
+    ...options,
+    includeArchived,
+    archivedOnly,
+  });
 
   const rows = await prisma.recruitmentCandidate.findMany({
     where,

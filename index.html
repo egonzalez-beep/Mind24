@@ -2644,6 +2644,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <input type="search" id="rec-global-q" class="rec-global-search form-input" placeholder="Buscar vacantes…" autocomplete="off" aria-label="Buscar vacantes">
         <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
       </div>
+      <div class="rec-topbar-vac-tools hidden" id="rec-topbar-cand-tools">
+        <button type="button" class="rec-btn-new" onclick="recCandOpenForm('create')">+ Nuevo candidato</button>
+      </div>
       <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
     </div>
     <div class="page-content rec-page-content">
@@ -2683,10 +2686,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="rec-pane-candidates" class="hidden rec-cand-pane-wrap">
-        <div class="rec-cand-head-row">
-          <h2>Cartera de talento</h2>
-          <button type="button" class="rec-btn-new" onclick="recCandOpenForm('create')">+ Nuevo candidato</button>
-        </div>
         <div class="rec-cand-toolbar">
           <div class="rec-cand-toolbar-search">
             <input type="search" id="rec-cand-q" class="form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos">
@@ -2700,7 +2699,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <label for="rec-cand-source">Fuente</label>
               <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
             </div>
-            <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Mostrar archivados</label>
+            <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Archivados</label>
           </div>
           <button type="button" class="rec-cand-toolbar-clear hidden" id="rec-cand-clear-filters" onclick="recCandClearFilters()">Limpiar filtros</button>
         </div>
@@ -8620,7 +8619,9 @@ function recSwitchModuleTab(tab){
   if(tabVac) tabVac.classList.toggle('rec-module-tab--active',st.moduleTab==='vacancies');
   if(tabCand) tabCand.classList.toggle('rec-module-tab--active',st.moduleTab==='candidates');
   const vacTools=document.getElementById('rec-topbar-vac-tools');
+  const candTools=document.getElementById('rec-topbar-cand-tools');
   if(vacTools) vacTools.classList.toggle('hidden',st.moduleTab!=='vacancies');
+  if(candTools) candTools.classList.toggle('hidden',st.moduleTab!=='candidates');
   if(st.moduleTab==='candidates'){
     recCandBindFilters();
     if(!st.candidates.length&&!st.candidatesLoading) recCandLoadList(false);
@@ -9188,7 +9189,7 @@ function recCandBuildListQuery(st, cursor){
   if(f.q) qs.set('q',f.q);
   if(f.profile) qs.set('profile',f.profile);
   if(f.source) qs.set('source',f.source);
-  if(f.includeArchived) qs.set('includeArchived','true');
+  if(f.archivedOnly) qs.set('archivedOnly','true');
   if(st.selectedId) qs.set('contextVacancyId',st.selectedId);
   qs.set('limit','25');
   if(cursor) qs.set('cursor',cursor);
@@ -9250,7 +9251,7 @@ function recCandFormApplyDecorIcons(){
 }
 function recCandHasActiveFilters(f){
   f=f||{};
-  return !!(f.q||f.profile||f.source||f.includeArchived);
+  return !!(f.q||f.profile||f.source||f.archivedOnly);
 }
 function recCandUpdateFiltersUi(){
   const st=recEnsureState();
@@ -9259,7 +9260,7 @@ function recCandUpdateFiltersUi(){
 }
 function recCandClearFilters(){
   const st=recEnsureState();
-  st.candFilters={ q:'', profile:'', source:'', includeArchived:false };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false };
   const qEl=document.getElementById('rec-cand-q');
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
@@ -9327,7 +9328,7 @@ function recCandBindFilters(){
   recCandCatalogInits();
   if(st.candFiltersBound) return;
   st.candFiltersBound=true;
-  st.candFilters={ q:'', profile:'', source:'', includeArchived:false };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false };
   function scheduleReload(){
     clearTimeout(st.candSearchTimer);
     st.candSearchTimer=setTimeout(function(){ recCandLoadList(false); },300);
@@ -9339,7 +9340,7 @@ function recCandBindFilters(){
   if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); recCandUpdateFiltersUi(); scheduleReload(); });
   if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
-  if(aEl) aEl.addEventListener('change',function(){ st.candFilters.includeArchived=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(aEl) aEl.addEventListener('change',function(){ st.candFilters.archivedOnly=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
   recCandUpdateFiltersUi();
 }
 async function recCandLoadList(append){
@@ -9388,8 +9389,11 @@ function recCandRenderList(loadingOnly){
     return;
   }
   if(!n){
-    const hasFilter=(st.candFilters.q||st.candFilters.profile||st.candFilters.source||st.candFilters.includeArchived);
-    list.innerHTML='<div class="rec-cand-empty"><p style="margin:0;color:var(--slate-600);">'+(hasFilter?'No hay candidatos que coincidan con tu búsqueda.':'Aún no hay candidatos en la cartera.')+'</p></div>';
+    const f=st.candFilters||{};
+    const hasFilter=!!(f.q||f.profile||f.source||f.archivedOnly);
+    let emptyMsg='Aún no hay candidatos en la cartera.';
+    if(hasFilter) emptyMsg='No hay candidatos que coincidan con tu búsqueda.';
+    list.innerHTML='<div class="rec-cand-empty"><p style="margin:0;color:var(--slate-600);">'+emptyMsg+'</p></div>';
     if(moreWrap) moreWrap.classList.add('hidden');
     return;
   }

@@ -435,12 +435,14 @@ router.get('/candidates', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
     const includeArchived = req.query.includeArchived === '1' || req.query.includeArchived === 'true';
+    const archivedOnly = req.query.archivedOnly === '1' || req.query.archivedOnly === 'true';
     const contextVacancyId =
       typeof req.query.contextVacancyId === 'string' && req.query.contextVacancyId.trim()
         ? req.query.contextVacancyId.trim()
         : null;
     const result = await listRecruitmentCandidates(u.organizationId, {
       includeArchived,
+      archivedOnly,
       q: req.query.q,
       profile: req.query.profile,
       source: req.query.source,
