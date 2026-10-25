@@ -43,6 +43,20 @@ check(/recKanbanRefreshRelated/.test(indexHtml), 'refresh ficha y detalle vacant
 check(/PATCH.*\/applications\/:id/.test(routes) || /router\.patch\('\/applications\/:id'/.test(routes), 'PATCH mover etapa');
 check(/updatedAt.*desc/.test(appSvc), 'orden applications por updatedAt');
 
+console.log('\n=== Recruitment Kanban — optimistic DnD ===\n');
+
+const dropBlock = indexHtml.match(/async function recKanbanColDrop[\s\S]*?^function recKanbanCardClick/m)?.[0] || '';
+check(/recKanbanMoveCardInDom/.test(indexHtml), 'movimiento DOM optimista');
+check(/recKanbanSyncColCounts/.test(indexHtml), 'contadores columna sincronizados');
+check(/kanbanPendingMoves/.test(indexHtml), 'bloqueo PATCH pendiente por application');
+check(/recKanbanSilentReconcile/.test(indexHtml), 'reconciliación silenciosa post-PATCH');
+check(/recKanbanRefreshRelatedPanels/.test(indexHtml), 'refresh paneles sin recargar Kanban');
+check(!/recKanbanRender\(vacancyId\)/.test(dropBlock), 'drop no reconstruye Kanban completo');
+check(!/recKanbanLoad\(vacancyId\)/.test(dropBlock), 'drop no dispara recKanbanLoad');
+check(/No se pudo cambiar la etapa\. Intenta nuevamente\./.test(dropBlock), 'rollback con mensaje discreto');
+check(/String\(fromStageId\)===String\(targetStageId\)/.test(dropBlock), 'misma etapa sin PATCH');
+check(/rec-kanban-card--enter/.test(indexHtml) && /rec-kanban-col--drop-success/.test(indexHtml), 'microinteracciones drop');
+
 console.log('\n=== Regresiones ===\n');
 
 function runRegression(script) {

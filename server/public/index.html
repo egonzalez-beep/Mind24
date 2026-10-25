@@ -774,6 +774,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-kanban-card-handle{position:absolute;left:6px;top:10px;color:var(--slate-400);font-size:12px;line-height:1;user-select:none;cursor:grab;}
 .rec-kanban-card:hover{border-color:rgba(124,58,237,.28);box-shadow:0 2px 8px rgba(124,58,237,.06);}
 .rec-kanban-card--dragging{opacity:.55;cursor:grabbing;}
+.rec-kanban-card--pending{opacity:.72;pointer-events:none;cursor:default;}
+.rec-kanban-card--enter{animation:recKanbanCardEnter .18s ease-out;}
+@keyframes recKanbanCardEnter{from{opacity:.55;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.rec-kanban-col--drop-success{animation:recKanbanColPulse .36s ease-out;}
+@keyframes recKanbanColPulse{0%,100%{box-shadow:inset 0 0 0 0 rgba(124,58,237,0);}45%{box-shadow:inset 0 0 0 1px rgba(124,58,237,.26);background:rgba(245,243,255,.82);}}
 .rec-kanban-card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px;}
 .rec-kanban-card-avatar{width:32px;height:32px;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rec-kanban-card-main{flex:1;min-width:0;}
@@ -7255,6 +7260,7 @@ function recEnsureState(){
       kanbanLoading:false,
       kanbanError:null,
       kanbanDragAppId:null,
+      kanbanPendingMoves:{},
       kanbanSuppressClick:false,
       vacancyStagesCache:{},
       vacancySearchQuery:'',
@@ -8404,10 +8410,130 @@ function recKanbanRender(vacancyId){
   slot.innerHTML=html;
   if(st.kanbanError) recKanbanSetErr(st.kanbanError);
 }
+function recKanbanFindCol(stageId){
+  const board=document.getElementById('rec-kanban-board');
+  if(!board||stageId==null||stageId==='') return null;
+  const sid=String(stageId);
+  const cols=board.querySelectorAll('.rec-kanban-col');
+  for(let i=0;i<cols.length;i++){
+    if(cols[i].getAttribute('data-stage-id')===sid) return cols[i];
+  }
+  return null;
+}
+function recKanbanColStageName(col){
+  if(!col) return 'Etapa';
+  const t=col.querySelector('.rec-kanban-col-title');
+  return (t&&t.textContent)?t.textContent.trim():'Etapa';
+}
+function recKanbanColCardCount(col){
+  if(!col) return 0;
+  const body=col.querySelector('.rec-kanban-col-body');
+  if(!body) return 0;
+  return body.querySelectorAll('.rec-kanban-card').length;
+}
+function recKanbanSetColCounts(col,n){
+  if(!col) return;
+  col.querySelectorAll('.rec-kanban-col-count').forEach(function(el){ el.textContent=String(n); });
+  if(col.classList.contains('rec-kanban-col--collapsed')){
+    const tip=recKanbanColStageName(col)+' · '+n+' candidatos';
+    col.setAttribute('aria-label',tip);
+    col.setAttribute('title',tip);
+    const iconWrap=col.querySelector('.rec-kanban-col-icon-compact');
+    if(iconWrap) iconWrap.setAttribute('title',tip);
+  }
+}
+function recKanbanSyncColCounts(col){
+  recKanbanSetColCounts(col,recKanbanColCardCount(col));
+}
+function recKanbanEnsureDropEmpty(col,show){
+  const body=col&&col.querySelector('.rec-kanban-col-body');
+  if(!body) return;
+  const empty=body.querySelector('.rec-kanban-col-drop-empty');
+  if(show&&!empty){
+    body.insertAdjacentHTML('beforeend','<div class="rec-kanban-col-drop-empty"><span>+ Arrastra candidatos aquí</span></div>');
+  }else if(!show&&empty) empty.remove();
+}
+function recKanbanColFlashSuccess(col){
+  if(!col) return;
+  col.classList.add('rec-kanban-col--drop-success');
+  window.setTimeout(function(){ col.classList.remove('rec-kanban-col--drop-success'); },380);
+}
+function recKanbanUpdateCardFoot(card,app){
+  if(!card||!app) return;
+  const updated=recKanbanRelativeUpdated(app.updatedAt||(app.candidate&&app.candidate.updatedAt));
+  let foot=card.querySelector('.rec-kanban-card-foot');
+  if(updated){
+    if(foot) foot.textContent=updated;
+    else{
+      foot=document.createElement('p');
+      foot.className='rec-kanban-card-foot';
+      foot.textContent=updated;
+      card.appendChild(foot);
+    }
+  }else if(foot) foot.remove();
+}
+function recKanbanMoveCardInDom(card,fromCol,toCol,opts){
+  opts=opts||{};
+  if(!card||!toCol) return;
+  const toBody=toCol.querySelector('.rec-kanban-col-body');
+  if(!toBody) return;
+  recKanbanEnsureDropEmpty(toCol,false);
+  toBody.appendChild(card);
+  card.setAttribute('data-stage-id',toCol.getAttribute('data-stage-id')||'');
+  if(opts.animate!==false){
+    card.classList.add('rec-kanban-card--enter');
+    card.addEventListener('animationend',function onEnd(){
+      card.classList.remove('rec-kanban-card--enter');
+      card.removeEventListener('animationend',onEnd);
+    });
+    recKanbanColFlashSuccess(toCol);
+  }
+  if(fromCol){
+    if(recKanbanColCardCount(fromCol)===0) recKanbanEnsureDropEmpty(fromCol,true);
+  }
+}
+async function recKanbanSilentReconcile(vacancyId){
+  const st=recEnsureState();
+  if(!vacancyId) return;
+  try{
+    const appsJ=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications');
+    const apps=appsJ.applications||[];
+    st.kanbanApplications=apps;
+    const board=document.getElementById('rec-kanban-board');
+    if(!board) return;
+    let mismatch=false;
+    board.querySelectorAll('.rec-kanban-card').forEach(function(cardEl){
+      const appId=cardEl.getAttribute('data-app-id');
+      const domStage=cardEl.getAttribute('data-stage-id');
+      const app=apps.find(function(a){ return a.id===appId; });
+      const stateStage=app&&(app.stageId||(app.stage&&app.stage.id));
+      if(!app||String(domStage)!==String(stateStage)) mismatch=true;
+    });
+    if(mismatch) recKanbanRender(vacancyId);
+  }catch(_e){}
+}
+async function recKanbanRefreshRelatedPanels(vacancyId,candidateId){
+  const st=recEnsureState();
+  if(candidateId&&st.detailCandidateId===candidateId){
+    try{
+      const c=await recCandFetchDetail(candidateId);
+      st.detailCandidate=c;
+      await recCandRenderDetail(c,false);
+    }catch(_e){}
+  }
+  const detailModal=document.getElementById('modal-rec-vacancy-detail');
+  if(detailModal&&!detailModal.classList.contains('hidden')&&st.detailVacancyId===vacancyId){
+    await recFetchAndRenderVacancyDetail(vacancyId);
+  }
+}
 function recKanbanCardDragStart(ev){
   const st=recEnsureState();
   const card=ev.currentTarget;
   const appId=card.getAttribute('data-app-id');
+  if(appId&&st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]){
+    ev.preventDefault();
+    return;
+  }
   st.kanbanDragAppId=appId;
   card.classList.add('rec-kanban-card--dragging');
   if(ev.dataTransfer){
@@ -8443,25 +8569,49 @@ async function recKanbanColDrop(ev){
   if(col&&col.classList.contains('rec-kanban-col--collapsed')) return;
   const appId=(ev.dataTransfer&&ev.dataTransfer.getData('text/plain'))||st.kanbanDragAppId;
   if(!appId||!targetStageId) return;
+  if(st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]) return;
   const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
-  if(!app||app.stageId===targetStageId||(app.stage&&app.stage.id===targetStageId)) return;
-  const fromStageId=app.stageId||(app.stage&&app.stage.id);
+  const fromStageId=app&&(app.stageId||(app.stage&&app.stage.id));
+  if(!app||String(fromStageId)===String(targetStageId)) return;
+  const card=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+appId+'"]');
+  if(!card) return;
   const vacancyId=st.selectedId;
   const candidateId=app.candidateId||(app.candidate&&app.candidate.id);
+  const fromCol=recKanbanFindCol(fromStageId)||card.closest('.rec-kanban-col');
+  const toCol=col;
+  if(!st.kanbanPendingMoves) st.kanbanPendingMoves={};
+  st.kanbanPendingMoves[appId]=true;
+  card.classList.add('rec-kanban-card--pending');
   app.stageId=targetStageId;
   if(app.stage) app.stage.id=targetStageId;
-  recKanbanRender(vacancyId);
+  recKanbanMoveCardInDom(card,fromCol,toCol,{ animate:true });
+  recKanbanSyncColCounts(fromCol);
+  recKanbanSyncColCounts(toCol);
   try{
-    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
+    const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
       method:'PATCH',
       body:JSON.stringify({ stageId:targetStageId }),
     });
+    if(out&&out.application){
+      Object.assign(app,out.application);
+      recKanbanUpdateCardFoot(card,app);
+    }else{
+      app.updatedAt=new Date().toISOString();
+      recKanbanUpdateCardFoot(card,app);
+    }
     recKanbanSetErr('');
-    await recKanbanRefreshRelated(vacancyId,candidateId);
-  }catch(e){
+    recKanbanSilentReconcile(vacancyId);
+    await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
+  }catch(_e){
     app.stageId=fromStageId;
-    recKanbanSetErr((e&&e.message)||'No se pudo mover el candidato de etapa.');
-    recKanbanRender(vacancyId);
+    if(app.stage) app.stage.id=fromStageId;
+    recKanbanMoveCardInDom(card,toCol,fromCol,{ animate:false });
+    recKanbanSyncColCounts(fromCol);
+    recKanbanSyncColCounts(toCol);
+    recKanbanSetErr('No se pudo cambiar la etapa. Intenta nuevamente.');
+  }finally{
+    delete st.kanbanPendingMoves[appId];
+    card.classList.remove('rec-kanban-card--pending');
   }
 }
 function recKanbanCardClick(ev,candidateId){
@@ -8471,18 +8621,7 @@ function recKanbanCardClick(ev,candidateId){
 }
 async function recKanbanRefreshRelated(vacancyId,candidateId){
   await recKanbanLoad(vacancyId);
-  const st=recEnsureState();
-  if(candidateId&&st.detailCandidateId===candidateId){
-    try{
-      const c=await recCandFetchDetail(candidateId);
-      st.detailCandidate=c;
-      await recCandRenderDetail(c,false);
-    }catch(_e){}
-  }
-  const detailModal=document.getElementById('modal-rec-vacancy-detail');
-  if(detailModal&&!detailModal.classList.contains('hidden')&&st.detailVacancyId===vacancyId){
-    await recFetchAndRenderVacancyDetail(vacancyId);
-  }
+  await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
 }
 async function recLoadEmployees(){
   const st=recEnsureState();
