@@ -112,13 +112,32 @@ check(/rec-cand-pipeline-empty/.test(indexHtml), 'sin proceso activo');
 check(/rec-cand-expediente/.test(indexHtml) && !/id="rec-cand-info-grid"/.test(indexHtml), 'expediente agrupado sin info-grid');
 check(/recCandProfileSecondaryLabel/.test(indexHtml), 'helper perfil secundario');
 check(/recCandGoToPipeline/.test(indexHtml), 'Ver en pipeline');
-check(/rec-cand-other-active/.test(indexHtml), 'otros procesos activos');
-check(/rec-cand-history-trigger/.test(indexHtml) && /recCandDetailToggleAcc\('history'\)/.test(indexHtml), 'histórico accordion');
+check(/recCandRenderAside/.test(indexHtml), 'render lateral otros procesos');
+check(/Historial/.test(indexHtml), 'histórico procesos');
 check(/recCandSummaryMetaLine/.test(indexHtml), 'applicationSummary compacto');
 check(!/rec-cand-mini-kpis/.test(indexHtml), 'sin KPI cards protagonistas');
 check(/rec-vac-detail-btn.*recCandOpenCv|recCandOpenCv\(\).*rec-vac-detail-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'CV acciones icono');
-check(/id="rec-cand-add-vac-btn"/.test(indexHtml), '+ Añadir a vacante reubicado');
+check(/id="rec-cand-toolbar-add-vac"/.test(indexHtml), '+ Añadir a vacante icono toolbar');
 check(/id="rec-cand-archive-btn".*rec-stages-ghost-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'archivar discreto footer');
+
+console.log('\n=== Recruitment 1F.2 — cierre visual ficha (estático) ===\n');
+
+check(/max-width:min\(1180px/.test(indexHtml), 'modal ancho desktop');
+check(/rec-cand-detail-kicker/.test(indexHtml), 'header kicker ficha');
+check(/rec-cand-detail-active-badge/.test(indexHtml), 'badge activo');
+check(/recCandBuildLabeledStageRailHtml/.test(indexHtml), 'stage rail etiquetado');
+check(/rec-cand-labeled-rail--dense/.test(indexHtml), 'rail denso muchas etapas');
+check(/recCandChangePrimaryStage/.test(indexHtml), 'cambiar etapa desde ficha');
+check(/rec-cand-body-grid/.test(indexHtml), 'layout dos columnas');
+check(/Expediente ejecutivo/.test(indexHtml), 'expediente ejecutivo card');
+check(/rec-cand-exp-icon/.test(indexHtml), 'iconos expediente');
+check(/CV y documentos/.test(indexHtml), 'CV y documentos card');
+check(/Observaciones clave/.test(indexHtml), 'observaciones clave');
+check(/rec-cand-body-aside/.test(indexHtml), 'columna lateral');
+check(/Otros procesos/.test(indexHtml), 'otros procesos lateral');
+check(!/Actividad reciente/.test(indexHtml), 'sin activity feed');
+check(!/rec-cand-module-tab|Experiencia.*Formación.*Historial/.test(indexHtml.replace(/\s+/g,' ')), 'sin tabs falsas');
+check(/detailPrimaryApplication/.test(indexHtml), 'estado proceso principal');
 
 console.log('\n=== Recruitment 1D.1 — integración (DB) ===\n');
 

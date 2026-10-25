@@ -295,41 +295,83 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-skeleton{height:72px;border-radius:12px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;}
 @keyframes recCandShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
 .rec-cand-load-more-wrap{text-align:center;margin-top:14px;}
-.rec-cand-detail-modal{max-width:min(960px,calc(100vw - 32px));padding:26px 28px 30px;max-height:min(92vh,900px);background:#FAFBFF;}
-.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:88px;margin-bottom:0;}
+.rec-cand-detail-modal{max-width:min(1180px,calc(100vw - 32px));padding:26px 28px 28px;max-height:min(92vh,900px);background:#FAFBFF;}
+.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:120px;margin-bottom:0;}
 .rec-cand-detail-header{display:flex;gap:14px;align-items:flex-start;margin-bottom:0;}
+.rec-cand-detail-kicker{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin:0 0 6px;}
+.rec-cand-badge-active{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.12);color:#047857;flex-shrink:0;}
+.rec-detail-edit-btn.rec-cand-toolbar-add{color:var(--purple-dark);border-color:rgba(124,58,237,.25);}
+.rec-detail-edit-btn.rec-cand-toolbar-add:hover{background:rgba(245,243,255,.9);border-color:var(--purple);color:var(--purple);}
+.rec-cand-body-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,32%);gap:20px 22px;margin-top:4px;align-items:start;}
+.rec-cand-body-main{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.rec-cand-body-aside{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.rec-cand-panel-card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
+.rec-cand-panel-card h4{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:0 0 12px;}
 .rec-cand-detail-avatar{width:48px;height:48px;border-radius:12px;background:var(--purple-light);color:var(--purple-dark);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rec-cand-detail-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px;}
 .rec-cand-detail-title h2{font-size:22px;font-weight:800;color:var(--primary);margin:0;letter-spacing:-.35px;line-height:1.25;}
 .rec-cand-detail-sub{font-size:13px;color:var(--slate-600);margin:0;line-height:1.4;}
 .rec-cand-badge-arch{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);flex-shrink:0;}
-.rec-cand-pipeline-hero{margin:0 0 12px;padding:16px 18px;border:1px solid rgba(124,58,237,.18);border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04);}
-.rec-cand-hero-title{font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.35px;line-height:1.25;margin:0 0 4px;}
-.rec-cand-hero-client{font-size:13px;color:var(--slate-600);display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;}
-.rec-cand-hero-stage-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:0 0 4px;}
-.rec-cand-hero-stage-name{font-size:17px;font-weight:800;color:var(--purple-dark);letter-spacing:-.25px;margin:0 0 12px;line-height:1.2;}
-.rec-cand-stage-rail{display:flex;align-items:center;gap:7px;padding:2px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
-.rec-cand-stage-dot{width:10px;height:10px;border-radius:999px;flex-shrink:0;border:2px solid var(--slate-300);background:transparent;box-sizing:border-box;}
-.rec-cand-stage-dot--done{background:rgba(124,58,237,.85);border-color:rgba(124,58,237,.85);}
-.rec-cand-stage-dot--current{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.18);}
-.rec-cand-stage-dot--future{background:transparent;border-color:var(--slate-300);}
-.rec-cand-hero-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--slate-100);}
-.rec-cand-hero-updated{font-size:11px;color:var(--slate-500);}
+.rec-cand-pipeline-hero{margin:0 0 16px;padding:18px 20px 16px 22px;border:1px solid rgba(124,58,237,.16);border-radius:16px;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04);position:relative;overflow:hidden;}
+.rec-cand-pipeline-hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:16px 0 0 16px;background:linear-gradient(180deg,rgba(124,58,237,.65),rgba(139,92,246,.35));}
+.rec-cand-hero-kicker{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);margin:0 0 10px;opacity:.85;}
+.rec-cand-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.rec-cand-hero-head-main{min-width:0;flex:1;}
+.rec-cand-hero-title{font-size:19px;font-weight:800;color:var(--primary);letter-spacing:-.4px;line-height:1.2;margin:0 0 4px;}
+.rec-cand-hero-client{font-size:13px;color:var(--slate-600);display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;}
+.rec-cand-hero-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+.rec-cand-stage-pill{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(124,58,237,.1);color:var(--purple-dark);}
+.rec-cand-stage-pill--hired{background:rgba(16,185,129,.12);color:#047857;}
+.rec-cand-stage-pill--rej{background:rgba(244,63,94,.1);color:#BE123C;}
+.rec-cand-hero-ctrls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;}
+.rec-cand-stage-change-select{font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-700);border:1px solid var(--slate-200);background:#fff;border-radius:8px;padding:6px 28px 6px 10px;cursor:pointer;max-width:180px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.rec-cand-stage-change-select:hover{border-color:rgba(124,58,237,.35);}
+.rec-cand-hero-updated{font-size:11px;color:var(--slate-500);margin:12px 0 0;}
 .rec-cand-pipeline-link{font-size:12px;padding:6px 10px;}
-.rec-cand-pipeline-empty{padding:16px 18px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.65);margin:0 0 12px;}
-.rec-cand-pipeline-empty-title{font-size:14px;font-weight:700;color:var(--primary);margin:0 0 4px;}
-.rec-cand-pipeline-empty-sub{font-size:13px;color:var(--slate-600);margin:0;}
-.rec-cand-other-active{margin:0 0 12px;}
-.rec-cand-other-active-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 8px;}
-.rec-cand-other-active-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;margin-bottom:6px;}
-.rec-cand-other-active-row:last-child{margin-bottom:0;}
-.rec-cand-other-active-main{min-width:0;flex:1;}
-.rec-cand-other-active-title{font-size:13px;font-weight:700;color:var(--primary);margin:0 0 2px;}
-.rec-cand-other-active-meta{font-size:12px;color:var(--slate-600);margin:0;line-height:1.35;}
-.rec-cand-add-vac-wrap{margin:0 0 14px;}
-.rec-cand-expediente{display:grid;grid-template-columns:1fr 1fr;gap:18px 28px;font-size:13px;}
+.rec-cand-labeled-rail{display:flex;align-items:flex-start;gap:0;padding:4px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;scrollbar-width:thin;}
+.rec-cand-labeled-rail--dense .rec-cand-rail-label{font-size:9px;max-width:56px;}
+.rec-cand-labeled-rail--dense .rec-cand-rail-node{width:18px;height:18px;}
+.rec-cand-rail-step{flex:1 1 0;min-width:52px;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;padding:0 2px;}
+.rec-cand-rail-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:calc(50% + 12px);right:calc(-50% + 12px);height:2px;background:var(--slate-200);z-index:0;}
+.rec-cand-rail-step--done:not(:last-child)::after{background:rgba(124,58,237,.35);}
+.rec-cand-rail-node{width:22px;height:22px;border-radius:999px;border:2px solid var(--slate-300);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;box-sizing:border-box;}
+.rec-cand-rail-step--done .rec-cand-rail-node{background:rgba(124,58,237,.9);border-color:rgba(124,58,237,.9);color:#fff;}
+.rec-cand-rail-step--current .rec-cand-rail-node{border-color:var(--purple);background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.2);}
+.rec-cand-rail-step--current .rec-cand-rail-node::after{content:'';width:8px;height:8px;border-radius:999px;background:var(--purple);}
+.rec-cand-rail-step--done .rec-cand-rail-node svg{width:11px;height:11px;stroke:currentColor;}
+.rec-cand-rail-step--future .rec-cand-rail-node{background:var(--slate-50);}
+.rec-cand-rail-step--hired.rec-cand-rail-step--current .rec-cand-rail-node{border-color:#10B981;box-shadow:0 0 0 3px rgba(16,185,129,.22);}
+.rec-cand-rail-step--hired.rec-cand-rail-step--current .rec-cand-rail-node::after{background:#10B981;}
+.rec-cand-rail-step--rej.rec-cand-rail-step--current .rec-cand-rail-node{border-color:#F43F5E;box-shadow:0 0 0 3px rgba(244,63,94,.18);}
+.rec-cand-rail-step--rej.rec-cand-rail-step--current .rec-cand-rail-node::after{background:#F43F5E;}
+.rec-cand-rail-label{font-size:10px;font-weight:600;color:var(--slate-500);text-align:center;line-height:1.25;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;}
+.rec-cand-rail-step--current .rec-cand-rail-label{color:var(--purple-dark);font-weight:700;}
+.rec-cand-rail-current-hint{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);margin-top:-2px;}
+.rec-cand-pipeline-empty{padding:18px 20px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.65);margin:0 0 16px;text-align:center;}
+.rec-cand-pipeline-empty-title{font-size:15px;font-weight:700;color:var(--primary);margin:0 0 4px;}
+.rec-cand-pipeline-empty-sub{font-size:13px;color:var(--slate-600);margin:0 0 12px;}
+.rec-cand-aside-card{padding:14px 16px;}
+.rec-cand-aside-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.rec-cand-aside-head h4{margin:0;}
+.rec-cand-aside-toggle{border:none;background:transparent;cursor:pointer;padding:4px;color:var(--slate-400);display:flex;align-items:center;}
+.rec-cand-aside-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+.rec-cand-aside-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--slate-100);cursor:pointer;font-family:inherit;text-align:left;width:100%;background:transparent;border-left:none;border-right:none;border-top:none;}
+.rec-cand-aside-row:last-child{border-bottom:none;padding-bottom:0;}
+.rec-cand-aside-row-main{min-width:0;flex:1;}
+.rec-cand-aside-row-title{font-size:13px;font-weight:700;color:var(--primary);margin:0 0 2px;line-height:1.3;}
+.rec-cand-aside-row-sub{font-size:11px;color:var(--slate-600);margin:0;}
+.rec-cand-aside-pill{font-size:9px;font-weight:700;text-transform:uppercase;padding:3px 7px;border-radius:999px;background:rgba(124,58,237,.1);color:var(--purple-dark);flex-shrink:0;white-space:nowrap;}
+.rec-cand-aside-hist{margin-top:10px;padding-top:10px;border-top:1px solid var(--slate-100);}
+.rec-cand-aside-hist h5{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 8px;}
+.rec-cand-expediente{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;font-size:13px;}
+.rec-cand-exp-cell{display:flex;gap:10px;align-items:flex-start;min-width:0;}
+.rec-cand-exp-icon{width:32px;height:32px;border-radius:10px;background:rgba(245,243,255,.85);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-cand-exp-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;}
+.rec-cand-exp-body{min-width:0;flex:1;}
 .rec-cand-exp-group{min-width:0;}
-.rec-cand-exp-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 6px;}
+.rec-cand-exp-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 4px;}
+.rec-cand-source-pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(245,243,255,.9);color:var(--purple-dark);margin-top:2px;}
+.rec-cand-obs-preview{font-size:13px;line-height:1.55;color:var(--slate-700);margin:0;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .rec-cand-exp-val{font-size:14px;font-weight:600;color:var(--slate-800);margin:0 0 4px;line-height:1.4;word-break:break-word;}
 .rec-cand-exp-val--primary{font-size:15px;font-weight:700;color:var(--primary);}
 .rec-cand-exp-val a{color:var(--purple-dark);text-decoration:none;}
@@ -344,8 +386,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-outcome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .rec-cand-history-outcome--hired{color:#047857;}
 .rec-cand-history-outcome--rej{color:var(--slate-600);}
-.rec-cand-summary-meta{font-size:12px;color:var(--slate-500);margin:12px 0 0;text-align:center;}
-.rec-cand-detail-footer{margin-top:8px;padding-top:12px;border-top:1px solid var(--slate-100);text-align:center;}
+.rec-cand-summary-meta{font-size:11px;color:var(--slate-500);margin:4px 0 0;line-height:1.4;}
+.rec-cand-summary-meta--aside{text-align:left;padding:0 2px;}
+.rec-cand-detail-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-100);text-align:center;}
 .rec-cand-detail-skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;margin-bottom:8px;}
 .rec-cand-detail-skel--hero{height:120px;border-radius:14px;margin-bottom:12px;}
 .rec-cand-detail-skel--short{max-width:55%;}
@@ -375,8 +418,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-dupe-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px;max-height:240px;overflow-y:auto;}
 .rec-cand-dupe-item{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:var(--tr-fast);}
 .rec-cand-dupe-item:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);}
+@media(max-width:960px){.rec-cand-body-grid{grid-template-columns:1fr;}.rec-cand-hero-head-right{align-items:flex-start;width:100%;}.rec-cand-hero-ctrls{justify-content:flex-start;}}
 @media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}.rec-cand-pills{justify-content:flex-start;width:100%;}.rec-cand-row{flex-wrap:wrap;}}
-@media(max-width:520px){.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:40px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
+@media(max-width:520px){.rec-cand-detail-modal{max-width:calc(100vw - 24px);padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:44px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
 .rec-carousel-wrap{position:relative;margin-bottom:20px;}
 .rec-carousel{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 12px;scroll-behavior:smooth;scrollbar-width:thin;}
 .rec-carousel::-webkit-scrollbar{height:6px;}
@@ -1785,52 +1829,47 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <div id="modal-rec-candidate-detail" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-detail')">
   <div class="modal-card rec-cand-detail-modal rec-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
     <div class="rec-detail-toolbar">
+      <button type="button" class="rec-detail-edit-btn rec-cand-toolbar-add" id="rec-cand-toolbar-add-vac" onclick="recCandOpenAddVacancyModal()" aria-label="Añadir a vacante" title="Añadir a vacante"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
       <button type="button" class="rec-detail-edit-btn" id="rec-cand-detail-edit-btn" onclick="recCandEditFromDetail()" aria-label="Editar candidato" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-detail')" aria-label="Cerrar">✕</button>
     </div>
     <div class="rec-cand-detail-header">
       <div class="rec-cand-detail-avatar" id="rec-cand-detail-avatar">—</div>
       <div class="rec-cand-detail-title">
+        <p class="rec-cand-detail-kicker">Ficha del candidato</p>
         <div class="rec-cand-detail-name-row">
           <h2 id="rec-cand-detail-name">—</h2>
+          <span id="rec-cand-detail-active-badge" class="rec-cand-badge-active hidden">Activo</span>
           <span id="rec-cand-detail-arch-badge" class="rec-cand-badge-arch hidden">Archivado</span>
         </div>
         <p class="rec-cand-detail-sub" id="rec-cand-detail-subline">—</p>
       </div>
     </div>
-    <div class="rec-cand-detail-accent" aria-hidden="true"></div>
     <div id="rec-cand-pipeline-host"></div>
-    <div id="rec-cand-add-vac-wrap" class="rec-cand-add-vac-wrap">
-      <button type="button" class="rec-btn-new rec-btn-new--sm" id="rec-cand-add-vac-btn" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button>
-    </div>
     <p id="rec-cand-detail-op-err" class="hidden" style="font-size:13px;color:#DC2626;margin:0 0 10px;"></p>
-    <div class="rec-detail-block" id="rec-cand-expediente-block">
-      <h4>Expediente</h4>
-      <div id="rec-cand-expediente" class="rec-cand-expediente"></div>
-    </div>
-    <div id="rec-cand-notes-block" class="rec-detail-block rec-detail-block--acc hidden">
-      <button type="button" class="rec-detail-acc-trigger" id="rec-cand-notes-trigger" aria-expanded="false" aria-controls="rec-cand-notes-body" onclick="recCandDetailToggleAcc('notes')">
-        <span>Notas internas</span>
-        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <p id="rec-cand-notes-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-notes-trigger"></p>
-    </div>
-    <div class="rec-detail-block">
-      <h4>CV</h4>
-      <div id="rec-cand-cv-panel" class="rec-cand-cv-panel rec-detail-files-panel"></div>
-      <input type="file" id="rec-cand-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
-      <p id="rec-cand-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
-    </div>
-    <div id="rec-cand-history-block" class="rec-detail-block rec-detail-block--acc hidden">
-      <button type="button" class="rec-detail-acc-trigger" id="rec-cand-history-trigger" aria-expanded="false" aria-controls="rec-cand-history-body" onclick="recCandDetailToggleAcc('history')">
-        <span id="rec-cand-history-trigger-label">Historial de procesos</span>
-        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <div id="rec-cand-history-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-history-trigger">
-        <div id="rec-cand-history-list" class="rec-cand-history-list"></div>
+    <div class="rec-cand-body-grid" id="rec-cand-body-grid">
+      <div class="rec-cand-body-main">
+        <div class="rec-cand-panel-card" id="rec-cand-expediente-block">
+          <h4>Expediente ejecutivo</h4>
+          <div id="rec-cand-expediente" class="rec-cand-expediente"></div>
+        </div>
+        <div id="rec-cand-notes-block" class="rec-cand-panel-card hidden">
+          <button type="button" class="rec-detail-acc-trigger" id="rec-cand-notes-trigger" aria-expanded="false" aria-controls="rec-cand-notes-body" onclick="recCandDetailToggleAcc('notes')" style="margin:0;padding:0;border:none;background:transparent;width:100%;">
+            <span>Observaciones clave</span>
+            <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <p id="rec-cand-notes-preview" class="rec-cand-obs-preview hidden"></p>
+          <p id="rec-cand-notes-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-notes-trigger"></p>
+        </div>
+        <div class="rec-cand-panel-card">
+          <h4>CV y documentos</h4>
+          <div id="rec-cand-cv-panel" class="rec-cand-cv-panel rec-detail-files-panel"></div>
+          <input type="file" id="rec-cand-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
+          <p id="rec-cand-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
+        </div>
       </div>
+      <aside class="rec-cand-body-aside" id="rec-cand-body-aside"></aside>
     </div>
-    <p id="rec-cand-summary-meta" class="rec-cand-summary-meta hidden"></p>
     <div class="rec-cand-detail-footer">
       <button type="button" class="rec-stages-ghost-btn" id="rec-cand-archive-btn" onclick="recCandToggleArchive()">—</button>
     </div>
@@ -6920,6 +6959,8 @@ function recEnsureState(){
       candDupePendingBody:null,
       detailCandidateId:null,
       detailCandidate:null,
+      detailPrimaryApplication:null,
+      detailOtherActiveApps:[],
       kanbanStages:[],
       kanbanApplications:[],
       kanbanLoading:false,
@@ -8254,24 +8295,101 @@ async function recCandGetStagesCached(vacancyId){
   st.vacancyStagesCache[vacancyId]=rows;
   return rows;
 }
+function recCandGetAppId(a){
+  return a&&(a.applicationId||a.id)||'';
+}
+function recCandStagePillClass(stage){
+  const k=stage&&stage.key;
+  if(k==='HIRED') return 'rec-cand-stage-pill--hired';
+  if(k==='REJECTED') return 'rec-cand-stage-pill--rej';
+  return '';
+}
+function recCandExpIcon(kind){
+  const icons={
+    contact:'<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    profile:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    location:'<svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    source:'<svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+  };
+  return icons[kind]||icons.profile;
+}
 function recCandBuildStageRailHtml(stageRows,currentStageId){
+  return recCandBuildLabeledStageRailHtml(stageRows,currentStageId);
+}
+function recCandBuildLabeledStageRailHtml(stageRows,currentStageId){
   if(!stageRows||!stageRows.length) return '';
   let idx=stageRows.findIndex(function(vs){
     const sid=(vs.stage&&vs.stage.id)||vs.stageId;
     return sid===currentStageId;
   });
   if(idx<0) idx=0;
-  return '<div class="rec-cand-stage-rail" role="list" aria-label="Etapas del proceso">'+stageRows.map(function(vs,i){
+  const dense=stageRows.length>6?' rec-cand-labeled-rail--dense':'';
+  const checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>';
+  return '<div class="rec-cand-labeled-rail'+dense+'" role="list" aria-label="Etapas del proceso">'+stageRows.map(function(vs,i){
     const stg=vs.stage||{};
     const name=stg.name||stg.key||('Etapa '+(i+1));
-    let cls='rec-cand-stage-dot';
-    if(i<idx) cls+=' rec-cand-stage-dot--done';
-    else if(i===idx) cls+=' rec-cand-stage-dot--current';
-    else cls+=' rec-cand-stage-dot--future';
-    return '<span class="'+cls+'" role="listitem" title="'+tcEsc(name)+'" aria-label="'+tcEsc(name)+'"></span>';
+    const sk=stg.key||'';
+    let cls='rec-cand-rail-step';
+    if(i<idx) cls+=' rec-cand-rail-step--done';
+    else if(i===idx) cls+=' rec-cand-rail-step--current';
+    else cls+=' rec-cand-rail-step--future';
+    if(i===idx&&sk==='HIRED') cls+=' rec-cand-rail-step--hired';
+    if(i===idx&&sk==='REJECTED') cls+=' rec-cand-rail-step--rej';
+    let nodeInner=i<idx?checkSvg:(i===idx?'':'');
+    const hint=i===idx?'<span class="rec-cand-rail-current-hint">Etapa actual</span>':'';
+    return '<div class="'+cls+'" role="listitem" title="'+tcEsc(name)+'">'+
+      '<div class="rec-cand-rail-node">'+nodeInner+'</div>'+
+      '<span class="rec-cand-rail-label">'+tcEsc(name)+'</span>'+hint+'</div>';
   }).join('')+'</div>';
 }
-function recCandHeroHtml(app,railHtml){
+function recCandFillHeroStageSelect(selectEl,stageRows,currentStageId){
+  if(!selectEl) return;
+  selectEl.innerHTML=stageRows.map(function(vs){
+    const st=vs.stage||{};
+    const sid=st.id||vs.stageId;
+    return '<option value="'+tcEsc(sid)+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
+  }).join('');
+  if(currentStageId){
+    selectEl.value=currentStageId;
+    selectEl.setAttribute('data-prev',currentStageId);
+  }
+}
+async function recCandChangePrimaryStage(selectEl){
+  if(!selectEl) return;
+  const newStageId=(selectEl.value||'').trim();
+  const prev=(selectEl.getAttribute('data-prev')||'').trim();
+  if(!newStageId||newStageId===prev) return;
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!app){
+    selectEl.value=prev;
+    return;
+  }
+  const appId=recCandGetAppId(app);
+  const vacId=app.vacancy&&app.vacancy.id;
+  const candidateId=st.detailCandidateId;
+  selectEl.disabled=true;
+  recCandSetOpErr('');
+  try{
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
+      method:'PATCH',
+      body:JSON.stringify({ stageId:newStageId }),
+    });
+    selectEl.setAttribute('data-prev',newStageId);
+    if(vacId) await recKanbanRefreshRelated(vacId,candidateId);
+    else if(candidateId){
+      const c=await recCandFetchDetail(candidateId);
+      st.detailCandidate=c;
+      await recCandRenderDetail(c,false);
+    }
+  }catch(e){
+    selectEl.value=prev;
+    recCandSetOpErr((e&&e.message)||'No se pudo cambiar la etapa.');
+  }finally{
+    selectEl.disabled=false;
+  }
+}
+function recCandHeroHtml(app){
   const vac=app.vacancy||{};
   const stage=app.stage||{};
   const vacId=vac.id||'';
@@ -8281,14 +8399,21 @@ function recCandHeroHtml(app,railHtml){
     badge=' <span class="rec-status-badge rec-status-badge--'+tcEsc(status)+'">'+tcEsc(recVacancyStatusLabel(status))+'</span>';
   }
   const dt=recCandFmtDetailDate(app.updatedAt||app.appliedAt);
-  return '<div class="rec-cand-pipeline-hero">'+
-    '<p class="rec-cand-hero-title">'+tcEsc(vac.title||'—')+'</p>'+
-    '<div class="rec-cand-hero-client">'+tcEsc(vac.clientName||'')+badge+'</div>'+
-    '<p class="rec-cand-hero-stage-label">Etapa actual</p>'+
-    '<p class="rec-cand-hero-stage-name">'+tcEsc(stage.name||'—')+'</p>'+
-    '<div id="rec-cand-hero-rail">'+(railHtml||'')+'</div>'+
-    '<div class="rec-cand-hero-foot"><span class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</span>'+
-    '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button></div></div>';
+  const pillCls=recCandStagePillClass(stage);
+  return '<article class="rec-cand-pipeline-hero">'+
+    '<p class="rec-cand-hero-kicker">Proceso principal</p>'+
+    '<div class="rec-cand-hero-head">'+
+    '<div class="rec-cand-hero-head-main">'+
+    '<h3 class="rec-cand-hero-title">'+tcEsc(vac.title||'—')+'</h3>'+
+    '<p class="rec-cand-hero-client">'+tcEsc(vac.clientName||'')+badge+'</p></div>'+
+    '<div class="rec-cand-hero-head-right">'+
+    '<span class="rec-cand-stage-pill '+pillCls+'">'+tcEsc(stage.name||'—')+'</span>'+
+    '<div class="rec-cand-hero-ctrls">'+
+    '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa"><option value="">—</option></select>'+
+    '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
+    '</div></div></div>'+
+    '<div id="rec-cand-hero-rail"></div>'+
+    '<p class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</p></article>';
 }
 function recCandGoToPipeline(vacancyId){
   if(!vacancyId) return;
@@ -8312,7 +8437,9 @@ function recCandRenderDetailLoading(){
   document.getElementById('rec-cand-detail-avatar').textContent='…';
   document.getElementById('rec-cand-detail-name').textContent='Cargando…';
   const arch=document.getElementById('rec-cand-detail-arch-badge');
+  const act=document.getElementById('rec-cand-detail-active-badge');
   if(arch) arch.classList.add('hidden');
+  if(act) act.classList.add('hidden');
   document.getElementById('rec-cand-detail-subline').textContent='';
   const host=document.getElementById('rec-cand-pipeline-host');
   if(host) host.innerHTML='<div class="rec-cand-detail-skel rec-cand-detail-skel--hero" aria-hidden="true"></div>';
@@ -8320,12 +8447,14 @@ function recCandRenderDetailLoading(){
   if(exp) exp.innerHTML='<div class="rec-cand-detail-skel"></div><div class="rec-cand-detail-skel rec-cand-detail-skel--short"></div>';
   const notesBlock=document.getElementById('rec-cand-notes-block');
   if(notesBlock) notesBlock.classList.add('hidden');
-  const histBlock=document.getElementById('rec-cand-history-block');
-  if(histBlock) histBlock.classList.add('hidden');
-  const sumEl=document.getElementById('rec-cand-summary-meta');
-  if(sumEl){ sumEl.textContent=''; sumEl.classList.add('hidden'); }
+  const aside=document.getElementById('rec-cand-body-aside');
+  if(aside) aside.innerHTML='';
   const cvPanel=document.getElementById('rec-cand-cv-panel');
   if(cvPanel) cvPanel.innerHTML='<div class="rec-cand-detail-skel" style="height:48px;border-radius:10px;"></div>';
+}
+function recCandExpCell(kind,label,innerHtml){
+  return '<div class="rec-cand-exp-cell"><div class="rec-cand-exp-icon" aria-hidden="true">'+recCandExpIcon(kind)+'</div>'+
+    '<div class="rec-cand-exp-body"><p class="rec-cand-exp-label">'+tcEsc(label)+'</p>'+innerHtml+'</div></div>';
 }
 function recCandRenderExpediente(c){
   const box=document.getElementById('rec-cand-expediente');
@@ -8338,86 +8467,97 @@ function recCandRenderExpediente(c){
   let waHtml='—';
   if(phoneMain){
     if(waDigits&&wa){
-      waHtml='<a href="https://wa.me/'+tcEsc(waDigits)+'" target="_blank" rel="noopener noreferrer">'+tcEsc(wa)+'</a>';
-    }else waHtml=tcEsc(phoneMain);
-  }
-  let emailHtml='—';
-  if(c.email) emailHtml='<a href="mailto:'+tcEsc(c.email)+'">'+tcEsc(c.email)+'</a>';
+      waHtml='<p class="rec-cand-exp-val rec-cand-exp-val--primary"><a href="https://wa.me/'+tcEsc(waDigits)+'" target="_blank" rel="noopener noreferrer">'+tcEsc(wa)+'</a></p>';
+    }else waHtml='<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+tcEsc(phoneMain)+'</p>';
+  }else waHtml='<p class="rec-cand-exp-val rec-cand-exp-val--primary">—</p>';
+  let contactInner=waHtml+(secLine?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(secLine)+'</p>':'')+
+    '<p class="rec-cand-exp-val">'+(c.email?'<a href="mailto:'+tcEsc(c.email)+'">'+tcEsc(c.email)+'</a>':'—')+'</p>';
   const prof2=recCandProfileSecondaryLabel(c);
+  let profInner='<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
+    (prof2?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(prof2)+'</p>':'');
+  const src=recCandSourceLabel(c);
+  let srcInner=src&&src!=='—'?'<span class="rec-cand-source-pill">'+tcEsc(src)+'</span>':'<p class="rec-cand-exp-val">—</p>';
   box.innerHTML=
-    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Contacto</p>'+
-    '<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+waHtml+'</p>'+
-    (secLine?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(secLine)+'</p>':'')+
-    '<p class="rec-cand-exp-val">'+emailHtml+'</p></div>'+
-    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Perfil</p>'+
-    '<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
-    (prof2?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(prof2)+'</p>':'')+'</div>'+
-    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Ubicación</p>'+
-    '<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p></div>'+
-    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Fuente</p>'+
-    '<p class="rec-cand-exp-val">'+tcEsc(recCandSourceLabel(c))+'</p></div>';
+    recCandExpCell('contact','Contacto',contactInner)+
+    recCandExpCell('profile','Perfil',profInner)+
+    recCandExpCell('location','Ubicación','<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p>')+
+    recCandExpCell('source','Fuente',srcInner);
 }
 function recCandRenderNotesBlock(c){
   const block=document.getElementById('rec-cand-notes-block');
   const body=document.getElementById('rec-cand-notes-body');
+  const preview=document.getElementById('rec-cand-notes-preview');
   const trigger=document.getElementById('rec-cand-notes-trigger');
   if(!block||!body) return;
   const notes=(c.notes||'').trim();
   if(!notes){
     block.classList.add('hidden');
     body.textContent='';
+    if(preview){ preview.textContent=''; preview.classList.add('hidden'); }
     if(trigger) trigger.setAttribute('aria-expanded','false');
     body.classList.add('hidden');
     return;
   }
   block.classList.remove('hidden');
   body.textContent=notes;
-  body.classList.remove('empty');
+  if(preview){
+    preview.textContent=notes;
+    preview.classList.remove('hidden');
+  }
   if(trigger){ trigger.setAttribute('aria-expanded','false'); }
   body.classList.add('hidden');
 }
-function recCandRenderHistoryBlock(closedApps){
-  const block=document.getElementById('rec-cand-history-block');
-  const list=document.getElementById('rec-cand-history-list');
-  const label=document.getElementById('rec-cand-history-trigger-label');
-  const trigger=document.getElementById('rec-cand-history-trigger');
-  const body=document.getElementById('rec-cand-history-body');
-  if(!block||!list) return;
-  if(!closedApps.length){
-    block.classList.add('hidden');
-    list.innerHTML='';
-    return;
-  }
-  block.classList.remove('hidden');
-  if(label) label.textContent='Historial de procesos · '+closedApps.length;
-  if(trigger) trigger.setAttribute('aria-expanded','false');
-  if(body) body.classList.add('hidden');
-  list.innerHTML=closedApps.map(function(a){
-    const vac=a.vacancy||{};
-    const sk=recCandAppStageKey(a);
-    const hired=sk==='HIRED';
-    const cls='rec-cand-history-row'+(hired?' rec-cand-history-row--hired':' rec-cand-history-row--rej');
-    const outcome=hired?'Contratado':'Rechazado';
-    const ocCls=hired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej';
-    const dt=recCandFmtDetailDate(a.updatedAt||a.appliedAt);
-    return '<div class="'+cls+'"><div><span class="rec-cand-history-main">'+tcEsc(vac.title||'—')+'</span>'+
-      ' <span class="rec-cand-history-sub">· '+tcEsc(vac.clientName||'')+'</span></div>'+
-      '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">'+
-      '<span class="rec-cand-history-outcome '+ocCls+'">'+outcome+'</span>'+
-      '<span class="rec-cand-history-sub">'+tcEsc(dt)+'</span></div></div>';
-  }).join('');
+function recCandAsideRowHtml(a){
+  const vac=a.vacancy||{};
+  const vacId=vac.id||'';
+  const stageName=(a.stage&&a.stage.name)||'—';
+  return '<button type="button" class="rec-cand-aside-row" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">'+
+    '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
+    '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+'</p></span>'+
+    '<span class="rec-cand-aside-pill">'+tcEsc(stageName)+'</span></button>';
 }
-function recCandRenderOtherActiveRows(others){
-  if(!others||!others.length) return '';
-  return '<div class="rec-cand-other-active"><p class="rec-cand-other-active-head">Otros procesos activos · '+others.length+'</p>'+
-    others.map(function(a){
+function recCandHistoryAsideHtml(closedApps){
+  if(!closedApps.length) return '';
+  return '<div class="rec-cand-aside-hist"><h5>Historial · '+closedApps.length+'</h5>'+
+    closedApps.map(function(a){
       const vac=a.vacancy||{};
-      const vacId=vac.id||'';
-      return '<div class="rec-cand-other-active-row"><div class="rec-cand-other-active-main">'+
-        '<p class="rec-cand-other-active-title">'+tcEsc(vac.title||'—')+'</p>'+
-        '<p class="rec-cand-other-active-meta">'+tcEsc(vac.clientName||'')+' · '+tcEsc((a.stage&&a.stage.name)||'—')+'</p></div>'+
-        '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button></div>';
+      const sk=recCandAppStageKey(a);
+      const hired=sk==='HIRED';
+      const outcome=hired?'Contratado':'Rechazado';
+      const ocCls=hired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej';
+      const dt=recCandFmtDetailDate(a.updatedAt||a.appliedAt);
+      return '<div class="rec-cand-aside-row" style="cursor:default;padding:8px 0;">'+
+        '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
+        '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+' · '+tcEsc(dt)+'</p></span>'+
+        '<span class="rec-cand-history-outcome '+ocCls+'">'+outcome+'</span></div>';
     }).join('')+'</div>';
+}
+function recCandToggleAsidePanel(btn){
+  const panel=document.getElementById('rec-cand-aside-panel');
+  if(!panel||!btn) return;
+  const open=btn.getAttribute('aria-expanded')!=='true';
+  btn.setAttribute('aria-expanded',open?'true':'false');
+  panel.classList.toggle('hidden',!open);
+}
+function recCandRenderAside(others,closedApps,sumLine){
+  const aside=document.getElementById('rec-cand-body-aside');
+  if(!aside) return;
+  let html='';
+  if(others&&others.length){
+    html+='<div class="rec-cand-panel-card rec-cand-aside-card">'+
+      '<div class="rec-cand-aside-head"><h4>Otros procesos · '+others.length+'</h4>'+
+      '<button type="button" class="rec-cand-aside-toggle" id="rec-cand-aside-toggle" aria-expanded="true" aria-controls="rec-cand-aside-panel" onclick="recCandToggleAsidePanel(this)" title="Mostrar u ocultar">'+
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button></div>'+
+      '<div id="rec-cand-aside-panel">'+others.map(recCandAsideRowHtml).join('')+
+      recCandHistoryAsideHtml(closedApps)+'</div></div>';
+  }else if(closedApps&&closedApps.length){
+    html+='<div class="rec-cand-panel-card rec-cand-aside-card"><h4>Historial de procesos</h4>'+
+      recCandHistoryAsideHtml(closedApps)+'</div>';
+  }
+  if(sumLine){
+    html+='<p id="rec-cand-summary-meta" class="rec-cand-summary-meta rec-cand-summary-meta--aside">'+tcEsc(sumLine)+'</p>';
+  }
+  aside.innerHTML=html;
 }
 async function recCandRenderPipelineSection(c){
   const host=document.getElementById('rec-cand-pipeline-host');
@@ -8425,21 +8565,24 @@ async function recCandRenderPipelineSection(c){
   const st=recEnsureState();
   const parts=recCandPartitionApplications(c.applications||[]);
   const primary=recCandPickPrimaryApplication(st,parts.active);
+  st.detailPrimaryApplication=primary||null;
+  st.detailOtherActiveApps=primary?parts.active.filter(function(a){ return a!==primary; }):[];
   if(!primary){
     host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
-      '<p class="rec-cand-pipeline-empty-sub">Puedes añadir este candidato a una vacante.</p></div>';
+      '<p class="rec-cand-pipeline-empty-sub">Este candidato está disponible en cartera.</p>'+
+      '<button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button></div>';
     return;
   }
   const vacId=primary.vacancy&&primary.vacancy.id;
   const stageId=primary.stage&&primary.stage.id;
-  host.innerHTML=recCandHeroHtml(primary,'');
-  const others=parts.active.filter(function(a){ return a!==primary; });
-  if(others.length) host.insertAdjacentHTML('beforeend',recCandRenderOtherActiveRows(others));
+  host.innerHTML=recCandHeroHtml(primary);
   try{
     const rows=await recCandGetStagesCached(vacId);
-    const rail=recCandBuildStageRailHtml(rows,stageId);
+    const rail=recCandBuildLabeledStageRailHtml(rows,stageId);
     const railEl=document.getElementById('rec-cand-hero-rail');
     if(railEl) railEl.innerHTML=rail;
+    const sel=document.getElementById('rec-cand-hero-stage-select');
+    recCandFillHeroStageSelect(sel,rows,stageId);
   }catch(_e){}
 }
 function recCandSetOpErr(msg){
@@ -8664,20 +8807,17 @@ async function recCandRenderDetail(c,loading){
   const nameEl=document.getElementById('rec-cand-detail-name');
   if(nameEl) nameEl.textContent=c.fullName||'—';
   const archBadge=document.getElementById('rec-cand-detail-arch-badge');
+  const actBadge=document.getElementById('rec-cand-detail-active-badge');
   if(archBadge) archBadge.classList.toggle('hidden',!c.archivedAt);
+  if(actBadge) actBadge.classList.toggle('hidden',!!c.archivedAt);
   const subParts=[recCandProfilePrimaryLabel(c),recCandLocationLine(c)].filter(function(x){ return x&&x!=='—'; });
   document.getElementById('rec-cand-detail-subline').textContent=subParts.join(' · ')||'—';
   await recCandRenderPipelineSection(c);
-  const sumEl=document.getElementById('rec-cand-summary-meta');
+  const parts=recCandPartitionApplications(c.applications||[]);
   const sumLine=recCandSummaryMetaLine(c.applicationSummary);
-  if(sumEl){
-    if(sumLine){ sumEl.textContent=sumLine; sumEl.classList.remove('hidden'); }
-    else{ sumEl.textContent=''; sumEl.classList.add('hidden'); }
-  }
+  recCandRenderAside(st.detailOtherActiveApps||[],parts.closed,sumLine);
   recCandRenderExpediente(c);
   recCandRenderNotesBlock(c);
-  const closed=recCandPartitionApplications(c.applications||[]).closed;
-  recCandRenderHistoryBlock(closed);
   recCandRenderCvPanel(c);
   const archBtn=document.getElementById('rec-cand-archive-btn');
   if(archBtn) archBtn.textContent=c.archivedAt?'Reactivar candidato':'Archivar candidato';
