@@ -124,7 +124,7 @@ check(/rec-vac-docs-list/.test(indexHtml), 'UI archivos en detalle');
 check(/Podrás agregar archivos después/.test(indexHtml), 'hint alta vacante');
 check(/rec-modal-glass/.test(indexHtml), 'glass scoped recruitment');
 check(!/rec-ws-pulse/.test(indexHtml.match(/id="rec-selected-panel"[\s\S]*?rec-pipeline-slot/)?.[0] || ''), 'workspace sin KPIs');
-check(/Pipeline ·/.test(indexHtml), 'kicker pipeline');
+check(/rec-pipeline-header/.test(indexHtml) && /recUpdatePipelineHeader/.test(indexHtml), 'header pipeline compacto');
 
 console.log('\n=== Recruitment 1B.4 — validación archivos ===\n');
 

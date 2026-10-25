@@ -33,7 +33,7 @@ const modalCssBlock = indexHtml.match(/\/\* ══════ MODALS ═══�
 console.log('\n=== Recruitment 1B.1 — base ===\n');
 
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
-check(/rec-section-top/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'sin encabezado duplicado en body');
+check(/rec-module-head-row/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'header módulo integrado sin duplicado en body');
 check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
 check(/modal-rec-vacancy/.test(indexHtml) && /recSubmitVacancy/.test(indexHtml), 'modal crear/editar vacante');
 check(/\+ Nueva vacante/.test(indexHtml), 'CTA nueva vacante');
@@ -43,7 +43,7 @@ console.log('\n=== Recruitment 1B.2 / 1B.3 — workspace limpio ===\n');
 check(/recKanbanLoad/.test(indexHtml) && /rec-kanban-board/.test(indexHtml), 'Kanban operativo en workspace');
 check(!/rec-ws-pulse/.test(workspaceBlock), 'sin pulso KPI en workspace');
 check(!/recRenderWorkspacePulse/.test(indexHtml), 'sin render KPI workspace');
-check(/Pipeline ·/.test(indexHtml.match(/function recRenderSelectedPanel[\s\S]*?^}/m)?.[0] || ''), 'kicker Pipeline · vacante');
+check(/recUpdatePipelineHeader/.test(indexHtml) && /rec-pipeline-header/.test(workspaceBlock), 'header Pipeline compacto');
 check(!/rec-ws-jd-body/.test(workspaceBlock), 'JD fuera del workspace');
 check(!/rec-ws-notes-body/.test(workspaceBlock), 'notas fuera del workspace');
 
@@ -127,6 +127,15 @@ check(/rec-cand-form-profile2/.test(indexHtml) && !/Próximamente/.test(indexHtm
 check(/recCandSetOpErr/.test(indexHtml), 'mensaje fallo parcial vacante');
 check(/Indica el WhatsApp del candidato/.test(indexHtml), 'UI exige WhatsApp');
 check(/id="rec-cand-profile"[^>]*select|select id="rec-cand-profile"/.test(indexHtml), 'filtro profile select');
+
+console.log('\n=== Recruitment 1G.1 — dashboard Vacantes + Pipeline ===\n');
+
+check(/rec-global-q/.test(indexHtml) && /rec-vac-local-q/.test(indexHtml), 'búsqueda global y local vacantes');
+check(/recCarouselScroll/.test(indexHtml) && /rec-carousel-range/.test(indexHtml), 'carrusel con rango y flechas');
+check(/recKanbanToggleCol/.test(indexHtml) && /rec-kanban-col--collapsed/.test(indexHtml), 'columnas Kanban compactables');
+check(/rec-kanban-card-avatar/.test(indexHtml) && /recKanbanRelativeUpdated/.test(indexHtml), 'tarjetas Kanban premium');
+check(/function recRenderFilters[\s\S]*count/.test(indexHtml), 'contadores en filtros de estado');
+check(/rec-vac-selected-badge/.test(indexHtml), 'badge vacante seleccionada');
 
 console.log('\n=== Backend summary ===\n');
 

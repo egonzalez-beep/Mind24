@@ -251,21 +251,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
 .tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
 .tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.rec-vacancies-stage{position:relative;margin-bottom:4px;}
-.rec-vacancies-stage::before{content:'';position:absolute;left:-8px;right:-8px;top:-4px;height:100px;max-height:120px;background:linear-gradient(180deg,rgba(245,243,255,.95) 0%,rgba(245,243,255,0) 100%);pointer-events:none;z-index:0;border-radius:16px 16px 0 0;}
-.rec-vacancies-stage>*{position:relative;z-index:1;}
+.rec-dash-topbar .topbar-subtitle{display:none;}
+.rec-page-content{padding-top:4px;}
+.rec-module-head-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.rec-module-head-actions{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end;min-width:0;flex-wrap:wrap;}
+.rec-global-search{flex:1;min-width:180px;max-width:360px;margin:0;font-size:13px;padding:8px 12px;border-radius:10px;}
+.rec-module-nav--tabs{margin-bottom:0;flex-shrink:0;}
+.rec-vacancies-stage{position:relative;margin-bottom:0;}
+.rec-vac-band{padding:0 0 10px;border-bottom:1px solid rgba(226,232,240,.85);margin-bottom:10px;}
+.rec-vac-band-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.rec-vac-local-search{flex:1;min-width:160px;max-width:280px;margin:0;font-size:12px;padding:7px 11px;border-radius:9px;}
+.rec-carousel-meta{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.rec-carousel-range{font-size:11px;font-weight:600;color:var(--slate-500);min-width:72px;text-align:center;}
+.rec-carousel-arrow{width:30px;height:30px;border:1px solid var(--slate-200);background:#fff;border-radius:999px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);display:flex;align-items:center;justify-content:center;padding:0;transition:var(--tr-fast);}
+.rec-carousel-arrow:hover:not(:disabled){border-color:rgba(124,58,237,.4);color:var(--purple-dark);background:var(--purple-light);}
+.rec-carousel-arrow:disabled{opacity:.35;cursor:default;}
 .rec-section-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
 .rec-btn-new{border:1px solid rgba(124,58,237,.35);background:#fff;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-btn-new:hover{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
 .rec-section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin-bottom:12px;}
-.rec-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.rec-filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .rec-filter-chip{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;transition:var(--tr-fast);}
 .rec-filter-chip:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
 .rec-filter-chip.active{background:var(--purple-light);border-color:rgba(124,58,237,.45);color:var(--purple-dark);}
-.rec-module-nav{display:flex;gap:6px;margin-bottom:18px;padding:4px;background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;width:fit-content;max-width:100%;}
-.rec-module-tab{border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--slate-600);padding:8px 18px;border-radius:9px;cursor:pointer;transition:var(--tr-fast);}
+.rec-module-nav{display:flex;gap:2px;margin-bottom:18px;padding:3px;background:rgba(248,250,252,.9);border:1px solid var(--slate-200);border-radius:11px;width:fit-content;max-width:100%;}
+.rec-module-tab{border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--slate-600);padding:7px 16px;border-radius:8px;cursor:pointer;transition:var(--tr-fast);position:relative;}
 .rec-module-tab:hover{color:var(--purple-dark);}
-.rec-module-tab--active{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.06);border:1px solid rgba(124,58,237,.18);}
+.rec-module-tab--active{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.05);}
+.rec-module-tab--active::after{content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:999px;background:linear-gradient(90deg,var(--purple),rgba(139,92,246,.5));}
 .rec-cand-head{margin-bottom:16px;}
 .rec-cand-head h2{font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin:0 0 6px;}
 .rec-cand-head p{font-size:13px;color:var(--slate-600);margin:0;line-height:1.45;max-width:520px;}
@@ -424,22 +437,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @media(max-width:960px){.rec-cand-body-grid{grid-template-columns:1fr;}.rec-cand-hero-head-right{align-items:flex-start;width:100%;}.rec-cand-hero-ctrls{justify-content:flex-start;}}
 @media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}.rec-cand-pills{justify-content:flex-start;width:100%;}.rec-cand-row{flex-wrap:wrap;}}
 @media(max-width:520px){.rec-cand-detail-modal{max-width:calc(100vw - 24px);padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:44px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
-.rec-carousel-wrap{position:relative;margin-bottom:20px;}
-.rec-carousel{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 12px;scroll-behavior:smooth;scrollbar-width:thin;}
-.rec-carousel::-webkit-scrollbar{height:6px;}
-.rec-carousel::-webkit-scrollbar-thumb{background:rgba(124,58,237,.25);border-radius:999px;}
-.rec-vac-card{flex:0 0 calc(25% - 11px);min-width:220px;max-width:280px;background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:14px 14px 12px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 2px 8px rgba(15,23,42,.04);position:relative;}
-.rec-vac-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
-.rec-vac-detail-btn{flex-shrink:0;width:28px;height:28px;border:1px solid var(--slate-200);background:#fff;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;transition:var(--tr-fast);}
+.rec-carousel-wrap{position:relative;margin-bottom:0;}
+.rec-carousel-wrap--nav{display:flex;align-items:stretch;gap:6px;}
+.rec-carousel-nav{flex-shrink:0;width:36px;border:1px solid var(--slate-200);background:rgba(255,255,255,.92);border-radius:999px;cursor:pointer;font-size:22px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;padding:0;align-self:center;transition:var(--tr-fast);box-shadow:0 1px 4px rgba(15,23,42,.04);}
+.rec-carousel-nav:hover:not(:disabled){border-color:rgba(124,58,237,.35);color:var(--purple-dark);background:var(--purple-light);}
+.rec-carousel-nav:disabled{opacity:.3;cursor:default;}
+.rec-carousel{flex:1;display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-behavior:smooth;scrollbar-width:thin;min-width:0;}
+.rec-carousel::-webkit-scrollbar{height:5px;}
+.rec-carousel::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
+.rec-vac-card{flex:0 0 min(240px,78vw);min-width:200px;max-width:260px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:10px 11px 9px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 1px 4px rgba(15,23,42,.04);position:relative;}
+.rec-vac-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px;}
+.rec-vac-selected-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--purple);color:#fff;pointer-events:none;box-shadow:0 1px 4px rgba(124,58,237,.25);}
+.rec-vac-detail-btn{flex-shrink:0;width:26px;height:26px;border:1px solid var(--slate-200);background:#fff;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;transition:var(--tr-fast);}
 .rec-vac-detail-btn:hover{border-color:rgba(124,58,237,.45);color:var(--purple-dark);background:var(--purple-light);}
 .rec-vac-detail-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.rec-vac-card-resp{font-size:10px;color:var(--slate-500);margin-top:10px;line-height:1.35;}
-.rec-vac-card:hover{border-color:rgba(124,58,237,.35);box-shadow:0 6px 18px rgba(124,58,237,.08);}
-.rec-vac-card.selected{background:var(--purple-light);border-color:rgba(124,58,237,.42);box-shadow:0 0 0 1px rgba(124,58,237,.28),0 6px 16px rgba(124,58,237,.1);}
-.rec-vac-card-title{font-size:14px;font-weight:700;color:var(--primary);line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rec-vac-card-client{font-size:12px;color:var(--slate-600);margin-bottom:2px;}
-.rec-vac-card-loc{font-size:11px;color:var(--slate-500);margin-bottom:10px;min-height:14px;}
-.rec-vac-card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.rec-vac-card-resp{font-size:10px;color:var(--slate-500);margin-top:6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-vac-card:hover{border-color:rgba(124,58,237,.32);box-shadow:0 4px 14px rgba(124,58,237,.07);}
+.rec-vac-card.selected{background:linear-gradient(180deg,rgba(245,243,255,.95),#fff);border-color:rgba(124,58,237,.38);box-shadow:0 0 0 1px rgba(124,58,237,.22),0 4px 14px rgba(124,58,237,.08);}
+.rec-vac-card-title{font-size:13px;font-weight:700;color:var(--primary);line-height:1.3;margin-bottom:2px;padding-right:52px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-vac-card-client{font-size:11px;color:var(--slate-600);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-vac-card-loc{font-size:10px;color:var(--slate-500);margin-bottom:6px;min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-vac-card-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:0;}
 .rec-status-badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;}
 .rec-status-badge--ACTIVE{background:rgba(16,185,129,.12);color:#047857;}
 .rec-status-badge--PAUSED{background:rgba(245,158,11,.14);color:#b45309;}
@@ -447,6 +465,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-status-badge--CLOSED{background:rgba(100,116,139,.14);color:#475569;}
 .rec-ws-op-kicker{font-size:12px;font-weight:600;color:var(--slate-600);margin:0 0 12px;letter-spacing:.02em;padding-left:11px;position:relative;line-height:1.4;}
 .rec-ws-op-kicker::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:999px;background:linear-gradient(180deg,rgba(124,58,237,.75),rgba(139,92,246,.45));}
+.rec-workspace--pipeline{margin-top:8px;padding:12px 14px 14px;border-radius:14px;background:#fff;border:1px solid rgba(226,232,240,.95);box-shadow:0 1px 6px rgba(15,23,42,.04);}
+.rec-pipeline-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--slate-100);}
+.rec-pipeline-header-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.rec-pipeline-header-label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);}
+.rec-pipeline-header-sep{color:var(--slate-400);font-weight:600;}
+.rec-pipeline-header-vac{font-size:15px;font-weight:800;color:var(--primary);letter-spacing:-.25px;line-height:1.25;}
+.rec-pipeline-count-pill{font-size:11px;font-weight:600;color:var(--slate-600);background:var(--slate-100);padding:4px 10px;border-radius:999px;}
+.rec-pipeline-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.rec-pipeline-ghost-btn{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;transition:var(--tr-fast);}
+.rec-pipeline-ghost-btn:disabled{opacity:.55;cursor:default;}
+.rec-pipeline-menu-btn:disabled{opacity:.45;cursor:default;}
 .rec-detail-modal{max-width:min(920px,calc(100vw - 32px));padding:26px 28px 30px;max-height:min(92vh,880px);background:#FAFBFF;}
 .rec-detail-modal .modal-close{position:static;width:34px;height:34px;top:auto;right:auto;margin:0;flex-shrink:0;}
 .rec-detail-toolbar{position:absolute;top:18px;right:18px;display:flex;align-items:center;gap:8px;z-index:2;}
@@ -561,6 +590,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @media(max-width:820px){.rec-exec-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.rec-detail-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:520px){.rec-detail-info-grid{grid-template-columns:1fr;}.rec-exec-header{padding-right:0;padding-top:40px;}}
 .rec-workspace{background:linear-gradient(180deg,rgba(245,243,255,.55) 0%,#fff 48%);border:1px solid rgba(124,58,237,.18);border-radius:16px;padding:18px 20px 20px;box-shadow:0 2px 10px rgba(124,58,237,.06);margin-top:18px;}
+.rec-workspace.rec-workspace--pipeline{background:#fff;}
 .rec-workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
 .rec-workspace-title{font-size:20px;font-weight:800;color:var(--primary);letter-spacing:-.4px;line-height:1.25;}
 .rec-workspace-sub{font-size:13px;color:var(--slate-600);margin:0 0 12px;}
@@ -593,26 +623,49 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-ws-notes-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin-bottom:8px;}
 .rec-ws-notes-body{font-size:13px;line-height:1.6;color:var(--slate-700);white-space:pre-wrap;}
 .rec-ws-notes-body.empty{color:var(--slate-400);}
-.rec-pipeline-slot{min-height:0;margin-top:4px;}
+.rec-pipeline-slot{min-height:0;margin-top:0;}
 .rec-kanban-err{font-size:12px;color:#DC2626;margin:0 0 8px;}
-.rec-kanban-board{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;}
-.rec-kanban-board::-webkit-scrollbar{height:6px;}
+.rec-kanban-board{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:thin;align-items:stretch;}
+.rec-kanban-board::-webkit-scrollbar{height:7px;}
 .rec-kanban-board::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
-.rec-kanban-col{flex:0 0 min(268px,82vw);background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;padding:10px 10px 8px;max-height:min(440px,52vh);display:flex;flex-direction:column;}
-.rec-kanban-col-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
-.rec-kanban-col-title{font-size:12px;font-weight:700;color:var(--primary);line-height:1.35;margin:0;}
-.rec-kanban-col-count{font-size:10px;font-weight:700;color:var(--slate-600);background:#fff;border:1px solid var(--slate-200);padding:3px 8px;border-radius:999px;flex-shrink:0;}
-.rec-kanban-col-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:56px;}
+.rec-kanban-col{flex:0 0 min(252px,82vw);background:rgba(248,250,252,.92);border:1px solid var(--slate-200);border-radius:12px;padding:8px 8px 6px;max-height:min(560px,62vh);display:flex;flex-direction:column;transition:width .2s ease,flex-basis .2s ease,padding .2s ease;}
+.rec-kanban-col--collapsed{flex:0 0 44px;min-width:44px;max-width:44px;padding:8px 4px;cursor:pointer;align-items:center;}
+.rec-kanban-col--collapsed .rec-kanban-col-body,.rec-kanban-col--collapsed .rec-kanban-col-head-tools{display:none;}
+.rec-kanban-col--collapsed .rec-kanban-col-head{flex-direction:column;align-items:center;margin-bottom:0;gap:6px;width:100%;}
+.rec-kanban-col--collapsed .rec-kanban-col-title{display:none;}
+.rec-kanban-col--collapsed .rec-kanban-col-title-vertical{display:block;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);font-size:11px;font-weight:700;color:var(--primary);margin:0;max-height:min(200px,52vh);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-kanban-col-title-vertical{display:none;}
+.rec-kanban-col-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;width:100%;}
+.rec-kanban-col-head-main{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;flex:1;min-width:0;}
+.rec-kanban-col-head-tools{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.rec-kanban-col-title{font-size:12px;font-weight:700;color:var(--primary);line-height:1.3;margin:0;flex:1;min-width:0;}
+.rec-kanban-col-count{font-size:10px;font-weight:700;color:var(--slate-600);background:#fff;border:1px solid var(--slate-200);padding:2px 7px;border-radius:999px;flex-shrink:0;}
+.rec-kanban-col-icon-btn{width:26px;height:26px;border:1px solid transparent;background:transparent;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;font-family:inherit;font-size:14px;line-height:1;transition:var(--tr-fast);}
+.rec-kanban-col-icon-btn:hover{border-color:var(--slate-200);background:#fff;color:var(--purple-dark);}
+.rec-kanban-col-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:72px;}
+.rec-kanban-col-drop-empty{flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(148,163,184,.55);border-radius:10px;background:rgba(255,255,255,.5);min-height:72px;padding:8px;text-align:center;}
+.rec-kanban-col-drop-empty span{font-size:11px;font-weight:600;color:var(--slate-400);line-height:1.35;}
 .rec-kanban-col--over{border-color:rgba(124,58,237,.4);background:rgba(245,243,255,.75);box-shadow:inset 0 0 0 1px rgba(124,58,237,.12);}
-.rec-kanban-card{background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:9px 10px 9px 26px;cursor:grab;position:relative;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:var(--tr-fast);}
-.rec-kanban-card:hover{border-color:rgba(124,58,237,.28);}
+.rec-kanban-col--collapsed.rec-kanban-col--over{border-color:var(--slate-200);background:rgba(248,250,252,.92);box-shadow:none;}
+.rec-kanban-card{background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:8px 8px 7px 22px;cursor:grab;position:relative;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:var(--tr-fast);}
+.rec-kanban-card-handle{position:absolute;left:6px;top:10px;color:var(--slate-400);font-size:12px;line-height:1;user-select:none;cursor:grab;}
+.rec-kanban-card:hover{border-color:rgba(124,58,237,.28);box-shadow:0 2px 8px rgba(124,58,237,.06);}
 .rec-kanban-card--dragging{opacity:.55;cursor:grabbing;}
-.rec-kanban-card-handle{position:absolute;left:7px;top:9px;color:var(--slate-400);font-size:13px;line-height:1;user-select:none;}
-.rec-kanban-card-name{font-size:13px;font-weight:800;color:var(--primary);margin:0 0 3px;line-height:1.3;}
-.rec-kanban-card-meta{font-size:11px;color:var(--slate-600);margin:0;line-height:1.35;}
-.rec-kanban-card-sub{font-size:10px;color:var(--slate-500);margin:4px 0 0;line-height:1.35;}
-.rec-kanban-empty-msg{font-size:13px;color:var(--slate-500);margin:0 0 10px;line-height:1.45;}
-.rec-kanban-loading{font-size:13px;color:var(--slate-500);padding:12px 4px;}
+.rec-kanban-card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px;}
+.rec-kanban-card-avatar{width:32px;height:32px;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-kanban-card-main{flex:1;min-width:0;}
+.rec-kanban-card-menu{flex-shrink:0;width:24px;height:24px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--slate-400);font-size:16px;line-height:1;padding:0;}
+.rec-kanban-card-menu:hover{background:var(--slate-100);color:var(--slate-600);}
+.rec-kanban-card-name{font-size:12px;font-weight:800;color:var(--primary);margin:0 0 2px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-kanban-card-meta{font-size:10px;color:var(--slate-600);margin:0;line-height:1.3;}
+.rec-kanban-card-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:4px;}
+.rec-kanban-card-loc{font-size:10px;color:var(--slate-500);}
+.rec-kanban-card-source{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(59,130,246,.1);color:#1d4ed8;}
+.rec-kanban-card-contact{font-size:10px;color:var(--slate-600);display:flex;align-items:center;gap:4px;}
+.rec-kanban-card-foot{font-size:9px;font-weight:600;color:var(--slate-400);margin:6px 0 0;padding-top:5px;border-top:1px solid var(--slate-100);}
+.rec-kanban-empty-msg{font-size:12px;color:var(--slate-500);margin:0 0 8px;line-height:1.45;}
+.rec-kanban-loading{font-size:13px;color:var(--slate-500);padding:8px 2px;}
+@media(max-width:720px){.rec-module-head-actions{width:100%;justify-content:stretch;}.rec-global-search{max-width:none;}.rec-carousel-nav{display:none;}}
 .rec-btn-edit{border:none;background:transparent;color:var(--purple);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;flex-shrink:0;}
 .rec-btn-edit:hover{text-decoration:underline;}
 @media(max-width:720px){.rec-workspace{padding:16px;}}
@@ -2405,33 +2458,53 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar">
-      <div><div class="topbar-title">Reclutamiento</div><div class="topbar-subtitle">Vacantes y candidatos</div></div>
+    <div class="topbar rec-dash-topbar">
+      <div><div class="topbar-title">Reclutamiento</div></div>
       <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
     </div>
-    <div class="page-content">
-      <nav class="rec-module-nav" aria-label="Sección de reclutamiento">
-        <button type="button" class="rec-module-tab rec-module-tab--active" id="rec-tab-vacancies" onclick="recSwitchModuleTab('vacancies')">Vacantes</button>
-        <button type="button" class="rec-module-tab" id="rec-tab-candidates" onclick="recSwitchModuleTab('candidates')">Candidatos</button>
-      </nav>
+    <div class="page-content rec-page-content">
+      <div class="rec-module-head-row">
+        <nav class="rec-module-nav rec-module-nav--tabs" aria-label="Sección de reclutamiento">
+          <button type="button" class="rec-module-tab rec-module-tab--active" id="rec-tab-vacancies" onclick="recSwitchModuleTab('vacancies')">Vacantes</button>
+          <button type="button" class="rec-module-tab" id="rec-tab-candidates" onclick="recSwitchModuleTab('candidates')">Candidatos</button>
+        </nav>
+        <div class="rec-module-head-actions">
+          <input type="search" id="rec-global-q" class="rec-global-search form-input" placeholder="Buscar vacantes o candidatos…" autocomplete="off" aria-label="Buscar en reclutamiento">
+          <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
+        </div>
+      </div>
       <div id="rec-pane-vacancies">
         <div id="rec-main-block">
-          <div class="rec-vacancies-stage">
-          <div class="rec-section-top">
-            <div class="rec-section-label" style="margin-bottom:0;">Mis vacantes</div>
-            <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
-          </div>
+          <div class="rec-vacancies-stage rec-vac-band">
           <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
+          <div class="rec-vac-band-toolbar">
+            <input type="search" id="rec-vac-local-q" class="rec-vac-local-search form-input" placeholder="Buscar vacantes…" autocomplete="off" aria-label="Buscar vacantes">
+            <div class="rec-carousel-meta">
+              <span id="rec-carousel-range" class="rec-carousel-range">—</span>
+              <button type="button" class="rec-carousel-arrow" id="rec-carousel-prev" aria-label="Vacantes anteriores" onclick="recCarouselScroll(-1)">‹</button>
+              <button type="button" class="rec-carousel-arrow" id="rec-carousel-next" aria-label="Vacantes siguientes" onclick="recCarouselScroll(1)">›</button>
+            </div>
+          </div>
           <div id="rec-empty" class="rec-empty hidden">
             <p id="rec-empty-msg">Todavía no hay vacantes registradas.</p>
             <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
           </div>
-          <div id="rec-carousel-wrap" class="rec-carousel-wrap hidden">
+          <div id="rec-carousel-wrap" class="rec-carousel-wrap rec-carousel-wrap--nav hidden">
+            <button type="button" class="rec-carousel-nav rec-carousel-nav--prev" aria-label="Desplazar vacantes a la izquierda" onclick="recCarouselScroll(-1)">‹</button>
             <div class="rec-carousel" id="rec-vacancy-carousel" role="list"></div>
+            <button type="button" class="rec-carousel-nav rec-carousel-nav--next" aria-label="Desplazar vacantes a la derecha" onclick="recCarouselScroll(1)">›</button>
           </div>
           </div>
-          <div id="rec-selected-panel" class="rec-workspace hidden">
-            <p class="rec-ws-op-kicker" id="rec-ws-op-kicker">Pipeline</p>
+          <div id="rec-selected-panel" class="rec-workspace rec-workspace--pipeline hidden">
+            <div class="rec-pipeline-header" id="rec-pipeline-header">
+              <div class="rec-pipeline-header-main">
+                <span class="rec-pipeline-header-label">Pipeline</span>
+                <span class="rec-pipeline-header-sep" aria-hidden="true">·</span>
+                <span class="rec-pipeline-header-vac" id="rec-pipeline-vac-title">—</span>
+                <span class="rec-pipeline-count-pill" id="rec-pipeline-cand-count">0 candidatos</span>
+              </div>
+              <div class="rec-pipeline-header-actions hidden" aria-hidden="true"></div>
+            </div>
             <div class="rec-pipeline-slot" id="rec-pipeline-slot"></div>
           </div>
         </div>
@@ -6974,10 +7047,170 @@ function recEnsureState(){
       kanbanDragAppId:null,
       kanbanSuppressClick:false,
       vacancyStagesCache:{},
+      vacancySearchQuery:'',
+      kanbanColCollapsed:{},
+      recShellBound:false,
     };
   }
   if(!window.__REC_STATE.vacancyStagesCache) window.__REC_STATE.vacancyStagesCache={};
+  if(!window.__REC_STATE.kanbanColCollapsed) window.__REC_STATE.kanbanColCollapsed={};
   return window.__REC_STATE;
+}
+function recVacancyMatchesSearch(v,q){
+  const needle=String(q||'').trim().toLowerCase();
+  if(!needle) return true;
+  const pa=v.primaryAssignee&&v.primaryAssignee.employee;
+  const hay=[
+    v.title,v.clientName,v.location,pa&&pa.fullName,
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.indexOf(needle)!==-1;
+}
+function recKanbanColCollapseKey(vacancyId,stageId){
+  return String(vacancyId||'')+':'+String(stageId||'');
+}
+function recKanbanLoadColCollapsed(vacancyId){
+  const st=recEnsureState();
+  const prefix=String(vacancyId||'')+':';
+  Object.keys(st.kanbanColCollapsed||{}).forEach(function(k){
+    if(k.indexOf(prefix)===0) delete st.kanbanColCollapsed[k];
+  });
+  try{
+    const raw=localStorage.getItem('rec_kanban_cols_'+vacancyId);
+    const map=raw?JSON.parse(raw):{};
+    Object.keys(map||{}).forEach(function(sid){
+      if(map[sid]) st.kanbanColCollapsed[recKanbanColCollapseKey(vacancyId,sid)]=true;
+    });
+  }catch(_e){}
+}
+function recKanbanSaveColCollapsed(vacancyId){
+  const st=recEnsureState();
+  const prefix=String(vacancyId||'')+':';
+  const map={};
+  Object.keys(st.kanbanColCollapsed||{}).forEach(function(k){
+    if(st.kanbanColCollapsed[k]&&k.indexOf(prefix)===0){
+      map[k.slice(prefix.length)]=true;
+    }
+  });
+  try{
+    localStorage.setItem('rec_kanban_cols_'+vacancyId,JSON.stringify(map));
+  }catch(_e){}
+}
+function recKanbanColAbbrev(name){
+  const s=String(name||'').trim();
+  if(s.length<=14) return s;
+  return s.slice(0,12)+'…';
+}
+function recKanbanRelativeUpdated(iso){
+  if(!iso) return '';
+  const t=Date.parse(iso);
+  if(Number.isNaN(t)) return '';
+  const now=Date.now();
+  const dayMs=86400000;
+  const startToday=new Date(); startToday.setHours(0,0,0,0);
+  const startThat=new Date(t); startThat.setHours(0,0,0,0);
+  const diffDays=Math.round((startToday-startThat)/dayMs);
+  if(diffDays===0) return 'Actualizado hoy';
+  if(diffDays===1) return 'Actualizado ayer';
+  if(diffDays>1&&diffDays<7) return 'Actualizado hace '+diffDays+' días';
+  try{
+    return 'Actualizado '+new Date(t).toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  }catch(_e){
+    return '';
+  }
+}
+function recUpdatePipelineHeader(v,count){
+  const titleEl=document.getElementById('rec-pipeline-vac-title');
+  const countEl=document.getElementById('rec-pipeline-cand-count');
+  if(titleEl) titleEl.textContent=(v&&v.title)||'—';
+  const n=typeof count==='number'?count:((recEnsureState().kanbanApplications||[]).length);
+  const label=n===1?'1 candidato':n+' candidatos';
+  if(countEl) countEl.textContent=label;
+}
+function recBindRecruitmentShell(){
+  const st=recEnsureState();
+  if(st.recShellBound) return;
+  st.recShellBound=true;
+  const globalQ=document.getElementById('rec-global-q');
+  const localQ=document.getElementById('rec-vac-local-q');
+  function syncSearchInputs(from){
+    const val=from?from.value:'';
+    st.vacancySearchQuery=val;
+    if(localQ&&localQ!==from) localQ.value=val;
+    if(globalQ&&globalQ!==from&&st.moduleTab!=='candidates') globalQ.value=val;
+    recRenderCarousel();
+  }
+  if(localQ){
+    localQ.addEventListener('input',function(){ syncSearchInputs(localQ); });
+  }
+  if(globalQ){
+    globalQ.addEventListener('input',function(){
+      if(st.moduleTab==='candidates'){
+        const candQ=document.getElementById('rec-cand-q');
+        if(candQ){ candQ.value=globalQ.value; candQ.dispatchEvent(new Event('input',{bubbles:true})); }
+        return;
+      }
+      syncSearchInputs(globalQ);
+    });
+    globalQ.addEventListener('keydown',function(ev){
+      if(ev.key==='Enter'&&st.moduleTab==='candidates'){
+        ev.preventDefault();
+        recCandLoadList(false);
+      }
+    });
+  }
+  const track=document.getElementById('rec-vacancy-carousel');
+  if(track&&!track.__recScrollBound){
+    track.__recScrollBound=true;
+    track.addEventListener('scroll',function(){ recCarouselUpdateRange(); },{passive:true});
+  }
+}
+function recCarouselUpdateRange(){
+  const track=document.getElementById('rec-vacancy-carousel');
+  const rangeEl=document.getElementById('rec-carousel-range');
+  const prev=document.getElementById('rec-carousel-prev');
+  const next=document.getElementById('rec-carousel-next');
+  const navPrev=document.querySelector('.rec-carousel-nav--prev');
+  const navNext=document.querySelector('.rec-carousel-nav--next');
+  if(!track||!rangeEl) return;
+  const cards=track.querySelectorAll('.rec-vac-card');
+  const total=cards.length;
+  if(!total){
+    rangeEl.textContent='—';
+    [prev,next,navPrev,navNext].forEach(function(b){ if(b) b.disabled=true; });
+    return;
+  }
+  const trackRect=track.getBoundingClientRect();
+  let firstVisible=1;
+  let lastVisible=1;
+  let found=false;
+  cards.forEach(function(card,idx){
+    const r=card.getBoundingClientRect();
+    const visible=r.right>trackRect.left+2&&r.left<trackRect.right-2;
+    if(visible){
+      if(!found){ firstVisible=idx+1; found=true; }
+      lastVisible=idx+1;
+    }
+  });
+  if(!found){ firstVisible=1; lastVisible=Math.min(total,1); }
+  rangeEl.textContent=firstVisible+' – '+lastVisible+' de '+total;
+  const atStart=track.scrollLeft<=4;
+  const atEnd=track.scrollLeft+track.clientWidth>=track.scrollWidth-4;
+  [prev,navPrev].forEach(function(b){ if(b) b.disabled=atStart; });
+  [next,navNext].forEach(function(b){ if(b) b.disabled=atEnd; });
+}
+function recCarouselScroll(dir){
+  const track=document.getElementById('rec-vacancy-carousel');
+  if(!track) return;
+  const delta=(dir<0?-1:1)*Math.max(220,track.clientWidth*0.72);
+  track.scrollBy({left:delta,behavior:'smooth'});
+  setTimeout(recCarouselUpdateRange,320);
+}
+function recKanbanToggleCol(vacancyId,stageId){
+  const st=recEnsureState();
+  const key=recKanbanColCollapseKey(vacancyId,stageId);
+  st.kanbanColCollapsed[key]=!st.kanbanColCollapsed[key];
+  recKanbanSaveColCollapsed(vacancyId);
+  recKanbanRender(vacancyId);
 }
 function recDetailIconSvg(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
@@ -7649,9 +7882,14 @@ function recGetDisplayVacancies(){
   const st=recEnsureState();
   const all=st.allVacancies||[];
   const f=st.filter||'ACTIVE';
-  if(f==='ALL') return all;
-  let list=all.filter(v=>v.status===f);
-  if(f==='ACTIVE'&&list.length===0&&all.length>0) list=all.slice();
+  let list;
+  if(f==='ALL') list=all.slice();
+  else{
+    list=all.filter(v=>v.status===f);
+    if(f==='ACTIVE'&&list.length===0&&all.length>0) list=all.slice();
+  }
+  const q=st.vacancySearchQuery||'';
+  if(q) list=list.filter(function(v){ return recVacancyMatchesSearch(v,q); });
   return list;
 }
 function recVacancyOpenedMs(v){
@@ -7676,11 +7914,15 @@ function recRenderFilters(){
   if(!bar) return;
   const st=recEnsureState();
   bar.innerHTML='';
+  const all=st.allVacancies||[];
   REC_FILTER_CHIPS.forEach(function(chip){
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='rec-filter-chip'+(st.filter===chip.key?' active':'');
-    btn.textContent=chip.label;
+    let count;
+    if(chip.key==='ALL') count=all.length;
+    else count=all.filter(function(v){ return v.status===chip.key; }).length;
+    btn.textContent=chip.label+' ('+count+')';
     btn.setAttribute('role','tab');
     btn.setAttribute('aria-selected',st.filter===chip.key?'true':'false');
     btn.onclick=function(){ recSetFilter(chip.key); };
@@ -7723,7 +7965,8 @@ function recRenderCarousel(){
   track.innerHTML='';
   list.forEach(function(v){
     const card=document.createElement('div');
-    card.className='rec-vac-card'+(v.id===st.selectedId?' selected':'');
+    const isSel=v.id===st.selectedId;
+    card.className='rec-vac-card'+(isSel?' selected':'');
     card.setAttribute('role','listitem');
     card.tabIndex=0;
     card.dataset.vacancyId=v.id;
@@ -7768,8 +8011,15 @@ function recRenderCarousel(){
       resp.textContent=pa.fullName;
       card.appendChild(resp);
     }
+    if(isSel){
+      const selBadge=document.createElement('span');
+      selBadge.className='rec-vac-selected-badge';
+      selBadge.textContent='Seleccionada';
+      card.appendChild(selBadge);
+    }
     track.appendChild(card);
   });
+  requestAnimationFrame(function(){ recCarouselUpdateRange(); });
   recRenderSelectedPanel();
 }
 function recSelectVacancy(id){
@@ -7790,8 +8040,7 @@ function recRenderSelectedPanel(){
   const v=recFindVacancy(st.selectedId);
   if(!panel||!v||!list.length){ if(panel) panel.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
-  const kicker=document.getElementById('rec-ws-op-kicker');
-  if(kicker) kicker.textContent='Pipeline · '+(v.title||'—');
+  recUpdatePipelineHeader(v,(st.kanbanApplications||[]).length);
   recKanbanLoad(v.id);
 }
 function recKanbanSetErr(msg){
@@ -7821,6 +8070,7 @@ async function recKanbanLoad(vacancyId){
   }
   st.kanbanLoading=true;
   recKanbanSetErr('');
+  recKanbanLoadColCollapsed(vacancyId);
   slot.innerHTML='<p class="rec-kanban-loading">Cargando pipeline…</p>';
   try{
     const cfg=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
@@ -7858,27 +8108,57 @@ function recKanbanRender(vacancyId){
     if(byStage.has(sid)) byStage.get(sid).push(app);
   });
   const totalApps=apps.length;
+  recUpdatePipelineHeader(recFindVacancy(vacancyId),totalApps);
   let html='<p id="rec-kanban-err" class="rec-kanban-err hidden"></p>';
   if(!totalApps) html+='<p class="rec-kanban-empty-msg">Aún no hay candidatos asignados a esta vacante.</p>';
-  html+='<div class="rec-kanban-board" role="region" aria-label="Pipeline por etapas">';
+  html+='<div class="rec-kanban-board" id="rec-kanban-board" role="region" aria-label="Pipeline por etapas">';
   stages.forEach(function(vs){
     const stage=vs.stage||{};
     const sid=stage.id||vs.stageId;
+    const stageName=stage.name||stage.key||'Etapa';
     const colApps=byStage.get(sid)||[];
-    html+='<div class="rec-kanban-col" data-stage-id="'+tcEsc(sid)+'" ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)">'+
-      '<div class="rec-kanban-col-head"><p class="rec-kanban-col-title">'+tcEsc(stage.name||stage.key||'Etapa')+'</p>'+
+    const cKey=recKanbanColCollapseKey(vacancyId,sid);
+    const collapsed=!!(st.kanbanColCollapsed&&st.kanbanColCollapsed[cKey]);
+    const colCls='rec-kanban-col'+(collapsed?' rec-kanban-col--collapsed':'');
+    const dragAttr=collapsed?'':' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
+    const collapseLabel=collapsed?'Expandir columna':'Contraer columna';
+    const collapseIcon=collapsed?'›':'‹';
+    html+='<div class="'+colCls+'" data-stage-id="'+tcEsc(sid)+'"'+dragAttr+
+      (collapsed?' onclick="recKanbanToggleCol(\''+tcEsc(vacancyId)+'\',\''+tcEsc(sid)+'\')" title="'+tcEsc(stageName)+'"':'')+'>'+
+      '<div class="rec-kanban-col-head">'+
+      '<div class="rec-kanban-col-head-main">'+
+      '<p class="rec-kanban-col-title">'+tcEsc(stageName)+'</p>'+
+      '<p class="rec-kanban-col-title-vertical" title="'+tcEsc(stageName)+'">'+tcEsc(recKanbanColAbbrev(stageName))+'</p>'+
       '<span class="rec-kanban-col-count">'+colApps.length+'</span></div>'+
+      '<div class="rec-kanban-col-head-tools">'+
+      '<button type="button" class="rec-kanban-col-icon-btn" aria-label="'+collapseLabel+'" title="'+collapseLabel+'" onclick="event.stopPropagation();recKanbanToggleCol(\''+tcEsc(vacancyId)+'\',\''+tcEsc(sid)+'\')">'+collapseIcon+'</button>'+
+      '</div></div>'+
       '<div class="rec-kanban-col-body">';
+    if(!colApps.length&&!collapsed){
+      html+='<div class="rec-kanban-col-drop-empty"><span>+ Arrastra candidatos aquí</span></div>';
+    }
     colApps.forEach(function(app){
       const c=app.candidate||{};
       const loc=recKanbanCardLocation(c);
       const src=c.source?(c.source==='Otro'&&c.sourceOther?'Otro · '+c.sourceOther:c.source):'';
+      const contact=recKanbanCardContact(c);
+      const prof=typeof recCandProfilePrimaryLabel==='function'?recCandProfilePrimaryLabel(c):(c.profile||'—');
+      const updated=recKanbanRelativeUpdated(app.updatedAt||c.updatedAt);
       html+='<div class="rec-kanban-card" draggable="true" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
         ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
-        '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
+        '<div class="rec-kanban-card-top">'+
+        '<span class="rec-kanban-card-avatar">'+tcEsc(recCandInitials(c.fullName))+'</span>'+
+        '<div class="rec-kanban-card-main">'+
         '<p class="rec-kanban-card-name">'+tcEsc(c.fullName||'—')+'</p>'+
-        '<p class="rec-kanban-card-meta">'+tcEsc(typeof recCandProfilePrimaryLabel==='function'?recCandProfilePrimaryLabel(c):(c.profile||'—'))+'</p>'+
-        '<p class="rec-kanban-card-sub">'+tcEsc(recKanbanCardContact(c))+(src?' · '+tcEsc(src):'')+(loc?' · '+tcEsc(loc):'')+'</p></div>';
+        '<p class="rec-kanban-card-meta">'+tcEsc(prof)+'</p></div>'+
+        '<button type="button" class="rec-kanban-card-menu" aria-label="Opciones" onclick="event.stopPropagation()">⋮</button></div>'+
+        '<div class="rec-kanban-card-row">'+
+        (loc?'<span class="rec-kanban-card-loc">'+tcEsc(loc)+'</span>':'')+
+        (src?'<span class="rec-kanban-card-source">'+tcEsc(src)+'</span>':'')+
+        '</div>'+
+        (contact?'<div class="rec-kanban-card-contact"><span aria-hidden="true">📞</span><span>'+tcEsc(contact)+'</span></div>':'')+
+        (updated?'<p class="rec-kanban-card-foot">'+tcEsc(updated)+'</p>':'')+
+        '</div>';
     });
     html+='</div></div>';
   });
@@ -7907,8 +8187,9 @@ function recKanbanCardDragEnd(ev){
 }
 function recKanbanColDragOver(ev){
   ev.preventDefault();
-  if(ev.dataTransfer) ev.dataTransfer.dropEffect='move';
   const col=ev.currentTarget.closest('.rec-kanban-col');
+  if(col&&col.classList.contains('rec-kanban-col--collapsed')) return;
+  if(ev.dataTransfer) ev.dataTransfer.dropEffect='move';
   if(col) col.classList.add('rec-kanban-col--over');
 }
 function recKanbanColDragLeave(ev){
@@ -7921,6 +8202,7 @@ async function recKanbanColDrop(ev){
   const col=ev.currentTarget.closest('.rec-kanban-col');
   const targetStageId=col&&col.getAttribute('data-stage-id');
   if(col) col.classList.remove('rec-kanban-col--over');
+  if(col&&col.classList.contains('rec-kanban-col--collapsed')) return;
   const appId=(ev.dataTransfer&&ev.dataTransfer.getData('text/plain'))||st.kanbanDragAppId;
   if(!appId||!targetStageId) return;
   const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
@@ -9226,6 +9508,7 @@ function recOnShow(){
   mind24NotifClose(false);
   mind24RefreshEmpresaAdminDashboardChrome();
   if(typeof mind24NotifInit==='function') mind24NotifInit();
+  recBindRecruitmentShell();
   const st=recEnsureState();
   st.filter=st.filter||'ACTIVE';
   recSwitchModuleTab(st.moduleTab||'vacancies');
