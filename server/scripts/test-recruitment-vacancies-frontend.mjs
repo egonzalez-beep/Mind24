@@ -93,7 +93,11 @@ check(/rec-exec-kpis/.test(detailModalBlock), 'KPIs ejecutivos en detalle');
 check(/rec-detail-jd-trigger/.test(detailModalBlock), 'JD acordeón');
 check(/recDetailResetAccordions/.test(indexHtml), 'acordeones reset al abrir');
 check(/rec-detail-funnel/.test(detailModalBlock), 'funnel distribution UI');
-check(/Distribución del proceso/.test(detailModalBlock), 'título funnel');
+check(/Resumen del pipeline/.test(detailModalBlock), 'resumen pipeline ejecutivo');
+check(/rec-stages-rail/.test(detailModalBlock) && /rec-process-rail/.test(detailModalBlock), 'rail horizontal de etapas');
+check(/rec-exec-process-card/.test(detailModalBlock), 'tarjeta proceso de selección');
+check(/rec-exec-body-grid/.test(detailModalBlock), 'layout ejecutivo dos columnas');
+check(/rec-detail-notes-card/.test(detailModalBlock), 'notas internas premium');
 check(/Etapas del proceso/.test(detailModalBlock), 'sección etapas del proceso');
 check(/recStagesOpenEditor/.test(indexHtml), 'configurador abre editor');
 check(/recStagesSave/.test(indexHtml) && /Guardar etapas/.test(detailModalBlock), 'guardar etapas PUT');
@@ -116,7 +120,7 @@ check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
 check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');
 check(/check-duplicates/.test(indexHtml), 'preflight duplicados UI');
 check(/recCandUploadCvFile/.test(indexHtml) && /rec-cand-form-cv-file/.test(indexHtml), 'upload CV UI ficha y alta');
-check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
+check(/max-width:min\(980px/.test(indexHtml), 'modal detalle ejecutivo ancho');
 
 console.log('\n=== Recruitment 1D.2.1 — flujo candidato/vacante ===\n');
 

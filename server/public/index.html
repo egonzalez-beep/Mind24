@@ -599,36 +599,43 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-pipeline-ghost-btn{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;transition:var(--tr-fast);}
 .rec-pipeline-ghost-btn:disabled{opacity:.55;cursor:default;}
 .rec-pipeline-menu-btn:disabled{opacity:.45;cursor:default;}
-.rec-detail-modal{max-width:min(920px,calc(100vw - 32px));padding:26px 28px 30px;max-height:min(92vh,880px);background:#FAFBFF;}
+.rec-detail-modal{max-width:min(980px,calc(100vw - 32px));padding:24px 26px 28px;max-height:min(92vh,900px);background:#FAFBFF;}
 .rec-detail-modal .modal-close{position:static;width:34px;height:34px;top:auto;right:auto;margin:0;flex-shrink:0;}
-.rec-detail-toolbar{position:absolute;top:18px;right:18px;display:flex;align-items:center;gap:8px;z-index:2;}
+.rec-detail-toolbar{position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:8px;z-index:2;}
 .rec-detail-edit-btn{width:34px;height:34px;border:1px solid var(--slate-200);background:#fff;border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-600);transition:var(--tr-fast);padding:0;}
 .rec-detail-edit-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
-.rec-exec-header{padding-right:88px;margin-bottom:0;}
-.rec-exec-header-accent{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(124,58,237,.55),rgba(139,92,246,.25),transparent);margin:14px 0 16px;max-width:min(420px,72%);}
-.rec-exec-header h2{font-size:22px;font-weight:800;color:var(--primary);letter-spacing:-.45px;line-height:1.25;margin:0 0 6px;}
-.rec-exec-subline{font-size:14px;color:var(--slate-600);margin:0 0 10px;line-height:1.4;}
-.rec-exec-header-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:13px;color:var(--slate-600);}
+.rec-detail-edit-text-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--slate-200);background:#fff;border-radius:9px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-700);padding:7px 12px;transition:var(--tr-fast);}
+.rec-detail-edit-text-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-detail-edit-text-btn:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);background:rgba(245,243,255,.65);}
+.rec-exec-header{padding-right:120px;margin-bottom:0;}
+.rec-exec-kicker{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-400);margin:0 0 6px;}
+.rec-exec-header-accent{display:none;}
+.rec-exec-header h2{font-size:24px;font-weight:800;color:var(--primary);letter-spacing:-.5px;line-height:1.2;margin:0 0 8px;}
+.rec-exec-subline{font-size:14px;color:var(--slate-600);margin:0;line-height:1.4;font-weight:500;}
+.rec-exec-header-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:13px;color:var(--slate-600);margin-top:10px;}
 .rec-exec-header-meta .rec-status-badge{font-size:10px;}
-.rec-exec-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px;}
-.rec-exec-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px 11px;min-height:72px;display:flex;flex-direction:column;justify-content:flex-start;border-top-width:2px;border-top-style:solid;border-top-color:var(--slate-200);}
-.rec-exec-kpi-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin-bottom:6px;}
+.rec-exec-header-meta-sep{color:var(--slate-300);user-select:none;}
+.rec-exec-header-resp{display:inline-flex;align-items:center;gap:6px;color:var(--slate-600);}
+.rec-exec-header-resp svg{width:14px;height:14px;stroke:var(--slate-400);fill:none;stroke-width:1.75;}
+.rec-exec-kpis{display:flex;align-items:stretch;gap:0;margin-bottom:20px;background:#fff;border:1px solid var(--slate-200);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.rec-exec-kpi{flex:1;min-width:0;padding:12px 14px 13px;display:flex;flex-direction:column;justify-content:flex-start;border:none;border-right:1px solid var(--slate-100);border-radius:0;background:#fff;}
+.rec-exec-kpi:last-child{border-right:none;}
+.rec-exec-kpi-head{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.rec-exec-kpi-icon{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;flex-shrink:0;}
+.rec-exec-kpi-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+.rec-exec-kpi-icon--coverage{color:var(--purple-dark);background:rgba(245,243,255,.9);}
+.rec-exec-kpi-icon--process{color:var(--purple);background:rgba(245,243,255,.75);}
+.rec-exec-kpi-icon--rejection{color:#E11D48;background:rgba(254,226,226,.45);}
+.rec-exec-kpi-icon--target{color:#D97706;background:rgba(254,243,199,.55);}
+.rec-exec-kpi-icon--days{color:#2563EB;background:rgba(219,234,254,.55);}
+.rec-exec-kpi-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0;}
 .rec-exec-kpi-val{font-size:17px;font-weight:800;color:var(--primary);letter-spacing:-.3px;line-height:1.2;}
 .rec-exec-kpi-sub{font-size:11px;font-weight:600;color:var(--slate-500);margin-top:4px;}
-.rec-exec-kpi--coverage{border-top-color:rgba(124,58,237,.55);}
 .rec-exec-kpi--coverage .rec-exec-kpi-val{color:var(--purple-dark);}
-.rec-exec-kpi--coverage .rec-exec-kpi-val{font-size:15px;}
-.rec-exec-kpi--process{border-top-color:rgba(100,116,139,.45);}
-.rec-exec-kpi--process .rec-exec-kpi-val{color:var(--slate-700);}
-.rec-exec-kpi--rejection{border-top-color:rgba(244,63,94,.35);}
+.rec-exec-kpi--coverage .rec-exec-kpi-val{font-size:18px;}
+.rec-exec-kpi--process .rec-exec-kpi-val{color:var(--purple-dark);font-size:20px;}
 .rec-exec-kpi--rejection .rec-exec-kpi-val{color:var(--slate-700);}
 .rec-exec-kpi--rejection.rec-exec-kpi--rejection-warn .rec-exec-kpi-val{color:#E11D48;}
-.rec-exec-kpi--target{border-top-color:var(--slate-300);}
-.rec-exec-kpi--target.rec-exec-kpi--target-ok{border-top-color:rgba(16,185,129,.45);}
-.rec-exec-kpi--target.rec-exec-kpi--target-warn{border-top-color:rgba(245,158,11,.55);}
-.rec-exec-kpi--target.rec-exec-kpi--target-today{border-top-color:rgba(217,119,6,.65);}
-.rec-exec-kpi--target.rec-exec-kpi--target-late{border-top-color:rgba(244,63,94,.45);}
-.rec-exec-kpi--target.rec-exec-kpi--target-none{border-top-color:var(--slate-300);}
 .rec-exec-kpi--target-ok .rec-exec-kpi-target-val{color:#047857;}
 .rec-exec-kpi--target-warn .rec-exec-kpi-target-val{color:#B45309;}
 .rec-exec-kpi--target-today .rec-exec-kpi-target-val{color:#C2410C;}
@@ -642,25 +649,60 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-exec-kpi--target-late .rec-exec-kpi-dot{background:#F43F5E;}
 .rec-exec-kpi--target-none .rec-exec-kpi-dot{background:var(--slate-400);}
 .rec-exec-kpi-target-val{font-size:13px;font-weight:700;line-height:1.25;color:var(--primary);}
-.rec-exec-kpi--days{border-top-color:rgba(148,163,184,.4);}
-.rec-exec-kpi--days .rec-exec-kpi-val{color:var(--slate-700);}
+.rec-exec-kpi--days .rec-exec-kpi-val{color:var(--primary);font-size:17px;}
 .rec-exec-cov-pos{font-size:11px;color:var(--slate-500);margin-top:2px;font-weight:600;}
 .rec-exec-cov-bar{height:4px;border-radius:999px;background:var(--slate-100);margin-top:8px;overflow:hidden;}
 .rec-exec-cov-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(124,58,237,.35),rgba(139,92,246,.55));max-width:100%;}
 .rec-exec-cov-pct{font-size:10px;font-weight:700;color:var(--purple-dark);margin-top:5px;letter-spacing:.02em;opacity:.85;}
 .rec-detail-block{margin-top:14px;padding-top:14px;border-top:1px solid var(--slate-100);}
 .rec-detail-block h4{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:0 0 10px;}
-.rec-detail-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:12px;}
-.rec-detail-field.rec-info-tile{background:linear-gradient(180deg,rgba(248,250,252,.7),rgba(245,243,255,.35));border:1px solid rgba(226,232,240,.85);border-radius:10px;padding:8px 10px;}
-.rec-detail-field label{display:block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);margin-bottom:3px;}
+.rec-funnel-empty{font-size:12px;color:var(--slate-500);margin:0;padding:8px 0;}
+.rec-pipeline-pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px 12px;}
+.rec-pipeline-pulse-cell{border:1px solid var(--slate-200);border-radius:10px;padding:8px 10px 10px;background:#fff;transition:var(--tr-fast);}
+.rec-pipeline-pulse-cell--active{border-color:rgba(124,58,237,.28);background:rgba(245,243,255,.35);box-shadow:0 1px 0 rgba(124,58,237,.08);}
+.rec-pipeline-pulse-name{font-size:11px;font-weight:600;color:var(--slate-600);margin:0 0 6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-pipeline-pulse-count{font-size:15px;font-weight:800;color:var(--primary);margin:0 0 6px;font-variant-numeric:tabular-nums;}
+.rec-pipeline-pulse-cell--active .rec-pipeline-pulse-count{color:var(--purple-dark);}
+.rec-pipeline-pulse-bar{height:3px;border-radius:999px;background:var(--slate-100);overflow:hidden;}
+.rec-pipeline-pulse-bar-fill{height:100%;border-radius:999px;background:rgba(124,58,237,.35);max-width:100%;}
+.rec-pipeline-pulse-cell--active .rec-pipeline-pulse-bar-fill{background:linear-gradient(90deg,rgba(124,58,237,.45),rgba(139,92,246,.65));}
+.rec-exec-process-card{border:1px solid var(--slate-200);border-radius:14px;padding:14px 16px 16px;background:#fff;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
+.rec-exec-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.rec-exec-section-head-main{display:flex;align-items:center;gap:8px;min-width:0;}
+.rec-exec-section-icon{display:flex;color:var(--purple-dark);}
+.rec-exec-section-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+.rec-exec-section-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-600);margin:0;}
+.rec-exec-section-sub{margin:14px 0 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
+.rec-stages-config-btn{display:inline-flex;align-items:center;gap:5px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple);cursor:pointer;padding:4px 2px;}
+.rec-stages-config-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
+.rec-stages-config-btn:hover{color:var(--purple-dark);text-decoration:underline;}
+.rec-process-rail-wrap{overflow-x:auto;padding:4px 2px 12px;margin-bottom:4px;scrollbar-width:thin;}
+.rec-process-rail{display:flex;align-items:flex-start;min-width:min-content;gap:0;}
+.rec-process-rail-step{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;min-width:88px;max-width:120px;padding:0 4px;position:relative;}
+.rec-process-rail-step:not(:last-child)::after{content:'';position:absolute;top:9px;left:calc(50% + 10px);width:calc(100% - 20px);height:2px;background:var(--slate-200);z-index:0;}
+.rec-process-rail-dot{width:10px;height:10px;border-radius:999px;border:2px solid var(--slate-300);background:#fff;position:relative;z-index:1;flex-shrink:0;}
+.rec-process-rail-label{font-size:10px;font-weight:600;color:var(--slate-600);margin-top:8px;text-align:center;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-exec-body-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px 16px;align-items:start;}
+.rec-exec-panel-card{border:1px solid var(--slate-200);border-radius:14px;padding:14px 16px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.03);}
+.rec-exec-panel-card+.rec-exec-panel-card{margin-top:14px;}
+.rec-detail-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;font-size:12px;}
+.rec-detail-field.rec-info-tile{background:rgba(248,250,252,.65);border:1px solid rgba(226,232,240,.9);border-radius:10px;padding:9px 10px;display:flex;gap:8px;align-items:flex-start;}
+.rec-detail-field-icon{display:flex;color:var(--slate-400);margin-top:1px;flex-shrink:0;}
+.rec-detail-field-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+.rec-detail-field-body{min-width:0;flex:1;}
+.rec-detail-field label{display:block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);margin-bottom:2px;}
 .rec-detail-field span{color:var(--slate-800);font-weight:600;line-height:1.35;}
-.rec-funnel-empty{font-size:13px;color:var(--slate-500);margin:0;}
-.rec-funnel-list{display:flex;flex-direction:column;gap:7px;}
-.rec-funnel-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;font-size:12px;}
-.rec-funnel-name{color:var(--slate-700);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rec-funnel-count{font-weight:700;color:var(--purple-dark);font-variant-numeric:tabular-nums;min-width:1.75rem;text-align:center;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--purple-light);border:1px solid rgba(124,58,237,.12);}
-.rec-funnel-bar-wrap{grid-column:1/-1;height:5px;border-radius:999px;background:var(--slate-100);overflow:hidden;}
-.rec-funnel-bar-fill{height:100%;border-radius:999px;background:rgba(124,58,237,.35);max-width:100%;}
+.rec-detail-notes-card{background:linear-gradient(180deg,rgba(255,253,245,.98),rgba(255,251,235,.62));border:1px solid rgba(234,179,8,.2);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(15,23,42,.03);}
+.rec-detail-notes-card .rec-exec-section-title{color:#92400E;}
+.rec-detail-notes-body-static{font-size:13px;line-height:1.55;color:var(--slate-800);white-space:pre-wrap;margin:0;}
+.rec-detail-notes-body-static.empty{color:#78716C;font-style:normal;}
+.rec-detail-files-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 12px;border:1px dashed rgba(148,163,184,.5);border-radius:12px;background:rgba(248,250,252,.45);margin-top:4px;}
+.rec-detail-files-empty-icon{color:var(--slate-400);margin-bottom:8px;}
+.rec-detail-files-empty-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.5;}
+.rec-detail-files-empty p{font-size:12px;color:var(--slate-500);margin:0 0 10px;}
+.rec-detail-acc-trigger--premium{border:1px solid var(--slate-200);background:#fff;font-size:11px;color:var(--slate-600);}
+.rec-detail-acc-trigger-main{display:inline-flex;align-items:center;gap:8px;}
+.rec-stages-editor{margin-top:12px;padding:14px 16px;border:1px solid rgba(124,58,237,.14);border-radius:12px;background:rgba(248,250,252,.55);}
 .rec-detail-stages-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
 .rec-detail-stages-head h4{margin:0;}
 .rec-stages-link-btn{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple);cursor:pointer;padding:4px 0;transition:var(--tr-fast);}
@@ -710,7 +752,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-detail-notes-static{font-size:13px;line-height:1.55;color:var(--slate-700);white-space:pre-wrap;margin:0;}
 .rec-detail-notes-static.empty{color:var(--slate-400);}
 .rec-doc-file-mark{font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--purple-dark);}
-@media(max-width:820px){.rec-exec-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.rec-detail-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:820px){.rec-exec-kpis{flex-wrap:wrap;}.rec-exec-kpi{flex:1 1 45%;border-right:none;border-bottom:1px solid var(--slate-100);}.rec-exec-body-grid{grid-template-columns:1fr;}.rec-detail-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:520px){.rec-detail-info-grid{grid-template-columns:1fr;}.rec-exec-header{padding-right:0;padding-top:40px;}}
 .rec-workspace{background:linear-gradient(180deg,rgba(245,243,255,.55) 0%,#fff 48%);border:1px solid rgba(124,58,237,.18);border-radius:16px;padding:18px 20px 20px;box-shadow:0 2px 10px rgba(124,58,237,.06);margin-top:18px;}
 .rec-workspace.rec-workspace--pipeline{background:#fff;}
@@ -1975,37 +2017,58 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <div id="modal-rec-vacancy-detail" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-vacancy-detail')">
   <div class="modal-card rec-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
     <div class="rec-detail-toolbar">
-      <button type="button" class="rec-detail-edit-btn" id="rec-detail-edit-btn" onclick="recEditFromDetail()" aria-label="Editar vacante" title="Editar vacante"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <button type="button" class="rec-detail-edit-text-btn" id="rec-detail-edit-btn" onclick="recEditFromDetail()" aria-label="Editar vacante" title="Editar vacante"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
       <button type="button" class="modal-close" onclick="closeModal('modal-rec-vacancy-detail')" aria-label="Cerrar">✕</button>
     </div>
     <header class="rec-exec-header">
+      <p class="rec-exec-kicker">Vacante</p>
       <h2 id="rec-detail-vac-title">—</h2>
-      <p class="rec-exec-subline" id="rec-detail-subline">—</p>
       <div class="rec-exec-header-meta">
+        <span class="rec-exec-subline" id="rec-detail-subline">—</span>
+        <span class="rec-exec-header-meta-sep" aria-hidden="true">·</span>
         <span id="rec-detail-status-badge" class="rec-status-badge rec-status-badge--ACTIVE">—</span>
-        <span id="rec-detail-responsible-line">Responsable: —</span>
+        <span class="rec-exec-header-meta-sep" aria-hidden="true">·</span>
+        <span class="rec-exec-header-resp" id="rec-detail-responsible-line"><span id="rec-detail-resp-icon" aria-hidden="true"></span><span id="rec-detail-resp-text">—</span></span>
       </div>
     </header>
-    <div class="rec-exec-header-accent" aria-hidden="true"></div>
     <div class="rec-exec-kpis" id="rec-exec-kpis" aria-label="Indicadores ejecutivos">
       <div class="rec-exec-kpi rec-exec-kpi--coverage" id="rec-kpi-coverage">
-        <div class="rec-exec-kpi-label">Cobertura</div>
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--coverage" id="rec-kpi-icon-coverage" aria-hidden="true"></span><div class="rec-exec-kpi-label">Cobertura</div></div>
         <div class="rec-exec-kpi-val" id="rec-kpi-coverage-val">—</div>
         <div class="rec-exec-cov-pos" id="rec-kpi-coverage-pos"></div>
         <div class="rec-exec-cov-bar"><div class="rec-exec-cov-bar-fill" id="rec-kpi-coverage-bar" style="width:0%"></div></div>
-        <div class="rec-exec-cov-pct" id="rec-kpi-coverage-pct"></div>
       </div>
-      <div class="rec-exec-kpi rec-exec-kpi--process" id="rec-kpi-inprocess-card"><div class="rec-exec-kpi-label">En proceso</div><div class="rec-exec-kpi-val" id="rec-kpi-inprocess">—</div></div>
-      <div class="rec-exec-kpi rec-exec-kpi--rejection" id="rec-kpi-rejection-card"><div class="rec-exec-kpi-label">Rechazo</div><div class="rec-exec-kpi-val" id="rec-kpi-rejection">—</div></div>
-      <div class="rec-exec-kpi rec-exec-kpi--target rec-exec-kpi--target-none" id="rec-kpi-target-card"><div class="rec-exec-kpi-label">Objetivo</div><div class="rec-exec-kpi-target-row"><span class="rec-exec-kpi-dot" aria-hidden="true"></span><span class="rec-exec-kpi-target-val" id="rec-kpi-target">—</span></div></div>
-      <div class="rec-exec-kpi rec-exec-kpi--days" id="rec-kpi-days-card"><div class="rec-exec-kpi-label">Días desde apertura</div><div class="rec-exec-kpi-val" id="rec-kpi-days-open">—</div></div>
+      <div class="rec-exec-kpi rec-exec-kpi--process" id="rec-kpi-inprocess-card">
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--process" id="rec-kpi-icon-process" aria-hidden="true"></span><div class="rec-exec-kpi-label">En proceso</div></div>
+        <div class="rec-exec-kpi-val" id="rec-kpi-inprocess">—</div>
+      </div>
+      <div class="rec-exec-kpi rec-exec-kpi--rejection" id="rec-kpi-rejection-card">
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--rejection" id="rec-kpi-icon-rejection" aria-hidden="true"></span><div class="rec-exec-kpi-label">Rechazo</div></div>
+        <div class="rec-exec-kpi-val" id="rec-kpi-rejection">—</div>
+      </div>
+      <div class="rec-exec-kpi rec-exec-kpi--target rec-exec-kpi--target-none" id="rec-kpi-target-card">
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--target" id="rec-kpi-icon-target" aria-hidden="true"></span><div class="rec-exec-kpi-label">Objetivo</div></div>
+        <div class="rec-exec-kpi-target-row"><span class="rec-exec-kpi-dot" aria-hidden="true"></span><span class="rec-exec-kpi-target-val" id="rec-kpi-target">—</span></div>
+      </div>
+      <div class="rec-exec-kpi rec-exec-kpi--days" id="rec-kpi-days-card">
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--days" id="rec-kpi-icon-days" aria-hidden="true"></span><div class="rec-exec-kpi-label">Días desde apertura</div></div>
+        <div class="rec-exec-kpi-val" id="rec-kpi-days-open">—</div>
+      </div>
     </div>
-    <div class="rec-detail-block" id="rec-detail-stages-block">
-      <div class="rec-detail-stages-head">
-        <h4>Etapas del proceso</h4>
-        <button type="button" class="rec-stages-link-btn" id="rec-stages-configure-btn" onclick="recStagesOpenEditor()">Configurar</button>
+    <div class="rec-exec-process-card" id="rec-detail-stages-block">
+      <div class="rec-exec-section-head">
+        <div class="rec-exec-section-head-main">
+          <span class="rec-exec-section-icon" id="rec-detail-process-icon" aria-hidden="true"></span>
+          <h4 class="rec-exec-section-title">Proceso de selección</h4>
+        </div>
+        <button type="button" class="rec-stages-config-btn" id="rec-stages-configure-btn" onclick="recStagesOpenEditor()"><span id="rec-stages-config-icon" aria-hidden="true"></span> Configurar etapas</button>
       </div>
-      <p class="rec-stages-summary" id="rec-stages-summary">—</p>
+      <div id="rec-stages-rail-wrap" class="rec-process-rail-wrap">
+        <div id="rec-stages-rail" class="rec-process-rail" role="list" aria-label="Etapas del proceso"></div>
+      </div>
+      <p class="rec-stages-summary hidden" id="rec-stages-summary" aria-hidden="true">—</p>
+      <p class="rec-exec-section-sub">Resumen del pipeline</p>
+      <div id="rec-detail-funnel"></div>
       <div id="rec-stages-editor" class="rec-stages-editor hidden" aria-hidden="true">
         <p class="rec-stages-editor-hint">Arrastra o usa mover arriba/abajo. Las etapas con candado son obligatorias.</p>
         <div id="rec-stages-editor-list" class="rec-stages-list" role="list"></div>
@@ -2032,43 +2095,52 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
     </div>
-    <div class="rec-detail-block">
-      <h4>Distribución del proceso</h4>
-      <div id="rec-detail-funnel"></div>
-    </div>
-    <div class="rec-detail-block">
-      <h4>Información general</h4>
-      <div class="rec-detail-info-grid">
-        <div class="rec-detail-field rec-info-tile"><label>Cliente / empresa</label><span id="rec-detail-client">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Ubicación</label><span id="rec-detail-location">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Posiciones</label><span id="rec-detail-positions">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Fecha de apertura</label><span id="rec-detail-opened">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Fecha objetivo</label><span id="rec-detail-target-coverage">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Estado</label><span id="rec-detail-status">—</span></div>
-        <div class="rec-detail-field rec-info-tile"><label>Responsable</label><span id="rec-detail-responsible">—</span></div>
+    <div class="rec-exec-body-grid">
+      <div class="rec-exec-main">
+        <div class="rec-exec-panel-card">
+          <div class="rec-exec-section-head" style="margin-bottom:10px;">
+            <div class="rec-exec-section-head-main">
+              <span class="rec-exec-section-icon" id="rec-detail-info-icon" aria-hidden="true"></span>
+              <h4 class="rec-exec-section-title">Información general</h4>
+            </div>
+          </div>
+          <div class="rec-detail-info-grid">
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-client" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Cliente / empresa</label><span id="rec-detail-client">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-loc" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Ubicación</label><span id="rec-detail-location">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-pos" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Posiciones</label><span id="rec-detail-positions">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-opened" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Fecha de apertura</label><span id="rec-detail-opened">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-target" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Fecha objetivo</label><span id="rec-detail-target-coverage">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-status" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Estado</label><span id="rec-detail-status">—</span></div></div>
+            <div class="rec-detail-field rec-info-tile"><span class="rec-detail-field-icon" id="rec-detail-icon-resp" aria-hidden="true"></span><div class="rec-detail-field-body"><label>Responsable</label><span id="rec-detail-responsible">—</span></div></div>
+          </div>
+        </div>
+        <div class="rec-exec-panel-card rec-detail-block--acc" style="margin-top:14px;padding:0;border:none;background:transparent;box-shadow:none;">
+          <button type="button" class="rec-detail-acc-trigger rec-detail-acc-trigger--premium" id="rec-detail-jd-trigger" aria-expanded="false" aria-controls="rec-detail-jd-body" onclick="recDetailToggleAcc('jd')">
+            <span class="rec-detail-acc-trigger-main"><span class="rec-exec-section-icon" id="rec-detail-jd-icon" aria-hidden="true"></span><span>Job description</span></span>
+            <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <p id="rec-detail-jd-body" class="rec-detail-acc-body hidden empty" role="region" aria-labelledby="rec-detail-jd-trigger">Sin descripción registrada.</p>
+        </div>
       </div>
-    </div>
-    <div class="rec-detail-block rec-detail-block--acc">
-      <button type="button" class="rec-detail-acc-trigger" id="rec-detail-jd-trigger" aria-expanded="false" aria-controls="rec-detail-jd-body" onclick="recDetailToggleAcc('jd')">
-        <span>Job Description</span>
-        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <p id="rec-detail-jd-body" class="rec-detail-acc-body hidden empty" role="region" aria-labelledby="rec-detail-jd-trigger">Sin descripción registrada.</p>
-    </div>
-    <div class="rec-detail-block rec-detail-block--acc">
-      <button type="button" class="rec-detail-acc-trigger" id="rec-detail-notes-trigger" aria-expanded="false" aria-controls="rec-detail-notes-body" onclick="recDetailToggleAcc('notes')">
-        <span>Notas</span>
-        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <p id="rec-detail-notes-body" class="rec-detail-acc-body hidden empty" role="region" aria-labelledby="rec-detail-notes-trigger">Sin notas adicionales.</p>
-    </div>
-    <div class="rec-detail-block" id="rec-detail-files-block">
-      <h4>Archivos</h4>
-      <div class="rec-detail-files-panel">
-      <div class="rec-detail-files-actions">
-        <span style="font-size:12px;color:var(--slate-500);">Documentos de la vacante</span>
-        <button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recVacDocsToggleForm(true)">+ Agregar archivo</button>
-      </div>
+      <div class="rec-exec-aside">
+        <div class="rec-detail-notes-card" id="rec-detail-notes-block">
+          <div class="rec-exec-section-head" style="margin-bottom:8px;">
+            <div class="rec-exec-section-head-main">
+              <span class="rec-exec-section-icon" id="rec-detail-notes-icon" aria-hidden="true"></span>
+              <h4 class="rec-exec-section-title">Notas internas</h4>
+            </div>
+          </div>
+          <p id="rec-detail-notes-body" class="rec-detail-notes-body-static empty" role="region">Sin notas internas.</p>
+        </div>
+        <div class="rec-exec-panel-card" id="rec-detail-files-block">
+          <div class="rec-exec-section-head" style="margin-bottom:8px;">
+            <div class="rec-exec-section-head-main">
+              <span class="rec-exec-section-icon" id="rec-detail-files-icon" aria-hidden="true"></span>
+              <h4 class="rec-exec-section-title">Archivos</h4>
+            </div>
+            <button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recVacDocsToggleForm(true)">+ Agregar archivo</button>
+          </div>
+          <div class="rec-detail-files-panel" style="border:none;padding:0;background:transparent;">
       <div id="rec-vac-docs-form-wrap" class="rec-detail-files-form hidden">
         <div id="rec-vac-docs-drop-zone" class="tc-docs-upload-zone">
           <p style="font-size:12px;color:var(--slate-600);margin:0 0 10px;">Arrastra un archivo aquí o selecciónalo abajo (máx. 10 MB).</p>
@@ -2088,6 +2160,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <p id="rec-vac-docs-err" class="hidden" style="font-size:12px;color:#DC2626;margin:8px 0 0;"></p>
       <div id="rec-vac-docs-list" class="rec-detail-files-list"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -7546,11 +7620,66 @@ function recMergeVacancyInState(vacancy){
   else st.allVacancies.push(vacancy);
 }
 function recDetailResetAccordions(){
-  ['jd','notes'].forEach(function(key){
-    const trigger=document.getElementById('rec-detail-'+key+'-trigger');
-    const body=document.getElementById('rec-detail-'+key+'-body');
-    if(trigger){ trigger.setAttribute('aria-expanded','false'); }
-    if(body){ body.classList.add('hidden'); }
+  const trigger=document.getElementById('rec-detail-jd-trigger');
+  const body=document.getElementById('rec-detail-jd-body');
+  if(trigger){ trigger.setAttribute('aria-expanded','false'); }
+  if(body){ body.classList.add('hidden'); }
+}
+function recVacDetailIconSvg(kind){
+  if(kind==='kpi-coverage'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+  }
+  if(kind==='kpi-process'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>';
+  }
+  if(kind==='kpi-rejection'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>';
+  }
+  if(kind==='kpi-target'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+  }
+  if(kind==='kpi-days'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+  }
+  if(kind==='process'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>';
+  }
+  if(kind==='settings'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
+  }
+  if(kind==='pin') return recCandPortfolioIconSvg('pin');
+  if(kind==='calendar') return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>';
+  if(kind==='user') return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  if(kind==='status') return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 12 2 2 4-4"/></svg>';
+  if(kind==='clip') return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  if(kind==='file-empty') return recCandFormIconSvg('file');
+  return recVacFormIconSvg(kind);
+}
+function recVacDetailApplyDecorIcons(){
+  const map={
+    'rec-kpi-icon-coverage':'kpi-coverage',
+    'rec-kpi-icon-process':'kpi-process',
+    'rec-kpi-icon-rejection':'kpi-rejection',
+    'rec-kpi-icon-target':'kpi-target',
+    'rec-kpi-icon-days':'kpi-days',
+    'rec-detail-process-icon':'process',
+    'rec-stages-config-icon':'settings',
+    'rec-detail-info-icon':'info',
+    'rec-detail-icon-client':'info',
+    'rec-detail-icon-loc':'pin',
+    'rec-detail-icon-pos':'kpi-coverage',
+    'rec-detail-icon-opened':'calendar',
+    'rec-detail-icon-target':'calendar',
+    'rec-detail-icon-status':'status',
+    'rec-detail-icon-resp':'user',
+    'rec-detail-resp-icon':'user',
+    'rec-detail-jd-icon':'description',
+    'rec-detail-notes-icon':'notes',
+    'rec-detail-files-icon':'clip',
+  };
+  Object.keys(map).forEach(function(id){
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=recVacDetailIconSvg(map[id]);
   });
 }
 function recDetailToggleAcc(which){
@@ -7580,6 +7709,7 @@ async function recOpenVacancyDetail(vacancyId,ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
   recVacDocsFillCategorySelect();
   recVacDocsToggleForm(false);
+  recVacDetailApplyDecorIcons();
   recDetailResetAccordions();
   recStagesResetEditor();
   openModal('modal-rec-vacancy-detail');
@@ -7650,24 +7780,44 @@ function recRenderExecutiveKpis(v){
 function recRenderFunnelDistribution(v){
   const el=document.getElementById('rec-detail-funnel');
   if(!el) return;
-  const total=(v.applicationSummary&&v.applicationSummary.total)||0;
   const dist=v.stageDistribution||[];
-  if(!total||!dist.length){
-    el.innerHTML='<p class="rec-funnel-empty">Aún no hay candidatos en este proceso.</p>';
+  if(!dist.length){
+    el.innerHTML='<p class="rec-funnel-empty">Sin etapas configuradas.</p>';
     return;
   }
   const max=Math.max(1,...dist.map(function(s){ return s.count||0; }));
-  const steps=Math.max(1,dist.length);
-  el.innerHTML='<div class="rec-funnel-list">'+dist.map(function(s,i){
-    const w=Math.round(((s.count||0)/max)*100);
-    const t=steps<=1?1:i/(steps-1);
-    const alpha=(0.24+t*0.36).toFixed(2);
-    return '<div class="rec-funnel-row">'+
-      '<span class="rec-funnel-name">'+tcEsc(s.name||s.key||'—')+'</span>'+
-      '<span class="rec-funnel-count">'+String(s.count||0)+'</span>'+
-      '<div class="rec-funnel-bar-wrap"><div class="rec-funnel-bar-fill" style="width:'+w+'%;opacity:1;background:rgba(124,58,237,'+alpha+')"></div></div>'+
+  el.innerHTML='<div class="rec-pipeline-pulse-grid">'+dist.map(function(s){
+    const n=s.count||0;
+    const w=n?Math.max(12,Math.round((n/max)*100)):0;
+    const active=n>0;
+    return '<div class="rec-pipeline-pulse-cell'+(active?' rec-pipeline-pulse-cell--active':'')+'">'+
+      '<p class="rec-pipeline-pulse-name">'+tcEsc(s.name||s.key||'—')+'</p>'+
+      '<p class="rec-pipeline-pulse-count">'+String(n)+'</p>'+
+      '<div class="rec-pipeline-pulse-bar"><div class="rec-pipeline-pulse-bar-fill" style="width:'+w+'%"></div></div>'+
       '</div>';
   }).join('')+'</div>';
+}
+function recStagesRenderRail(v){
+  const rail=document.getElementById('rec-stages-rail');
+  if(!rail) return;
+  const dist=(v&&v.stageDistribution)||[];
+  if(!dist.length){
+    rail.innerHTML='<p class="rec-funnel-empty" style="min-width:100%;">Sin etapas configuradas.</p>';
+    return;
+  }
+  rail.innerHTML=dist.map(function(s){
+    return '<div class="rec-process-rail-step" role="listitem">'+
+      '<span class="rec-process-rail-dot" aria-hidden="true"></span>'+
+      '<span class="rec-process-rail-label">'+tcEsc(s.name||s.key||'—')+'</span></div>';
+  }).join('');
+}
+function recStagesSetProcessViewVisible(visible){
+  const wrap=document.getElementById('rec-stages-rail-wrap');
+  const sub=document.querySelector('#rec-detail-stages-block .rec-exec-section-sub');
+  const funnel=document.getElementById('rec-detail-funnel');
+  if(wrap) wrap.classList.toggle('hidden',!visible);
+  if(sub) sub.classList.toggle('hidden',!visible);
+  if(funnel) funnel.classList.toggle('hidden',!visible);
 }
 var REC_REQUIRED_STAGE_KEYS=['NEW','HIRED','REJECTED'];
 function recStageIsRequiredKey(key){ return REC_REQUIRED_STAGE_KEYS.indexOf(key)>=0; }
@@ -7722,8 +7872,9 @@ function recStagesResetEditor(){
   var summary=document.getElementById('rec-stages-summary');
   var cfgBtn=document.getElementById('rec-stages-configure-btn');
   if(panel){ panel.classList.add('hidden'); panel.setAttribute('aria-hidden','true'); }
-  if(summary) summary.classList.remove('hidden');
+  if(summary) summary.classList.add('hidden');
   if(cfgBtn) cfgBtn.classList.remove('hidden');
+  recStagesSetProcessViewVisible(true);
 }
 function recStagesSetEditorErr(msg){
   var el=document.getElementById('rec-stages-editor-err');
@@ -7732,14 +7883,7 @@ function recStagesSetEditorErr(msg){
   else{ el.textContent=''; el.classList.add('hidden'); }
 }
 function recStagesRenderSummary(v){
-  var el=document.getElementById('rec-stages-summary');
-  if(!el) return;
-  var dist=(v&&v.stageDistribution)||[];
-  if(!dist.length){
-    el.textContent='Sin etapas configuradas.';
-    return;
-  }
-  el.textContent=dist.map(function(s){ return s.name||s.key||'—'; }).join(' → ');
+  recStagesRenderRail(v);
 }
 function recStagesLockSvg(){
   return '<svg class="rec-stage-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
@@ -7939,6 +8083,7 @@ async function recStagesOpenEditor(){
     if(panel){ panel.classList.remove('hidden'); panel.setAttribute('aria-hidden','false'); }
     if(summary) summary.classList.add('hidden');
     if(cfgBtn) cfgBtn.classList.add('hidden');
+    recStagesSetProcessViewVisible(false);
     recStagesRenderEditorList();
   }catch(e){
     recStagesSetEditorErr(e.message||'No se pudo cargar la configuración.');
@@ -7983,8 +8128,9 @@ function recRenderVacancyDetail(){
     badge.className='rec-status-badge rec-status-badge--'+(v.status||'ACTIVE');
   }
   const pa=v.primaryAssignee&&v.primaryAssignee.employee;
-  const respLine=document.getElementById('rec-detail-responsible-line');
-  if(respLine) respLine.textContent='Responsable: '+(pa&&pa.fullName?pa.fullName:'Sin responsable');
+  const respText=document.getElementById('rec-detail-resp-text');
+  if(respText) respText.textContent=pa&&pa.fullName?pa.fullName:'Sin responsable';
+  recVacDetailApplyDecorIcons();
   recRenderExecutiveKpis(v);
   recRenderFunnelDistribution(v);
   if(!recStageEditorEnsure().open) recStagesRenderSummary(v);
@@ -8009,7 +8155,7 @@ function recRenderVacancyDetail(){
   const notesBody=document.getElementById('rec-detail-notes-body');
   if(notesBody){
     const notes=(v.notes||'').trim();
-    notesBody.textContent=notes||'Sin notas adicionales.';
+    notesBody.textContent=notes||'Sin notas internas.';
     notesBody.classList.toggle('empty',!notes);
   }
 }
@@ -8040,7 +8186,11 @@ function recVacDocsRenderList(){
   const list=document.getElementById('rec-vac-docs-list');
   if(!list) return;
   if(!recVacDocsItems.length){
-    list.innerHTML='<p style="font-size:12px;color:var(--slate-500);margin:8px 0 0;">Sin archivos todavía.</p>';
+    list.innerHTML='<div class="rec-detail-files-empty">'+
+      '<div class="rec-detail-files-empty-icon">'+recVacDetailIconSvg('file-empty')+'</div>'+
+      '<p>Sin archivos todavía.</p>'+
+      '<button type="button" class="rec-stages-ghost-btn" onclick="recVacDocsToggleForm(true)">+ Agregar archivo</button>'+
+      '</div>';
     return;
   }
   list.innerHTML=recVacDocsItems.map(function(d){

@@ -60,7 +60,7 @@ console.log('\n=== Recruitment 1B.5 — UI estática ===\n');
 
 check(/rec-detail-edit-btn/.test(indexHtml), 'botón lápiz editar');
 check(/aria-label="Editar vacante"/.test(indexHtml), 'aria-label editar');
-check(!/rec-btn-edit[\s\S]*Editar/.test(indexHtml.match(/modal-rec-vacancy-detail[\s\S]*?modal-evaluacion/)?.[0] || ''), 'sin botón Editar texto');
+check(/rec-detail-edit-text-btn/.test(indexHtml) && /> Editar</.test(indexHtml.match(/modal-rec-vacancy-detail[\s\S]*?modal-rec-candidate-detail/)?.[0] || ''), 'botón Editar en toolbar');
 check(/rec-detail-toolbar/.test(indexHtml), 'toolbar separada de cierre');
 check(/rec-exec-kpis/.test(indexHtml), 'micro-KPIs');
 check(/rec-kpi-coverage-bar/.test(indexHtml), 'barra cobertura');
