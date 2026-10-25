@@ -111,7 +111,7 @@ check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
 check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
 check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');
 check(/check-duplicates/.test(indexHtml), 'preflight duplicados UI');
-check(/recCandUploadCvFile/.test(indexHtml), 'upload CV UI');
+check(/recCandUploadCvFile/.test(indexHtml) && /rec-cand-form-cv-file/.test(indexHtml), 'upload CV UI ficha y alta');
 check(/max-width:min\(920px/.test(indexHtml), 'modal detalle más ancho');
 
 console.log('\n=== Recruitment 1D.2.1 — flujo candidato/vacante ===\n');

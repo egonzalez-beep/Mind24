@@ -140,6 +140,17 @@ check(!/rec-cand-row-chevron/.test(indexHtml.match(/function recCandBuildPortfol
 check(/contextVacancyId/.test(routes), 'contextVacancyId en listado');
 check(/buildPrimaryActivePreviewByCandidateId/.test(candidateSvc), 'preview proceso activo listado');
 
+console.log('\n=== Recruitment 1I — formulario nuevo candidato premium (estático) ===\n');
+
+check(/rec-cand-form-header/.test(indexHtml) && /Reclutamiento/.test(indexHtml.match(/modal-rec-candidate-form[\s\S]*?rec-cand-form-body/)?.[0] || ''), 'header reclutamiento');
+check(/rec-cand-form-process-block/.test(indexHtml), 'bloque proceso destacado');
+check(/Perfil del candidato/.test(indexHtml) && !/Clasificación/.test(indexHtml.match(/modal-rec-candidate-form[\s\S]*?<\/div>\s*<\/div>\s*<div id="modal-rec-candidate-add-vacancy"/)?.[0] || indexHtml), 'perfil del candidato sin clasificación');
+check(/rec-cand-form-cv-panel/.test(indexHtml) && /recCandFormCvPicked/.test(indexHtml), 'CV en alta con drop zone');
+check(/recCandUploadCvForCandidate/.test(indexHtml) && /candFormPendingCvFile/.test(indexHtml), 'CV pendiente al crear');
+check(/Guardar candidato/.test(indexHtml), 'CTA guardar candidato');
+check(/recCandFormIconSvg/.test(indexHtml), 'SVGs formulario');
+check(!/Registra talento/.test(indexHtml.match(/modal-rec-candidate-form[\s\S]*?rec-cand-form-footer/)?.[0] || ''), 'sin subtítulo redundante');
+
 console.log('\n=== Recruitment 1F.2 — cierre visual ficha (estático) ===\n');
 
 check(/max-width:min\(1180px/.test(indexHtml), 'modal ancho desktop');
