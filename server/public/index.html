@@ -252,15 +252,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
 .tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .rec-dash-topbar .topbar-subtitle{display:none;}
-.rec-page-content{padding-top:4px;}
-.rec-module-head-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
-.rec-module-head-actions{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end;min-width:0;flex-wrap:wrap;}
-.rec-global-search{flex:1;min-width:180px;max-width:360px;margin:0;font-size:13px;padding:8px 12px;border-radius:10px;}
-.rec-module-nav--tabs{margin-bottom:0;flex-shrink:0;}
+.rec-dash-topbar{height:auto;min-height:56px;padding:8px 28px;flex-wrap:wrap;gap:8px 12px;}
+.rec-topbar-cluster{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;min-width:0;}
+.rec-topbar-cluster .topbar-title{margin:0;line-height:1.2;}
+.rec-topbar-vac-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;flex-wrap:wrap;}
+.rec-global-search{width:min(280px,42vw);min-width:160px;margin:0;font-size:13px;padding:7px 11px;border-radius:10px;}
+.rec-module-nav--inline{border:none;background:transparent;padding:0;margin:0;gap:0;width:auto;max-width:none;}
+.rec-module-nav--inline .rec-module-tab{padding:6px 12px;font-size:13px;border-radius:0;background:transparent;box-shadow:none;}
+.rec-module-nav--inline .rec-module-tab--active{background:transparent;box-shadow:none;color:var(--purple-dark);}
+.rec-module-nav--inline .rec-module-tab--active::after{left:10px;right:10px;bottom:2px;}
+.rec-page-content{padding-top:0;}
 .rec-vacancies-stage{position:relative;margin-bottom:0;}
-.rec-vac-band{padding:0 0 10px;border-bottom:1px solid rgba(226,232,240,.85);margin-bottom:10px;}
-.rec-vac-band-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
-.rec-vac-local-search{flex:1;min-width:160px;max-width:280px;margin:0;font-size:12px;padding:7px 11px;border-radius:9px;}
+.rec-vac-band{padding:0 0 8px;border-bottom:1px solid rgba(226,232,240,.85);margin-bottom:8px;}
+.rec-vac-band-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
 .rec-carousel-meta{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .rec-carousel-range{font-size:11px;font-weight:600;color:var(--slate-500);min-width:72px;text-align:center;}
 .rec-carousel-arrow{width:30px;height:30px;border:1px solid var(--slate-200);background:#fff;border-radius:999px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);display:flex;align-items:center;justify-content:center;padding:0;transition:var(--tr-fast);}
@@ -270,8 +274,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-btn-new{border:1px solid rgba(124,58,237,.35);background:#fff;color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-btn-new:hover{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
 .rec-section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin-bottom:12px;}
-.rec-filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.rec-filter-chip{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;transition:var(--tr-fast);}
+.rec-filter-bar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;flex:1;min-width:0;}
+.rec-filter-chip{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;cursor:pointer;transition:var(--tr-fast);}
 .rec-filter-chip:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
 .rec-filter-chip.active{background:var(--purple-light);border-color:rgba(124,58,237,.45);color:var(--purple-dark);}
 .rec-module-nav{display:flex;gap:2px;margin-bottom:18px;padding:3px;background:rgba(248,250,252,.9);border:1px solid var(--slate-200);border-radius:11px;width:fit-content;max-width:100%;}
@@ -445,20 +449,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-carousel{flex:1;display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-behavior:smooth;scrollbar-width:thin;min-width:0;}
 .rec-carousel::-webkit-scrollbar{height:5px;}
 .rec-carousel::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
-.rec-vac-card{flex:0 0 min(240px,78vw);min-width:200px;max-width:260px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:10px 11px 9px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 1px 4px rgba(15,23,42,.04);position:relative;}
-.rec-vac-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px;}
-.rec-vac-selected-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--purple);color:#fff;pointer-events:none;box-shadow:0 1px 4px rgba(124,58,237,.25);}
-.rec-vac-detail-btn{flex-shrink:0;width:26px;height:26px;border:1px solid var(--slate-200);background:#fff;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;transition:var(--tr-fast);}
+.rec-vac-card{flex:0 0 min(228px,76vw);min-width:196px;max-width:252px;background:#fff;border:1px solid var(--slate-200);border-radius:11px;padding:7px 9px 6px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.04);position:relative;}
+.rec-vac-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
+.rec-vac-card-head-actions{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.rec-vac-selected-badge{font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;background:var(--purple);color:#fff;white-space:nowrap;line-height:1.2;}
+.rec-vac-detail-btn{flex-shrink:0;width:24px;height:24px;border:1px solid var(--slate-200);background:#fff;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;transition:var(--tr-fast);}
 .rec-vac-detail-btn:hover{border-color:rgba(124,58,237,.45);color:var(--purple-dark);background:var(--purple-light);}
 .rec-vac-detail-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.rec-vac-card-resp{font-size:10px;color:var(--slate-500);margin-top:6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rec-vac-card:hover{border-color:rgba(124,58,237,.32);box-shadow:0 4px 14px rgba(124,58,237,.07);}
 .rec-vac-card.selected{background:linear-gradient(180deg,rgba(245,243,255,.95),#fff);border-color:rgba(124,58,237,.38);box-shadow:0 0 0 1px rgba(124,58,237,.22),0 4px 14px rgba(124,58,237,.08);}
-.rec-vac-card-title{font-size:13px;font-weight:700;color:var(--primary);line-height:1.3;margin-bottom:2px;padding-right:52px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rec-vac-card-client{font-size:11px;color:var(--slate-600);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rec-vac-card-loc{font-size:10px;color:var(--slate-500);margin-bottom:6px;min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rec-vac-card-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:0;}
-.rec-status-badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;}
+.rec-vac-card-title{flex:1;min-width:0;font-size:12px;font-weight:700;color:var(--primary);line-height:1.25;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-vac-card-row{display:flex;align-items:center;gap:6px;margin-top:3px;min-width:0;}
+.rec-vac-card-row--meta{justify-content:space-between;gap:6px;margin-top:4px;}
+.rec-vac-card-chip{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--slate-600);min-width:0;flex:1;}
+.rec-vac-card-chip--loc{flex:0 1 auto;max-width:48%;}
+.rec-vac-card-chip-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2;}
+.rec-vac-card-icon{display:flex;align-items:center;color:var(--slate-400);flex-shrink:0;}
+.rec-vac-card-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-vac-card-assignee{display:flex;align-items:center;justify-content:flex-end;gap:4px;font-size:10px;color:var(--slate-500);min-width:0;flex:1;}
+.rec-vac-card-assignee .rec-vac-card-chip-text{max-width:100%;}
+.rec-status-badge{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;flex-shrink:0;}
 .rec-status-badge--ACTIVE{background:rgba(16,185,129,.12);color:#047857;}
 .rec-status-badge--PAUSED{background:rgba(245,158,11,.14);color:#b45309;}
 .rec-status-badge--COVERED{background:rgba(59,130,246,.12);color:#1d4ed8;}
@@ -665,7 +675,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-kanban-card-foot{font-size:9px;font-weight:600;color:var(--slate-400);margin:6px 0 0;padding-top:5px;border-top:1px solid var(--slate-100);}
 .rec-kanban-empty-msg{font-size:12px;color:var(--slate-500);margin:0 0 8px;line-height:1.45;}
 .rec-kanban-loading{font-size:13px;color:var(--slate-500);padding:8px 2px;}
-@media(max-width:720px){.rec-module-head-actions{width:100%;justify-content:stretch;}.rec-global-search{max-width:none;}.rec-carousel-nav{display:none;}}
+@media(max-width:720px){.rec-topbar-vac-tools{width:100%;margin-left:0;margin-right:0;order:3;}.rec-global-search{flex:1;width:auto;max-width:none;}.rec-carousel-nav{display:none;}.rec-vac-band-head{align-items:flex-start;}}
 .rec-btn-edit{border:none;background:transparent;color:var(--purple);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;flex-shrink:0;}
 .rec-btn-edit:hover{text-decoration:underline;}
 @media(max-width:720px){.rec-workspace{padding:16px;}}
@@ -2459,26 +2469,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </aside>
   <main class="main-content">
     <div class="topbar rec-dash-topbar">
-      <div><div class="topbar-title">Reclutamiento</div></div>
-      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
-    </div>
-    <div class="page-content rec-page-content">
-      <div class="rec-module-head-row">
-        <nav class="rec-module-nav rec-module-nav--tabs" aria-label="Sección de reclutamiento">
+      <div class="rec-topbar-cluster">
+        <div class="topbar-title">Reclutamiento</div>
+        <nav class="rec-module-nav rec-module-nav--inline" aria-label="Sección de reclutamiento">
           <button type="button" class="rec-module-tab rec-module-tab--active" id="rec-tab-vacancies" onclick="recSwitchModuleTab('vacancies')">Vacantes</button>
           <button type="button" class="rec-module-tab" id="rec-tab-candidates" onclick="recSwitchModuleTab('candidates')">Candidatos</button>
         </nav>
-        <div class="rec-module-head-actions">
-          <input type="search" id="rec-global-q" class="rec-global-search form-input" placeholder="Buscar vacantes o candidatos…" autocomplete="off" aria-label="Buscar en reclutamiento">
-          <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
-        </div>
       </div>
+      <div class="rec-topbar-vac-tools" id="rec-topbar-vac-tools">
+        <input type="search" id="rec-global-q" class="rec-global-search form-input" placeholder="Buscar vacantes…" autocomplete="off" aria-label="Buscar vacantes">
+        <button type="button" class="rec-btn-new" onclick="recOpenVacancyModal('create')">+ Nueva vacante</button>
+      </div>
+      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
+    </div>
+    <div class="page-content rec-page-content">
       <div id="rec-pane-vacancies">
         <div id="rec-main-block">
           <div class="rec-vacancies-stage rec-vac-band">
-          <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
-          <div class="rec-vac-band-toolbar">
-            <input type="search" id="rec-vac-local-q" class="rec-vac-local-search form-input" placeholder="Buscar vacantes…" autocomplete="off" aria-label="Buscar vacantes">
+          <div class="rec-vac-band-head">
+            <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
             <div class="rec-carousel-meta">
               <span id="rec-carousel-range" class="rec-carousel-range">—</span>
               <button type="button" class="rec-carousel-arrow" id="rec-carousel-prev" aria-label="Vacantes anteriores" onclick="recCarouselScroll(-1)">‹</button>
@@ -7131,31 +7140,10 @@ function recBindRecruitmentShell(){
   if(st.recShellBound) return;
   st.recShellBound=true;
   const globalQ=document.getElementById('rec-global-q');
-  const localQ=document.getElementById('rec-vac-local-q');
-  function syncSearchInputs(from){
-    const val=from?from.value:'';
-    st.vacancySearchQuery=val;
-    if(localQ&&localQ!==from) localQ.value=val;
-    if(globalQ&&globalQ!==from&&st.moduleTab!=='candidates') globalQ.value=val;
-    recRenderCarousel();
-  }
-  if(localQ){
-    localQ.addEventListener('input',function(){ syncSearchInputs(localQ); });
-  }
   if(globalQ){
     globalQ.addEventListener('input',function(){
-      if(st.moduleTab==='candidates'){
-        const candQ=document.getElementById('rec-cand-q');
-        if(candQ){ candQ.value=globalQ.value; candQ.dispatchEvent(new Event('input',{bubbles:true})); }
-        return;
-      }
-      syncSearchInputs(globalQ);
-    });
-    globalQ.addEventListener('keydown',function(ev){
-      if(ev.key==='Enter'&&st.moduleTab==='candidates'){
-        ev.preventDefault();
-        recCandLoadList(false);
-      }
+      st.vacancySearchQuery=globalQ.value||'';
+      recRenderCarousel();
     });
   }
   const track=document.getElementById('rec-vacancy-carousel');
@@ -7214,6 +7202,28 @@ function recKanbanToggleCol(vacancyId,stageId){
 }
 function recDetailIconSvg(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+}
+function recVacCardIconSvg(kind){
+  if(kind==='client'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>';
+  }
+  if(kind==='loc'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+}
+function recVacCardAddChip(row,iconKind,text,extraClass){
+  const chip=document.createElement('span');
+  chip.className='rec-vac-card-chip'+(extraClass?(' '+extraClass):'');
+  const icon=document.createElement('span');
+  icon.className='rec-vac-card-icon';
+  icon.innerHTML=recVacCardIconSvg(iconKind);
+  const txt=document.createElement('span');
+  txt.className='rec-vac-card-chip-text';
+  txt.textContent=text||'—';
+  chip.appendChild(icon);
+  chip.appendChild(txt);
+  row.appendChild(chip);
 }
 function recMergeVacancyInState(vacancy){
   if(!vacancy||!vacancy.id) return;
@@ -7979,6 +7989,14 @@ function recRenderCarousel(){
     const titleEl=document.createElement('div');
     titleEl.className='rec-vac-card-title';
     titleEl.textContent=v.title||'—';
+    const headActions=document.createElement('div');
+    headActions.className='rec-vac-card-head-actions';
+    if(isSel){
+      const selBadge=document.createElement('span');
+      selBadge.className='rec-vac-selected-badge';
+      selBadge.textContent='Seleccionada';
+      headActions.appendChild(selBadge);
+    }
     const detailBtn=document.createElement('button');
     detailBtn.type='button';
     detailBtn.className='rec-vac-detail-btn';
@@ -7986,37 +8004,36 @@ function recRenderCarousel(){
     detailBtn.title='Ver detalle de vacante';
     detailBtn.innerHTML=recDetailIconSvg();
     detailBtn.onclick=function(ev){ recOpenVacancyDetail(v.id,ev); };
+    headActions.appendChild(detailBtn);
     head.appendChild(titleEl);
-    head.appendChild(detailBtn);
+    head.appendChild(headActions);
     card.appendChild(head);
-    const clientEl=document.createElement('div');
-    clientEl.className='rec-vac-card-client';
-    clientEl.textContent=v.clientName||'—';
-    card.appendChild(clientEl);
-    const locEl=document.createElement('div');
-    locEl.className='rec-vac-card-loc';
-    locEl.textContent=v.location||'';
-    card.appendChild(locEl);
-    const meta=document.createElement('div');
-    meta.className='rec-vac-card-meta';
+    const rowLoc=document.createElement('div');
+    rowLoc.className='rec-vac-card-row rec-vac-card-row--split';
+    recVacCardAddChip(rowLoc,'client',v.clientName||'—',null);
+    if(v.location) recVacCardAddChip(rowLoc,'loc',v.location,'rec-vac-card-chip--loc');
+    card.appendChild(rowLoc);
+    const rowMeta=document.createElement('div');
+    rowMeta.className='rec-vac-card-row rec-vac-card-row--meta';
     const badge=document.createElement('span');
     badge.className='rec-status-badge rec-status-badge--'+v.status;
     badge.textContent=recVacancyStatusLabel(v.status);
-    meta.appendChild(badge);
-    card.appendChild(meta);
+    rowMeta.appendChild(badge);
     const pa=v.primaryAssignee&&v.primaryAssignee.employee;
     if(pa&&pa.fullName){
-      const resp=document.createElement('div');
-      resp.className='rec-vac-card-resp';
-      resp.textContent=pa.fullName;
-      card.appendChild(resp);
+      const assignee=document.createElement('span');
+      assignee.className='rec-vac-card-assignee';
+      const aIcon=document.createElement('span');
+      aIcon.className='rec-vac-card-icon';
+      aIcon.innerHTML=recVacCardIconSvg('person');
+      const aTxt=document.createElement('span');
+      aTxt.className='rec-vac-card-chip-text';
+      aTxt.textContent=pa.fullName;
+      assignee.appendChild(aIcon);
+      assignee.appendChild(aTxt);
+      rowMeta.appendChild(assignee);
     }
-    if(isSel){
-      const selBadge=document.createElement('span');
-      selBadge.className='rec-vac-selected-badge';
-      selBadge.textContent='Seleccionada';
-      card.appendChild(selBadge);
-    }
+    card.appendChild(rowMeta);
     track.appendChild(card);
   });
   requestAnimationFrame(function(){ recCarouselUpdateRange(); });
@@ -8146,12 +8163,12 @@ function recKanbanRender(vacancyId){
       const updated=recKanbanRelativeUpdated(app.updatedAt||c.updatedAt);
       html+='<div class="rec-kanban-card" draggable="true" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
         ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
+        '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
         '<div class="rec-kanban-card-top">'+
         '<span class="rec-kanban-card-avatar">'+tcEsc(recCandInitials(c.fullName))+'</span>'+
         '<div class="rec-kanban-card-main">'+
         '<p class="rec-kanban-card-name">'+tcEsc(c.fullName||'—')+'</p>'+
-        '<p class="rec-kanban-card-meta">'+tcEsc(prof)+'</p></div>'+
-        '<button type="button" class="rec-kanban-card-menu" aria-label="Opciones" onclick="event.stopPropagation()">⋮</button></div>'+
+        '<p class="rec-kanban-card-meta">'+tcEsc(prof)+'</p></div></div>'+
         '<div class="rec-kanban-card-row">'+
         (loc?'<span class="rec-kanban-card-loc">'+tcEsc(loc)+'</span>':'')+
         (src?'<span class="rec-kanban-card-source">'+tcEsc(src)+'</span>':'')+
@@ -8428,6 +8445,8 @@ function recSwitchModuleTab(tab){
   if(candPane) candPane.classList.toggle('hidden',st.moduleTab!=='candidates');
   if(tabVac) tabVac.classList.toggle('rec-module-tab--active',st.moduleTab==='vacancies');
   if(tabCand) tabCand.classList.toggle('rec-module-tab--active',st.moduleTab==='candidates');
+  const vacTools=document.getElementById('rec-topbar-vac-tools');
+  if(vacTools) vacTools.classList.toggle('hidden',st.moduleTab!=='vacancies');
   if(st.moduleTab==='candidates'){
     recCandBindFilters();
     if(!st.candidates.length&&!st.candidatesLoading) recCandLoadList(false);

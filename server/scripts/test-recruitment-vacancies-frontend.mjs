@@ -33,7 +33,7 @@ const modalCssBlock = indexHtml.match(/\/\* ══════ MODALS ═══�
 console.log('\n=== Recruitment 1B.1 — base ===\n');
 
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
-check(/rec-module-head-row/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'header módulo integrado sin duplicado en body');
+check(/rec-topbar-cluster/.test(indexHtml) && /rec-module-nav--inline/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'tabs Vacantes/Candidatos en topbar');
 check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
 check(/modal-rec-vacancy/.test(indexHtml) && /recSubmitVacancy/.test(indexHtml), 'modal crear/editar vacante');
 check(/\+ Nueva vacante/.test(indexHtml), 'CTA nueva vacante');
@@ -130,7 +130,8 @@ check(/id="rec-cand-profile"[^>]*select|select id="rec-cand-profile"/.test(index
 
 console.log('\n=== Recruitment 1G.1 — dashboard Vacantes + Pipeline ===\n');
 
-check(/rec-global-q/.test(indexHtml) && /rec-vac-local-q/.test(indexHtml), 'búsqueda global y local vacantes');
+check(/rec-global-q/.test(indexHtml) && !/rec-vac-local-q/.test(indexHtml) && /Buscar vacantes/.test(indexHtml), 'un solo buscador de vacantes en topbar');
+check(/recVacCardIconSvg/.test(indexHtml) && /rec-vac-card-chip/.test(indexHtml), 'cards vacante compactas con iconos SVG');
 check(/recCarouselScroll/.test(indexHtml) && /rec-carousel-range/.test(indexHtml), 'carrusel con rango y flechas');
 check(/recKanbanToggleCol/.test(indexHtml) && /rec-kanban-col--collapsed/.test(indexHtml), 'columnas Kanban compactables');
 check(/rec-kanban-card-avatar/.test(indexHtml) && /recKanbanRelativeUpdated/.test(indexHtml), 'tarjetas Kanban premium');
