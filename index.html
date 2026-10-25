@@ -283,31 +283,51 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-module-tab:hover{color:var(--purple-dark);}
 .rec-module-tab--active{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.05);}
 .rec-module-tab--active::after{content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:999px;background:linear-gradient(90deg,var(--purple),rgba(139,92,246,.5));}
-.rec-cand-head{margin-bottom:16px;}
-.rec-cand-head h2{font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin:0 0 6px;}
-.rec-cand-head p{font-size:13px;color:var(--slate-600);margin:0;line-height:1.45;max-width:520px;}
-.rec-cand-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-.rec-cand-count{font-size:12px;font-weight:600;color:var(--slate-500);}
-.rec-cand-filters{display:flex;flex-wrap:wrap;gap:8px 10px;margin-bottom:14px;align-items:flex-end;}
-.rec-cand-filters .form-input{min-width:140px;max-width:220px;margin:0;font-size:13px;padding:8px 10px;}
-.rec-cand-filters label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);display:block;margin-bottom:4px;}
-.rec-cand-filter-item{display:flex;flex-direction:column;}
-.rec-cand-arch-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate-600);padding-bottom:6px;}
+.rec-cand-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.rec-cand-head-row h2{font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin:0;}
+.rec-cand-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;padding:12px 14px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
+.rec-cand-toolbar-search{flex:1;min-width:200px;}
+.rec-cand-toolbar-search .form-input{width:100%;margin:0;font-size:13px;padding:8px 11px 8px 34px;border-radius:10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;}
+.rec-cand-toolbar-filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 10px;}
+.rec-cand-toolbar-field{display:flex;flex-direction:column;gap:4px;}
+.rec-cand-toolbar-field label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
+.rec-cand-toolbar-field .form-input{min-width:128px;max-width:180px;margin:0;font-size:13px;padding:8px 10px;border-radius:10px;}
+.rec-cand-toolbar-arch{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--slate-600);padding-bottom:8px;white-space:nowrap;}
+.rec-cand-toolbar-clear{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:8px 4px;margin-left:auto;white-space:nowrap;}
+.rec-cand-toolbar-clear:hover{text-decoration:underline;}
+.rec-cand-list-kicker{font-size:12px;font-weight:600;color:var(--slate-500);margin:0 0 8px;}
 .rec-cand-list{display:flex;flex-direction:column;gap:8px;}
-.rec-cand-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.03);}
-.rec-cand-row:hover{border-color:rgba(124,58,237,.28);box-shadow:0 2px 8px rgba(124,58,237,.06);}
-.rec-cand-row--archived{opacity:.72;background:rgba(248,250,252,.9);}
-.rec-cand-avatar{width:40px;height:40px;border-radius:10px;background:var(--purple-light);color:var(--purple-dark);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rec-cand-row-main{flex:1;min-width:0;}
-.rec-cand-row-name{font-size:14px;font-weight:800;color:var(--primary);margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rec-cand-row-meta{font-size:12px;color:var(--slate-600);margin:0;line-height:1.35;}
-.rec-cand-row-contact{font-size:11px;color:var(--slate-500);margin:4px 0 0;}
-.rec-cand-pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex-shrink:0;}
-.rec-cand-pill{font-size:10px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-600);white-space:nowrap;}
-.rec-cand-pill--active{background:rgba(124,58,237,.1);color:var(--purple-dark);}
-.rec-cand-pill--hired{background:rgba(16,185,129,.12);color:#047857;}
-.rec-cand-pill--rej{background:rgba(100,116,139,.12);color:var(--slate-600);}
-.rec-cand-row-chevron{color:var(--slate-400);flex-shrink:0;font-size:18px;line-height:1;}
+.rec-cand-row{position:relative;display:flex;align-items:stretch;gap:0;padding:0;background:#fff;border:1px solid var(--slate-200);border-radius:12px;cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.03);overflow:hidden;}
+.rec-cand-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;border-radius:12px 0 0 12px;transition:var(--tr-fast);}
+.rec-cand-row:hover{border-color:rgba(124,58,237,.32);box-shadow:0 2px 10px rgba(124,58,237,.07);}
+.rec-cand-row:hover::before,.rec-cand-row--selected::before{background:linear-gradient(180deg,rgba(124,58,237,.75),rgba(139,92,246,.45));}
+.rec-cand-row--selected{border-color:rgba(124,58,237,.35);box-shadow:0 0 0 1px rgba(124,58,237,.12),0 2px 10px rgba(124,58,237,.06);}
+.rec-cand-row--archived{opacity:.78;background:rgba(248,250,252,.92);}
+.rec-cand-row-inner{display:flex;align-items:center;gap:12px;padding:11px 14px 11px 16px;width:100%;min-width:0;flex-wrap:wrap;}
+.rec-cand-avatar{width:42px;height:42px;border-radius:11px;background:var(--purple-light);color:var(--purple-dark);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-cand-row-block{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 160px;}
+.rec-cand-row-block--identity{flex:1.2 1 200px;max-width:280px;}
+.rec-cand-row-block--contact{flex:1 1 180px;max-width:240px;}
+.rec-cand-row-block--source{flex:0 1 140px;}
+.rec-cand-row-block--process{flex:1.1 1 200px;min-width:180px;}
+.rec-cand-row-sep{width:1px;align-self:stretch;background:var(--slate-100);margin:8px 0;flex-shrink:0;}
+.rec-cand-row-name{font-size:14px;font-weight:800;color:var(--primary);margin:0;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-cand-row-name-line{display:flex;align-items:center;gap:8px;min-width:0;}
+.rec-cand-row-line{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--slate-600);line-height:1.3;min-width:0;}
+.rec-cand-row-line .rec-cand-portfolio-icon{flex-shrink:0;}
+.rec-cand-row-line-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.rec-cand-portfolio-icon{display:inline-flex;align-items:center;color:var(--slate-400);}
+.rec-cand-portfolio-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-cand-portfolio-icon--wa{color:#059669;}
+.rec-cand-portfolio-source{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--slate-600);padding:4px 9px;border-radius:999px;background:var(--slate-100);max-width:100%;}
+.rec-cand-portfolio-source .rec-cand-row-line-text{white-space:nowrap;}
+.rec-cand-process-kicker{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);margin:0 0 2px;}
+.rec-cand-process-active .rec-cand-process-kicker{color:var(--purple-dark);}
+.rec-cand-process-head{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--purple-dark);line-height:1.25;margin:0;}
+.rec-cand-process-dot{width:7px;height:7px;border-radius:999px;background:var(--purple);flex-shrink:0;}
+.rec-cand-process-vac{font-size:11px;color:var(--slate-600);margin:2px 0 0;padding-left:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-cand-process-empty{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--slate-400);margin:0;}
+.rec-cand-process-empty .rec-cand-process-dot{background:var(--slate-300);}
 .rec-cand-empty,.rec-cand-error{text-align:center;padding:32px 20px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.5);}
 .rec-cand-skeleton{height:72px;border-radius:12px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;}
 @keyframes recCandShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
@@ -439,7 +459,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-dupe-item{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:var(--tr-fast);}
 .rec-cand-dupe-item:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);}
 @media(max-width:960px){.rec-cand-body-grid{grid-template-columns:1fr;}.rec-cand-hero-head-right{align-items:flex-start;width:100%;}.rec-cand-hero-ctrls{justify-content:flex-start;}}
-@media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}.rec-cand-pills{justify-content:flex-start;width:100%;}.rec-cand-row{flex-wrap:wrap;}}
+@media(max-width:960px){.rec-cand-row-sep{display:none;}.rec-cand-row-inner{gap:10px;}.rec-cand-row-block{flex:1 1 100%;max-width:none;}}
+@media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}}
+@media(max-width:640px){.rec-cand-toolbar-search{flex:1 1 100%;}.rec-cand-row-inner{flex-direction:column;align-items:stretch;}.rec-cand-avatar{align-self:flex-start;}}
 @media(max-width:520px){.rec-cand-detail-modal{max-width:calc(100vw - 24px);padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:44px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
 .rec-carousel-wrap{position:relative;margin-bottom:0;}
 .rec-carousel-wrap--nav{display:flex;align-items:stretch;gap:6px;}
@@ -2538,28 +2560,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div id="rec-pane-candidates" class="hidden rec-cand-pane-wrap">
         <div class="rec-cand-head-row">
-          <div class="rec-cand-head">
-            <h2>Cartera de candidatos</h2>
-            <p>Consulta, reutiliza y da seguimiento al talento registrado en tu organización.</p>
-            <p class="rec-cand-count" id="rec-cand-count">—</p>
-          </div>
-          <button type="button" class="rec-btn-new" onclick="recCandOpenForm('create')">Nuevo candidato</button>
+          <h2>Cartera de talento</h2>
+          <button type="button" class="rec-btn-new" onclick="recCandOpenForm('create')">+ Nuevo candidato</button>
         </div>
-        <div class="rec-cand-filters">
-          <div class="rec-cand-filter-item" style="flex:1;min-width:180px;max-width:320px;">
-            <label for="rec-cand-q">Buscar</label>
-            <input type="search" id="rec-cand-q" class="form-input" placeholder="Nombre, contacto, ciudad…" autocomplete="off">
+        <div class="rec-cand-toolbar">
+          <div class="rec-cand-toolbar-search">
+            <input type="search" id="rec-cand-q" class="form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos">
           </div>
-          <div class="rec-cand-filter-item">
-            <label for="rec-cand-profile">Perfil</label>
-            <select id="rec-cand-profile" class="form-input"><option value="">Todos</option></select>
+          <div class="rec-cand-toolbar-filters">
+            <div class="rec-cand-toolbar-field">
+              <label for="rec-cand-profile">Perfil</label>
+              <select id="rec-cand-profile" class="form-input"><option value="">Todos</option></select>
+            </div>
+            <div class="rec-cand-toolbar-field">
+              <label for="rec-cand-source">Fuente</label>
+              <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
+            </div>
+            <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Mostrar archivados</label>
           </div>
-          <div class="rec-cand-filter-item">
-            <label for="rec-cand-source">Fuente</label>
-            <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
-          </div>
-          <label class="rec-cand-arch-toggle"><input type="checkbox" id="rec-cand-archived"> Mostrar archivados</label>
+          <button type="button" class="rec-cand-toolbar-clear hidden" id="rec-cand-clear-filters" onclick="recCandClearFilters()">Limpiar filtros</button>
         </div>
+        <p class="rec-cand-list-kicker" id="rec-cand-list-kicker">Talento registrado · —</p>
         <div id="rec-cand-list-wrap">
           <div id="rec-cand-list" class="rec-cand-list" role="list"></div>
           <div id="rec-cand-load-more" class="rec-cand-load-more-wrap hidden">
@@ -9044,9 +9065,99 @@ function recCandBuildListQuery(st, cursor){
   if(f.profile) qs.set('profile',f.profile);
   if(f.source) qs.set('source',f.source);
   if(f.includeArchived) qs.set('includeArchived','true');
+  if(st.selectedId) qs.set('contextVacancyId',st.selectedId);
   qs.set('limit','25');
   if(cursor) qs.set('cursor',cursor);
   return qs.toString();
+}
+function recCandPortfolioIconSvg(kind){
+  if(kind==='briefcase'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M8 20H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-4"/><path d="M12 11v2"/></svg>';
+  }
+  if(kind==='pin'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>';
+  }
+  if(kind==='wa'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+  }
+  if(kind==='mail'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z"/><path d="m22 6-10 7L2 6"/></svg>';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+}
+function recCandHasActiveFilters(f){
+  f=f||{};
+  return !!(f.q||f.profile||f.source||f.includeArchived);
+}
+function recCandUpdateFiltersUi(){
+  const st=recEnsureState();
+  const clearEl=document.getElementById('rec-cand-clear-filters');
+  if(clearEl) clearEl.classList.toggle('hidden',!recCandHasActiveFilters(st.candFilters));
+}
+function recCandClearFilters(){
+  const st=recEnsureState();
+  st.candFilters={ q:'', profile:'', source:'', includeArchived:false };
+  const qEl=document.getElementById('rec-cand-q');
+  const pEl=document.getElementById('rec-cand-profile');
+  const sEl=document.getElementById('rec-cand-source');
+  const aEl=document.getElementById('rec-cand-archived');
+  if(qEl) qEl.value='';
+  if(pEl) pEl.value='';
+  if(sEl) sEl.value='';
+  if(aEl) aEl.checked=false;
+  recCandUpdateFiltersUi();
+  recCandLoadList(false);
+}
+function recCandRowProcessHtml(c){
+  const proc=c.primaryActiveProcess;
+  const sum=c.applicationSummary||{};
+  if(proc&&proc.stageName){
+    return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-active">'+
+      '<p class="rec-cand-process-kicker">Proceso activo</p>'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>'+tcEsc(proc.stageName)+'</span></p>'+
+      '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
+  }
+  if((sum.active||0)>0){
+    return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-active">'+
+      '<p class="rec-cand-process-kicker">Proceso activo</p>'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>En evaluación</span></p></div>';
+  }
+  return '<div class="rec-cand-row-block rec-cand-row-block--process">'+
+    '<p class="rec-cand-process-empty"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso activo</p></div>';
+}
+function recCandBuildPortfolioRowHtml(c, st){
+  const loc=recCandLocationLine(c);
+  const prof=recCandProfilePrimaryLabel(c);
+  const wa=c.whatsapp||c.phone||'';
+  const email=c.email||'';
+  const src=recCandSourceLabel(c);
+  const arch=c.archivedAt?' rec-cand-row--archived':'';
+  const sel=st.detailCandidateId===c.id?' rec-cand-row--selected':'';
+  let contactHtml='';
+  if(wa){
+    contactHtml+='<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon rec-cand-portfolio-icon--wa">'+recCandPortfolioIconSvg('wa')+'</span><span class="rec-cand-row-line-text">'+tcEsc(wa)+'</span></div>';
+  }
+  if(email){
+    contactHtml+='<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('mail')+'</span><span class="rec-cand-row-line-text">'+tcEsc(email)+'</span></div>';
+  }
+  if(!contactHtml) contactHtml='<div class="rec-cand-row-line"><span class="rec-cand-row-line-text">—</span></div>';
+  const srcHtml=src&&src!=='—'
+    ? '<span class="rec-cand-portfolio-source"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('link')+'</span><span class="rec-cand-row-line-text">'+tcEsc(src)+'</span></span>'
+    : '<span class="rec-cand-portfolio-source"><span class="rec-cand-row-line-text">—</span></span>';
+  return '<button type="button" class="rec-cand-row'+arch+sel+'" role="listitem" onclick="recCandOpenDetail(\''+c.id+'\')">'+
+    '<span class="rec-cand-row-inner">'+
+    '<span class="rec-cand-avatar">'+tcEsc(recCandInitials(c.fullName))+'</span>'+
+    '<span class="rec-cand-row-block rec-cand-row-block--identity">'+
+    '<div class="rec-cand-row-name-line"><p class="rec-cand-row-name">'+tcEsc(c.fullName||'—')+'</p>'+(c.archivedAt?'<span class="rec-cand-badge-arch">Archivado</span>':'')+'</div>'+
+    (prof?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('briefcase')+'</span><span class="rec-cand-row-line-text">'+tcEsc(prof)+'</span></div>':'')+
+    (loc?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('pin')+'</span><span class="rec-cand-row-line-text">'+tcEsc(loc)+'</span></div>':'')+
+    '</span><span class="rec-cand-row-sep" aria-hidden="true"></span>'+
+    '<span class="rec-cand-row-block rec-cand-row-block--contact">'+contactHtml+'</span>'+
+    '<span class="rec-cand-row-sep" aria-hidden="true"></span>'+
+    '<span class="rec-cand-row-block rec-cand-row-block--source">'+srcHtml+'</span>'+
+    '<span class="rec-cand-row-sep" aria-hidden="true"></span>'+
+    recCandRowProcessHtml(c)+
+    '</span></button>';
 }
 function recCandBindFilters(){
   const st=recEnsureState();
@@ -9062,10 +9173,11 @@ function recCandBindFilters(){
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
   const aEl=document.getElementById('rec-cand-archived');
-  if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); scheduleReload(); });
-  if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandLoadList(false); });
-  if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandLoadList(false); });
-  if(aEl) aEl.addEventListener('change',function(){ st.candFilters.includeArchived=!!aEl.checked; recCandLoadList(false); });
+  if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); recCandUpdateFiltersUi(); scheduleReload(); });
+  if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(aEl) aEl.addEventListener('change',function(){ st.candFilters.includeArchived=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
+  recCandUpdateFiltersUi();
 }
 async function recCandLoadList(append){
   const st=recEnsureState();
@@ -9092,12 +9204,15 @@ async function recCandLoadList(append){
 function recCandRenderList(loadingOnly){
   const st=recEnsureState();
   const list=document.getElementById('rec-cand-list');
-  const countEl=document.getElementById('rec-cand-count');
+  const kickerEl=document.getElementById('rec-cand-list-kicker');
   const moreWrap=document.getElementById('rec-cand-load-more');
   if(!list) return;
+  recCandUpdateFiltersUi();
   const n=st.candidates.length;
-  if(countEl){
-    countEl.textContent=st.candidatesLoading&&n===0?'Cargando…':(n?n+' candidato'+(n===1?'':'s')+' mostrados':'Sin resultados');
+  if(kickerEl){
+    if(st.candidatesLoading&&n===0) kickerEl.textContent='Talento registrado · —';
+    else if(st.candidatesNextCursor) kickerEl.textContent=n+' candidatos cargados';
+    else kickerEl.textContent='Talento registrado · '+n;
   }
   if(st.candidatesError){
     list.innerHTML='<div class="rec-cand-error"><p style="margin:0 0 10px;">'+tcEsc(st.candidatesError)+'</p><button type="button" class="rec-stages-ghost-btn" onclick="recCandLoadList(false)">Reintentar</button></div>';
@@ -9115,25 +9230,7 @@ function recCandRenderList(loadingOnly){
     if(moreWrap) moreWrap.classList.add('hidden');
     return;
   }
-  list.innerHTML=st.candidates.map(function(c){
-    const sum=c.applicationSummary||{};
-    const loc=recCandLocationLine(c);
-    const meta=[recCandProfilePrimaryLabel(c),loc].filter(function(x){ return x&&x!=='—'; }).join(' · ');
-    const arch=c.archivedAt?' rec-cand-row--archived':'';
-    return '<button type="button" class="rec-cand-row'+arch+'" role="listitem" onclick="recCandOpenDetail(\''+c.id+'\')">'+
-      '<span class="rec-cand-avatar">'+tcEsc(recCandInitials(c.fullName))+'</span>'+
-      '<span class="rec-cand-row-main">'+
-      '<div class="rec-cand-row-name-line"><p class="rec-cand-row-name">'+tcEsc(c.fullName)+'</p>'+(c.archivedAt?'<span class="rec-cand-badge-arch">Archivado</span>':'')+'</div>'+
-      '<p class="rec-cand-row-meta">'+tcEsc(meta||'—')+'</p>'+
-      '<p class="rec-cand-row-contact">'+tcEsc(recCandContactLine(c))+'</p>'+
-      '</span>'+
-      '<span class="rec-cand-pills">'+
-      '<span class="rec-cand-pill rec-cand-pill--active">En proceso '+(sum.active||0)+'</span>'+
-      '<span class="rec-cand-pill rec-cand-pill--hired">Contratado '+(sum.hired||0)+'</span>'+
-      '<span class="rec-cand-pill rec-cand-pill--rej">Rechazado '+(sum.rejected||0)+'</span>'+
-      '</span>'+
-      '<span class="rec-cand-row-chevron" aria-hidden="true">›</span></button>';
-  }).join('');
+  list.innerHTML=st.candidates.map(function(c){ return recCandBuildPortfolioRowHtml(c,st); }).join('');
   if(moreWrap) moreWrap.classList.toggle('hidden',!st.candidatesNextCursor);
 }
 async function recCandFetchDetail(id){
@@ -9143,6 +9240,7 @@ async function recCandFetchDetail(id){
 async function recCandOpenDetail(id){
   const st=recEnsureState();
   st.detailCandidateId=id;
+  if(st.moduleTab==='candidates') recCandRenderList();
   recCandCloseToolbarMenu();
   if(!window.__recCandMenuDocBound){
     document.addEventListener('click',recCandCloseToolbarMenu);

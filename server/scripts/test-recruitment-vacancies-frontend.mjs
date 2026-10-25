@@ -106,7 +106,7 @@ console.log('\n=== Recruitment 1D.2 — cartera candidatos ===\n');
 
 check(/rec-module-nav/.test(indexHtml), 'nav Vacantes/Candidatos');
 check(/recSwitchModuleTab/.test(indexHtml), 'switch módulo recruitment');
-check(/Cartera de candidatos/.test(indexHtml), 'título cartera');
+check(/Cartera de talento/.test(indexHtml), 'título cartera de talento');
 check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
 check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
 check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');

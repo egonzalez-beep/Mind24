@@ -66,6 +66,9 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     ...(extras.applicationSummary != null ? { applicationSummary: extras.applicationSummary } : {}),
+    ...(extras.primaryActiveProcess !== undefined
+      ? { primaryActiveProcess: extras.primaryActiveProcess }
+      : {}),
   };
 }
 
@@ -119,6 +122,50 @@ export async function buildApplicationSummariesByCandidateId(organizationId, can
     else if (key === 'REJECTED') summary.rejected += 1;
     else summary.active += 1;
     map.set(row.candidateId, summary);
+  }
+  return map;
+}
+
+/** Proceso activo principal por candidato (etapa + vacante) para listado cartera. */
+export async function buildPrimaryActivePreviewByCandidateId(
+  organizationId,
+  candidateIds,
+  preferredVacancyId = null,
+) {
+  const map = new Map(candidateIds.map((id) => [id, null]));
+  if (!candidateIds.length) return map;
+
+  const rows = await prisma.recruitmentApplication.findMany({
+    where: {
+      organizationId,
+      candidateId: { in: candidateIds },
+      stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
+    },
+    include: {
+      vacancy: { select: { id: true, title: true } },
+      stage: { select: { id: true, key: true, name: true } },
+    },
+    orderBy: [{ updatedAt: 'desc' }, { appliedAt: 'desc' }],
+  });
+
+  const byCandidate = new Map();
+  for (const row of rows) {
+    if (!byCandidate.has(row.candidateId)) byCandidate.set(row.candidateId, []);
+    byCandidate.get(row.candidateId).push(row);
+  }
+
+  for (const [candidateId, apps] of byCandidate) {
+    let pick = apps[0];
+    if (preferredVacancyId) {
+      const ctx = apps.find((a) => a.vacancy?.id === preferredVacancyId);
+      if (ctx) pick = ctx;
+    }
+    map.set(candidateId, {
+      stageName: pick.stage?.name || pick.stage?.key || 'Etapa',
+      stageKey: pick.stage?.key || null,
+      vacancyTitle: pick.vacancy?.title || '—',
+      vacancyId: pick.vacancy?.id || null,
+    });
   }
   return map;
 }
@@ -252,14 +299,20 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
     page = rows.slice(0, limit);
   }
 
-  const summaryMap = await buildApplicationSummariesByCandidateId(
+  const pageIds = page.map((r) => r.id);
+  const summaryMap = await buildApplicationSummariesByCandidateId(organizationId, pageIds);
+  const previewMap = await buildPrimaryActivePreviewByCandidateId(
     organizationId,
-    page.map((r) => r.id),
+    pageIds,
+    options.contextVacancyId || null,
   );
 
   return {
     candidates: page.map((r) =>
-      serializeRecruitmentCandidate(r, { applicationSummary: summaryMap.get(r.id) }),
+      serializeRecruitmentCandidate(r, {
+        applicationSummary: summaryMap.get(r.id),
+        primaryActiveProcess: previewMap.get(r.id) || null,
+      }),
     ),
     nextCursor,
   };

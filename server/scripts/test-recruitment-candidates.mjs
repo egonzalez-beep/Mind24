@@ -124,6 +124,22 @@ const railFn = indexHtml.match(/function recCandBuildLabeledStageRailHtml[\s\S]*
 check(/ariaState=/.test(railFn) && /tcEsc\(ariaLabel\)/.test(railFn), 'rail aria-label por etapa');
 check(/rec-cand-rail-label" title=/.test(railFn), 'rail label title tooltip');
 
+console.log('\n=== Recruitment 1H.1 — cartera de talento (estático) ===\n');
+
+check(/Cartera de talento/.test(indexHtml), 'título cartera de talento');
+check(/rec-cand-toolbar/.test(indexHtml) && /rec-cand-clear-filters/.test(indexHtml), 'toolbar y limpiar filtros');
+check(/recCandClearFilters/.test(indexHtml) && /recCandHasActiveFilters/.test(indexHtml), 'limpiar filtros condicional');
+check(/recCandPortfolioIconSvg/.test(indexHtml) && /recCandBuildPortfolioRowHtml/.test(indexHtml), 'filas premium con SVG');
+check(/Talento registrado/.test(indexHtml) && /rec-cand-list-kicker/.test(indexHtml), 'contador único kicker');
+const renderListFn = indexHtml.match(/function recCandRenderList[\s\S]*?^function /m)?.[0] || '';
+check(/candidatesNextCursor/.test(renderListFn) && /candidatos cargados/.test(renderListFn), 'contador parcial si nextCursor');
+check(/primaryActiveProcess/.test(indexHtml) && /recCandRowProcessHtml/.test(indexHtml), 'proceso activo en fila');
+check(/Sin proceso activo/.test(indexHtml), 'sin proceso activo');
+check(!/rec-cand-pill--active/.test(indexHtml.match(/function recCandRenderList[\s\S]*?^}/m)?.[0] || ''), 'sin pills En proceso/Contratado/Rechazado');
+check(!/rec-cand-row-chevron/.test(indexHtml.match(/function recCandBuildPortfolioRowHtml[\s\S]*?^}/m)?.[0] || ''), 'sin chevron en fila');
+check(/contextVacancyId/.test(routes), 'contextVacancyId en listado');
+check(/buildPrimaryActivePreviewByCandidateId/.test(candidateSvc), 'preview proceso activo listado');
+
 console.log('\n=== Recruitment 1F.2 — cierre visual ficha (estático) ===\n');
 
 check(/max-width:min\(1180px/.test(indexHtml), 'modal ancho desktop');
