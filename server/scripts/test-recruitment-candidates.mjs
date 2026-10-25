@@ -76,6 +76,8 @@ async function jsonFetch(base, urlPath, { method = 'GET', body, cookie } = {}) {
   return { res, data };
 }
 
+const indexHtml = fs.readFileSync(path.join(rootDir, '..', 'index.html'), 'utf8');
+
 console.log('\n=== Recruitment 1D.1 — estático candidatos ===\n');
 
 check(/model RecruitmentCandidateResume/.test(schema), 'modelo Resume');
@@ -97,6 +99,26 @@ check(
   !patchSchemaBlock.includes('candidateContactRefine(data'),
   'PATCH no exige contacto en payload',
 );
+
+console.log('\n=== Recruitment 1F.1 — ficha premium candidato (estático) ===\n');
+
+check(/rec-cand-detail-modal rec-detail-modal/.test(indexHtml), 'toolbar paridad rec-detail-modal');
+check(/rec-cand-detail-arch-badge/.test(indexHtml), 'badge archivado en header');
+check(/rec-cand-pipeline-hero/.test(indexHtml), 'hero proceso actual');
+check(/recCandPickPrimaryApplication/.test(indexHtml), 'regla proceso principal');
+check(/recCandBuildStageRailHtml/.test(indexHtml), 'stage rail');
+check(/vacancyStagesCache/.test(indexHtml), 'cache stages por vacante');
+check(/rec-cand-pipeline-empty/.test(indexHtml), 'sin proceso activo');
+check(/rec-cand-expediente/.test(indexHtml) && !/id="rec-cand-info-grid"/.test(indexHtml), 'expediente agrupado sin info-grid');
+check(/recCandProfileSecondaryLabel/.test(indexHtml), 'helper perfil secundario');
+check(/recCandGoToPipeline/.test(indexHtml), 'Ver en pipeline');
+check(/rec-cand-other-active/.test(indexHtml), 'otros procesos activos');
+check(/rec-cand-history-trigger/.test(indexHtml) && /recCandDetailToggleAcc\('history'\)/.test(indexHtml), 'histórico accordion');
+check(/recCandSummaryMetaLine/.test(indexHtml), 'applicationSummary compacto');
+check(!/rec-cand-mini-kpis/.test(indexHtml), 'sin KPI cards protagonistas');
+check(/rec-vac-detail-btn.*recCandOpenCv|recCandOpenCv\(\).*rec-vac-detail-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'CV acciones icono');
+check(/id="rec-cand-add-vac-btn"/.test(indexHtml), '+ Añadir a vacante reubicado');
+check(/id="rec-cand-archive-btn".*rec-stages-ghost-btn/s.test(indexHtml.replace(/\s+/g,' ')), 'archivar discreto footer');
 
 console.log('\n=== Recruitment 1D.1 — integración (DB) ===\n');
 

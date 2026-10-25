@@ -296,29 +296,72 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @keyframes recCandShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
 .rec-cand-load-more-wrap{text-align:center;margin-top:14px;}
 .rec-cand-detail-modal{max-width:min(960px,calc(100vw - 32px));padding:26px 28px 30px;max-height:min(92vh,900px);background:#FAFBFF;}
-.rec-cand-detail-header{display:flex;gap:14px;align-items:flex-start;padding-right:72px;margin-bottom:12px;}
+.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:88px;margin-bottom:0;}
+.rec-cand-detail-header{display:flex;gap:14px;align-items:flex-start;margin-bottom:0;}
 .rec-cand-detail-avatar{width:48px;height:48px;border-radius:12px;background:var(--purple-light);color:var(--purple-dark);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rec-cand-detail-title h2{font-size:22px;font-weight:800;color:var(--primary);margin:0 0 4px;letter-spacing:-.35px;}
+.rec-cand-detail-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px;}
+.rec-cand-detail-title h2{font-size:22px;font-weight:800;color:var(--primary);margin:0;letter-spacing:-.35px;line-height:1.25;}
 .rec-cand-detail-sub{font-size:13px;color:var(--slate-600);margin:0;line-height:1.4;}
-.rec-cand-badge-arch{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);margin-left:8px;vertical-align:middle;}
-.rec-cand-mini-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0 16px;}
-.rec-cand-mini-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:8px 10px;}
-.rec-cand-mini-kpi label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);display:block;margin-bottom:4px;}
-.rec-cand-mini-kpi span{font-size:16px;font-weight:800;color:var(--primary);}
+.rec-cand-badge-arch{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);flex-shrink:0;}
+.rec-cand-pipeline-hero{margin:0 0 12px;padding:16px 18px;border:1px solid rgba(124,58,237,.18);border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04);}
+.rec-cand-hero-title{font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.35px;line-height:1.25;margin:0 0 4px;}
+.rec-cand-hero-client{font-size:13px;color:var(--slate-600);display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;}
+.rec-cand-hero-stage-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-500);margin:0 0 4px;}
+.rec-cand-hero-stage-name{font-size:17px;font-weight:800;color:var(--purple-dark);letter-spacing:-.25px;margin:0 0 12px;line-height:1.2;}
+.rec-cand-stage-rail{display:flex;align-items:center;gap:7px;padding:2px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+.rec-cand-stage-dot{width:10px;height:10px;border-radius:999px;flex-shrink:0;border:2px solid var(--slate-300);background:transparent;box-sizing:border-box;}
+.rec-cand-stage-dot--done{background:rgba(124,58,237,.85);border-color:rgba(124,58,237,.85);}
+.rec-cand-stage-dot--current{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.18);}
+.rec-cand-stage-dot--future{background:transparent;border-color:var(--slate-300);}
+.rec-cand-hero-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--slate-100);}
+.rec-cand-hero-updated{font-size:11px;color:var(--slate-500);}
+.rec-cand-pipeline-link{font-size:12px;padding:6px 10px;}
+.rec-cand-pipeline-empty{padding:16px 18px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.65);margin:0 0 12px;}
+.rec-cand-pipeline-empty-title{font-size:14px;font-weight:700;color:var(--primary);margin:0 0 4px;}
+.rec-cand-pipeline-empty-sub{font-size:13px;color:var(--slate-600);margin:0;}
+.rec-cand-other-active{margin:0 0 12px;}
+.rec-cand-other-active-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 8px;}
+.rec-cand-other-active-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;margin-bottom:6px;}
+.rec-cand-other-active-row:last-child{margin-bottom:0;}
+.rec-cand-other-active-main{min-width:0;flex:1;}
+.rec-cand-other-active-title{font-size:13px;font-weight:700;color:var(--primary);margin:0 0 2px;}
+.rec-cand-other-active-meta{font-size:12px;color:var(--slate-600);margin:0;line-height:1.35;}
+.rec-cand-add-vac-wrap{margin:0 0 14px;}
+.rec-cand-expediente{display:grid;grid-template-columns:1fr 1fr;gap:18px 28px;font-size:13px;}
+.rec-cand-exp-group{min-width:0;}
+.rec-cand-exp-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);margin:0 0 6px;}
+.rec-cand-exp-val{font-size:14px;font-weight:600;color:var(--slate-800);margin:0 0 4px;line-height:1.4;word-break:break-word;}
+.rec-cand-exp-val--primary{font-size:15px;font-weight:700;color:var(--primary);}
+.rec-cand-exp-val a{color:var(--purple-dark);text-decoration:none;}
+.rec-cand-exp-val a:hover{text-decoration:underline;}
+.rec-cand-exp-muted{font-size:13px;font-weight:500;color:var(--slate-600);}
+.rec-cand-history-list{display:flex;flex-direction:column;gap:6px;padding:4px 0 2px;}
+.rec-cand-history-row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;font-size:12px;}
+.rec-cand-history-row--hired{border-left:3px solid rgba(16,185,129,.5);}
+.rec-cand-history-row--rej{border-left:3px solid rgba(244,63,94,.35);}
+.rec-cand-history-main{font-weight:700;color:var(--primary);}
+.rec-cand-history-sub{color:var(--slate-600);}
+.rec-cand-history-outcome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.rec-cand-history-outcome--hired{color:#047857;}
+.rec-cand-history-outcome--rej{color:var(--slate-600);}
+.rec-cand-summary-meta{font-size:12px;color:var(--slate-500);margin:12px 0 0;text-align:center;}
+.rec-cand-detail-footer{margin-top:8px;padding-top:12px;border-top:1px solid var(--slate-100);text-align:center;}
+.rec-cand-detail-skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;margin-bottom:8px;}
+.rec-cand-detail-skel--hero{height:120px;border-radius:14px;margin-bottom:12px;}
+.rec-cand-detail-skel--short{max-width:55%;}
 .rec-cand-process-list{display:flex;flex-direction:column;gap:8px;}
 .rec-cand-process-card{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;}
 .rec-cand-process-card--hired{border-left:3px solid rgba(16,185,129,.55);}
 .rec-cand-process-card--rej{border-left:3px solid rgba(100,116,139,.45);}
 .rec-cand-process-card--active{border-left:3px solid rgba(124,58,237,.45);}
-.rec-cand-cv-panel{border:1px dashed rgba(148,163,184,.45);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.55);}
+.rec-cand-cv-panel.rec-detail-files-panel{border:1px dashed rgba(148,163,184,.45);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.55);}
+.rec-cand-cv-panel .rec-file-row{margin-bottom:0;}
+.rec-vac-detail-btn--danger:hover{border-color:rgba(244,63,94,.45);color:#E11D48;background:rgba(254,242,242,.85);}
 .rec-cand-cv-drop{border:1px dashed rgba(124,58,237,.25);border-radius:10px;padding:18px 16px;text-align:center;background:rgba(245,243,255,.25);cursor:pointer;transition:var(--tr-fast);}
 .rec-cand-cv-drop:hover{background:rgba(245,243,255,.5);}
 .rec-cand-cv-drop--over{border-color:var(--purple);background:rgba(245,243,255,.7);box-shadow:0 0 0 3px rgba(124,58,237,.12);}
 .rec-cand-pane-wrap{padding-top:2px;}
-.rec-cand-mini-kpi{border-top:2px solid var(--slate-200);}
-.rec-cand-mini-kpi:first-child{border-top-color:rgba(124,58,237,.45);}
-.rec-cand-mini-kpi:first-child span{color:var(--purple-dark);}
-.rec-cand-detail-accent{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(124,58,237,.5),rgba(139,92,246,.2),transparent);margin:0 0 14px;max-width:min(360px,55%);}
+.rec-cand-detail-accent{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(124,58,237,.5),rgba(139,92,246,.2),transparent);margin:14px 0 16px;max-width:min(360px,55%);}
 .rec-cand-dupe-item--selected{border-color:rgba(124,58,237,.5)!important;background:rgba(245,243,255,.55)!important;box-shadow:0 0 0 1px rgba(124,58,237,.12);}
 .rec-cand-row-name-line{display:flex;align-items:center;gap:8px;min-width:0;margin-bottom:2px;}
 .rec-cand-row-name-line .rec-cand-row-name{margin:0;flex:1;min-width:0;}
@@ -332,8 +375,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-dupe-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px;max-height:240px;overflow-y:auto;}
 .rec-cand-dupe-item{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:var(--tr-fast);}
 .rec-cand-dupe-item:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);}
-@media(max-width:820px){.rec-cand-mini-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.rec-cand-pills{justify-content:flex-start;width:100%;}.rec-cand-row{flex-wrap:wrap;}}
-@media(max-width:520px){.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
+@media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}.rec-cand-pills{justify-content:flex-start;width:100%;}.rec-cand-row{flex-wrap:wrap;}}
+@media(max-width:520px){.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:40px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid{grid-template-columns:1fr!important;}}
 .rec-carousel-wrap{position:relative;margin-bottom:20px;}
 .rec-carousel{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 12px;scroll-behavior:smooth;scrollbar-width:thin;}
 .rec-carousel::-webkit-scrollbar{height:6px;}
@@ -1740,7 +1783,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <div id="modal-rec-candidate-detail" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-detail')">
-  <div class="modal-card rec-cand-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
+  <div class="modal-card rec-cand-detail-modal rec-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
     <div class="rec-detail-toolbar">
       <button type="button" class="rec-detail-edit-btn" id="rec-cand-detail-edit-btn" onclick="recCandEditFromDetail()" aria-label="Editar candidato" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-detail')" aria-label="Cerrar">✕</button>
@@ -1748,35 +1791,48 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="rec-cand-detail-header">
       <div class="rec-cand-detail-avatar" id="rec-cand-detail-avatar">—</div>
       <div class="rec-cand-detail-title">
-        <h2 id="rec-cand-detail-name">—</h2>
+        <div class="rec-cand-detail-name-row">
+          <h2 id="rec-cand-detail-name">—</h2>
+          <span id="rec-cand-detail-arch-badge" class="rec-cand-badge-arch hidden">Archivado</span>
+        </div>
         <p class="rec-cand-detail-sub" id="rec-cand-detail-subline">—</p>
       </div>
     </div>
     <div class="rec-cand-detail-accent" aria-hidden="true"></div>
-    <div class="rec-cand-mini-kpis" id="rec-cand-mini-kpis">
-      <div class="rec-cand-mini-kpi"><label>Procesos</label><span id="rec-cand-kpi-total">—</span></div>
-      <div class="rec-cand-mini-kpi"><label>Activos</label><span id="rec-cand-kpi-active">—</span></div>
-      <div class="rec-cand-mini-kpi"><label>Contrataciones</label><span id="rec-cand-kpi-hired">—</span></div>
-      <div class="rec-cand-mini-kpi"><label>Rechazados</label><span id="rec-cand-kpi-rejected">—</span></div>
+    <div id="rec-cand-pipeline-host"></div>
+    <div id="rec-cand-add-vac-wrap" class="rec-cand-add-vac-wrap">
+      <button type="button" class="rec-btn-new rec-btn-new--sm" id="rec-cand-add-vac-btn" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button>
     </div>
-    <div class="rec-detail-block">
-      <h4>Información</h4>
-      <p id="rec-cand-detail-op-err" class="hidden" style="font-size:13px;color:#DC2626;margin:0 0 10px;"></p>
-      <div class="rec-detail-info-grid" id="rec-cand-info-grid"></div>
-      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
-        <button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button>
-        <button type="button" class="rec-stage-act" id="rec-cand-archive-btn" onclick="recCandToggleArchive()">—</button>
-      </div>
+    <p id="rec-cand-detail-op-err" class="hidden" style="font-size:13px;color:#DC2626;margin:0 0 10px;"></p>
+    <div class="rec-detail-block" id="rec-cand-expediente-block">
+      <h4>Expediente</h4>
+      <div id="rec-cand-expediente" class="rec-cand-expediente"></div>
     </div>
-    <div class="rec-detail-block">
-      <h4>Procesos</h4>
-      <div id="rec-cand-process-list" class="rec-cand-process-list"></div>
+    <div id="rec-cand-notes-block" class="rec-detail-block rec-detail-block--acc hidden">
+      <button type="button" class="rec-detail-acc-trigger" id="rec-cand-notes-trigger" aria-expanded="false" aria-controls="rec-cand-notes-body" onclick="recCandDetailToggleAcc('notes')">
+        <span>Notas internas</span>
+        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <p id="rec-cand-notes-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-notes-trigger"></p>
     </div>
     <div class="rec-detail-block">
       <h4>CV</h4>
-      <div id="rec-cand-cv-panel" class="rec-cand-cv-panel"></div>
+      <div id="rec-cand-cv-panel" class="rec-cand-cv-panel rec-detail-files-panel"></div>
       <input type="file" id="rec-cand-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
       <p id="rec-cand-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
+    </div>
+    <div id="rec-cand-history-block" class="rec-detail-block rec-detail-block--acc hidden">
+      <button type="button" class="rec-detail-acc-trigger" id="rec-cand-history-trigger" aria-expanded="false" aria-controls="rec-cand-history-body" onclick="recCandDetailToggleAcc('history')">
+        <span id="rec-cand-history-trigger-label">Historial de procesos</span>
+        <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div id="rec-cand-history-body" class="rec-detail-acc-body hidden" role="region" aria-labelledby="rec-cand-history-trigger">
+        <div id="rec-cand-history-list" class="rec-cand-history-list"></div>
+      </div>
+    </div>
+    <p id="rec-cand-summary-meta" class="rec-cand-summary-meta hidden"></p>
+    <div class="rec-cand-detail-footer">
+      <button type="button" class="rec-stages-ghost-btn" id="rec-cand-archive-btn" onclick="recCandToggleArchive()">—</button>
     </div>
   </div>
 </div>
@@ -6870,8 +6926,10 @@ function recEnsureState(){
       kanbanError:null,
       kanbanDragAppId:null,
       kanbanSuppressClick:false,
+      vacancyStagesCache:{},
     };
   }
+  if(!window.__REC_STATE.vacancyStagesCache) window.__REC_STATE.vacancyStagesCache={};
   return window.__REC_STATE;
 }
 function recDetailIconSvg(){
@@ -7851,7 +7909,7 @@ async function recKanbanRefreshRelated(vacancyId,candidateId){
     try{
       const c=await recCandFetchDetail(candidateId);
       st.detailCandidate=c;
-      recCandRenderDetail(c,false);
+      await recCandRenderDetail(c,false);
     }catch(_e){}
   }
   const detailModal=document.getElementById('modal-rec-vacancy-detail');
@@ -8129,6 +8187,261 @@ function recCandSourceLabel(c){
   if(c.source==='Otro'&&c.sourceOther) return 'Otro · '+c.sourceOther;
   return c.source;
 }
+function recCandProfileSecondaryLabel(c){
+  if(!c||!c.profileSecondary) return null;
+  const v=String(c.profileSecondary).trim();
+  if(!v) return null;
+  if(v==='Otro') return 'Otro';
+  if(typeof REC_CAND_PROFILE_OPTS!=='undefined'&&REC_CAND_PROFILE_OPTS.indexOf(v)>=0) return v;
+  return v;
+}
+function recCandFmtDetailDate(iso){
+  if(!iso) return '—';
+  try{
+    const d=new Date(iso);
+    if(Number.isNaN(d.getTime())) return String(iso).slice(0,10);
+    return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  }catch(_e){
+    return String(iso).slice(0,10);
+  }
+}
+function recCandWhatsappDigits(wa){
+  const digits=String(wa||'').replace(/\D/g,'');
+  return digits.length>=10?digits:null;
+}
+function recCandAppStageKey(a){
+  return a&&a.stage&&a.stage.key?a.stage.key:'';
+}
+function recCandAppIsClosed(a){
+  const k=recCandAppStageKey(a);
+  return k==='HIRED'||k==='REJECTED';
+}
+function recCandPartitionApplications(apps){
+  const active=[];
+  const closed=[];
+  (apps||[]).forEach(function(a){
+    if(recCandAppIsClosed(a)) closed.push(a);
+    else active.push(a);
+  });
+  return { active:active, closed:closed };
+}
+function recCandPickPrimaryApplication(st,activeApps){
+  if(!activeApps||!activeApps.length) return null;
+  if(st&&st.selectedId&&st.moduleTab!=='candidates'){
+    const ctx=activeApps.find(function(a){ return a.vacancy&&a.vacancy.id===st.selectedId; });
+    if(ctx) return ctx;
+  }
+  return activeApps[0];
+}
+function recCandSummaryMetaLine(sum){
+  sum=sum||{};
+  const parts=[];
+  const t=Number(sum.total)||0;
+  const ac=Number(sum.active)||0;
+  const h=Number(sum.hired)||0;
+  const r=Number(sum.rejected)||0;
+  if(t) parts.push(t+' proceso'+(t===1?'':'s'));
+  if(ac) parts.push(ac+' activo'+(ac===1?'':'s'));
+  if(h) parts.push(h+' contratación'+(h===1?'':'es'));
+  if(r) parts.push(r+' rechazo'+(r===1?'':'s'));
+  return parts.join(' · ');
+}
+async function recCandGetStagesCached(vacancyId){
+  if(!vacancyId) return [];
+  const st=recEnsureState();
+  if(st.vacancyStagesCache[vacancyId]) return st.vacancyStagesCache[vacancyId];
+  const rows=await recCandLoadEnabledStagesForVacancy(vacancyId);
+  st.vacancyStagesCache[vacancyId]=rows;
+  return rows;
+}
+function recCandBuildStageRailHtml(stageRows,currentStageId){
+  if(!stageRows||!stageRows.length) return '';
+  let idx=stageRows.findIndex(function(vs){
+    const sid=(vs.stage&&vs.stage.id)||vs.stageId;
+    return sid===currentStageId;
+  });
+  if(idx<0) idx=0;
+  return '<div class="rec-cand-stage-rail" role="list" aria-label="Etapas del proceso">'+stageRows.map(function(vs,i){
+    const stg=vs.stage||{};
+    const name=stg.name||stg.key||('Etapa '+(i+1));
+    let cls='rec-cand-stage-dot';
+    if(i<idx) cls+=' rec-cand-stage-dot--done';
+    else if(i===idx) cls+=' rec-cand-stage-dot--current';
+    else cls+=' rec-cand-stage-dot--future';
+    return '<span class="'+cls+'" role="listitem" title="'+tcEsc(name)+'" aria-label="'+tcEsc(name)+'"></span>';
+  }).join('')+'</div>';
+}
+function recCandHeroHtml(app,railHtml){
+  const vac=app.vacancy||{};
+  const stage=app.stage||{};
+  const vacId=vac.id||'';
+  const status=vac.status;
+  let badge='';
+  if(status&&status!=='ACTIVE'){
+    badge=' <span class="rec-status-badge rec-status-badge--'+tcEsc(status)+'">'+tcEsc(recVacancyStatusLabel(status))+'</span>';
+  }
+  const dt=recCandFmtDetailDate(app.updatedAt||app.appliedAt);
+  return '<div class="rec-cand-pipeline-hero">'+
+    '<p class="rec-cand-hero-title">'+tcEsc(vac.title||'—')+'</p>'+
+    '<div class="rec-cand-hero-client">'+tcEsc(vac.clientName||'')+badge+'</div>'+
+    '<p class="rec-cand-hero-stage-label">Etapa actual</p>'+
+    '<p class="rec-cand-hero-stage-name">'+tcEsc(stage.name||'—')+'</p>'+
+    '<div id="rec-cand-hero-rail">'+(railHtml||'')+'</div>'+
+    '<div class="rec-cand-hero-foot"><span class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</span>'+
+    '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button></div></div>';
+}
+function recCandGoToPipeline(vacancyId){
+  if(!vacancyId) return;
+  closeModal('modal-rec-candidate-detail');
+  recSwitchModuleTab('vacancies');
+  recSelectVacancy(vacancyId);
+  setTimeout(function(){
+    const el=document.getElementById('rec-selected-panel')||document.getElementById('rec-kanban-board');
+    if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },100);
+}
+function recCandDetailToggleAcc(which){
+  const trigger=document.getElementById('rec-cand-'+which+'-trigger');
+  const body=document.getElementById('rec-cand-'+which+'-body');
+  if(!trigger||!body) return;
+  const open=trigger.getAttribute('aria-expanded')!=='true';
+  trigger.setAttribute('aria-expanded',open?'true':'false');
+  body.classList.toggle('hidden',!open);
+}
+function recCandRenderDetailLoading(){
+  document.getElementById('rec-cand-detail-avatar').textContent='…';
+  document.getElementById('rec-cand-detail-name').textContent='Cargando…';
+  const arch=document.getElementById('rec-cand-detail-arch-badge');
+  if(arch) arch.classList.add('hidden');
+  document.getElementById('rec-cand-detail-subline').textContent='';
+  const host=document.getElementById('rec-cand-pipeline-host');
+  if(host) host.innerHTML='<div class="rec-cand-detail-skel rec-cand-detail-skel--hero" aria-hidden="true"></div>';
+  const exp=document.getElementById('rec-cand-expediente');
+  if(exp) exp.innerHTML='<div class="rec-cand-detail-skel"></div><div class="rec-cand-detail-skel rec-cand-detail-skel--short"></div>';
+  const notesBlock=document.getElementById('rec-cand-notes-block');
+  if(notesBlock) notesBlock.classList.add('hidden');
+  const histBlock=document.getElementById('rec-cand-history-block');
+  if(histBlock) histBlock.classList.add('hidden');
+  const sumEl=document.getElementById('rec-cand-summary-meta');
+  if(sumEl){ sumEl.textContent=''; sumEl.classList.add('hidden'); }
+  const cvPanel=document.getElementById('rec-cand-cv-panel');
+  if(cvPanel) cvPanel.innerHTML='<div class="rec-cand-detail-skel" style="height:48px;border-radius:10px;"></div>';
+}
+function recCandRenderExpediente(c){
+  const box=document.getElementById('rec-cand-expediente');
+  if(!box||!c) return;
+  const wa=c.whatsapp||'';
+  const phoneMain=wa||c.phone||'';
+  const sec=recCandSecondaryPhone(c);
+  const secLine=sec&&sec!=='—'?sec:null;
+  const waDigits=recCandWhatsappDigits(wa||phoneMain);
+  let waHtml='—';
+  if(phoneMain){
+    if(waDigits&&wa){
+      waHtml='<a href="https://wa.me/'+tcEsc(waDigits)+'" target="_blank" rel="noopener noreferrer">'+tcEsc(wa)+'</a>';
+    }else waHtml=tcEsc(phoneMain);
+  }
+  let emailHtml='—';
+  if(c.email) emailHtml='<a href="mailto:'+tcEsc(c.email)+'">'+tcEsc(c.email)+'</a>';
+  const prof2=recCandProfileSecondaryLabel(c);
+  box.innerHTML=
+    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Contacto</p>'+
+    '<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+waHtml+'</p>'+
+    (secLine?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(secLine)+'</p>':'')+
+    '<p class="rec-cand-exp-val">'+emailHtml+'</p></div>'+
+    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Perfil</p>'+
+    '<p class="rec-cand-exp-val rec-cand-exp-val--primary">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
+    (prof2?'<p class="rec-cand-exp-val rec-cand-exp-muted">'+tcEsc(prof2)+'</p>':'')+'</div>'+
+    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Ubicación</p>'+
+    '<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p></div>'+
+    '<div class="rec-cand-exp-group"><p class="rec-cand-exp-label">Fuente</p>'+
+    '<p class="rec-cand-exp-val">'+tcEsc(recCandSourceLabel(c))+'</p></div>';
+}
+function recCandRenderNotesBlock(c){
+  const block=document.getElementById('rec-cand-notes-block');
+  const body=document.getElementById('rec-cand-notes-body');
+  const trigger=document.getElementById('rec-cand-notes-trigger');
+  if(!block||!body) return;
+  const notes=(c.notes||'').trim();
+  if(!notes){
+    block.classList.add('hidden');
+    body.textContent='';
+    if(trigger) trigger.setAttribute('aria-expanded','false');
+    body.classList.add('hidden');
+    return;
+  }
+  block.classList.remove('hidden');
+  body.textContent=notes;
+  body.classList.remove('empty');
+  if(trigger){ trigger.setAttribute('aria-expanded','false'); }
+  body.classList.add('hidden');
+}
+function recCandRenderHistoryBlock(closedApps){
+  const block=document.getElementById('rec-cand-history-block');
+  const list=document.getElementById('rec-cand-history-list');
+  const label=document.getElementById('rec-cand-history-trigger-label');
+  const trigger=document.getElementById('rec-cand-history-trigger');
+  const body=document.getElementById('rec-cand-history-body');
+  if(!block||!list) return;
+  if(!closedApps.length){
+    block.classList.add('hidden');
+    list.innerHTML='';
+    return;
+  }
+  block.classList.remove('hidden');
+  if(label) label.textContent='Historial de procesos · '+closedApps.length;
+  if(trigger) trigger.setAttribute('aria-expanded','false');
+  if(body) body.classList.add('hidden');
+  list.innerHTML=closedApps.map(function(a){
+    const vac=a.vacancy||{};
+    const sk=recCandAppStageKey(a);
+    const hired=sk==='HIRED';
+    const cls='rec-cand-history-row'+(hired?' rec-cand-history-row--hired':' rec-cand-history-row--rej');
+    const outcome=hired?'Contratado':'Rechazado';
+    const ocCls=hired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej';
+    const dt=recCandFmtDetailDate(a.updatedAt||a.appliedAt);
+    return '<div class="'+cls+'"><div><span class="rec-cand-history-main">'+tcEsc(vac.title||'—')+'</span>'+
+      ' <span class="rec-cand-history-sub">· '+tcEsc(vac.clientName||'')+'</span></div>'+
+      '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">'+
+      '<span class="rec-cand-history-outcome '+ocCls+'">'+outcome+'</span>'+
+      '<span class="rec-cand-history-sub">'+tcEsc(dt)+'</span></div></div>';
+  }).join('');
+}
+function recCandRenderOtherActiveRows(others){
+  if(!others||!others.length) return '';
+  return '<div class="rec-cand-other-active"><p class="rec-cand-other-active-head">Otros procesos activos · '+others.length+'</p>'+
+    others.map(function(a){
+      const vac=a.vacancy||{};
+      const vacId=vac.id||'';
+      return '<div class="rec-cand-other-active-row"><div class="rec-cand-other-active-main">'+
+        '<p class="rec-cand-other-active-title">'+tcEsc(vac.title||'—')+'</p>'+
+        '<p class="rec-cand-other-active-meta">'+tcEsc(vac.clientName||'')+' · '+tcEsc((a.stage&&a.stage.name)||'—')+'</p></div>'+
+        '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button></div>';
+    }).join('')+'</div>';
+}
+async function recCandRenderPipelineSection(c){
+  const host=document.getElementById('rec-cand-pipeline-host');
+  if(!host||!c) return;
+  const st=recEnsureState();
+  const parts=recCandPartitionApplications(c.applications||[]);
+  const primary=recCandPickPrimaryApplication(st,parts.active);
+  if(!primary){
+    host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
+      '<p class="rec-cand-pipeline-empty-sub">Puedes añadir este candidato a una vacante.</p></div>';
+    return;
+  }
+  const vacId=primary.vacancy&&primary.vacancy.id;
+  const stageId=primary.stage&&primary.stage.id;
+  host.innerHTML=recCandHeroHtml(primary,'');
+  const others=parts.active.filter(function(a){ return a!==primary; });
+  if(others.length) host.insertAdjacentHTML('beforeend',recCandRenderOtherActiveRows(others));
+  try{
+    const rows=await recCandGetStagesCached(vacId);
+    const rail=recCandBuildStageRailHtml(rows,stageId);
+    const railEl=document.getElementById('rec-cand-hero-rail');
+    if(railEl) railEl.innerHTML=rail;
+  }catch(_e){}
+}
 function recCandSetOpErr(msg){
   const el=document.getElementById('rec-cand-detail-op-err');
   if(!el) return;
@@ -8328,18 +8641,19 @@ async function recCandOpenDetail(id){
   st.detailCandidateId=id;
   openModal('modal-rec-candidate-detail');
   recCandSetOpErr('');
+  recCandSetCvErr('');
   recCandRenderDetail(null,true);
   try{
     const c=await recCandFetchDetail(id);
     st.detailCandidate=c;
-    recCandRenderDetail(c,false);
+    await recCandRenderDetail(c,false);
   }catch(e){
     recCandSetCvErr((e&&e.message)||'No se pudo cargar el candidato.');
   }
 }
-function recCandRenderDetail(c,loading){
+async function recCandRenderDetail(c,loading){
   if(loading){
-    document.getElementById('rec-cand-detail-name').textContent='Cargando…';
+    recCandRenderDetailLoading();
     return;
   }
   if(!c) return;
@@ -8348,52 +8662,25 @@ function recCandRenderDetail(c,loading){
   recCandSetOpErr('');
   document.getElementById('rec-cand-detail-avatar').textContent=recCandInitials(c.fullName);
   const nameEl=document.getElementById('rec-cand-detail-name');
-  if(nameEl) nameEl.textContent=(c.fullName||'—')+(c.archivedAt?' · Archivado':'');
+  if(nameEl) nameEl.textContent=c.fullName||'—';
+  const archBadge=document.getElementById('rec-cand-detail-arch-badge');
+  if(archBadge) archBadge.classList.toggle('hidden',!c.archivedAt);
   const subParts=[recCandProfilePrimaryLabel(c),recCandLocationLine(c)].filter(function(x){ return x&&x!=='—'; });
-  const contact=recCandContactLine(c);
-  if(contact&&contact!=='—') subParts.push(contact);
   document.getElementById('rec-cand-detail-subline').textContent=subParts.join(' · ')||'—';
-  const sum=c.applicationSummary||{};
-  document.getElementById('rec-cand-kpi-total').textContent=String(sum.total||0);
-  document.getElementById('rec-cand-kpi-active').textContent=String(sum.active||0);
-  document.getElementById('rec-cand-kpi-hired').textContent=String(sum.hired||0);
-  document.getElementById('rec-cand-kpi-rejected').textContent=String(sum.rejected||0);
-  const grid=document.getElementById('rec-cand-info-grid');
-  if(grid){
-    const fields=[
-      ['WhatsApp',c.whatsapp||c.phone||'—'],['Teléfono secundario',recCandSecondaryPhone(c)],
-      ['Email',c.email||'—'],['Perfil principal',recCandProfilePrimaryLabel(c)],
-      ['Perfil secundario',c.profileSecondary||'—'],['Ciudad',c.city||'—'],['Estado',c.state||'—'],
-      ['Fuente',recCandSourceLabel(c)],
-    ];
-    grid.innerHTML=fields.map(function(pair){
-      return '<div class="rec-detail-field rec-info-tile"><label>'+tcEsc(pair[0])+'</label><span>'+tcEsc(pair[1]||'—')+'</span></div>';
-    }).join('')+
-    (c.notes?'<div class="rec-detail-field rec-info-tile" style="grid-column:1/-1;"><label>Notas</label><span style="white-space:pre-wrap;">'+tcEsc(c.notes)+'</span></div>':'');
+  await recCandRenderPipelineSection(c);
+  const sumEl=document.getElementById('rec-cand-summary-meta');
+  const sumLine=recCandSummaryMetaLine(c.applicationSummary);
+  if(sumEl){
+    if(sumLine){ sumEl.textContent=sumLine; sumEl.classList.remove('hidden'); }
+    else{ sumEl.textContent=''; sumEl.classList.add('hidden'); }
   }
+  recCandRenderExpediente(c);
+  recCandRenderNotesBlock(c);
+  const closed=recCandPartitionApplications(c.applications||[]).closed;
+  recCandRenderHistoryBlock(closed);
+  recCandRenderCvPanel(c);
   const archBtn=document.getElementById('rec-cand-archive-btn');
   if(archBtn) archBtn.textContent=c.archivedAt?'Reactivar candidato':'Archivar candidato';
-  const plist=document.getElementById('rec-cand-process-list');
-  if(plist){
-    const apps=c.applications||[];
-    if(!apps.length) plist.innerHTML='<p style="font-size:13px;color:var(--slate-500);margin:0;">Sin procesos registrados.</p>';
-    else plist.innerHTML=apps.map(function(a){
-      const sk=a.stage&&a.stage.key;
-      let cls='rec-cand-process-card';
-      if(sk==='HIRED') cls+=' rec-cand-process-card--hired';
-      else if(sk==='REJECTED') cls+=' rec-cand-process-card--rej';
-      else cls+=' rec-cand-process-card--active';
-      const vac=a.vacancy||{};
-      const dt=(a.updatedAt||a.appliedAt||'').slice(0,10);
-      const inPipeline=st.selectedId&&vac.id===st.selectedId&&st.moduleTab!=='candidates';
-      return '<div class="'+cls+'"><div style="font-weight:700;color:var(--primary);font-size:13px;">'+tcEsc(vac.title||'—')+
-        (inPipeline?' <span style="font-size:10px;font-weight:700;color:var(--purple-dark);">· Vacante activa</span>':'')+'</div>'+
-        '<div style="font-size:12px;color:var(--slate-600);margin-top:2px;">'+tcEsc(vac.clientName||'')+' · Proceso: '+tcEsc(recVacancyStatusLabel(vac.status))+'</div>'+
-        '<div style="font-size:12px;color:var(--slate-700);margin-top:6px;">Etapa actual: <strong>'+tcEsc((a.stage&&a.stage.name)||'—')+'</strong></div>'+
-        '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Actualizado '+tcEsc(dt)+'</div></div>';
-    }).join('');
-  }
-  recCandRenderCvPanel(c);
 }
 function recCandSetCvErr(msg){
   const el=document.getElementById('rec-cand-cv-err');
@@ -8435,14 +8722,17 @@ function recCandRenderCvPanel(c){
     recCandBindCvDropZone(document.getElementById('rec-cand-cv-drop'));
     return;
   }
-  const dt=(r.updatedAt||r.createdAt||'').slice(0,10);
-  panel.innerHTML='<div class="rec-cand-cv-file-row" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">'+
-    '<div><div style="font-weight:700;font-size:13px;color:var(--primary);">'+tcEsc(r.originalFileName||'CV')+'</div>'+
-    '<div style="font-size:11px;color:var(--slate-500);margin-top:2px;">'+tcEsc(r.mimeType||'')+' · '+recCandFmtBytes(r.fileSize)+(dt?' · '+dt:'')+'</div></div>'+
-    '<div style="display:flex;flex-wrap:gap:8px;align-items:center;">'+
-    '<button type="button" class="rec-file-link" onclick="recCandOpenCv()">Abrir CV</button>'+
-    '<button type="button" class="rec-file-link" onclick="document.getElementById(\'rec-cand-cv-file\').click()">Reemplazar</button>'+
-    '<button type="button" class="rec-file-link rec-file-link--danger" onclick="recCandDeleteCv()">Eliminar</button>'+
+  const dt=recCandFmtDetailDate(r.updatedAt||r.createdAt);
+  const mime=(r.mimeType||'').split('/').pop().toUpperCase()||'DOC';
+  panel.innerHTML='<div class="rec-file-row">'+
+    '<div class="rec-file-icon"><span class="rec-doc-file-mark">'+tcEsc(mime.slice(0,4))+'</span></div>'+
+    '<div class="rec-file-body">'+
+    '<p class="rec-file-title">'+tcEsc(r.originalFileName||'CV')+'</p>'+
+    '<p class="rec-file-meta">'+tcEsc(r.mimeType||'')+' · '+recCandFmtBytes(r.fileSize)+(dt&&dt!=='—'?' · '+tcEsc(dt):'')+'</p></div>'+
+    '<div class="rec-file-actions" style="display:flex;gap:6px;align-items:center;">'+
+    '<button type="button" class="rec-vac-detail-btn" onclick="recCandOpenCv()" title="Abrir CV" aria-label="Abrir CV"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>'+
+    '<button type="button" class="rec-vac-detail-btn" onclick="document.getElementById(\'rec-cand-cv-file\').click()" title="Reemplazar CV" aria-label="Reemplazar CV"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></button>'+
+    '<button type="button" class="rec-vac-detail-btn rec-vac-detail-btn--danger" onclick="recCandDeleteCv()" title="Eliminar CV" aria-label="Eliminar CV"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'+
     '</div></div>';
 }
 function recCandOpenCv(){
@@ -8469,7 +8759,7 @@ async function recCandUploadCvFile(file){
     if(!r.ok) throw new Error((data&&data.message)||'No se pudo subir el CV.');
     const c=await recCandFetchDetail(id);
     st.detailCandidate=c;
-    recCandRenderDetail(c,false);
+    await recCandRenderDetail(c,false);
   }catch(e){ recCandSetCvErr(e.message||'Error al subir.'); }
 }
 async function recCandDeleteCv(){
@@ -8481,7 +8771,7 @@ async function recCandDeleteCv(){
     await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id)+'/resume',{method:'DELETE'});
     const c=await recCandFetchDetail(id);
     st.detailCandidate=c;
-    recCandRenderDetail(c,false);
+    await recCandRenderDetail(c,false);
   }catch(e){ recCandSetCvErr((e&&e.message)||'No se pudo eliminar.'); }
 }
 function recCandOpenForm(mode,candidate){
@@ -8606,7 +8896,7 @@ async function recCandSubmitForm(){
       await recCandLoadList(false);
       if(recEnsureState().detailCandidateId===id){
         const c=await recCandFetchDetail(id);
-        recCandRenderDetail(c,false);
+        await recCandRenderDetail(c,false);
       }
       return;
     }
@@ -8727,7 +9017,7 @@ async function recCandSubmitAddVacancy(){
     closeModal('modal-rec-candidate-add-vacancy');
     const c=await recCandFetchDetail(candidateId);
     st.detailCandidate=c;
-    recCandRenderDetail(c,false);
+    await recCandRenderDetail(c,false);
     await recCandLoadList(false);
     if(st.selectedId===vacId&&st.moduleTab!=='candidates') recKanbanLoad(vacId);
   }catch(e){
@@ -8745,7 +9035,7 @@ async function recCandToggleArchive(){
   await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(c.id),{method:'PATCH',body:JSON.stringify({archived:next})});
   const fresh=await recCandFetchDetail(c.id);
   st.detailCandidate=fresh;
-  recCandRenderDetail(fresh,false);
+  await recCandRenderDetail(fresh,false);
   await recCandLoadList(false);
 }
 (function recCandCvFileInit(){
