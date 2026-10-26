@@ -57,6 +57,12 @@ check(/No se pudo cambiar la etapa\. Intenta nuevamente\./.test(dropBlock), 'rol
 check(/String\(fromStageId\)===String\(targetStageId\)/.test(dropBlock), 'misma etapa sin PATCH');
 check(/rec-kanban-card--enter/.test(indexHtml) && /rec-kanban-col--drop-success/.test(indexHtml), 'microinteracciones drop');
 
+console.log('\n=== Recruitment Kanban — polish semántico ===\n');
+
+check(/recKanbanColSemanticMod\(stage\)/.test(indexHtml), 'columnas usan recKanbanColSemanticMod(stage)');
+check(/key==='HIRED'/.test(indexHtml.match(/function recKanbanColSemanticMod[\s\S]*?^function /m)?.[0] || ''), 'semántica solo FINALIST/HIRED/REJECTED por key');
+check(/rec-kanban-col--sem-finalist\.rec-kanban-col--collapsed/.test(indexHtml), 'colapsadas conservan semántica');
+
 console.log('\n=== Regresiones ===\n');
 
 function runRegression(script) {

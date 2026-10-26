@@ -154,6 +154,10 @@ check(/rec-kanban-col-icon-compact/.test(indexHtml), 'columna colapsada con icon
 check(!/rec-kanban-col-title-vertical/.test(indexHtml), 'sin texto vertical truncado en columnas');
 check(/colTip=stageName\+' · '\+colApps\.length\+' candidatos'/.test(indexHtml), 'tooltip etapa colapsada con contador');
 check(/CLIENT_INTERVIEW:/.test(indexHtml) && /recKanbanStageIconSvg\(stage\)/.test(indexHtml), 'mapping stage.key en Kanban');
+check(/recVacHiredCheckSvg/.test(indexHtml) && /rec-vac-hired-badge/.test(indexHtml), 'indicador contratación en card vacante');
+check(/applicationSummary\.hired/.test(indexHtml), 'badge usa applicationSummary.hired del listado');
+check(/function recKanbanColSemanticMod/.test(indexHtml), 'modificadores semánticos Kanban por stage.key');
+check(/rec-kanban-col--sem-finalist/.test(indexHtml) && /rec-kanban-col--sem-hired/.test(indexHtml) && /rec-kanban-col--sem-rejected/.test(indexHtml), 'CSS semántico FINALIST/HIRED/REJECTED');
 
 console.log('\n=== Backend summary ===\n');
 
