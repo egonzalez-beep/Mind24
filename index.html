@@ -579,9 +579,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 #view-dash-recruitment #rec-selected-panel.rec-workspace--pipeline{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 #view-dash-recruitment .rec-pipeline-header{flex-shrink:0;}
 #view-dash-recruitment #rec-pane-candidates{flex:1;min-height:0;overflow-y:auto;}
-#view-dash-recruitment #rec-pane-metrics{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;}
-.rec-metrics-page{padding:4px 2px 18px;max-width:1280px;}
-.rec-metrics-title{font-size:22px;font-weight:800;letter-spacing:-.45px;color:var(--primary);margin:0 0 18px;}
+#view-dash-recruitment #rec-pane-metrics{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
+.rec-metrics-page{padding:0 2px 8px;max-width:1280px;flex:1;min-height:0;display:flex;flex-direction:column;}
+#rec-metrics-host{flex:1;min-height:0;overflow:hidden;}
 .rec-metrics-month-nav{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:4px 8px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-metrics-month-btn{border:none;background:transparent;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);font-family:inherit;}
 .rec-metrics-month-btn:hover{background:var(--purple-light);color:var(--purple-dark);}
@@ -2973,7 +2973,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="rec-pane-metrics" class="hidden rec-metrics-page">
-        <h2 class="rec-metrics-title">Métricas de reclutamiento</h2>
         <div id="rec-metrics-host">
           <p class="rec-metrics-loading">Cargando métricas…</p>
         </div>
