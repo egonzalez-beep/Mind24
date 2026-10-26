@@ -6,6 +6,11 @@ import {
 } from './organizationTimezone.service.js';
 import { calendarDayDiff } from './recruitmentVacancy.service.js';
 import {
+  consolidateTerminalApplications,
+  isSelectedMonthCurrent,
+  rejectedTopClientFromConsolidated,
+} from './recruitmentMetricsTerminal.service.js';
+import {
   localDateKey,
   utcRangeForLocalDateInclusive,
 } from './remoteWorkSessionHistory.service.js';
@@ -141,50 +146,58 @@ async function countDistinctCandidatesEnteredProcess(organizationId, start, end)
   return rows.length;
 }
 
-async function countStageMovesToKey(organizationId, stageKey, start, end) {
-  return prisma.recruitmentApplicationStageEvent.count({
+async function loadApplicationsForTerminalMetrics(organizationId, rangeStart, rangeEnd) {
+  const touched = await prisma.recruitmentApplicationStageEvent.findMany({
     where: {
       organizationId,
-      createdAt: { gte: start, lt: end },
-      toStage: { key: stageKey },
+      createdAt: { gte: rangeStart, lt: rangeEnd },
+      toStage: { key: { in: ['HIRED', 'REJECTED'] } },
     },
+    select: { applicationId: true },
+    distinct: ['applicationId'],
   });
-}
+  const appIds = touched.map((r) => r.applicationId);
+  if (!appIds.length) return { applications: [], byId: new Map() };
 
-async function rejectedByClient(organizationId, start, end) {
-  const events = await prisma.recruitmentApplicationStageEvent.findMany({
-    where: {
-      organizationId,
-      createdAt: { gte: start, lt: end },
-      toStage: { key: 'REJECTED' },
-    },
-    select: {
-      application: {
-        select: {
-          vacancy: { select: { clientName: true } },
-        },
+  const rows = await prisma.recruitmentApplication.findMany({
+    where: { organizationId, id: { in: appIds } },
+    include: {
+      stage: { select: { key: true } },
+      vacancy: { select: { clientName: true } },
+      stageEvents: {
+        include: { toStage: { select: { key: true } } },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       },
     },
   });
-  const byClient = new Map();
-  for (const ev of events) {
-    const name = (ev.application?.vacancy?.clientName || 'Sin cliente').trim() || 'Sin cliente';
-    byClient.set(name, (byClient.get(name) || 0) + 1);
-  }
-  let top = null;
-  for (const [name, count] of byClient.entries()) {
-    if (!top || count > top.count) top = { name, count };
-  }
-  const total = events.length;
-  if (!top || total === 0) return { total: 0, topClient: null };
-  return {
-    total,
-    topClient: {
-      name: top.name,
-      count: top.count,
-      percent: Math.round((top.count / total) * 100),
-    },
-  };
+
+  const applications = rows.map((row) => ({
+    applicationId: row.id,
+    currentStageKey: row.stage?.key || null,
+    clientName: row.vacancy?.clientName || null,
+    timeline: row.stageEvents.map((ev) => ({
+      id: ev.id,
+      createdAt: ev.createdAt,
+      toStageKey: ev.toStage?.key || '',
+    })),
+  }));
+  const byId = new Map(applications.map((a) => [a.applicationId, a]));
+  return { applications, byId };
+}
+
+function consolidatedTerminalForPeriod(
+  applications,
+  stageKey,
+  { year, month, monthStart, monthEnd, endOfMonthInstant, timeZone, now },
+) {
+  const isCurrentMonth = isSelectedMonthCurrent(year, month, timeZone, now);
+  return consolidateTerminalApplications(applications, stageKey, {
+    monthStart,
+    monthEnd,
+    endOfMonthInstant,
+    now,
+    isCurrentMonth,
+  });
 }
 
 /**
@@ -249,27 +262,16 @@ async function activeVacanciesAtMonthEnd(organizationId, endOfMonth, timeZone) {
   return { total: active.length, nearTargetCount: nearTarget };
 }
 
-async function dailyActivity(organizationId, year, month, start, end, timeZone) {
-  const candidates = await prisma.recruitmentCandidate.findMany({
-    where: { organizationId, createdAt: { gte: start, lt: end } },
-    select: { createdAt: true },
-  });
-  const hires = await prisma.recruitmentApplicationStageEvent.findMany({
-    where: {
-      organizationId,
-      createdAt: { gte: start, lt: end },
-      toStage: { key: 'HIRED' },
-    },
-    select: { createdAt: true },
-  });
-  const regByDay = new Map();
-  for (const c of candidates) {
-    const d = localDateKey(c.createdAt, timeZone);
-    regByDay.set(d, (regByDay.get(d) || 0) + 1);
-  }
+function buildDailyActivityFromMaps(
+  year,
+  month,
+  timeZone,
+  regByDay,
+  consolidatedHired,
+) {
   const hireByDay = new Map();
-  for (const h of hires) {
-    const d = localDateKey(h.createdAt, timeZone);
+  for (const h of consolidatedHired) {
+    const d = localDateKey(h.entryAt, timeZone);
     hireByDay.set(d, (hireByDay.get(d) || 0) + 1);
   }
   const daysInMonth = getLocalMonthRange(year, month, timeZone).daysInMonth;
@@ -287,6 +289,27 @@ async function dailyActivity(organizationId, year, month, start, end, timeZone) 
     d.intensity = intensityLevel(d.registrations, maxReg);
   }
   return { days, peak };
+}
+
+async function dailyActivity(
+  organizationId,
+  year,
+  month,
+  start,
+  end,
+  timeZone,
+  consolidatedHired,
+) {
+  const candidates = await prisma.recruitmentCandidate.findMany({
+    where: { organizationId, createdAt: { gte: start, lt: end } },
+    select: { createdAt: true },
+  });
+  const regByDay = new Map();
+  for (const c of candidates) {
+    const d = localDateKey(c.createdAt, timeZone);
+    regByDay.set(d, (regByDay.get(d) || 0) + 1);
+  }
+  return buildDailyActivityFromMaps(year, month, timeZone, regByDay, consolidatedHired);
 }
 
 function buildInsights({
@@ -343,22 +366,68 @@ function buildInsights({
   return insights;
 }
 
-export async function getRecruitmentMetrics(organizationId, year, month) {
+export async function getRecruitmentMetrics(organizationId, year, month, now = new Date()) {
   const timeZone = await resolveOrganizationIanaTimezone(organizationId);
   const { start, end, daysInMonth, fromKey, toKey } = getLocalMonthRange(year, month, timeZone);
   const prev = shiftMonth(year, month, -1);
   const prevRange = getLocalMonthRange(prev.year, prev.month, timeZone);
   const endOfMonth = endOfCalendarDayInTimeZone(toKey, timeZone);
+  const prevEndOfMonth = endOfCalendarDayInTimeZone(prevRange.toKey, timeZone);
   const prevMonthLabel = formatMonthShort(prev.month);
+
+  const { applications } = await loadApplicationsForTerminalMetrics(
+    organizationId,
+    prevRange.start,
+    end,
+  );
+
+  const consolidatedHiredCurr = consolidatedTerminalForPeriod(applications, 'HIRED', {
+    year,
+    month,
+    monthStart: start,
+    monthEnd: end,
+    endOfMonthInstant: endOfMonth,
+    timeZone,
+    now,
+  });
+  const consolidatedHiredPrev = consolidatedTerminalForPeriod(applications, 'HIRED', {
+    year: prev.year,
+    month: prev.month,
+    monthStart: prevRange.start,
+    monthEnd: prevRange.end,
+    endOfMonthInstant: prevEndOfMonth,
+    timeZone,
+    now,
+  });
+  const consolidatedRejectedCurr = consolidatedTerminalForPeriod(applications, 'REJECTED', {
+    year,
+    month,
+    monthStart: start,
+    monthEnd: end,
+    endOfMonthInstant: endOfMonth,
+    timeZone,
+    now,
+  });
+  const consolidatedRejectedPrev = consolidatedTerminalForPeriod(applications, 'REJECTED', {
+    year: prev.year,
+    month: prev.month,
+    monthStart: prevRange.start,
+    monthEnd: prevRange.end,
+    endOfMonthInstant: prevEndOfMonth,
+    timeZone,
+    now,
+  });
+
+  const hired = consolidatedHiredCurr.length;
+  const prevHired = consolidatedHiredPrev.length;
+  const appsById = new Map(applications.map((a) => [a.applicationId, a]));
+  const rejectedDetail = rejectedTopClientFromConsolidated(appsById, consolidatedRejectedCurr);
+  const prevRejectedTotal = consolidatedRejectedPrev.length;
 
   const [
     currRegistered,
     prevRegistered,
     enteredProcess,
-    hired,
-    prevHired,
-    rejectedDetail,
-    prevRejectedTotal,
     currCoverage,
     prevCoverage,
     activeSnapshot,
@@ -367,14 +436,10 @@ export async function getRecruitmentMetrics(organizationId, year, month) {
     countCandidatesCreated(organizationId, start, end),
     countCandidatesCreated(organizationId, prevRange.start, prevRange.end),
     countDistinctCandidatesEnteredProcess(organizationId, start, end),
-    countStageMovesToKey(organizationId, 'HIRED', start, end),
-    countStageMovesToKey(organizationId, 'HIRED', prevRange.start, prevRange.end),
-    rejectedByClient(organizationId, start, end),
-    countStageMovesToKey(organizationId, 'REJECTED', prevRange.start, prevRange.end),
     avgCoverageDaysForMonth(organizationId, start, end, timeZone),
     avgCoverageDaysForMonth(organizationId, prevRange.start, prevRange.end, timeZone),
     activeVacanciesAtMonthEnd(organizationId, endOfMonth, timeZone),
-    dailyActivity(organizationId, year, month, start, end, timeZone),
+    dailyActivity(organizationId, year, month, start, end, timeZone, consolidatedHiredCurr),
   ]);
 
   const currDailyAvg = round1(currRegistered / daysInMonth);

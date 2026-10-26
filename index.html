@@ -602,8 +602,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-metrics-kpi-icon--sky{background:rgba(56,189,248,.12);color:#0284C7;}
 .rec-metrics-kpi-value{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.1;margin:0;}
 .rec-metrics-kpi-sub{font-size:11px;font-weight:600;color:var(--slate-500);margin:0;line-height:1.35;}
-.rec-metrics-kpi-sub.positive{color:#16A34A;}
-.rec-metrics-kpi-sub.negative{color:#DC2626;}
+.rec-metrics-kpi-sub .rec-metrics-cmp--pos{color:#16A34A;}
+.rec-metrics-kpi-sub .rec-metrics-cmp--neg{color:#E11D48;}
+.rec-metrics-kpi-sub .rec-metrics-cmp--neu{color:var(--slate-500);}
 .rec-metrics-kpi-sub.insight{color:#E11D48;}
 .rec-metrics-main{display:grid;grid-template-columns:minmax(0,1fr)280px;gap:14px;align-items:start;}
 @media(max-width:960px){.rec-metrics-main{grid-template-columns:1fr;}}
@@ -9488,6 +9489,15 @@ function recMetricsFmtDelta(n,suffix){
   const abs=Math.abs(n);
   return sign+String(abs).replace('-','')+(suffix||'');
 }
+function recMetricsCmpClass(n,goodWhenPositive){
+  if(n==null||Number.isNaN(n)||n===0) return 'rec-metrics-cmp--neu';
+  const up=n>0;
+  const good=goodWhenPositive?up:!up;
+  return good?'rec-metrics-cmp--pos':'rec-metrics-cmp--neg';
+}
+function recMetricsCmpSpan(text,cls){
+  return '<span class="'+cls+'">'+text+'</span>';
+}
 function recMetricsFmtDayShort(iso){
   if(!iso) return '—';
   const p=iso.split('-');
@@ -9553,18 +9563,17 @@ function recMetricsRender(data){
   const k=data.kpis;
   const reg=k.candidatesRegistered;
   const regDelta=reg.deltaDailyAverage;
-  const regDeltaCls=regDelta>0?'positive':regDelta<0?'negative':'';
-  const regSub=reg.dailyAverage+' promedio diario<br><span class="'+regDeltaCls+'">'+recMetricsFmtDelta(regDelta)+' vs. '+tcEsc(reg.compareLabel)+'</span>';
+  const regCmpCls=recMetricsCmpClass(regDelta,true);
+  const regSub=reg.dailyAverage+' promedio diario<br>'+recMetricsCmpSpan(recMetricsFmtDelta(regDelta)+' vs. '+tcEsc(reg.compareLabel),regCmpCls);
   const hired=k.hired;
-  const hiredSub=hired.deltaVsPrevious!==0?('<span class="'+(hired.deltaVsPrevious>0?'positive':'negative')+'">'+recMetricsFmtDelta(hired.deltaVsPrevious)+' vs. '+tcEsc(hired.compareLabel)+'</span>'):'';
+  const hiredSub=hired.deltaVsPrevious!==0?recMetricsCmpSpan(recMetricsFmtDelta(hired.deltaVsPrevious)+' vs. '+tcEsc(hired.compareLabel),recMetricsCmpClass(hired.deltaVsPrevious,true)):'';
   const rej=k.rejected;
   const rejSub=rej.topClient&&rej.total?('<span class="insight">'+rej.topClient.percent+'% provienen de '+tcEsc(rej.topClient.name)+'</span>'):'';
   const cov=k.avgCoverageDays;
   const covVal=cov.value!=null?cov.value+' días':'—';
   let covSub='';
   if(cov.deltaVsPrevious!=null){
-    const cls=cov.deltaVsPrevious<0?'positive':cov.deltaVsPrevious>0?'negative':'';
-    covSub='<span class="'+cls+'">'+recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel)+'</span>';
+    covSub=recMetricsCmpSpan(recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel),recMetricsCmpClass(cov.deltaVsPrevious,false));
   }
   const act=k.activeVacancies;
   const actSub=act.nearTargetCount?act.nearTargetCount+' próximas al objetivo':'';
@@ -9573,7 +9582,7 @@ function recMetricsRender(data){
   host.innerHTML=
     '<div class="rec-metrics-kpi-grid">'+
     recMetricsKpiCard('Candidatos registrados',reg.total,regSub,'users','purple')+
-    recMetricsKpiCard('En proceso',k.enteredProcess.total,'','process','blue')+
+    recMetricsKpiCard('Ingresaron a proceso',k.enteredProcess.total,'','process','blue')+
     recMetricsKpiCard('Contratados',hired.total,hiredSub,'hired','green')+
     recMetricsKpiCard('Rechazados',rej.total,rejSub,'rejected','coral')+
     recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber')+
