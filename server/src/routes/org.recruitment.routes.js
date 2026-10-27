@@ -18,6 +18,7 @@ import {
   streamRecruitmentCandidateResumeFile,
   uploadRecruitmentCandidateResume,
 } from '../services/recruitmentCandidateResume.service.js';
+import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
 import {
   createRecruitmentVacancy,
   getRecruitmentVacancy,
@@ -558,6 +559,30 @@ router.get('/candidates', async (req, res, next) => {
     next(e);
   }
 });
+
+router.post(
+  '/candidates/resume/parse',
+  recruitmentCandidateResumeUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      await assertEmpresaAdmin(req.session.userId);
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un CV para analizar.';
+        throw err;
+      }
+      const result = await analyzeRecruitmentResumeUpload({
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.json(result);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.get('/candidates/:candidateId/resume', async (req, res, next) => {
   try {
