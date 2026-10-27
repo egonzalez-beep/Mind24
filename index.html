@@ -10401,22 +10401,36 @@ function recCandRenderDetailTags(c){
   if(!box) return;
   const assigned=(c&&c.assignedTags)||[];
   let html=assigned.map(function(a){ return recCandTagPillHtml({ id:a.tagId, name:a.name, colorKey:a.colorKey },{ removable:true }); }).join('');
-  html+='<button type="button" class="rec-cand-tag-add" id="rec-cand-tag-add-btn" onclick="recCandOpenTagPicker(event)">+ Etiqueta</button>';
+  html+='<button type="button" class="rec-cand-tag-add" id="rec-cand-tag-add-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="rec-cand-tag-picker" onclick="recCandOpenTagPicker(event)">+ Etiqueta</button>';
   box.innerHTML=html;
 }
-function recCandCloseTagPicker(){
+function recCandTagPickerIsOpen(){
   const el=document.getElementById('rec-cand-tag-picker');
-  if(el) el.classList.add('hidden');
+  return !!(el&&!el.classList.contains('hidden'));
 }
-function recCandBindTagPickerOutside(){
-  if(window.__recCandTagPickerOutside) return;
-  window.__recCandTagPickerOutside=true;
+function recCandCloseTagPicker(returnFocus){
+  const el=document.getElementById('rec-cand-tag-picker');
+  const btn=document.getElementById('rec-cand-tag-add-btn');
+  if(el) el.classList.add('hidden');
+  if(btn) btn.setAttribute('aria-expanded','false');
+  if(returnFocus&&btn) btn.focus();
+}
+function recCandBindTagPickerDismiss(){
+  if(window.__recCandTagPickerDismiss) return;
+  window.__recCandTagPickerDismiss=true;
   document.addEventListener('click',function(ev){
+    if(!recCandTagPickerIsOpen()) return;
     const picker=document.getElementById('rec-cand-tag-picker');
-    const addBtn=document.getElementById('rec-cand-tag-add-btn');
-    if(!picker||picker.classList.contains('hidden')) return;
-    if(picker.contains(ev.target)||(addBtn&&addBtn.contains(ev.target))) return;
-    recCandCloseTagPicker();
+    const btn=document.getElementById('rec-cand-tag-add-btn');
+    if(picker&&picker.contains(ev.target)) return;
+    if(btn&&(btn===ev.target||btn.contains(ev.target))) return;
+    recCandCloseTagPicker(false);
+  });
+  document.addEventListener('keydown',function(ev){
+    if(ev.key!=='Escape'||!recCandTagPickerIsOpen()) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    recCandCloseTagPicker(true);
   });
 }
 async function recCandAssignTagFromPicker(tagId){
@@ -10434,10 +10448,15 @@ async function recCandAssignTagFromPicker(tagId){
 }
 async function recCandOpenTagPicker(ev){
   if(ev) ev.stopPropagation();
-  recCandBindTagPickerOutside();
+  recCandBindTagPickerDismiss();
+  const picker=document.getElementById('rec-cand-tag-picker');
+  const btn=document.getElementById('rec-cand-tag-add-btn');
+  if(recCandTagPickerIsOpen()){
+    recCandCloseTagPicker(true);
+    return;
+  }
   const st=recEnsureState();
   const cid=st.detailCandidateId;
-  const picker=document.getElementById('rec-cand-tag-picker');
   if(!cid||!picker) return;
   await recCandEnsureTagCatalog();
   const assigned=new Set((st.detailCandidate&&st.detailCandidate.assignedTags||[]).map(function(a){ return a.tagId; }));
@@ -10445,6 +10464,7 @@ async function recCandOpenTagPicker(ev){
   if(!tags.length){
     picker.innerHTML='<p class="rec-cand-tag-picker-empty">No hay etiquetas disponibles.</p>';
     picker.classList.remove('hidden');
+    if(btn) btn.setAttribute('aria-expanded','true');
     return;
   }
   picker.innerHTML=tags.map(function(t){
@@ -10455,6 +10475,7 @@ async function recCandOpenTagPicker(ev){
       '</button>';
   }).join('');
   picker.classList.remove('hidden');
+  if(btn) btn.setAttribute('aria-expanded','true');
 }
 async function recCandRemoveTag(tagId){
   const st=recEnsureState();
@@ -11031,10 +11052,12 @@ async function recCandOpenDetail(id){
 }
 async function recCandRenderDetail(c,loading){
   if(loading){
+    recCandCloseTagPicker(false);
     recCandRenderDetailLoading();
     return;
   }
   if(!c) return;
+  recCandCloseTagPicker(false);
   await recEnsureRecruitmentOrgTimeZone();
   const st=recEnsureState();
   st.detailCandidate=c;

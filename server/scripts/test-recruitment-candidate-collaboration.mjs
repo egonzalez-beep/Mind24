@@ -81,6 +81,10 @@ check(!/notes:\s*trimOrNull\(prepared\.notes\)/.test(candidateSvc), 'create no e
 const tagPickerFn = indexHtml.match(/function recCandOpenTagPicker[\s\S]*?^async function /m)?.[0] || '';
 check(/rec-cand-tag-picker/.test(tagPickerFn) && !/window\.prompt/.test(tagPickerFn), 'picker tags sin prompt');
 check(/recCandAssignTagFromPicker/.test(indexHtml), 'asignar tag desde picker');
+check(/recCandTagPickerIsOpen/.test(indexHtml) && /recCandCloseTagPicker\(true\)/.test(tagPickerFn), 'toggle cierra picker');
+check(/recCandBindTagPickerDismiss/.test(indexHtml) && !/__recCandTagPickerOutside/.test(indexHtml), 'dismiss único sin listeners legacy');
+check(/aria-expanded/.test(indexHtml.match(/rec-cand-tag-add[\s\S]*?\+ Etiqueta/)?.[0] || ''), 'trigger aria-expanded');
+check(/Escape/.test(indexHtml.match(/function recCandBindTagPickerDismiss[\s\S]*?^function /m)?.[0] || ''), 'Escape cierra picker');
 
 console.log('\n=== Integración (DB) ===\n');
 
