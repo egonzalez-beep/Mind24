@@ -77,7 +77,7 @@ console.log('\n=== Pulso de hoy — estático ===\n');
 check(/router\.get\('\/team-pulse'/.test(orgRoutes), 'route GET team-pulse');
 check(/getTeamPulseForOrganization/.test(orgRoutes), 'route usa servicio pulse');
 check(/tc-pulse-btn/.test(indexHtml) && /Pulso de hoy/.test(indexHtml), 'botón Pulso de hoy');
-check(/tc-page-head-actions/.test(indexHtml), 'botón junto a agregar colaborador');
+check(/tc-topbar-tools[\s\S]{0,500}rec-btn-new[\s\S]{0,120}\+ Agregar colaborador/.test(indexHtml), 'botones en topbar estilo reclutamiento');
 check(/tc-pulse-popover/.test(indexHtml) && /tcToggleTeamPulse/.test(indexHtml), 'popover flotante');
 check(/tcCloseTeamPulse/.test(indexHtml) && /Escape/.test(indexHtml), 'cierre escape y helper');
 check(!/location\.reload\(/.test(indexHtml.match(/function tcOpenTeamPulse[\s\S]{0,600}/)?.[0] || ''), 'sin reload al abrir pulso');

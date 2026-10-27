@@ -249,8 +249,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .si-cta-stack{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.15;}
 .si-cta-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
-.tc-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
-.tc-page-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.tc-dash-topbar .topbar-subtitle{display:none;}
+.tc-topbar-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;flex-wrap:wrap;}
+.tc-dir-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.tc-dir-count{font-size:12px;font-weight:600;color:var(--slate-500);}
 .rec-dash-topbar .topbar-subtitle{display:none;}
 .rec-dash-topbar{height:auto;min-height:56px;padding:8px 28px;flex-wrap:wrap;gap:8px 12px;}
 .rec-topbar-cluster{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;min-width:0;}
@@ -1210,7 +1212,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-expected-work-field{grid-column:1/-1;}
 .tc-expected-work-none{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate-600);margin:6px 0 8px;cursor:pointer;}
 .tc-expected-work-duration{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--slate-600);}
-.tc-expected-work-duration select{max-width:92px;}
+.tc-expected-work-duration select{min-width:96px;max-width:112px;}
+.tc-expected-work-duration select[id$="-ew-minutes"]{min-width:112px;max-width:128px;}
 .tc-emp-laptop{display:none;margin-bottom:12px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;}
 @media(max-width:768px){.tc-emp-laptop{display:block;}}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
@@ -3041,17 +3044,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title">Gestión de equipo</div><div class="topbar-subtitle">Asistencia y seguimiento de tareas</div></div><div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
-    <div class="page-content">
-      <div class="tc-page-head">
-        <div>
-          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin-bottom:4px;">Colaboradores</h2>
-        </div>
-        <div class="tc-page-head-actions">
-          <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
-          <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
-        </div>
+    <div class="topbar rec-dash-topbar tc-dash-topbar">
+      <div class="rec-topbar-cluster"><div class="topbar-title">Gestión de equipo</div></div>
+      <div class="tc-topbar-tools">
+        <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
+        <button type="button" class="rec-btn-new" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
       </div>
+      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
+    </div>
+    <div class="page-content">
       <div id="tc-pulse-popover" class="tc-pulse-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-pulse-popover-title" aria-hidden="true">
         <div class="tc-pulse-popover-head">
           <h3 id="tc-pulse-popover-title">Pulso de hoy</h3>
@@ -3196,7 +3197,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
       <p id="tc-list-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
       <div class="card">
-        <div class="card-header"><div><div class="card-title">Directorio</div><div class="card-subtitle" id="tc-list-count">0 colaboradores</div></div><button type="button" class="card-action tc-refresh-btn" onclick="tcLoadEmployees()" title="Actualizar directorio" aria-label="Actualizar directorio de colaboradores"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Actualizar</span></button></div>
+        <div class="card-header"><div class="tc-dir-head"><div class="card-title">Directorio</div><span class="tc-dir-count" id="tc-list-count">0 colaboradores</span></div><button type="button" class="card-action tc-refresh-btn" onclick="tcLoadEmployees()" title="Actualizar directorio" aria-label="Actualizar directorio de colaboradores"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Actualizar</span></button></div>
         <div class="card-body" style="overflow-x:auto;">
           <table class="tc-emp-table">
             <thead><tr><th>Colaborador</th><th>Puesto</th><th class="tc-emp-th-num">Pendientes</th><th class="tc-emp-th-num">En progreso</th><th class="tc-emp-th-num">Completadas</th><th class="tc-emp-th-status">Jornada</th><th class="tc-emp-th-actions">Acciones</th></tr></thead>
