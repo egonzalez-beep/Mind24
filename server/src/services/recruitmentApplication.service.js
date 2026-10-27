@@ -7,6 +7,7 @@ import {
   assertStageEnabledForVacancy,
   ensureVacancyRecruitmentStages,
 } from './recruitmentVacancyStage.service.js';
+import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
 
 const POSITION_GAP = 1000;
 
@@ -26,6 +27,9 @@ function serializeApplication(row) {
     stageId: row.stageId,
     position: row.position,
     appliedAt: row.appliedAt.toISOString(),
+    interviewScheduledAt: row.interviewScheduledAt
+      ? row.interviewScheduledAt.toISOString()
+      : null,
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -65,6 +69,7 @@ export async function createRecruitmentApplication({
   candidateId,
   changedByUserId,
   initialStageId,
+  interviewScheduledAt = undefined,
 }) {
   await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId);
@@ -99,6 +104,7 @@ export async function createRecruitmentApplication({
         stageId: newStage.id,
         position,
         appliedAt,
+        ...(interviewScheduledAt != null ? { interviewScheduledAt } : {}),
       },
       include: { candidate: true, stage: true },
     });
@@ -116,10 +122,25 @@ export async function createRecruitmentApplication({
         : null;
     if (targetStageId) {
       await assertStageEnabledForVacancy(organizationId, vacancyId, targetStageId, tx);
+      const targetStage = await tx.recruitmentStage.findFirst({
+        where: { id: targetStageId, organizationId },
+        select: { key: true },
+      });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
+      const moveData = {
+        stageId: targetStageId,
+        position,
+        interviewScheduledAt: resolveInterviewScheduledAtForApplicationUpdate({
+          stageChanged: true,
+          fromStageKey: newStage.key,
+          toStageKey: targetStage?.key,
+          existingInterviewScheduledAt: null,
+          explicitInterviewScheduledAt: interviewScheduledAt,
+        }),
+      };
       const moved = await tx.recruitmentApplication.update({
         where: { id: app.id },
-        data: { stageId: targetStageId, position },
+        data: moveData,
         include: { candidate: true, stage: true },
       });
       await recordStageEvent(tx, {
@@ -153,23 +174,50 @@ export async function updateRecruitmentApplication({
   stageId,
   position,
   notes,
+  interviewScheduledAt,
   changedByUserId,
 }) {
-  const existing = await assertRecruitmentApplicationInOrg(applicationId, organizationId);
+  const existingRow = await prisma.recruitmentApplication.findFirst({
+    where: { id: applicationId, organizationId },
+    include: { stage: { select: { key: true } } },
+  });
+  if (!existingRow) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    err.message = 'Postulación no encontrada.';
+    throw err;
+  }
+  const existing = existingRow;
 
   return prisma.$transaction(async (tx) => {
     const data = {};
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;
 
-    let nextStageId = existing.stageId;
-    if (stageId != null && stageId !== existing.stageId) {
+    const stageChanged = stageId != null && stageId !== existing.stageId;
+    let toStageKey = existing.stage?.key ?? null;
+    if (stageChanged) {
       await assertStageEnabledForVacancy(organizationId, existing.vacancyId, stageId, tx);
-      nextStageId = stageId;
+      const nextStage = await tx.recruitmentStage.findFirst({
+        where: { id: stageId, organizationId },
+        select: { key: true },
+      });
+      toStageKey = nextStage?.key ?? null;
       data.stageId = stageId;
       if (position == null) {
         data.position = await nextPositionInStage(existing.vacancyId, stageId, tx);
       }
+    }
+
+    const resolvedInterview = resolveInterviewScheduledAtForApplicationUpdate({
+      stageChanged,
+      fromStageKey: existing.stage?.key ?? null,
+      toStageKey,
+      existingInterviewScheduledAt: existing.interviewScheduledAt,
+      explicitInterviewScheduledAt: interviewScheduledAt,
+    });
+    if (stageChanged || interviewScheduledAt !== undefined) {
+      data.interviewScheduledAt = resolvedInterview;
     }
 
     const updated = await tx.recruitmentApplication.update({

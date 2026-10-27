@@ -47,6 +47,8 @@ const candidateWriteFields = {
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   city: z.string().max(120).optional().nullable(),
   state: z.string().max(120).optional().nullable(),
+  locality: z.string().max(120).optional().nullable(),
+  neighborhood: z.string().max(120).optional().nullable(),
   source: z.string().max(120).optional().nullable(),
   sourceOther: z.string().max(120).optional().nullable(),
   notes: z.string().max(20_000).optional().nullable(),
@@ -57,6 +59,8 @@ export const workforceCandidateCreateSchema = z
     ...candidateWriteFields,
     vacancyId: z.string().min(1).optional().nullable(),
     stageId: z.string().min(1).optional().nullable(),
+    interviewDate: z.string().max(10).optional().nullable(),
+    interviewTime: z.string().max(5).optional().nullable(),
   })
   .strict()
   .superRefine(candidateContactRefine);
@@ -114,7 +118,7 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
   body,
 }) {
   const parsed = workforceCandidateCreateSchema.parse(body);
-  const { vacancyId, stageId, notes, ...createPayload } = parsed;
+  const { vacancyId, stageId, notes, interviewDate, interviewTime, ...createPayload } = parsed;
 
   const employee = await prisma.workforceEmployee.findFirst({
     where: { id: workforceEmployeeId, organizationId, isActive: true },
@@ -153,16 +157,25 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
 
   if (vacancyId) {
     const resolvedStageId = await resolveStageForVacancy(organizationId, vacancyId, stageId || null);
+    const st = await prisma.recruitmentStage.findFirst({
+      where: { id: resolvedStageId, organizationId },
+      select: { name: true, key: true },
+    });
+    const { resolveInterviewScheduledAtForOrg } = await import(
+      './recruitmentInterviewSchedule.service.js'
+    );
+    const interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+      organizationId,
+      { interviewDate, interviewTime },
+      { stageKey: st?.key },
+    );
     await createRecruitmentApplication({
       organizationId,
       vacancyId,
       candidateId: candidate.id,
       changedByUserId: null,
       initialStageId: resolvedStageId,
-    });
-    const st = await prisma.recruitmentStage.findFirst({
-      where: { id: resolvedStageId, organizationId },
-      select: { name: true, key: true },
+      interviewScheduledAt: interviewScheduledAt ?? undefined,
     });
     stageName = st?.name || st?.key || null;
   }

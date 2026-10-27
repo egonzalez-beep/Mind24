@@ -82,6 +82,8 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     email: row.email,
     city: row.city,
     state: row.state,
+    locality: row.locality,
+    neighborhood: row.neighborhood,
     source: row.source,
     sourceOther: row.sourceOther,
     notes: row.notes,
@@ -105,6 +107,9 @@ function serializeCandidateApplicationProcess(row) {
     appliedAt: row.appliedAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     notes: row.notes,
+    interviewScheduledAt: row.interviewScheduledAt
+      ? row.interviewScheduledAt.toISOString()
+      : null,
     vacancy: {
       id: row.vacancy.id,
       title: row.vacancy.title,
@@ -193,6 +198,10 @@ export async function buildPrimaryActivePreviewByCandidateId(
       stageKey: pick.stage?.key || null,
       vacancyTitle: pick.vacancy?.title || '—',
       vacancyId: pick.vacancy?.id || null,
+      applicationId: pick.id,
+      interviewScheduledAt: pick.interviewScheduledAt
+        ? pick.interviewScheduledAt.toISOString()
+        : null,
     });
   }
   return map;
@@ -462,6 +471,10 @@ async function enrichWorkforceRegisteredCandidateRows(organizationId, rows) {
       fullName: r.fullName,
       profile: r.profile,
       profileOther: r.profileOther,
+      city: r.city,
+      state: r.state,
+      locality: r.locality,
+      neighborhood: r.neighborhood,
       archivedAt: r.archivedAt ? r.archivedAt.toISOString() : null,
       createdAt: r.createdAt.toISOString(),
       primaryActiveProcess: resolveCandidateListProcessPreview(
@@ -670,6 +683,8 @@ export async function createRecruitmentCandidate(
       email: normalizeRecruitmentCandidateEmail(prepared.email),
       city: trimOrNull(prepared.city),
       state: trimOrNull(prepared.state),
+      locality: trimOrNull(prepared.locality),
+      neighborhood: trimOrNull(prepared.neighborhood),
       source: trimOrNull(prepared.source),
       sourceOther: trimOrNull(prepared.sourceOther),
       registeredByWorkforceEmployeeId: registeredByWorkforceEmployeeId || null,
@@ -754,6 +769,8 @@ export async function updateRecruitmentCandidate(organizationId, candidateId, pa
   }
   if (patch.city !== undefined) data.city = trimOrNull(patch.city);
   if (patch.state !== undefined) data.state = trimOrNull(patch.state);
+  if (patch.locality !== undefined) data.locality = trimOrNull(patch.locality);
+  if (patch.neighborhood !== undefined) data.neighborhood = trimOrNull(patch.neighborhood);
   if (patch.source !== undefined) {
     const sf = resolveRecruitmentCandidateSourceFields(patch.source, patch.sourceOther);
     data.source = sf.source;

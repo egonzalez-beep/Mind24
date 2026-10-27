@@ -156,6 +156,8 @@ const candidateWriteFields = {
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   city: z.string().max(120).optional().nullable(),
   state: z.string().max(120).optional().nullable(),
+  locality: z.string().max(120).optional().nullable(),
+  neighborhood: z.string().max(120).optional().nullable(),
   source: z.string().max(120).optional().nullable(),
   sourceOther: z.string().max(120).optional().nullable(),
   notes: z.string().max(20_000).optional().nullable(),
@@ -202,6 +204,19 @@ router.get('/stages', async (req, res, next) => {
     const u = await assertEmpresaAdmin(req.session.userId);
     const stages = await listActiveOrganizationRecruitmentStages(u.organizationId);
     res.json({ stages });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/meta', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { resolveOrganizationIanaTimezone } = await import(
+      '../services/organizationTimezone.service.js'
+    );
+    const timeZone = await resolveOrganizationIanaTimezone(u.organizationId);
+    res.json({ timeZone });
   } catch (e) {
     next(e);
   }
@@ -783,14 +798,34 @@ router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
       .object({
         candidateId: z.string().min(1),
         stageId: z.string().min(1).optional(),
+        interviewDate: z.string().max(10).optional().nullable(),
+        interviewTime: z.string().max(5).optional().nullable(),
       })
       .parse(req.body);
+    const { prisma } = await import('../db/client.js');
+    let stageKey = 'NEW';
+    if (body.stageId) {
+      const st = await prisma.recruitmentStage.findFirst({
+        where: { id: body.stageId, organizationId: u.organizationId },
+        select: { key: true },
+      });
+      if (st?.key) stageKey = st.key;
+    }
+    const { resolveInterviewScheduledAtForOrg } = await import(
+      '../services/recruitmentInterviewSchedule.service.js'
+    );
+    const interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+      u.organizationId,
+      { interviewDate: body.interviewDate, interviewTime: body.interviewTime },
+      { stageKey },
+    );
     const application = await createRecruitmentApplication({
       organizationId: u.organizationId,
       vacancyId: req.params.vacancyId,
       candidateId: body.candidateId,
       changedByUserId: u.id,
       initialStageId: body.stageId,
+      interviewScheduledAt: interviewScheduledAt ?? undefined,
     });
     res.status(201).json({ application });
   } catch (e) {
@@ -816,14 +851,50 @@ router.patch('/applications/:id', async (req, res, next) => {
         stageId: z.string().min(1).optional(),
         position: z.number().int().optional(),
         notes: z.string().max(20_000).optional().nullable(),
+        interviewDate: z.string().max(10).optional().nullable(),
+        interviewTime: z.string().max(5).optional().nullable(),
+        clearInterview: z.boolean().optional(),
       })
       .parse(req.body);
+    let interviewScheduledAt;
+    if (body.clearInterview === true) {
+      interviewScheduledAt = null;
+    } else if (body.interviewDate !== undefined || body.interviewTime !== undefined) {
+      const { prisma } = await import('../db/client.js');
+      const existing = await prisma.recruitmentApplication.findFirst({
+        where: { id: req.params.id, organizationId: u.organizationId },
+        include: { stage: { select: { key: true } } },
+      });
+      const nextStageKey =
+        body.stageId && body.stageId !== existing?.stageId
+          ? (
+              await prisma.recruitmentStage.findFirst({
+                where: { id: body.stageId, organizationId: u.organizationId },
+                select: { key: true },
+              })
+            )?.key
+          : existing?.stage?.key;
+      const { resolveInterviewScheduledAtForOrg } = await import(
+        '../services/recruitmentInterviewSchedule.service.js'
+      );
+      const dateTrim = body.interviewDate != null ? String(body.interviewDate).trim() : '';
+      const timeTrim = body.interviewTime != null ? String(body.interviewTime).trim() : '';
+      if (!dateTrim && !timeTrim) interviewScheduledAt = null;
+      else {
+        interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+          u.organizationId,
+          { interviewDate: body.interviewDate, interviewTime: body.interviewTime },
+          { stageKey: nextStageKey },
+        );
+      }
+    }
     const application = await updateRecruitmentApplication({
       organizationId: u.organizationId,
       applicationId: req.params.id,
       stageId: body.stageId,
       position: body.position,
       notes: body.notes,
+      interviewScheduledAt,
       changedByUserId: u.id,
     });
     res.json({ application });

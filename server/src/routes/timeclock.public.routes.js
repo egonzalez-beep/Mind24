@@ -250,6 +250,19 @@ router.patch(
   },
 );
 
+router.get('/recruitment/meta', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const orgId = req.timeclockEmployee.organizationId;
+    const { resolveOrganizationIanaTimezone } = await import(
+      '../services/organizationTimezone.service.js'
+    );
+    const timeZone = await resolveOrganizationIanaTimezone(orgId);
+    res.json({ timeZone });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/recruitment/vacancies', requireTimeclockSession, async (req, res, next) => {
   try {
     const orgId = req.timeclockEmployee.organizationId;

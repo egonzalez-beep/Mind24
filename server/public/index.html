@@ -517,6 +517,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-form-section-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
 .rec-cand-form-section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-600);}
 .rec-cand-form-grid-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+.rec-cand-form-interview-wrap{margin-top:12px;}
+.rec-cand-form-interview-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rec-cand-exp-loc-sub{font-size:12px;color:var(--slate-600);margin:4px 0 0;line-height:1.35;}
+.rec-cand-hero-interview{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--slate-700);}
+.rec-cand-hero-interview svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.rec-cand-hero-interview-edit{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.rec-cand-hero-interview-edit .form-input{max-width:160px;}
+.tc-emp-my-cand-interview{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--slate-600);}
+.tc-emp-my-cand-interview svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
 .rec-cand-form-grid-row--3{grid-template-columns:repeat(3,minmax(0,1fr));}
 .rec-cand-form-span-full{grid-column:1/-1;}
 .rec-cand-form-other{margin-top:6px;}
@@ -2428,7 +2437,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
           <div id="rec-cand-form-stage-wrap" class="hidden">
             <label class="form-label">Etapa inicial</label>
-            <select id="rec-cand-form-stage" class="form-input"></select>
+            <select id="rec-cand-form-stage" class="form-input" onchange="recCandFormStageChanged()"></select>
+          </div>
+        </div>
+        <div id="rec-cand-form-interview-wrap" class="hidden rec-cand-form-interview-wrap">
+          <label class="form-label">Fecha de entrevista <span class="rec-cand-form-optional">Opcional</span></label>
+          <div class="rec-cand-form-interview-row">
+            <input type="date" id="rec-cand-form-interview-date" class="form-input" aria-label="Fecha de entrevista">
+            <input type="time" id="rec-cand-form-interview-time" class="form-input" aria-label="Hora de entrevista" step="60">
           </div>
         </div>
       </div>
@@ -2438,12 +2454,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <div class="rec-cand-form-grid-row">
         <div>
-          <label class="form-label">Ciudad</label>
-          <input type="text" id="rec-cand-form-city" class="form-input" maxlength="120" placeholder="Ej. Ciudad de México">
+          <label class="form-label">Estado</label>
+          <input type="text" id="rec-cand-form-state" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
         </div>
         <div>
-          <label class="form-label">Estado</label>
-          <input type="text" id="rec-cand-form-state" class="form-input" maxlength="120" placeholder="Ej. CDMX">
+          <label class="form-label">Ciudad</label>
+          <input type="text" id="rec-cand-form-city" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
+        </div>
+      </div>
+      <div class="rec-cand-form-grid-row">
+        <div>
+          <label class="form-label">Localidad</label>
+          <input type="text" id="rec-cand-form-locality" class="form-input" maxlength="120" placeholder="Ej. Centro Sur">
+        </div>
+        <div>
+          <label class="form-label">Colonia</label>
+          <input type="text" id="rec-cand-form-neighborhood" class="form-input" maxlength="120" placeholder="Ej. Col. Centro Sur">
         </div>
       </div>
       <div id="rec-cand-form-notes-section">
@@ -9792,6 +9818,85 @@ function recCandFmtBytes(n){
 function recCandLocationLine(c){
   return [c.city,c.state].filter(Boolean).join(', ')||'';
 }
+function recCandLocationDetailHtml(c){
+  const cityState=recCandLocationLine(c);
+  const loc=c.locality?tcEsc(c.locality):'';
+  const col=c.neighborhood?(c.neighborhood.indexOf('Col.')===0?tcEsc(c.neighborhood):('Col. '+tcEsc(c.neighborhood))):'';
+  let sub='';
+  if(loc&&col) sub=loc+' · '+col;
+  else if(loc) sub=loc;
+  else if(col) sub=col;
+  if(!cityState&&!sub) return '<p class="rec-cand-exp-val">—</p>';
+  let html='<p class="rec-cand-exp-val">'+tcEsc(cityState||'—')+'</p>';
+  if(sub) html+='<p class="rec-cand-exp-loc-sub">'+sub+'</p>';
+  return html;
+}
+var REC_CAND_INTERVIEW_STAGE_KEYS={ INITIAL_INTERVIEW:1, CLIENT_INTERVIEW:1 };
+async function recEnsureRecruitmentOrgTimeZone(){
+  const st=recEnsureState();
+  if(st.recruitmentOrgTimeZone) return st.recruitmentOrgTimeZone;
+  try{
+    const workforce=recCandFormIsWorkforce()||(typeof tcEmpMe!=='undefined'&&tcEmpMe);
+    const j=workforce
+      ? await tcPublicJson('/api/timeclock/public/recruitment/meta')
+      : await apiJson('/api/org/recruitment/meta');
+    st.recruitmentOrgTimeZone=j.timeZone||'America/Mexico_City';
+  }catch(_e){ st.recruitmentOrgTimeZone='America/Mexico_City'; }
+  return st.recruitmentOrgTimeZone;
+}
+function recCandFormatInterviewScheduledAt(iso){
+  if(!iso) return '';
+  const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime())) return '';
+  const d=new Intl.DateTimeFormat('es-MX',{timeZone:tz,day:'numeric',month:'short',year:'numeric'}).format(dt);
+  const t=new Intl.DateTimeFormat('es-MX',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(dt);
+  return d+' · '+t;
+}
+function recCandInterviewLocalPartsFromIso(iso){
+  if(!iso) return { date:'', time:'' };
+  const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime())) return { date:'', time:'' };
+  const date=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(dt);
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(dt);
+  const h=parts.find(function(p){ return p.type==='hour'; });
+  const m=parts.find(function(p){ return p.type==='minute'; });
+  const time=(h?h.value:'00')+':'+(m?m.value:'00');
+  return { date:date, time:time };
+}
+function recCandFormGetSelectedStageKey(){
+  const sel=document.getElementById('rec-cand-form-stage');
+  if(!sel||!sel.value) return '';
+  const opt=sel.options[sel.selectedIndex];
+  return opt?(opt.getAttribute('data-stage-key')||''):'';
+}
+function recCandFormSyncInterviewVisibility(){
+  const wrap=document.getElementById('rec-cand-form-interview-wrap');
+  const vac=(document.getElementById('rec-cand-form-vacancy')?.value||'').trim();
+  if(!wrap) return;
+  const key=recCandFormGetSelectedStageKey();
+  const show=!!vac&&!!REC_CAND_INTERVIEW_STAGE_KEYS[key];
+  wrap.classList.toggle('hidden',!show);
+  if(!show){
+    const dEl=document.getElementById('rec-cand-form-interview-date');
+    const tEl=document.getElementById('rec-cand-form-interview-time');
+    if(dEl) dEl.value='';
+    if(tEl) tEl.value='';
+  }
+}
+function recCandFormStageChanged(){
+  recCandFormSyncInterviewVisibility();
+}
+function recCandInterviewFieldsFromForm(){
+  const date=(document.getElementById('rec-cand-form-interview-date')?.value||'').trim();
+  const time=(document.getElementById('rec-cand-form-interview-time')?.value||'').trim();
+  if(!date&&!time) return null;
+  return { interviewDate:date||null, interviewTime:time||null };
+}
+function recCandInterviewCalendarSvg(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>';
+}
 var REC_CAND_SOURCE_OPTS=['Indeed','OCC','Computrabajo','LinkedIn','Facebook / Meta','Referido','Bolsa de empleo','Base propia','Otro'];
 var REC_CAND_PROFILE_OPTS=['Ventas','Atención a clientes','Administrativo','Contabilidad / Finanzas','Recursos Humanos','Logística / Almacén','Mantenimiento','Producción / Operativo','Calidad','Seguridad','Transporte','Tecnología','Otro'];
 function recCandCatalogInits(){
@@ -10039,6 +10144,18 @@ function recCandHeroHtml(app){
   }
   const dt=recCandFmtDetailDate(app.updatedAt||app.appliedAt);
   const pillCls=recCandStagePillClass(stage);
+  const ivLabel=app.interviewScheduledAt?recCandFormatInterviewScheduledAt(app.interviewScheduledAt):'';
+  const ivRow=ivLabel
+    ? '<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row">'+recCandInterviewCalendarSvg()+'<span id="rec-cand-hero-interview-label">'+tcEsc(ivLabel)+'</span><button type="button" class="rec-stages-ghost-btn" style="font-size:11px;padding:2px 8px;" onclick="recCandToggleHeroInterviewEdit()">Editar</button></div>'+
+      '<div class="rec-cand-hero-interview-edit hidden" id="rec-cand-hero-interview-edit">'+
+      '<input type="date" id="rec-cand-hero-interview-date" class="form-input" aria-label="Fecha entrevista">'+
+      '<input type="time" id="rec-cand-hero-interview-time" class="form-input" aria-label="Hora entrevista" step="60">'+
+      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandSaveHeroInterview()">Guardar</button>'+
+      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandClearHeroInterview()">Quitar</button></div>'
+    : '<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row"><button type="button" class="rec-stages-ghost-btn" style="font-size:11px;" onclick="recCandToggleHeroInterviewEdit(true)">+ Fecha de entrevista</button></div>'+
+      '<div class="rec-cand-hero-interview-edit hidden" id="rec-cand-hero-interview-edit">'+
+      '<input type="date" id="rec-cand-hero-interview-date" class="form-input"><input type="time" id="rec-cand-hero-interview-time" class="form-input" step="60">'+
+      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandSaveHeroInterview()">Guardar</button></div>';
   return '<article class="rec-cand-pipeline-hero">'+
     '<p class="rec-cand-hero-kicker">Proceso principal</p>'+
     '<div class="rec-cand-hero-head">'+
@@ -10051,8 +10168,62 @@ function recCandHeroHtml(app){
     '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa"><option value="">—</option></select>'+
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
-    '<div id="rec-cand-hero-rail"></div>'+
+    '<div id="rec-cand-hero-rail"></div>'+ivRow+
     '<p class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</p></article>';
+}
+function recCandToggleHeroInterviewEdit(forceOpen){
+  const edit=document.getElementById('rec-cand-hero-interview-edit');
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!edit||!app) return;
+  const open=forceOpen===true||edit.classList.contains('hidden');
+  if(open){
+    awaitRecCandHeroInterviewPrefill(app);
+    edit.classList.remove('hidden');
+  }else edit.classList.add('hidden');
+}
+function awaitRecCandHeroInterviewPrefill(app){
+  const parts=recCandInterviewLocalPartsFromIso(app&&app.interviewScheduledAt);
+  const dEl=document.getElementById('rec-cand-hero-interview-date');
+  const tEl=document.getElementById('rec-cand-hero-interview-time');
+  if(dEl) dEl.value=parts.date||'';
+  if(tEl) tEl.value=parts.time||'';
+}
+async function recCandSaveHeroInterview(){
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!app) return;
+  const appId=recCandGetAppId(app);
+  const date=(document.getElementById('rec-cand-hero-interview-date')?.value||'').trim();
+  const time=(document.getElementById('rec-cand-hero-interview-time')?.value||'').trim();
+  const body={};
+  if(!date&&!time) body.clearInterview=true;
+  else{ body.interviewDate=date; body.interviewTime=time; }
+  recCandSetOpErr('');
+  try{
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{ method:'PATCH', body:JSON.stringify(body) });
+    const cid=st.detailCandidateId;
+    if(cid){
+      const c=await recCandFetchDetail(cid);
+      st.detailCandidate=c;
+      await recCandRenderDetail(c,false);
+    }
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo guardar la entrevista.'); }
+}
+async function recCandClearHeroInterview(){
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!app) return;
+  const appId=recCandGetAppId(app);
+  try{
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{ method:'PATCH', body:JSON.stringify({ clearInterview:true }) });
+    const cid=st.detailCandidateId;
+    if(cid){
+      const c=await recCandFetchDetail(cid);
+      st.detailCandidate=c;
+      await recCandRenderDetail(c,false);
+    }
+  }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo quitar la entrevista.'); }
 }
 function recCandCloseToolbarMenu(){
   const menu=document.getElementById('rec-cand-toolbar-menu');
@@ -10142,7 +10313,7 @@ function recCandRenderExpediente(c){
   box.innerHTML=
     recCandExpCell('contact','Contacto',contactInner)+
     recCandExpCell('profile','Perfil',profInner)+
-    recCandExpCell('location','Ubicación','<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p>')+
+    recCandExpCell('location','Ubicación',recCandLocationDetailHtml(c))+
     recCandExpCell('source','Fuente',srcInner)+
     recCandExpCell('registrar','Registrado por',recCandRegisteredByExpHtml(c));
 }
@@ -10524,7 +10695,7 @@ function recCandFillStageSelect(selectEl,stageRows,preferredStageId){
   if(!selectEl) return;
   selectEl.innerHTML=stageRows.map(function(vs){
     const st=vs.stage||{};
-    return '<option value="'+tcEsc(st.id||vs.stageId)+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
+    return '<option value="'+tcEsc(st.id||vs.stageId)+'" data-stage-key="'+tcEsc(st.key||'')+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
   }).join('');
   let def=preferredStageId;
   if(!def){
@@ -10538,17 +10709,20 @@ async function recCandFormVacancyChanged(vacancyId){
   const stageSel=document.getElementById('rec-cand-form-stage');
   if(!vacancyId){
     if(stageWrap) stageWrap.classList.add('hidden');
+    recCandFormSyncInterviewVisibility();
     return;
   }
   if(stageWrap) stageWrap.classList.remove('hidden');
   try{
     const rows=await recCandLoadEnabledStagesForVacancy(vacancyId);
     recCandFillStageSelect(stageSel,rows,null);
+    recCandFormSyncInterviewVisibility();
   }catch(e){
     if(stageSel) stageSel.innerHTML='';
+    recCandFormSyncInterviewVisibility();
   }
 }
-async function recCandAssignToVacancy(candidateId,vacancyId,stageId){
+async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFields){
   if(recCandFormIsWorkforce()){
     const err=new Error('Asignación no disponible en este contexto.');
     err.code='FORBIDDEN';
@@ -10556,6 +10730,10 @@ async function recCandAssignToVacancy(candidateId,vacancyId,stageId){
   }
   const body={ candidateId:candidateId };
   if(stageId) body.stageId=stageId;
+  if(interviewFields){
+    body.interviewDate=interviewFields.interviewDate;
+    body.interviewTime=interviewFields.interviewTime;
+  }
   return apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
     method:'POST',
     body:JSON.stringify(body),
@@ -10842,6 +11020,7 @@ async function recCandRenderDetail(c,loading){
     return;
   }
   if(!c) return;
+  await recEnsureRecruitmentOrgTimeZone();
   const st=recEnsureState();
   st.detailCandidate=c;
   recCandSetOpErr('');
@@ -11174,6 +11353,7 @@ async function recCandDeleteCv(){
 function recCandOpenForm(mode,candidate,opts){
   opts=opts||{};
   recCandFormApiMode=opts.context==='workforce'?'workforce':'admin';
+  recEnsureRecruitmentOrgTimeZone();
   recCandCatalogInits();
   recCandFormApplyDecorIcons();
   recCandFormBindFieldTouchOnce();
@@ -11216,6 +11396,8 @@ function recCandOpenForm(mode,candidate,opts){
     set('rec-cand-form-email',candidate.email);
     set('rec-cand-form-city',candidate.city);
     set('rec-cand-form-state',candidate.state);
+    set('rec-cand-form-locality',candidate.locality);
+    set('rec-cand-form-neighborhood',candidate.neighborhood);
     set('rec-cand-form-vacancy','');
     recEnsureState().candFormPendingCvFile=null;
     recEnsureState().candFormCvAnalyzing=false;
@@ -11233,7 +11415,10 @@ function recCandOpenForm(mode,candidate,opts){
     set('rec-cand-form-source','');
     set('rec-cand-form-source-other','');
     recCandToggleOtherWrap('rec-cand-form-source','rec-cand-form-source-other-wrap');
-    ['rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-city','rec-cand-form-state','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    ['rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-city','rec-cand-form-state','rec-cand-form-locality','rec-cand-form-neighborhood','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    set('rec-cand-form-interview-date','');
+    set('rec-cand-form-interview-time','');
+    recCandFormSyncInterviewVisibility();
     set('rec-cand-form-vacancy','');
     if(stageWrap) stageWrap.classList.add('hidden');
     recEnsureState().candFormPendingCvFile=null;
@@ -11269,7 +11454,10 @@ function recCandReadFormBody(){
     sourceOther:g('rec-cand-form-source-other')||null,
     city:g('rec-cand-form-city')||null,
     state:g('rec-cand-form-state')||null,
+    locality:g('rec-cand-form-locality')||null,
+    neighborhood:g('rec-cand-form-neighborhood')||null,
     notes:g('rec-cand-form-notes')||null,
+    _interview:recCandInterviewFieldsFromForm(),
     _vacancyId:vacancyId||null,
     _stageId:stageId||null,
   };
@@ -11288,6 +11476,8 @@ function recCandApiCandidateBody(body){
     sourceOther:body.sourceOther,
     city:body.city,
     state:body.state,
+    locality:body.locality,
+    neighborhood:body.neighborhood,
   };
 }
 function recCandApiCandidateCreateBody(body){
@@ -11296,6 +11486,11 @@ function recCandApiCandidateCreateBody(body){
   if(note) o.notes=note;
   if(body._vacancyId) o.vacancyId=body._vacancyId;
   if(body._stageId) o.stageId=body._stageId;
+  const iv=body._interview;
+  if(iv){
+    o.interviewDate=iv.interviewDate;
+    o.interviewTime=iv.interviewTime;
+  }
   return o;
 }
 async function recCandSubmitForm(){
@@ -11458,12 +11653,21 @@ function tcEmpMyCandRegDateHtml(c){
   if(!d||d==='—') return '';
   return '<p class="tc-emp-my-cand-reg">Registrado '+tcEsc(d)+'</p>';
 }
+function tcEmpMyCandInterviewHtml(c){
+  const proc=c.primaryActiveProcess;
+  const iso=proc&&proc.interviewScheduledAt;
+  if(!iso) return '';
+  const label=recCandFormatInterviewScheduledAt(iso);
+  if(!label) return '';
+  return '<p class="tc-emp-my-cand-interview">'+recCandInterviewCalendarSvg()+'<span>'+tcEsc(label)+'</span></p>';
+}
 function tcEmpMyCandBuildCardHtml(c){
   const arch=c.archivedAt?' tc-emp-my-cand-card--archived':'';
   return '<article class="tc-emp-my-cand-card'+arch+'" role="listitem">'+
     '<p class="tc-emp-my-cand-name">'+tcEsc(c.fullName||'—')+'</p>'+
     '<p class="tc-emp-my-cand-prof">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
     tcEmpMyCandProcessHtml(c.primaryActiveProcess)+
+    tcEmpMyCandInterviewHtml(c)+
     tcEmpMyCandTagsHtml(c)+
     tcEmpMyCandRegDateHtml(c)+
     '</article>';
@@ -11496,6 +11700,7 @@ function tcEmpMyCandSetFilter(filter){
 async function tcEmpLoadMyCandidates(append){
   if(tcEmpMyCandLoading) return;
   tcEmpMyCandLoading=true;
+  await recEnsureRecruitmentOrgTimeZone();
   const listEl=document.getElementById('tc-emp-my-cand-list');
   if(!append){
     tcEmpMyCandItems=[];
@@ -11607,7 +11812,7 @@ async function recCandCreateAndOpen(body){
     }
     if(vacId){
       try{
-        await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null);
+        await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null,body._interview||null);
         if(recEnsureState().selectedId===vacId) recKanbanLoad(vacId);
       }catch(e){
         await recCandOpenDetail(j.candidate.id);

@@ -202,8 +202,10 @@ export function prepareRecruitmentCandidateWritePayload(raw, { partial = false }
     }
   }
   if (raw.email !== undefined) out.email = raw.email;
-  if (raw.city !== undefined) out.city = raw.city;
-  if (raw.state !== undefined) out.state = raw.state;
+  if (raw.city !== undefined) out.city = trimOrNull(raw.city);
+  if (raw.state !== undefined) out.state = trimOrNull(raw.state);
+  if (raw.locality !== undefined) out.locality = trimOrNull(raw.locality);
+  if (raw.neighborhood !== undefined) out.neighborhood = trimOrNull(raw.neighborhood);
   if (raw.notes !== undefined) out.notes = raw.notes;
   return out;
 }

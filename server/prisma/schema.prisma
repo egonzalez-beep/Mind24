@@ -518,6 +518,8 @@ model RecruitmentCandidate {
   email             String?
   city              String?
   state             String?
+  locality          String?
+  neighborhood      String?
   source            String?
   sourceOther       String?
   notes             String?   @db.Text
@@ -772,6 +774,7 @@ model RecruitmentApplication {
   stage          RecruitmentStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
   position       Int
   appliedAt      DateTime @db.Timestamptz(6)
+  interviewScheduledAt DateTime? @db.Timestamptz(6)
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
