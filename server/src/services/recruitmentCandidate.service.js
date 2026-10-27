@@ -25,6 +25,8 @@ function serializeResumeMetadata(row) {
 
 export const RECRUITMENT_CANDIDATE_LIST_DEFAULT_LIMIT = 25;
 export const RECRUITMENT_CANDIDATE_LIST_MAX_LIMIT = 50;
+export const WORKFORCE_REGISTERED_CANDIDATES_DEFAULT_LIMIT = 15;
+export const WORKFORCE_REGISTERED_CANDIDATES_MAX_LIMIT = 50;
 
 function trimOrNull(v) {
   if (v == null) return null;
@@ -380,6 +382,214 @@ function buildCandidateListWhere(organizationId, options) {
   }
 
   return { AND: and };
+}
+
+function buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, options = {}) {
+  const { previewFilter, cursor } = options;
+  const and = [{ organizationId }, { registeredByWorkforceEmployeeId: workforceEmployeeId }];
+
+  if (previewFilter === 'in_process') {
+    and.push({
+      applications: {
+        some: {
+          organizationId,
+          stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
+        },
+      },
+    });
+  }
+
+  const decoded = cursor ? decodeListCursor(cursor) : null;
+  if (cursor && !decoded) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'Cursor de paginación inválido.';
+    throw err;
+  }
+  if (decoded) {
+    and.push({
+      OR: [
+        { createdAt: { lt: decoded.createdAt } },
+        { createdAt: decoded.createdAt, id: { lt: decoded.id } },
+      ],
+    });
+  }
+
+  return { AND: and };
+}
+
+/** Filtra IDs usando la misma regla de preview que Cartera (active → terminal → null). */
+export async function filterCandidateIdsByListPreviewKind(
+  organizationId,
+  candidateIds,
+  previewFilter,
+) {
+  if (!previewFilter || previewFilter === 'all' || !candidateIds.length) return candidateIds;
+  const want =
+    previewFilter === 'in_process'
+      ? 'active'
+      : previewFilter === 'hired'
+        ? 'hired'
+        : previewFilter === 'rejected'
+          ? 'rejected'
+          : null;
+  if (!want) return candidateIds;
+
+  const [activeMap, terminalMap] = await Promise.all([
+    buildPrimaryActivePreviewByCandidateId(organizationId, candidateIds, null),
+    buildLatestTerminalPreviewByCandidateId(organizationId, candidateIds),
+  ]);
+
+  return candidateIds.filter((id) => {
+    const preview = resolveCandidateListProcessPreview(activeMap.get(id), terminalMap.get(id));
+    return preview?.listPreviewKind === want;
+  });
+}
+
+async function enrichWorkforceRegisteredCandidateRows(organizationId, rows) {
+  const pageIds = rows.map((r) => r.id);
+  const [previewMap, terminalPreviewMap] = await Promise.all([
+    buildPrimaryActivePreviewByCandidateId(organizationId, pageIds, null),
+    buildLatestTerminalPreviewByCandidateId(organizationId, pageIds),
+  ]);
+  const { buildTagPreviewsByCandidateId } = await import('./recruitmentCandidateTag.service.js');
+  const tagPreviewMap = await buildTagPreviewsByCandidateId(organizationId, pageIds, 2);
+
+  return rows.map((r) => {
+    const tp = tagPreviewMap.get(r.id) || { tags: [], extraCount: 0 };
+    return {
+      id: r.id,
+      fullName: r.fullName,
+      profile: r.profile,
+      profileOther: r.profileOther,
+      archivedAt: r.archivedAt ? r.archivedAt.toISOString() : null,
+      createdAt: r.createdAt.toISOString(),
+      primaryActiveProcess: resolveCandidateListProcessPreview(
+        previewMap.get(r.id),
+        terminalPreviewMap.get(r.id),
+      ),
+      tags: tp.tags,
+      tagExtraCount: tp.extraCount,
+    };
+  });
+}
+
+export async function listCandidatesRegisteredByWorkforceEmployee(
+  organizationId,
+  workforceEmployeeId,
+  options = {},
+) {
+  let previewFilter = options.previewFilter || 'all';
+  if (!['all', 'in_process', 'hired', 'rejected'].includes(previewFilter)) {
+    previewFilter = 'all';
+  }
+
+  let limit = Number(options.limit);
+  if (!Number.isFinite(limit) || limit < 1) {
+    limit = WORKFORCE_REGISTERED_CANDIDATES_DEFAULT_LIMIT;
+  }
+  limit = Math.min(WORKFORCE_REGISTERED_CANDIDATES_MAX_LIMIT, Math.floor(limit));
+
+  const needsPreviewScan = previewFilter === 'hired' || previewFilter === 'rejected';
+
+  if (!needsPreviewScan) {
+    const where = buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, {
+      previewFilter,
+      cursor: options.cursor,
+    });
+    const rows = await prisma.recruitmentCandidate.findMany({
+      where,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+    let nextCursor = null;
+    let page = rows;
+    if (rows.length > limit) {
+      const last = rows[limit - 1];
+      nextCursor = encodeListCursor(last.createdAt, last.id);
+      page = rows.slice(0, limit);
+    }
+    return {
+      candidates: await enrichWorkforceRegisteredCandidateRows(organizationId, page),
+      nextCursor,
+    };
+  }
+
+  let scanCursor = options.cursor || null;
+  const collected = [];
+  const batchSize = Math.max(limit * 3, 30);
+  const maxRounds = 25;
+  let lastBatchHadMoreInDb = false;
+
+  for (let round = 0; round < maxRounds && collected.length <= limit; round += 1) {
+    const where = buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, {
+      previewFilter: 'all',
+      cursor: scanCursor,
+    });
+    const rows = await prisma.recruitmentCandidate.findMany({
+      where,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: batchSize + 1,
+    });
+    const hasMoreInDb = rows.length > batchSize;
+    lastBatchHadMoreInDb = hasMoreInDb;
+    const page = hasMoreInDb ? rows.slice(0, batchSize) : rows;
+    if (!page.length) break;
+
+    const ids = page.map((r) => r.id);
+    const matchingIds = new Set(
+      await filterCandidateIdsByListPreviewKind(organizationId, ids, previewFilter),
+    );
+    for (const row of page) {
+      if (matchingIds.has(row.id)) collected.push(row);
+      if (collected.length > limit) break;
+    }
+
+    if (collected.length > limit) break;
+    if (!hasMoreInDb) break;
+    const last = page[page.length - 1];
+    scanCursor = encodeListCursor(last.createdAt, last.id);
+  }
+
+  let nextCursor = null;
+  let page = collected;
+  if (collected.length > limit) {
+    const last = collected[limit - 1];
+    nextCursor = encodeListCursor(last.createdAt, last.id);
+    page = collected.slice(0, limit);
+  } else if (collected.length === limit && lastBatchHadMoreInDb) {
+    const last = collected[limit - 1];
+    nextCursor = encodeListCursor(last.createdAt, last.id);
+  }
+
+  return {
+    candidates: await enrichWorkforceRegisteredCandidateRows(organizationId, page),
+    nextCursor,
+  };
+}
+
+export async function assertRecruitmentCandidateRegisteredByWorkforceEmployee(
+  candidateId,
+  organizationId,
+  workforceEmployeeId,
+) {
+  const row = await prisma.recruitmentCandidate.findFirst({
+    where: { id: candidateId, organizationId },
+    select: { id: true, registeredByWorkforceEmployeeId: true },
+  });
+  if (!row) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    err.message = 'Candidato de reclutamiento no encontrado.';
+    throw err;
+  }
+  if (row.registeredByWorkforceEmployeeId !== workforceEmployeeId) {
+    const err = new Error('FORBIDDEN');
+    err.code = 'FORBIDDEN';
+    err.message = 'No puedes modificar este candidato.';
+    throw err;
+  }
+  return row;
 }
 
 export async function listRecruitmentCandidates(organizationId, options = {}) {

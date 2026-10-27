@@ -194,3 +194,14 @@ export async function findDuplicateCandidatesForWorkforcePortal(organizationId, 
   });
   return candidates;
 }
+
+export async function listMyCandidatesForWorkforcePortal(
+  organizationId,
+  workforceEmployeeId,
+  options = {},
+) {
+  const { listCandidatesRegisteredByWorkforceEmployee } = await import(
+    './recruitmentCandidate.service.js'
+  );
+  return listCandidatesRegisteredByWorkforceEmployee(organizationId, workforceEmployeeId, options);
+}

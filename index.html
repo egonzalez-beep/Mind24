@@ -1217,6 +1217,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-cand-success{margin:16px 0 0;padding:14px 16px;border-radius:12px;background:rgba(240,253,244,.85);border:1px solid rgba(34,197,94,.28);font-size:14px;color:var(--slate-700);line-height:1.5;}
 .tc-emp-cand-success strong{display:block;font-size:15px;color:#15803d;margin-bottom:6px;}
 .tc-emp-cand-success-sub{font-size:13px;color:var(--slate-600);}
+.tc-emp-cand-success-retry{margin-top:10px;}
+.tc-emp-cand-success-retry button{font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid rgba(34,197,94,.35);background:#fff;color:#15803d;cursor:pointer;}
+.tc-emp-my-cand{margin-top:20px;padding-top:16px;border-top:1px solid var(--slate-100);}
+.tc-emp-my-cand-title{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
+.tc-emp-my-cand-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.tc-emp-my-cand-filter{font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);cursor:pointer;}
+.tc-emp-my-cand-filter--on{border-color:rgba(124,58,237,.35);background:rgba(245,243,255,.85);color:var(--purple-dark);}
+.tc-emp-my-cand-list{display:flex;flex-direction:column;gap:10px;}
+.tc-emp-my-cand-card{width:100%;text-align:left;border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.04);cursor:default;}
+.tc-emp-my-cand-card--archived{opacity:.88;background:var(--slate-50);}
+.tc-emp-my-cand-name{margin:0;font-size:15px;font-weight:700;color:var(--slate-900);line-height:1.25;}
+.tc-emp-my-cand-prof{margin:3px 0 0;font-size:12px;font-weight:600;color:var(--slate-600);}
+.tc-emp-my-cand-process{margin-top:8px;}
+.tc-emp-my-cand-process .rec-cand-process-kicker{margin-bottom:3px;}
+.tc-emp-my-cand-process .rec-cand-process-vac{padding-left:13px;}
+.tc-emp-my-cand-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;align-items:center;}
+.tc-emp-my-cand-reg{margin:8px 0 0;font-size:11px;color:var(--slate-500);}
+.tc-emp-my-cand-empty,.tc-emp-my-cand-err{font-size:13px;color:var(--slate-500);text-align:center;padding:16px 10px;border:1px dashed var(--slate-200);border-radius:12px;background:rgba(248,250,252,.6);}
+.tc-emp-my-cand-more-wrap{text-align:center;margin-top:10px;}
+.tc-emp-my-cand-more{font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);cursor:pointer;}
 .rec-cand-exp-registrar{display:inline-flex;align-items:center;gap:6px;}
 .rec-cand-exp-registrar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
 .rec-cand-row-line--registrar .rec-cand-row-line-text{font-size:12px;color:var(--slate-500);}
@@ -3321,6 +3341,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <section class="tc-emp-recruitment" id="tc-emp-recruitment" aria-labelledby="tc-emp-recruitment-title">
           <h2 id="tc-emp-recruitment-title" class="tc-emp-panel-head">Reclutamiento</h2>
           <button type="button" class="rec-btn-new" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
+          <div class="tc-emp-my-cand" id="tc-emp-my-candidates" aria-labelledby="tc-emp-my-cand-title">
+            <h3 class="tc-emp-my-cand-title" id="tc-emp-my-cand-title">Mis candidatos</h3>
+            <div class="tc-emp-my-cand-filters" role="tablist" aria-label="Filtrar mis candidatos">
+              <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="all" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="in_process" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="rejected" onclick="tcEmpMyCandSetFilter('rejected')">Rechazados</button>
+            </div>
+            <div class="tc-emp-my-cand-list" id="tc-emp-my-cand-list" role="list"></div>
+            <div class="tc-emp-my-cand-more-wrap hidden" id="tc-emp-my-cand-more-wrap">
+              <button type="button" class="tc-emp-my-cand-more" id="tc-emp-my-cand-more-btn" onclick="tcEmpLoadMyCandidates(true)">Cargar más</button>
+            </div>
+          </div>
         </section>
         <div class="tc-emp-cand-success hidden" id="tc-emp-cand-success" role="status"></div>
       </div>
@@ -11025,7 +11058,8 @@ function recCandFormCvPicked(file){
   recCandRenderFormCvPanel();
 }
 function recCandFormClearCv(){
-  recEnsureState().candFormPendingCvFile=null;
+  const st=recEnsureState();
+  st.candFormPendingCvFile=null;
   recCandFormSetCvErr('');
   recCandFormSetCvParseMsg('hidden');
   recCandFormClearPrefillMarks();
@@ -11091,12 +11125,17 @@ function recCandOpenCv(){
   if(!id) return;
   window.open('/api/org/recruitment/candidates/'+encodeURIComponent(id)+'/resume/file','_blank','noopener');
 }
-async function recCandUploadCvForCandidate(candidateId,file){
-  if(!candidateId||!file) return;
+async function recCandUploadCvForCandidate(candidateId,file,opts){
+  opts=opts||{};
+  const useWorkforce=opts.apiContext==='workforce'||(!opts.apiContext&&recCandFormIsWorkforce());
+  if(!candidateId||!file){
+    if(opts.required) throw new Error('No se encontró el archivo del CV para subir.');
+    return;
+  }
   if(file.size>REC_CAND_CV_MAX_BYTES) throw new Error('El archivo supera el límite de 10 MB.');
   const fd=new FormData();
   fd.append('file',file);
-  const uploadUrl=recCandFormIsWorkforce()
+  const uploadUrl=useWorkforce
     ? '/api/timeclock/public/recruitment/candidates/'+encodeURIComponent(candidateId)+'/resume'
     : '/api/org/recruitment/candidates/'+encodeURIComponent(candidateId)+'/resume';
   const r=await fetch(uploadUrl,{method:'POST',body:fd,credentials:'include'});
@@ -11299,29 +11338,186 @@ async function recCandSubmitForm(){
     if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
     else await recCandCreateAndOpen(body);
   }catch(e){
-    if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
+    if(recCandFormIsWorkforce()&&recEnsureState().candFormWorkforceCreatedCandidateId){
+      if(err){ err.classList.add('hidden'); err.textContent=''; }
+    }else if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
   }finally{
     if(btn) btn.disabled=false;
   }
 }
+function recCandWorkforceClearPartialCvState(){
+  const st=recEnsureState();
+  st.candFormWorkforceCreatedCandidateId=null;
+  st.candFormWorkforceLastConfirmation=null;
+  st.candFormPendingCvFile=null;
+}
+async function recCandWorkforceUploadPendingCvOnly(){
+  const st=recEnsureState();
+  const candidateId=st.candFormWorkforceCreatedCandidateId;
+  const pendingCv=st.candFormPendingCvFile;
+  if(!candidateId) throw new Error('No hay candidato para vincular el CV.');
+  if(!pendingCv) throw new Error('No hay archivo de CV para subir.');
+  await recCandUploadCvForCandidate(candidateId,pendingCv,{ apiContext:'workforce', required:true });
+  const conf=st.candFormWorkforceLastConfirmation||{};
+  recCandWorkforceClearPartialCvState();
+  closeModal('modal-rec-candidate-form');
+  recCandFormApiMode='admin';
+  tcEmpShowCandidateRegisteredSuccess(conf,'CV guardado.');
+  await tcEmpLoadMyCandidates(false);
+}
 async function recCandWorkforceCreateAndConfirm(body){
   const st=recEnsureState();
   const pendingCv=st.candFormPendingCvFile;
-  st.candFormPendingCvFile=null;
+  const existingId=st.candFormWorkforceCreatedCandidateId;
+  if(existingId){
+    if(pendingCv) await recCandWorkforceUploadPendingCvOnly();
+    else{
+      closeModal('modal-rec-candidate-form');
+      recCandFormApiMode='admin';
+      tcEmpShowCandidateRegisteredSuccess(st.candFormWorkforceLastConfirmation||{});
+      await tcEmpLoadMyCandidates(false);
+    }
+    return;
+  }
   const payload=recCandApiCandidateCreateBody(body);
   const j=await tcPublicJson('/api/timeclock/public/recruitment/candidates',{method:'POST',body:JSON.stringify(payload)});
-  if(pendingCv&&j.candidate&&j.candidate.id){
-    try{ await recCandUploadCvForCandidate(j.candidate.id,pendingCv); }
-    catch(e){ tcEmpShowCandidateRegisteredSuccess(j.confirmation||{}, (e&&e.message)||'El candidato fue registrado, pero no se pudo subir el CV.'); closeModal('modal-rec-candidate-form'); recCandFormApiMode='admin'; return; }
+  const candidateId=j&&j.candidate&&j.candidate.id;
+  if(!candidateId) throw new Error('No se pudo registrar al candidato.');
+  st.candFormWorkforceCreatedCandidateId=candidateId;
+  st.candFormWorkforceLastConfirmation=j.confirmation||{};
+  if(pendingCv){
+    try{
+      await recCandUploadCvForCandidate(candidateId,pendingCv,{ apiContext:'workforce', required:true });
+    }catch(_e){
+      closeModal('modal-rec-candidate-form');
+      recCandFormApiMode='admin';
+      await tcEmpLoadMyCandidates(false);
+      tcEmpShowCandidateRegisteredCvPartial(st.candFormWorkforceLastConfirmation);
+      return;
+    }
   }
+  recCandWorkforceClearPartialCvState();
   closeModal('modal-rec-candidate-form');
   recCandFormApiMode='admin';
   tcEmpShowCandidateRegisteredSuccess(j.confirmation||{});
+  await tcEmpLoadMyCandidates(false);
 }
 function tcEmpOpenRegisterCandidate(){
+  recCandWorkforceClearPartialCvState();
   const box=document.getElementById('tc-emp-cand-success');
   if(box){ box.classList.add('hidden'); box.innerHTML=''; }
   recCandOpenForm('create',null,{ context:'workforce' });
+}
+async function tcEmpRetryPendingCvUpload(){
+  const st=recEnsureState();
+  const box=document.getElementById('tc-emp-cand-success');
+  if(!st.candFormWorkforceCreatedCandidateId||!st.candFormPendingCvFile){
+    if(box){
+      box.innerHTML='<strong>No se pudo reintentar</strong><div class="tc-emp-cand-success-sub">Selecciona de nuevo el CV o registra un candidato nuevo.</div>';
+      box.classList.remove('hidden');
+    }
+    return;
+  }
+  try{
+    await recCandWorkforceUploadPendingCvOnly();
+  }catch(e){
+    await tcEmpLoadMyCandidates(false);
+    tcEmpShowCandidateRegisteredCvPartial(st.candFormWorkforceLastConfirmation||{}, (e&&e.message)||'');
+  }
+}
+function tcEmpMyCandProcessHtml(proc){
+  const kind=proc&&proc.listPreviewKind;
+  if(kind==='active'&&proc.stageName){
+    return '<div class="tc-emp-my-cand-process rec-cand-process-active">'+
+      '<p class="rec-cand-process-kicker">Proceso activo</p>'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>'+tcEsc(proc.stageName)+'</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle)+'</p>':'')+'</div>';
+  }
+  if(kind==='hired'){
+    return '<div class="tc-emp-my-cand-process rec-cand-process-terminal">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span><span>Contratado</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle)+'</p>':'')+'</div>';
+  }
+  if(kind==='rejected'){
+    return '<div class="tc-emp-my-cand-process rec-cand-process-terminal">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle)+'</p>':'')+'</div>';
+  }
+  return '<div class="tc-emp-my-cand-process"><p class="rec-cand-process-empty"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso</p></div>';
+}
+function tcEmpMyCandTagsHtml(c){
+  const tags=c.tags||[];
+  const extra=Number(c.tagExtraCount)||0;
+  if(!tags.length&&!extra) return '';
+  let inner=tags.map(function(t){ return recCandTagPillHtml(t,false); }).join('');
+  if(extra>0) inner+='<span class="rec-cand-tag-more">+'+extra+'</span>';
+  return '<div class="tc-emp-my-cand-tags">'+inner+'</div>';
+}
+function tcEmpMyCandRegDateHtml(c){
+  const d=recCandFmtDetailDate(c.createdAt);
+  if(!d||d==='—') return '';
+  return '<p class="tc-emp-my-cand-reg">Registrado '+tcEsc(d)+'</p>';
+}
+function tcEmpMyCandBuildCardHtml(c){
+  const arch=c.archivedAt?' tc-emp-my-cand-card--archived':'';
+  return '<article class="tc-emp-my-cand-card'+arch+'" role="listitem">'+
+    '<p class="tc-emp-my-cand-name">'+tcEsc(c.fullName||'—')+'</p>'+
+    '<p class="tc-emp-my-cand-prof">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
+    tcEmpMyCandProcessHtml(c.primaryActiveProcess)+
+    tcEmpMyCandTagsHtml(c)+
+    tcEmpMyCandRegDateHtml(c)+
+    '</article>';
+}
+function tcEmpMyCandRenderList(){
+  const listEl=document.getElementById('tc-emp-my-cand-list');
+  const moreWrap=document.getElementById('tc-emp-my-cand-more-wrap');
+  if(!listEl) return;
+  const rows=tcEmpMyCandItems||[];
+  if(!rows.length){
+    listEl.innerHTML='<p class="tc-emp-my-cand-empty">Aún no has registrado candidatos.</p>';
+    if(moreWrap) moreWrap.classList.add('hidden');
+    return;
+  }
+  listEl.innerHTML=rows.map(tcEmpMyCandBuildCardHtml).join('');
+  if(moreWrap) moreWrap.classList.toggle('hidden',!tcEmpMyCandNextCursor);
+}
+function tcEmpMyCandSyncFilterUi(){
+  document.querySelectorAll('.tc-emp-my-cand-filter').forEach(function(btn){
+    const f=btn.getAttribute('data-tc-my-cand-filter');
+    btn.classList.toggle('tc-emp-my-cand-filter--on',f===tcEmpMyCandFilter);
+  });
+}
+function tcEmpMyCandSetFilter(filter){
+  if(tcEmpMyCandFilter===filter) return;
+  tcEmpMyCandFilter=filter||'all';
+  tcEmpMyCandSyncFilterUi();
+  tcEmpLoadMyCandidates(false);
+}
+async function tcEmpLoadMyCandidates(append){
+  if(tcEmpMyCandLoading) return;
+  tcEmpMyCandLoading=true;
+  const listEl=document.getElementById('tc-emp-my-cand-list');
+  if(!append){
+    tcEmpMyCandItems=[];
+    tcEmpMyCandNextCursor=null;
+    if(listEl) listEl.innerHTML='<p class="tc-emp-my-cand-empty">Cargando…</p>';
+  }
+  try{
+    const qs=new URLSearchParams();
+    qs.set('previewFilter',tcEmpMyCandFilter||'all');
+    qs.set('limit','15');
+    if(append&&tcEmpMyCandNextCursor) qs.set('cursor',tcEmpMyCandNextCursor);
+    const j=await tcPublicJson('/api/timeclock/public/recruitment/my-candidates?'+qs.toString());
+    const rows=j.candidates||[];
+    if(append) tcEmpMyCandItems=(tcEmpMyCandItems||[]).concat(rows);
+    else tcEmpMyCandItems=rows;
+    tcEmpMyCandNextCursor=j.nextCursor||null;
+    tcEmpMyCandRenderList();
+  }catch(e){
+    if(listEl&&!append) listEl.innerHTML='<p class="tc-emp-my-cand-err">'+(e&&e.message?tcEsc(e.message):'No se pudo cargar tus candidatos.')+'</p>';
+  }finally{
+    tcEmpMyCandLoading=false;
+  }
 }
 function tcEmpShowCandidateRegisteredSuccess(conf,warn){
   const box=document.getElementById('tc-emp-cand-success');
@@ -11332,7 +11528,27 @@ function tcEmpShowCandidateRegisteredSuccess(conf,warn){
   if(conf.vacancyTitle){
     sub='<span>'+tcEsc(cand)+'</span><br><span class="tc-emp-cand-success-sub">'+tcEsc(conf.vacancyTitle)+(conf.stageName?' · '+tcEsc(conf.stageName):'')+'</span>';
   }
-  box.innerHTML='<strong>Candidato registrado</strong><div class="tc-emp-cand-success-sub">'+tcEsc(who)+' registró:</div>'+sub+(warn?('<br><span class="tc-emp-cand-success-sub">'+tcEsc(warn)+'</span>'):'');
+  const warnLine=warn?('<br><span class="tc-emp-cand-success-sub">'+tcEsc(warn)+'</span>'):'';
+  box.innerHTML='<strong>Candidato registrado</strong><div class="tc-emp-cand-success-sub">'+tcEsc(who)+' registró:</div>'+sub+warnLine;
+  box.classList.remove('hidden');
+  try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_){}
+}
+function tcEmpShowCandidateRegisteredCvPartial(conf,extraErr){
+  const box=document.getElementById('tc-emp-cand-success');
+  if(!box) return;
+  const st=recEnsureState();
+  const who=(conf&&conf.registeredByName)||'Colaborador';
+  const cand=(conf&&conf.candidateName)||'—';
+  let sub='<span>'+tcEsc(cand)+'</span>';
+  if(conf&&conf.vacancyTitle){
+    sub='<span>'+tcEsc(cand)+'</span><br><span class="tc-emp-cand-success-sub">'+tcEsc(conf.vacancyTitle)+(conf.stageName?' · '+tcEsc(conf.stageName):'')+'</span>';
+  }
+  const retry=st.candFormPendingCvFile&&st.candFormWorkforceCreatedCandidateId
+    ? '<div class="tc-emp-cand-success-retry"><button type="button" onclick="tcEmpRetryPendingCvUpload()">Reintentar CV</button></div>'
+    : '';
+  const errLine=extraErr?('<br><span class="tc-emp-cand-success-sub">'+tcEsc(extraErr)+'</span>'):'';
+  box.innerHTML='<strong>Candidato registrado</strong><div class="tc-emp-cand-success-sub">'+tcEsc(who)+' registró:</div>'+sub+
+    '<br><span class="tc-emp-cand-success-sub">El candidato fue registrado, pero no se pudo guardar el CV.</span>'+errLine+retry;
   box.classList.remove('hidden');
   try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_){}
 }
@@ -12616,6 +12832,10 @@ const TC_HEARTBEAT_MS=45000;
 let tcEmpMe=null;
 let tcEmpCompleted=null;
 let tcEmpBusy=false;
+let tcEmpMyCandFilter='all';
+let tcEmpMyCandItems=[];
+let tcEmpMyCandNextCursor=null;
+let tcEmpMyCandLoading=false;
 let tcClockTimer=null;
 let tcCounterTimer=null;
 let tcHeartbeatTimer=null;
@@ -12854,6 +13074,7 @@ async function tcEmpLoadMe(){
   tcEmpShowApp();
   tcEmpRender();
   await tcEmpLoadTasks();
+  await tcEmpLoadMyCandidates(false);
 }
 function tcEmpHashToken(){
   try{ return String(window.location.hash||'').replace(/^#/, '').trim(); }

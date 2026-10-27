@@ -48,12 +48,16 @@ import {
   isAllowedRecruitmentCandidateResumeFile,
   uploadRecruitmentCandidateResume,
 } from '../services/recruitmentCandidateResume.service.js';
-import { assertRecruitmentCandidateInOrg } from '../services/recruitmentCandidate.service.js';
+import {
+  assertRecruitmentCandidateInOrg,
+  assertRecruitmentCandidateRegisteredByWorkforceEmployee,
+} from '../services/recruitmentCandidate.service.js';
 import {
   createRecruitmentCandidateFromWorkforcePortal,
   findDuplicateCandidatesForWorkforcePortal,
   getEnabledVacancyStagesForWorkforcePortal,
   listActiveVacanciesForWorkforcePortal,
+  listMyCandidatesForWorkforcePortal,
   workforceCandidateCreateSchema,
 } from '../services/workforceRecruitmentPortal.service.js';
 
@@ -324,6 +328,25 @@ router.post(
   },
 );
 
+router.get('/recruitment/my-candidates', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const orgId = req.timeclockEmployee.organizationId;
+    const employeeId = req.timeclockEmployee.id;
+    let previewFilter = typeof req.query.previewFilter === 'string' ? req.query.previewFilter.trim() : 'all';
+    if (!['all', 'in_process', 'hired', 'rejected'].includes(previewFilter)) {
+      previewFilter = 'all';
+    }
+    const result = await listMyCandidatesForWorkforcePortal(orgId, employeeId, {
+      previewFilter,
+      limit: req.query.limit,
+      cursor: req.query.cursor,
+    });
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post(
   '/recruitment/candidates',
   requireTimeclockSession,
@@ -354,8 +377,13 @@ router.post(
   async (req, res, next) => {
     try {
       const orgId = req.timeclockEmployee.organizationId;
+      const employeeId = req.timeclockEmployee.id;
       const candidateId = req.params.candidateId;
-      await assertRecruitmentCandidateInOrg(candidateId, orgId);
+      await assertRecruitmentCandidateRegisteredByWorkforceEmployee(
+        candidateId,
+        orgId,
+        employeeId,
+      );
       if (!req.file?.buffer?.length) {
         const err = new Error('VALIDATION_ERROR');
         err.code = 'VALIDATION_ERROR';
