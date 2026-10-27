@@ -1205,6 +1205,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-hint{font-size:13px;color:var(--slate-500);margin:12px 0 0;line-height:1.5;}
 .tc-emp-err{font-size:14px;color:#b91c1c;line-height:1.55;margin-top:8px;}
 .tc-emp-privacy{margin-top:22px;padding-top:16px;border-top:1px solid var(--slate-100);font-size:12px;color:var(--slate-500);line-height:1.55;}
+.tc-emp-attendance-idle{font-size:14px;color:var(--slate-500);line-height:1.5;margin:0 0 16px;padding:12px 14px;border-radius:10px;background:var(--slate-50);border:1px solid var(--slate-100);}
+.tc-emp-panel-head{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin:4px 0 10px;}
+.tc-expected-work-field{grid-column:1/-1;}
+.tc-expected-work-none{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate-600);margin:6px 0 8px;cursor:pointer;}
+.tc-expected-work-duration{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--slate-600);}
+.tc-expected-work-duration select{max-width:92px;}
 .tc-emp-laptop{display:none;margin-bottom:12px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;}
 @media(max-width:768px){.tc-emp-laptop{display:block;}}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
@@ -3075,6 +3081,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                 <option value="UTC">UTC</option>
               </select>
             </div>
+            <div class="tc-expected-work-field">
+              <label class="form-label">Jornada esperada</label>
+              <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ew-none" onchange="tcExpectedWorkToggle('add')"> Sin jornada esperada</label>
+              <div id="tc-add-ew-fields" class="tc-expected-work-duration">
+                <select id="tc-add-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
+                  <option value="4">4 h</option><option value="6">6 h</option><option value="8" selected>8 h</option><option value="9">9 h</option><option value="10">10 h</option>
+                </select>
+                <select id="tc-add-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
+                  <option value="0" selected>00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
+                </select>
+              </div>
+            </div>
           </div>
           <p id="tc-add-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:10px;"></p>
           <div style="display:flex;gap:10px;margin-top:14px;">
@@ -3158,6 +3176,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <option value="America/Chihuahua">America/Chihuahua</option>
             <option value="UTC">UTC</option>
           </select>
+          <label class="form-label">Jornada esperada</label>
+          <label class="tc-expected-work-none"><input type="checkbox" id="tc-edit-ew-none" onchange="tcExpectedWorkToggle('edit')"> Sin jornada esperada</label>
+          <div id="tc-edit-ew-fields" class="tc-expected-work-duration">
+            <select id="tc-edit-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
+              <option value="4">4 h</option><option value="6">6 h</option><option value="8">8 h</option><option value="9">9 h</option><option value="10">10 h</option>
+            </select>
+            <select id="tc-edit-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
+              <option value="0">00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
+            </select>
+          </div>
           <p id="tc-emp-edit-err" class="tc-task-modal-err hidden"></p>
           <div class="tc-task-modal-actions">
             <button type="button" class="card-action" onclick="tcCloseEmpEdit()">Cancelar</button>
@@ -3255,18 +3283,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
         </div>
         <div class="tc-emp-clock"><span id="tc-emp-date">—</span><span id="tc-emp-now">—</span></div>
-        <div class="tc-emp-status">Estado</div>
-        <div class="tc-emp-state" id="tc-emp-state">Fuera de jornada</div>
-        <div class="tc-emp-rows" id="tc-emp-rows"></div>
-        <p class="tc-emp-err hidden" id="tc-emp-err"></p>
-        <button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
-        <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+        <p class="tc-emp-attendance-idle hidden" id="tc-emp-attendance-idle" role="status">Sin jornada de asistencia asignada</p>
+        <div id="tc-emp-attendance-active">
+          <p class="tc-emp-panel-head">Asistencia</p>
+          <div class="tc-emp-status">Estado</div>
+          <div class="tc-emp-state" id="tc-emp-state">Fuera de jornada</div>
+          <div class="tc-emp-rows" id="tc-emp-rows"></div>
+          <p class="tc-emp-err hidden" id="tc-emp-err"></p>
+          <button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+          <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+          <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+        </div>
         <section class="tc-emp-tasks" id="tc-emp-tasks" aria-labelledby="tc-emp-tasks-title">
           <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title">Mis actividades</h2>
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
           <div id="tc-emp-tasks-body"></div>
         </section>
-        <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
       </div>
     </div>
   </div>
@@ -7081,6 +7113,7 @@ async function tcOpenEmpEdit(id){
     const tz=document.getElementById('tc-emp-edit-tz'); if(tz&&emp.timezone) tz.value=emp.timezone;
     const fi=document.getElementById('tc-emp-edit-photo-input'); if(fi) fi.value='';
     tcEmpEditAvatarRender(emp);
+    tcExpectedWorkSet('edit', emp.expectedWorkMinutes!=null?emp.expectedWorkMinutes:null);
     if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
   }catch(e){
     alert(e.message||'No se pudo abrir el colaborador.');
@@ -7101,6 +7134,7 @@ async function tcSaveEmpEdit(){
     department:((document.getElementById('tc-emp-edit-dept')||{}).value||'').trim()||null,
     employeeCode:((document.getElementById('tc-emp-edit-code')||{}).value||'').trim()||null,
     timezone:((document.getElementById('tc-emp-edit-tz')||{}).value||'').trim(),
+    expectedWorkMinutes: tcExpectedWorkRead('edit'),
   };
   if(!body.fullName){
     if(err){ err.textContent='El nombre es obligatorio.'; err.classList.remove('hidden'); }
@@ -11494,6 +11528,51 @@ window.mind24NotifMarkAllRead=mind24NotifMarkAllRead;
 window.mind24NotifClose=mind24NotifClose;
 window.mind24NotifOpenItem=mind24NotifOpenItem;
 window.mind24NotifLoadMore=mind24NotifLoadMore;
+function tcExpectedWorkEnsureHourOption(sel, h){
+  if(!sel) return;
+  const v=String(h);
+  if(![].some.call(sel.options,function(o){ return o.value===v; })){
+    const o=document.createElement('option');
+    o.value=v;
+    o.textContent=h+' h';
+    sel.appendChild(o);
+  }
+  sel.value=v;
+}
+function tcExpectedWorkSet(prefix, minutes){
+  const none=document.getElementById('tc-'+prefix+'-ew-none');
+  const fields=document.getElementById('tc-'+prefix+'-ew-fields');
+  if(!none||!fields) return;
+  if(minutes==null||minutes===0){
+    none.checked=true;
+    fields.classList.add('hidden');
+    return;
+  }
+  none.checked=false;
+  fields.classList.remove('hidden');
+  const h=Math.floor(minutes/60);
+  const m=minutes%60;
+  tcExpectedWorkEnsureHourOption(document.getElementById('tc-'+prefix+'-ew-hours'), h);
+  const ms=document.getElementById('tc-'+prefix+'-ew-minutes');
+  if(ms){
+    const mv=[0,15,30,45].reduce(function(best,x){ return Math.abs(x-m)<Math.abs(best-m)?x:best; },0);
+    ms.value=String(mv);
+  }
+}
+function tcExpectedWorkRead(prefix){
+  const none=document.getElementById('tc-'+prefix+'-ew-none');
+  if(none&&none.checked) return null;
+  const h=parseInt((document.getElementById('tc-'+prefix+'-ew-hours')||{}).value,10)||0;
+  const m=parseInt((document.getElementById('tc-'+prefix+'-ew-minutes')||{}).value,10)||0;
+  const total=h*60+m;
+  return total>0?total:null;
+}
+function tcExpectedWorkToggle(prefix){
+  const none=document.getElementById('tc-'+prefix+'-ew-none');
+  const fields=document.getElementById('tc-'+prefix+'-ew-fields');
+  if(!none||!fields) return;
+  fields.classList.toggle('hidden', !!none.checked);
+}
 function tcToggleAddForm(force){
   const card=document.getElementById('tc-add-card');
   if(!card) return;
@@ -11501,6 +11580,7 @@ function tcToggleAddForm(force){
   card.classList.toggle('hidden', !show);
   const err=document.getElementById('tc-add-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(show) tcExpectedWorkSet('add', 480);
 }
 function tcShowSecretLink(accessLink){
   tcSecretLinkTemp=String(accessLink||'');
@@ -11585,6 +11665,7 @@ async function tcCreateEmployee(){
         department:((document.getElementById('tc-add-dept')||{}).value||'').trim()||null,
         employeeCode:((document.getElementById('tc-add-code')||{}).value||'').trim()||null,
         timezone:timezone.trim(),
+        expectedWorkMinutes: tcExpectedWorkRead('add'),
       }),
     });
     if(out.accessLink) tcShowSecretLink(out.accessLink);
@@ -12450,6 +12531,16 @@ function tcEmpShowApp(){
   if(gate) gate.classList.add('hidden');
   if(app) app.classList.remove('hidden');
 }
+function tcEmpApplyAttendanceShell(me, completed, open){
+  const idle=document.getElementById('tc-emp-attendance-idle');
+  const active=document.getElementById('tc-emp-attendance-active');
+  const attendanceEnabled=!!(me&&me.attendanceEnabled);
+  const hasActiveAttendance=!!(open&&open.checkInAt)||!!(completed&&completed.checkOutAt);
+  const showActive=attendanceEnabled||hasActiveAttendance;
+  if(idle) idle.classList.toggle('hidden', showActive);
+  if(active) active.classList.toggle('hidden', !showActive);
+  return showActive;
+}
 function tcEmpRender(){
   const me=tcEmpMe||{};
   const completed=tcEmpCompleted;
@@ -12468,6 +12559,12 @@ function tcEmpRender(){
   if(role) role.textContent=bits.join(' · ');
   tcEmpTickClock();
   if(!tcClockTimer) tcClockTimer=setInterval(tcEmpTickClock, 1000);
+  const showAttendance=tcEmpApplyAttendanceShell(me, completed, open);
+  if(!showAttendance){
+    if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
+    if(!(open&&open.checkInAt)) tcEmpStopHeartbeat();
+    return;
+  }
   if(completed&&completed.checkOutAt){
     if(state) state.textContent='Jornada finalizada';
     if(rows) rows.innerHTML=
@@ -12645,6 +12742,10 @@ async function tcEmpPrimaryAction(){
   if(tcEmpBusy) return;
   const btn=document.getElementById('tc-emp-primary');
   const open=tcEmpMe&&tcEmpMe.openSession;
+  if(!open&&!(tcEmpMe&&tcEmpMe.attendanceEnabled)){
+    tcEmpSetError('Este colaborador no tiene jornada de asistencia asignada.');
+    return;
+  }
   if(open){
     if(!confirm('¿Deseas finalizar tu jornada?')) return;
     tcEmpBusy=true;

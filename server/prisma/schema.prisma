@@ -118,6 +118,8 @@ model WorkforceEmployee {
   department      String?
   timezone        String
   isActive        Boolean  @default(true)
+  /// Minutos de jornada objetivo diaria; null o 0 = sin asistencia/checador.
+  expectedWorkMinutes Int?
   accessTokenHash String   @unique
   tokenVersion    Int      @default(1)
   profilePhotoPath String?

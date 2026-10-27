@@ -36,6 +36,7 @@ const STATUS = {
   NOT_SUBMITTED: 400,
   RATE_LIMIT: 429,
   PARTIAL_DELETE: 500,
+  ATTENDANCE_NOT_CONFIGURED: 403,
 };
 
 export function errorHandler(err, req, res, next) {

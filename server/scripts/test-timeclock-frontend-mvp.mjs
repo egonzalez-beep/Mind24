@@ -111,5 +111,13 @@ check(/tcPublicJson/.test(indexHtml), 'public API helper distinct from admin 401
 check(/\/api\/timeclock\/public\/check-in/.test(indexHtml) && /\/api\/timeclock\/public\/check-out/.test(indexHtml), 'check-in/out endpoints');
 check(/tcEmpElapsed/.test(indexHtml) && /open\.checkInAt/.test(indexHtml), 'counter sourced from server checkInAt');
 
+check(/Jornada esperada/.test(indexHtml), 'admin jornada esperada label');
+check(/Sin jornada esperada/.test(indexHtml), 'sin jornada esperada option');
+check(/tcExpectedWorkRead/.test(indexHtml) && /expectedWorkMinutes/.test(indexHtml), 'expected work wired create/edit');
+check(/tc-emp-attendance-idle/.test(indexHtml), 'Mi jornada idle attendance state');
+check(/Sin jornada de asistencia asignada/.test(indexHtml), 'idle attendance copy');
+check(/tcEmpApplyAttendanceShell/.test(indexHtml) && /attendanceEnabled/.test(indexHtml), 'Mi jornada respects attendanceEnabled');
+check(/tc-emp-attendance-active/.test(indexHtml), 'attendance panel wrapper');
+
 console.log(failed === 0 ? '\n✓ Timeclock 1C frontend tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);

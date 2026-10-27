@@ -93,6 +93,7 @@ router.post('/employees', async (req, res, next) => {
         department: z.string().max(200).optional().nullable(),
         timezone: z.string().min(1).max(64),
         isActive: z.boolean().optional(),
+        expectedWorkMinutes: z.number().int().min(0).max(960).nullable().optional(),
       })
       .parse(req.body);
     const out = await createWorkforceEmployee(u.organizationId, body);
@@ -272,6 +273,7 @@ router.patch('/employees/:id', async (req, res, next) => {
         department: z.string().max(200).optional().nullable(),
         timezone: z.string().min(1).max(64).optional(),
         isActive: z.boolean().optional(),
+        expectedWorkMinutes: z.number().int().min(0).max(960).nullable().optional(),
       })
       .parse(req.body);
     const employee = await updateWorkforceEmployee(u.organizationId, req.params.id, body);

@@ -18,6 +18,8 @@ import {
 } from '../services/timeclockToken.service.js';
 import {
   assertEmployeeEligibleForTimeclock,
+  assertEmployeeAttendanceEligible,
+  employeeAttendanceEnabled,
   findEmployeeByTokenForExchange,
 } from '../services/workforceEmployee.service.js';
 import {
@@ -63,6 +65,8 @@ function sessionToPublicMe(emp, openSession) {
     webSignal,
     webSignalLabel: webSignalLabel(webSignal),
     openSession: summarizeOpenSession(openSession, now),
+    attendanceEnabled: employeeAttendanceEnabled(emp),
+    expectedWorkMinutes: employeeAttendanceEnabled(emp) ? emp.expectedWorkMinutes : null,
     hasProfilePhoto,
     profilePhotoVersion,
     serverTime: now.toISOString(),
@@ -127,6 +131,7 @@ router.post(
   timeclockCheckInLimiter,
   async (req, res, next) => {
     try {
+      assertEmployeeAttendanceEligible(req.timeclockEmployee);
       const ua = req.get('user-agent');
       const { session, created } = await checkInRemoteWorkSession({
         employeeId: req.timeclockEmployee.id,

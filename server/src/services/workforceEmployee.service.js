@@ -16,6 +16,25 @@ import {
   aggregateWorkforceTaskSummariesForOrg,
   workforceTaskSummaryForEmployee,
 } from './workforceTaskSummary.service.js';
+import {
+  DEFAULT_EXPECTED_WORK_MINUTES,
+  employeeAttendanceEnabled,
+  normalizeExpectedWorkMinutesInput,
+} from './workforceExpectedWork.service.js';
+
+export { employeeAttendanceEnabled, assertEmployeeAttendanceEligible } from './workforceExpectedWork.service.js';
+
+function resolveExpectedWorkMinutesForCreate(data) {
+  if (data.expectedWorkMinutes === null) return null;
+  if (data.expectedWorkMinutes === undefined) return DEFAULT_EXPECTED_WORK_MINUTES;
+  return normalizeExpectedWorkMinutesInput(data.expectedWorkMinutes);
+}
+
+function resolveExpectedWorkMinutesForUpdate(value) {
+  if (value === null) return null;
+  if (value === undefined) return undefined;
+  return normalizeExpectedWorkMinutesInput(value);
+}
 
 function timeclockLinkBase() {
   const base = resolveTimeclockPublicLinkBase();
@@ -47,6 +66,8 @@ export function sanitizeEmployeeForAdmin(emp) {
     isActive: emp.isActive,
     tokenVersion: emp.tokenVersion,
     profilePhotoPath: emp.profilePhotoPath ?? null,
+    expectedWorkMinutes: emp.expectedWorkMinutes ?? null,
+    attendanceEnabled: employeeAttendanceEnabled(emp),
     createdAt: emp.createdAt,
     updatedAt: emp.updatedAt,
   };
@@ -105,6 +126,7 @@ export async function createWorkforceEmployee(organizationId, data) {
       department: data.department?.trim() || null,
       timezone: data.timezone.trim(),
       isActive: data.isActive ?? true,
+      expectedWorkMinutes: resolveExpectedWorkMinutesForCreate(data),
       accessTokenHash: hash,
       tokenVersion: 1,
     },
@@ -134,6 +156,9 @@ export async function updateWorkforceEmployee(organizationId, employeeId, data) 
       ...(data.department !== undefined ? { department: data.department?.trim() || null } : {}),
       ...(data.timezone != null ? { timezone: data.timezone.trim() } : {}),
       ...(data.isActive != null ? { isActive: data.isActive } : {}),
+      ...(data.expectedWorkMinutes !== undefined
+        ? { expectedWorkMinutes: resolveExpectedWorkMinutesForUpdate(data.expectedWorkMinutes) }
+        : {}),
     },
   });
   return sanitizeEmployeeForAdmin(emp);

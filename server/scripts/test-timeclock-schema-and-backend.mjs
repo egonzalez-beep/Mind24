@@ -39,6 +39,12 @@ const {
   isTimeclockSessionCurrent,
   TIMECLOCK_SESSION_COOKIE,
 } = await import('../src/middleware/timeclockSession.middleware.js');
+const {
+  employeeAttendanceEnabled,
+  normalizeExpectedWorkMinutesInput,
+  assertEmployeeAttendanceEligible,
+  DEFAULT_EXPECTED_WORK_MINUTES,
+} = await import('../src/services/workforceExpectedWork.service.js');
 
 let failed = 0;
 function check(cond, msg) {
@@ -180,6 +186,21 @@ check(workedDurationSec(closedSession) === 8 * 3600, 'admin duration 8h');
 const none = buildAdminJornadaPayload(null, null);
 check(none.shiftLifecycle === 'OFF_DUTY' && none.session == null, 'admin no sessions → OFF_DUTY');
 
+console.log('\n=== Jornada esperada — unit ===\n');
+check(DEFAULT_EXPECTED_WORK_MINUTES === 480, 'default expected work 8h');
+check(employeeAttendanceEnabled({ expectedWorkMinutes: 480 }) === true, '480 min → attendance enabled');
+check(employeeAttendanceEnabled({ expectedWorkMinutes: null }) === false, 'null → no attendance');
+check(employeeAttendanceEnabled({ expectedWorkMinutes: 0 }) === false, '0 → no attendance');
+check(normalizeExpectedWorkMinutesInput(360) === 360, 'normalize positive minutes');
+check(normalizeExpectedWorkMinutesInput(0) === null, 'normalize 0 → null');
+let attBlock = false;
+try {
+  assertEmployeeAttendanceEligible({ expectedWorkMinutes: null });
+} catch (e) {
+  attBlock = e.code === 'ATTENDANCE_NOT_CONFIGURED';
+}
+check(attBlock, 'assert blocks without jornada');
+
 console.log('\n=== Timeclock 1B — integration (DB) ===\n');
 
 let dbOk = false;
@@ -256,6 +277,80 @@ if (dbOk) {
     const stored = await prisma.workforceEmployee.findUnique({ where: { id: empId } });
     check(stored?.accessTokenHash === hashTimeclockToken(secretToken), 'T hash persisted not raw');
     check(!stored?.accessTokenHash?.includes(secretToken.slice(0, 8)), 'T no raw token in DB');
+    check(stored?.expectedWorkMinutes === 480, 'create default expectedWorkMinutes 480');
+    check(createEmp.data.employee?.attendanceEnabled === true, 'create employee attendanceEnabled');
+
+    const createNoJornada = await jsonFetch(base, '/api/org/timeclock/employees', {
+      method: 'POST',
+      cookie: adminCookie,
+      body: {
+        fullName: 'Sin jornada esperada',
+        timezone: 'America/Tijuana',
+        expectedWorkMinutes: null,
+      },
+    });
+    check(createNoJornada.res.status === 201, 'create sin jornada 201');
+    check(createNoJornada.data.employee?.attendanceEnabled === false, 'sin jornada attendanceEnabled false');
+    const empNoId = createNoJornada.data.employee?.id;
+    const tokenNo = createNoJornada.data.accessLink?.split('#')[1];
+    const exNo = await jsonFetch(base, '/api/timeclock/public/exchange', {
+      method: 'POST',
+      body: { token: tokenNo },
+    });
+    const tcNo = cookieHeaderFromResponse(exNo.res, 'mind24.tc.sid');
+    const meNo = await jsonFetch(base, '/api/timeclock/public/me', { cookie: tcNo });
+    check(meNo.data.attendanceEnabled === false, 'public me attendanceEnabled false');
+    const ciNo = await jsonFetch(base, '/api/timeclock/public/check-in', {
+      method: 'POST',
+      cookie: tcNo,
+      body: {},
+    });
+    check(ciNo.res.status === 403 && ciNo.data?.error === 'ATTENDANCE_NOT_CONFIGURED', 'sin jornada check-in 403');
+
+    const patchEw = await jsonFetch(base, `/api/org/timeclock/employees/${empNoId}`, {
+      method: 'PATCH',
+      cookie: adminCookie,
+      body: { expectedWorkMinutes: 360 },
+    });
+    check(patchEw.res.status === 200 && patchEw.data.expectedWorkMinutes === 360, 'patch assign 6h jornada');
+    const exNo2 = await jsonFetch(base, '/api/timeclock/public/exchange', {
+      method: 'POST',
+      body: { token: tokenNo },
+    });
+    const tcNo2 = cookieHeaderFromResponse(exNo2.res, 'mind24.tc.sid');
+    const ciAfter = await jsonFetch(base, '/api/timeclock/public/check-in', {
+      method: 'POST',
+      cookie: tcNo2,
+      body: {},
+    });
+    check(ciAfter.res.status === 201, 'check-in after jornada assigned');
+    const coAfter = await jsonFetch(base, '/api/timeclock/public/check-out', {
+      method: 'POST',
+      cookie: tcNo2,
+      body: {},
+    });
+    check(coAfter.res.status === 200, 'check-out after assigned jornada');
+    const sessionsBeforeRemove = await prisma.remoteWorkSession.count({ where: { employeeId: empNoId } });
+    check(sessionsBeforeRemove >= 1, 'history session exists');
+
+    await jsonFetch(base, `/api/org/timeclock/employees/${empNoId}`, {
+      method: 'PATCH',
+      cookie: adminCookie,
+      body: { expectedWorkMinutes: null },
+    });
+    const sessionsAfterRemove = await prisma.remoteWorkSession.count({ where: { employeeId: empNoId } });
+    check(sessionsAfterRemove === sessionsBeforeRemove, 'remove jornada keeps session history');
+    const exNo3 = await jsonFetch(base, '/api/timeclock/public/exchange', {
+      method: 'POST',
+      body: { token: tokenNo },
+    });
+    const tcNo3 = cookieHeaderFromResponse(exNo3.res, 'mind24.tc.sid');
+    const ciBlocked = await jsonFetch(base, '/api/timeclock/public/check-in', {
+      method: 'POST',
+      cookie: tcNo3,
+      body: {},
+    });
+    check(ciBlocked.res.status === 403, 'check-in blocked after jornada removed');
 
     const exchange = await jsonFetch(base, '/api/timeclock/public/exchange', {
       method: 'POST',
