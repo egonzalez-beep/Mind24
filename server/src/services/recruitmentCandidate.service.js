@@ -47,7 +47,28 @@ export function emptyRecruitmentCandidateApplicationSummary() {
   return { total: 0, active: 0, hired: 0, rejected: 0 };
 }
 
+export function serializeRegisteredByWorkforceEmployee(emp) {
+  if (!emp) return null;
+  return {
+    id: emp.id,
+    fullName: emp.fullName,
+    hasProfilePhoto: !!emp.profilePhotoPath,
+  };
+}
+
+const registeredByInclude = {
+  registeredByWorkforceEmployee: {
+    select: { id: true, fullName: true, profilePhotoPath: true },
+  },
+};
+
 export function serializeRecruitmentCandidate(row, extras = {}) {
+  const registeredBy =
+    extras.registeredBy !== undefined
+      ? extras.registeredBy
+      : row.registeredByWorkforceEmployee !== undefined
+        ? serializeRegisteredByWorkforceEmployee(row.registeredByWorkforceEmployee)
+        : undefined;
   return {
     id: row.id,
     fullName: row.fullName,
@@ -72,6 +93,7 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     ...(extras.tags != null ? { tags: extras.tags } : {}),
     ...(extras.tagExtraCount != null ? { tagExtraCount: extras.tagExtraCount } : {}),
     ...(extras.assignedTags != null ? { assignedTags: extras.assignedTags } : {}),
+    ...(registeredBy !== undefined ? { registeredBy } : {}),
   };
 }
 
@@ -312,6 +334,7 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
     where,
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take: limit + 1,
+    include: registeredByInclude,
   });
 
   let nextCursor = null;
@@ -346,7 +369,11 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
   };
 }
 
-export async function createRecruitmentCandidate(organizationId, payload) {
+export async function createRecruitmentCandidate(
+  organizationId,
+  payload,
+  { registeredByWorkforceEmployeeId = null } = {},
+) {
   const prepared = prepareRecruitmentCandidateWritePayload(payload, { partial: false });
   const row = await prisma.recruitmentCandidate.create({
     data: {
@@ -362,7 +389,9 @@ export async function createRecruitmentCandidate(organizationId, payload) {
       state: trimOrNull(prepared.state),
       source: trimOrNull(prepared.source),
       sourceOther: trimOrNull(prepared.sourceOther),
+      registeredByWorkforceEmployeeId: registeredByWorkforceEmployeeId || null,
     },
+    include: registeredByInclude,
   });
   return serializeRecruitmentCandidate(row, {
     applicationSummary: emptyRecruitmentCandidateApplicationSummary(),
@@ -375,6 +404,7 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
   const [candidateRow, applications, resumeRow] = await Promise.all([
     prisma.recruitmentCandidate.findFirst({
       where: { id: candidateId, organizationId },
+      include: registeredByInclude,
     }),
     prisma.recruitmentApplication.findMany({
       where: { organizationId, candidateId },

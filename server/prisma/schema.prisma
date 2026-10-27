@@ -133,6 +133,8 @@ model WorkforceEmployee {
   documents WorkforceDocument[]
   orgNotifications OrgNotification[]
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
+  recruitmentCandidatesRegistered RecruitmentCandidate[] @relation("RecruitmentCandidateRegisteredBy")
+  recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteWorkforceAuthor")
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -519,6 +521,8 @@ model RecruitmentCandidate {
   source            String?
   sourceOther       String?
   notes             String?   @db.Text
+  registeredByWorkforceEmployeeId String?
+  registeredByWorkforceEmployee   WorkforceEmployee? @relation("RecruitmentCandidateRegisteredBy", fields: [registeredByWorkforceEmployeeId], references: [id], onDelete: SetNull)
   archivedAt     DateTime? @db.Timestamptz(6)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -536,6 +540,7 @@ model RecruitmentCandidate {
   @@index([organizationId, profile])
   @@index([organizationId, source])
   @@index([organizationId, createdAt])
+  @@index([registeredByWorkforceEmployeeId])
 }
 
 model RecruitmentCandidateNote {
@@ -546,6 +551,8 @@ model RecruitmentCandidateNote {
   candidate      RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   authorUserId   String?
   author         User?                @relation("RecruitmentCandidateNoteAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  authorWorkforceEmployeeId String?
+  authorWorkforceEmployee   WorkforceEmployee? @relation("RecruitmentCandidateNoteWorkforceAuthor", fields: [authorWorkforceEmployeeId], references: [id], onDelete: SetNull)
   body           String               @db.Text
   legacyImport   Boolean              @default(false)
   createdAt      DateTime             @default(now())
@@ -556,6 +563,7 @@ model RecruitmentCandidateNote {
   @@index([organizationId, candidateId])
   @@index([candidateId, createdAt])
   @@index([organizationId, candidateId, deletedAt])
+  @@index([authorWorkforceEmployeeId])
 }
 
 model RecruitmentVacancyNote {

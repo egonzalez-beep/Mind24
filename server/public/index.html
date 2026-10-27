@@ -984,6 +984,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-dir-jornada--on{color:#15803d;}
 .tc-dir-jornada--on .tc-status-dot--member{background:#86efac;}
 .tc-dir-jornada--off{color:var(--slate-500);font-weight:500;}
+.tc-dir-jornada--none{color:var(--slate-500);font-weight:500;}
 .tc-dir-jornada-ring{width:7px;height:7px;border:1.5px solid var(--slate-400);border-radius:50%;flex-shrink:0;box-sizing:border-box;}
 .tc-dir-jornada--disabled .tc-member-badge{margin:0;}
 .tc-emp-name-cell{display:flex;align-items:center;gap:10px;min-width:0;}
@@ -1207,6 +1208,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-hint{font-size:13px;color:var(--slate-500);margin:12px 0 0;line-height:1.5;}
 .tc-emp-err{font-size:14px;color:#b91c1c;line-height:1.55;margin-top:8px;}
 .tc-emp-privacy{margin-top:22px;padding-top:16px;border-top:1px solid var(--slate-100);font-size:12px;color:var(--slate-500);line-height:1.55;}
+.tc-emp-recruitment{margin-top:22px;padding-top:18px;border-top:1px solid var(--slate-100);}
+.tc-emp-recruitment .rec-btn-new{width:100%;max-width:100%;justify-content:center;}
+.tc-emp-cand-success{margin:16px 0 0;padding:14px 16px;border-radius:12px;background:rgba(240,253,244,.85);border:1px solid rgba(34,197,94,.28);font-size:14px;color:var(--slate-700);line-height:1.5;}
+.tc-emp-cand-success strong{display:block;font-size:15px;color:#15803d;margin-bottom:6px;}
+.tc-emp-cand-success-sub{font-size:13px;color:var(--slate-600);}
+.rec-cand-exp-registrar{display:inline-flex;align-items:center;gap:6px;}
+.rec-cand-exp-registrar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
+.rec-cand-row-line--registrar .rec-cand-row-line-text{font-size:12px;color:var(--slate-500);}
+.rec-cand-portfolio-icon--registrar{color:var(--slate-400);}
 .tc-emp-attendance-idle{font-size:14px;color:var(--slate-500);line-height:1.5;margin:0 0 16px;padding:12px 14px;border-radius:10px;background:var(--slate-50);border:1px solid var(--slate-100);}
 .tc-emp-panel-head{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin:4px 0 10px;}
 .tc-expected-work-field{grid-column:1/-1;}
@@ -3270,8 +3280,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <div class="tc-emp-card">
       <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
       <div class="tc-emp-brand">MIND24</div>
-      <h1 class="tc-emp-title">Mi jornada</h1>
-      <div class="tc-emp-kicker">Asistencia y actividades</div>
+      <h1 class="tc-emp-title">Mi espacio de trabajo</h1>
+      <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
       <div id="tc-emp-gate" class="hidden">
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
       </div>
@@ -3300,6 +3310,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
           <div id="tc-emp-tasks-body"></div>
         </section>
+        <section class="tc-emp-recruitment" id="tc-emp-recruitment" aria-labelledby="tc-emp-recruitment-title">
+          <h2 id="tc-emp-recruitment-title" class="tc-emp-panel-head">Reclutamiento</h2>
+          <button type="button" class="rec-btn-new" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
+        </section>
+        <div class="tc-emp-cand-success hidden" id="tc-emp-cand-success" role="status"></div>
       </div>
     </div>
   </div>
@@ -7392,6 +7407,9 @@ function tcDirJornadaStatusHtml(emp){
   if(!emp||!emp.isActive){
     return '<span class="tc-dir-jornada tc-dir-jornada--disabled"><span class="tc-member-badge tc-member-badge--inactive">Deshabilitado</span></span>';
   }
+  if(emp.attendanceEnabled===false){
+    return '<span class="tc-dir-jornada tc-dir-jornada--none">Sin jornada asignada</span>';
+  }
   if(emp.hasOpenShift){
     return '<span class="tc-dir-jornada tc-dir-jornada--on"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>En jornada</span>';
   }
@@ -7399,6 +7417,9 @@ function tcDirJornadaStatusHtml(emp){
 }
 function tcJornadaDetailEstadoHtml(emp, jornadaOpen){
   if(!emp||!emp.isActive) return tcDirJornadaStatusHtml(emp);
+  if(emp.attendanceEnabled===false){
+    return '<span class="tc-dir-jornada tc-dir-jornada--none">Sin jornada asignada</span>';
+  }
   if(jornadaOpen){
     return '<span class="tc-dir-jornada tc-dir-jornada--on"><span class="tc-status-dot tc-status-dot--member" aria-hidden="true"></span>En jornada</span>';
   }
@@ -9879,8 +9900,14 @@ function recCandExpIcon(kind){
     profile:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     location:'<svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
     source:'<svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+    registrar:'<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   };
   return icons[kind]||icons.profile;
+}
+function recCandRegisteredByExpHtml(c){
+  const n=c&&c.registeredBy&&c.registeredBy.fullName;
+  if(!n) return '<p class="rec-cand-exp-val">—</p>';
+  return '<p class="rec-cand-exp-val rec-cand-exp-registrar"><span class="rec-cand-exp-icon" aria-hidden="true">'+recCandExpIcon('registrar')+'</span><span>'+tcEsc(n)+'</span></p>';
 }
 function recCandBuildStageRailHtml(stageRows,currentStageId){
   return recCandBuildLabeledStageRailHtml(stageRows,currentStageId);
@@ -10075,7 +10102,8 @@ function recCandRenderExpediente(c){
     recCandExpCell('contact','Contacto',contactInner)+
     recCandExpCell('profile','Perfil',profInner)+
     recCandExpCell('location','Ubicación','<p class="rec-cand-exp-val">'+tcEsc(recCandLocationLine(c))+'</p>')+
-    recCandExpCell('source','Fuente',srcInner);
+    recCandExpCell('source','Fuente',srcInner)+
+    recCandExpCell('registrar','Registrado por',recCandRegisteredByExpHtml(c));
 }
 function recCandFmtObsTime(iso){
   if(!iso) return '—';
@@ -10391,33 +10419,45 @@ function recCandSecondaryPhone(c){
   if(ph&&!wa) return ph;
   return '—';
 }
+let recCandFormApiMode='admin';
+function recCandFormIsWorkforce(){ return recCandFormApiMode==='workforce'; }
+function recCandFormRecApiBase(){
+  return recCandFormIsWorkforce()?'/api/timeclock/public/recruitment':'/api/org/recruitment';
+}
+async function recCandFormRecApiJson(path,opts){
+  if(recCandFormIsWorkforce()) return tcPublicJson(recCandFormRecApiBase()+path,opts||{});
+  return apiJson('/api/org/recruitment'+path,opts||{});
+}
 async function recCandEnsureVacancyPickerOptions(selectEl){
   if(!selectEl) return;
   const st=recEnsureState();
-  if(!st.allVacancies||!st.allVacancies.length){
+  const cacheKey=recCandFormIsWorkforce()?'workforceActiveVacancies':'adminActiveVacancies';
+  if(!st[cacheKey]||!st[cacheKey].length){
     try{
-      const j=await apiJson('/api/org/recruitment/vacancies');
-      st.allVacancies=j.vacancies||[];
-    }catch(_e){ st.allVacancies=[]; }
+      if(recCandFormIsWorkforce()){
+        const j=await tcPublicJson('/api/timeclock/public/recruitment/vacancies');
+        st[cacheKey]=j.vacancies||[];
+      }else{
+        const j=await apiJson('/api/org/recruitment/vacancies?status=ACTIVE');
+        st[cacheKey]=(j.vacancies||[]).filter(function(v){ return v.status==='ACTIVE'; });
+      }
+    }catch(_e){ st[cacheKey]=[]; }
   }
-  const list=(st.allVacancies||[]).slice().sort(function(a,b){
-    const sa=a.status==='ACTIVE'?0:1;
-    const sb=b.status==='ACTIVE'?0:1;
-    if(sa!==sb) return sa-sb;
+  const list=(st[cacheKey]||[]).slice().sort(function(a,b){
     return String(a.title||'').localeCompare(String(b.title||''),'es');
   });
   const prev=selectEl.value;
   const isForm=selectEl.id==='rec-cand-form-vacancy';
   selectEl.innerHTML=(isForm?'<option value="">Seleccionar vacante</option>':'<option value="">— Selecciona vacante —</option>')+
     list.map(function(v){
-      const label=(v.title||'—')+(v.clientName?' · '+v.clientName:'')+(v.status&&v.status!=='ACTIVE'?' ('+recVacancyStatusLabel(v.status)+')':'');
+      const label=(v.title||'—');
       return '<option value="'+tcEsc(v.id)+'">'+tcEsc(label)+'</option>';
     }).join('');
   if(prev) selectEl.value=prev;
 }
 async function recCandLoadEnabledStagesForVacancy(vacancyId){
   if(!vacancyId) return [];
-  const j=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
+  const j=await recCandFormRecApiJson('/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
   const rows=(j.vacancyStages||j.config?.vacancyStages||[]).filter(function(vs){ return vs.isEnabled!==false; });
   rows.sort(function(a,b){ return (a.position||0)-(b.position||0); });
   return rows;
@@ -10451,6 +10491,11 @@ async function recCandFormVacancyChanged(vacancyId){
   }
 }
 async function recCandAssignToVacancy(candidateId,vacancyId,stageId){
+  if(recCandFormIsWorkforce()){
+    const err=new Error('Asignación no disponible en este contexto.');
+    err.code='FORBIDDEN';
+    throw err;
+  }
   const body={ candidateId:candidateId };
   if(stageId) body.stageId=stageId;
   return apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
@@ -10484,7 +10529,15 @@ function recCandPortfolioIconSvg(kind){
   if(kind==='mail'){
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z"/><path d="m22 6-10 7L2 6"/></svg>';
   }
+  if(kind==='person'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+  }
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+}
+function recCandRegisteredByMetaHtml(c){
+  const n=c&&c.registeredBy&&c.registeredBy.fullName;
+  if(!n) return '';
+  return '<div class="rec-cand-row-line rec-cand-row-line--registrar"><span class="rec-cand-portfolio-icon rec-cand-portfolio-icon--registrar">'+recCandPortfolioIconSvg('person')+'</span><span class="rec-cand-row-line-text">'+tcEsc(n)+'</span></div>';
 }
 function recCandFormIconSvg(kind){
   if(kind==='person'){
@@ -10594,6 +10647,7 @@ function recCandBuildPortfolioRowHtml(c, st){
     (prof?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('briefcase')+'</span><span class="rec-cand-row-line-text">'+tcEsc(prof)+'</span></div>':'')+
     (loc?'<div class="rec-cand-row-line"><span class="rec-cand-portfolio-icon">'+recCandPortfolioIconSvg('pin')+'</span><span class="rec-cand-row-line-text">'+tcEsc(loc)+'</span></div>':'')+
     recCandRowTagsHtml(c)+
+    recCandRegisteredByMetaHtml(c)+
     '</span><span class="rec-cand-row-sep" aria-hidden="true"></span>'+
     '<span class="rec-cand-row-block rec-cand-row-block--contact">'+contactHtml+'</span>'+
     '<span class="rec-cand-row-sep" aria-hidden="true"></span>'+
@@ -10895,7 +10949,8 @@ async function recCandFormAnalyzeCv(){
   try{
     const fd=new FormData();
     fd.append('file',file);
-    const r=await fetch('/api/org/recruitment/candidates/resume/parse',{method:'POST',body:fd,credentials:'include'});
+    const parseUrl=recCandFormIsWorkforce()?'/api/timeclock/public/recruitment/candidates/resume/parse':'/api/org/recruitment/candidates/resume/parse';
+    const r=await fetch(parseUrl,{method:'POST',body:fd,credentials:'include'});
     const text=await r.text();
     let data=null; try{ data=text?JSON.parse(text):null; }catch(_e){}
     if(!r.ok) throw new Error(REC_CAND_FORM_CV_MSG_EXTRACT_FAIL);
@@ -10999,7 +11054,10 @@ async function recCandUploadCvForCandidate(candidateId,file){
   if(file.size>REC_CAND_CV_MAX_BYTES) throw new Error('El archivo supera el límite de 10 MB.');
   const fd=new FormData();
   fd.append('file',file);
-  const r=await fetch('/api/org/recruitment/candidates/'+encodeURIComponent(candidateId)+'/resume',{method:'POST',body:fd,credentials:'include'});
+  const uploadUrl=recCandFormIsWorkforce()
+    ? '/api/timeclock/public/recruitment/candidates/'+encodeURIComponent(candidateId)+'/resume'
+    : '/api/org/recruitment/candidates/'+encodeURIComponent(candidateId)+'/resume';
+  const r=await fetch(uploadUrl,{method:'POST',body:fd,credentials:'include'});
   const text=await r.text();
   let data=null; try{ data=text?JSON.parse(text):null; }catch(_e){}
   if(!r.ok) throw new Error((data&&data.message)||'No se pudo subir el CV.');
@@ -11032,11 +11090,15 @@ async function recCandDeleteCv(){
     await recCandRenderDetail(c,false);
   }catch(e){ recCandSetCvErr((e&&e.message)||'No se pudo eliminar.'); }
 }
-function recCandOpenForm(mode,candidate){
+function recCandOpenForm(mode,candidate,opts){
+  opts=opts||{};
+  recCandFormApiMode=opts.context==='workforce'?'workforce':'admin';
   recCandCatalogInits();
   recCandFormApplyDecorIcons();
   recCandFormBindFieldTouchOnce();
   recCandFormBindFieldTouchOnce();
+  const kicker=document.querySelector('#modal-rec-candidate-form .rec-cand-form-kicker');
+  if(kicker) kicker.textContent=recCandFormIsWorkforce()?'Mi espacio de trabajo':'Reclutamiento';
   const title=document.getElementById('rec-cand-form-title');
   const idEl=document.getElementById('rec-cand-form-id');
   const submitBtn=document.getElementById('rec-cand-form-submit');
@@ -11151,6 +11213,8 @@ function recCandApiCandidateCreateBody(body){
   const o=recCandApiCandidateBody(body);
   const note=(body.notes||'').trim();
   if(note) o.notes=note;
+  if(body._vacancyId) o.vacancyId=body._vacancyId;
+  if(body._stageId) o.stageId=body._stageId;
   return o;
 }
 async function recCandSubmitForm(){
@@ -11182,7 +11246,7 @@ async function recCandSubmitForm(){
     const st=recEnsureState();
     const dupPhone=body.whatsapp||body.phone;
     if(body.email||dupPhone){
-      const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null})});
+      const dup=await recCandFormRecApiJson('/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null})});
       if((dup.candidates||[]).length){
         st.candDupePendingBody=body;
         st.candDupeSelectedId=dup.candidates[0].id;
@@ -11190,12 +11254,45 @@ async function recCandSubmitForm(){
         return;
       }
     }
-    await recCandCreateAndOpen(body);
+    if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
+    else await recCandCreateAndOpen(body);
   }catch(e){
     if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
   }finally{
     if(btn) btn.disabled=false;
   }
+}
+async function recCandWorkforceCreateAndConfirm(body){
+  const st=recEnsureState();
+  const pendingCv=st.candFormPendingCvFile;
+  st.candFormPendingCvFile=null;
+  const payload=recCandApiCandidateCreateBody(body);
+  const j=await tcPublicJson('/api/timeclock/public/recruitment/candidates',{method:'POST',body:JSON.stringify(payload)});
+  if(pendingCv&&j.candidate&&j.candidate.id){
+    try{ await recCandUploadCvForCandidate(j.candidate.id,pendingCv); }
+    catch(e){ tcEmpShowCandidateRegisteredSuccess(j.confirmation||{}, (e&&e.message)||'El candidato fue registrado, pero no se pudo subir el CV.'); closeModal('modal-rec-candidate-form'); recCandFormApiMode='admin'; return; }
+  }
+  closeModal('modal-rec-candidate-form');
+  recCandFormApiMode='admin';
+  tcEmpShowCandidateRegisteredSuccess(j.confirmation||{});
+}
+function tcEmpOpenRegisterCandidate(){
+  const box=document.getElementById('tc-emp-cand-success');
+  if(box){ box.classList.add('hidden'); box.innerHTML=''; }
+  recCandOpenForm('create',null,{ context:'workforce' });
+}
+function tcEmpShowCandidateRegisteredSuccess(conf,warn){
+  const box=document.getElementById('tc-emp-cand-success');
+  if(!box) return;
+  const who=conf.registeredByName||'Colaborador';
+  const cand=conf.candidateName||'—';
+  let sub='<span>'+tcEsc(cand)+'</span>';
+  if(conf.vacancyTitle){
+    sub='<span>'+tcEsc(cand)+'</span><br><span class="tc-emp-cand-success-sub">'+tcEsc(conf.vacancyTitle)+(conf.stageName?' · '+tcEsc(conf.stageName):'')+'</span>';
+  }
+  box.innerHTML='<strong>Candidato registrado</strong><div class="tc-emp-cand-success-sub">'+tcEsc(who)+' registró:</div>'+sub+(warn?('<br><span class="tc-emp-cand-success-sub">'+tcEsc(warn)+'</span>'):'');
+  box.classList.remove('hidden');
+  try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_){}
 }
 function recCandShowDupeModal(list){
   const box=document.getElementById('rec-cand-dupe-list');
@@ -11229,7 +11326,10 @@ async function recCandDupeCreateAnyway(){
   const st=recEnsureState();
   const body=st.candDupePendingBody;
   closeModal('modal-rec-candidate-duplicates');
-  if(body) await recCandCreateAndOpen(body);
+  if(body){
+    if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
+    else await recCandCreateAndOpen(body);
+  }
   st.candDupePendingBody=null;
 }
 async function recCandCreateAndOpen(body){

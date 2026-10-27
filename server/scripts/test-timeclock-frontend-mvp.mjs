@@ -55,8 +55,8 @@ check(/Solicita un nuevo enlace a tu administrador/.test(indexHtml), 'ask admin 
 
 check(/Gestión de equipo/.test(indexHtml), 'admin module title Gestión de equipo');
 check(/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin module subtitle');
-check(/tc-emp-title/.test(indexHtml) && /Mi jornada/.test(indexHtml), 'employee title Mi jornada');
-check(/Asistencia y actividades/.test(indexHtml), 'employee subtitle');
+check(/tc-emp-title/.test(indexHtml) && /Mi espacio de trabajo/.test(indexHtml), 'employee title Mi espacio de trabajo');
+check(/Asistencia, actividades y reclutamiento/.test(indexHtml), 'employee subtitle');
 check(!/Reloj checador remoto/.test(indexHtml), 'no legacy reloj checador subtitle');
 check(/tc-emp-th-num">Pendientes/.test(indexHtml) && /Completadas/.test(indexHtml), 'directorio columnas resumen actividades');
 check(/Zona horaria/.test(indexHtml) && !/<th>Zona horaria<\/th>/.test(indexHtml), 'timezone solo en alta, no en directorio');
@@ -71,6 +71,8 @@ check(/tc-status-dot--connected/.test(indexHtml) && /tc-status-dot--background/.
 check(/TC_SIGNAL_INFO/.test(indexHtml) && /no representa actividad laboral/.test(indexHtml), 'signal info tooltip text');
 check(!/no implica inactividad laboral/.test(indexHtml), 'no inline inactividad laboral');
 check(/tcDirJornadaStatusHtml/.test(indexHtml) && /Deshabilitado/.test(indexHtml), 'directorio jornada vs habilitado');
+check(/Sin jornada asignada/.test(indexHtml), 'directorio sin jornada asignada');
+check(/tcEmpOpenRegisterCandidate/.test(indexHtml), 'portal registrar candidato');
 check(/tc-jornada-dl/.test(indexHtml), 'jornada card dl layout');
 check(/tc-jornada-split/.test(indexHtml) && /tc-jornada-main/.test(indexHtml) && /tc-jornada-aside/.test(indexHtml), 'jornada two-column shell');
 check(!/grid-template-columns:repeat\(auto-fill,minmax\(180px/.test(indexHtml), 'jornada not horizontal grid');

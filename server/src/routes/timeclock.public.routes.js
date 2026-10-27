@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { z } from 'zod';
 import {
   establishTimeclockSession,
@@ -41,8 +42,35 @@ import {
 } from '../services/workforceTask.service.js';
 import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service.js';
 import { notifyShiftCheckIn, notifyShiftCheckOut } from '../services/orgNotification.service.js';
+import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
+import {
+  RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES,
+  isAllowedRecruitmentCandidateResumeFile,
+  uploadRecruitmentCandidateResume,
+} from '../services/recruitmentCandidateResume.service.js';
+import { assertRecruitmentCandidateInOrg } from '../services/recruitmentCandidate.service.js';
+import {
+  createRecruitmentCandidateFromWorkforcePortal,
+  findDuplicateCandidatesForWorkforcePortal,
+  getEnabledVacancyStagesForWorkforcePortal,
+  listActiveVacanciesForWorkforcePortal,
+  workforceCandidateCreateSchema,
+} from '../services/workforceRecruitmentPortal.service.js';
 
 const router = Router();
+
+const workforceCandidateResumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_DOCUMENT_FILE'),
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname),
+    );
+  },
+});
 
 function saveSession(req) {
   return new Promise((resolve, reject) => {
@@ -212,6 +240,137 @@ router.patch(
         expectedUpdatedAt: body.expectedUpdatedAt,
       });
       res.json({ task });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/recruitment/vacancies', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const orgId = req.timeclockEmployee.organizationId;
+    const vacancies = await listActiveVacanciesForWorkforcePortal(orgId);
+    res.json({ vacancies });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/recruitment/vacancies/:vacancyId/stages', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const orgId = req.timeclockEmployee.organizationId;
+    const config = await getEnabledVacancyStagesForWorkforcePortal(orgId, req.params.vacancyId);
+    res.json(config);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/recruitment/candidates/check-duplicates', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const orgId = req.timeclockEmployee.organizationId;
+    const body = z
+      .object({
+        email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
+        phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+      })
+      .parse(req.body ?? {});
+    const email = body.email && String(body.email).trim() ? body.email : undefined;
+    const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
+    if (!email && !phone) {
+      res.json({ candidates: [] });
+      return;
+    }
+    const candidates = await findDuplicateCandidatesForWorkforcePortal(orgId, { email, phone });
+    res.json({
+      candidates: candidates.map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        profile: c.profile,
+        phone: c.phone,
+        whatsapp: c.whatsapp,
+        email: c.email,
+        archivedAt: c.archivedAt,
+      })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post(
+  '/recruitment/candidates/resume/parse',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  workforceCandidateResumeUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un CV para analizar.';
+        throw err;
+      }
+      const result = await analyzeRecruitmentResumeUpload({
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.json(result);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.post(
+  '/recruitment/candidates',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  async (req, res, next) => {
+    try {
+      const orgId = req.timeclockEmployee.organizationId;
+      const body = workforceCandidateCreateSchema.parse(req.body);
+      const result = await createRecruitmentCandidateFromWorkforcePortal({
+        organizationId: orgId,
+        workforceEmployeeId: req.timeclockEmployee.id,
+        body,
+      });
+      res.status(201).json(result);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.post(
+  '/recruitment/candidates/:candidateId/resume',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  workforceCandidateResumeUpload.single('file'),
+  async (req, res, next) => {
+    try {
+      const orgId = req.timeclockEmployee.organizationId;
+      const candidateId = req.params.candidateId;
+      await assertRecruitmentCandidateInOrg(candidateId, orgId);
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona un CV admitido (PDF, DOC, DOCX o imagen).';
+        throw err;
+      }
+      const resume = await uploadRecruitmentCandidateResume({
+        organizationId: orgId,
+        candidateId,
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+        uploadedByUserId: null,
+      });
+      res.status(201).json({ resume });
     } catch (e) {
       next(e);
     }

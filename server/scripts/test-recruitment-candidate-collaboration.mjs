@@ -55,6 +55,10 @@ check(/legacyImport/.test(schema) && /legacy_note_/.test(migrationSql), 'backfil
 check(/softDeleteRecruitmentCandidateNote/.test(noteSvc), 'soft delete notas');
 check(/editedAt/.test(noteSvc), 'editedAt en update');
 check(/ensureLegacyCandidateNoteImported/.test(noteSvc), 'import legacy on read');
+check(/authorWorkforceEmployeeId/.test(schema), 'schema authorWorkforceEmployeeId en nota');
+check(/resolveRecruitmentCandidateNoteAuthorName/.test(noteSvc), 'resolver autor nota');
+check(/authorWorkforceEmployee/.test(noteSvc), 'include autor workforce');
+check(!/authorLabel = 'Sistema'/.test(noteSvc), 'sin etiqueta Sistema genérica');
 check(/RECRUITMENT_CANDIDATE_TAG_COLOR_KEYS/.test(tagSvc), 'paleta colorKey');
 check(/ensureDefaultRecruitmentCandidateTags/.test(tagSvc), 'catálogo inicial tags');
 check(/buildTagPreviewsByCandidateId/.test(tagSvc), 'preview tags listado');
