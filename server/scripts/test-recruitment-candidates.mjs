@@ -29,9 +29,11 @@ const { prisma } = await import('../src/db/client.js');
 const { createApp } = await import('../src/app.js');
 const { hashPassword } = await import('../src/services/auth.service.js');
 const { ensureOrganizationRecruitmentStages } = await import('../src/services/recruitmentStage.service.js');
-const { findPotentialDuplicateRecruitmentCandidates } = await import(
-  '../src/services/recruitmentCandidate.service.js'
-);
+const {
+  findPotentialDuplicateRecruitmentCandidates,
+  resolveCandidateListProcessPreview,
+  buildLatestTerminalPreviewByCandidateId,
+} = await import('../src/services/recruitmentCandidate.service.js');
 
 let failed = 0;
 function check(cond, msg) {
@@ -143,6 +145,30 @@ check(!/rec-cand-pill--active/.test(indexHtml.match(/function recCandRenderList[
 check(!/rec-cand-row-chevron/.test(indexHtml.match(/function recCandBuildPortfolioRowHtml[\s\S]*?^}/m)?.[0] || ''), 'sin chevron en fila');
 check(/contextVacancyId/.test(routes), 'contextVacancyId en listado');
 check(/buildPrimaryActivePreviewByCandidateId/.test(candidateSvc), 'preview proceso activo listado');
+check(/buildLatestTerminalPreviewByCandidateId/.test(candidateSvc), 'preview terminal listado');
+check(/resolveCandidateListProcessPreview/.test(candidateSvc), 'merge preview listado');
+check(/stageId/.test(routes) && /applications:\s*\{\s*some:/.test(candidateSvc), 'filtro etapa backend');
+check(/rec-cand-stage/.test(candPaneBlock) && /recCandEnsureStageCatalog/.test(indexHtml), 'filtro etapa UI');
+check(/listPreviewKind/.test(indexHtml.match(/function recCandRowProcessHtml[\s\S]*?^function /m)?.[0] || ''), 'preview terminal en fila');
+check(/rec-cand-process-dot--hired/.test(indexHtml) && /rec-cand-process-dot--rejected/.test(indexHtml), 'dots terminal');
+const regByFn = indexHtml.match(/function recCandRegisteredByExpHtml[\s\S]*?^function /m)?.[0] || '';
+check(/recCandExpIcon\('registrar'\)/.test(regByFn) === false, 'sin SVG duplicado en Registrado por valor');
+
+console.log('\n=== Recruitment 1J — preview y filtro etapa (unit) ===\n');
+
+check(
+  resolveCandidateListProcessPreview(
+    { listPreviewKind: 'active', stageName: 'Entrevista' },
+    { listPreviewKind: 'hired', stageName: 'Contratado' },
+  ).listPreviewKind === 'active',
+  'resolve prioriza activo',
+);
+check(
+  resolveCandidateListProcessPreview(null, { listPreviewKind: 'rejected', stageName: 'Rechazado' })
+    ?.listPreviewKind === 'rejected',
+  'resolve terminal sin activo',
+);
+check(resolveCandidateListProcessPreview(null, null) === null, 'resolve sin preview');
 
 console.log('\n=== Recruitment 1I — formulario nuevo candidato premium (estático) ===\n');
 
@@ -342,6 +368,107 @@ if (dbOk) {
     check(row?.applicationSummary?.total === 2, 'applicationSummary total');
     check(row?.applicationSummary?.hired === 1, 'applicationSummary hired');
     check(row?.applicationSummary?.active === 1, 'applicationSummary active');
+    check(row?.primaryActiveProcess?.listPreviewKind === 'active', 'list preview proceso activo');
+
+    const hiredOnly = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie,
+      body: {
+        fullName: `Solo Contratado ${suffix}`,
+        profile: 'Transporte',
+        source: 'Referido',
+        phone: '5599990001',
+      },
+    });
+    const hiredOnlyId = hiredOnly.data.candidate?.id;
+    const vacH = await jsonFetch(base, '/api/org/recruitment/vacancies', {
+      method: 'POST',
+      cookie,
+      body: { title: 'Vac H', clientName: 'C', positionsTotal: 1 },
+    });
+    await jsonFetch(base, `/api/org/recruitment/vacancies/${vacH.data.vacancy.id}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: hiredOnlyId },
+    });
+    const appH = await prisma.recruitmentApplication.findFirst({
+      where: { candidateId: hiredOnlyId },
+    });
+    await jsonFetch(base, `/api/org/recruitment/applications/${appH.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { stageId: hired.id },
+    });
+    const listHired = await jsonFetch(base, '/api/org/recruitment/candidates?limit=50', { cookie });
+    const rowH = listHired.data.candidates.find((c) => c.id === hiredOnlyId);
+    check(rowH?.primaryActiveProcess?.listPreviewKind === 'hired', 'preview Contratado sin activo');
+    check(rowH?.primaryActiveProcess?.stageKey === 'HIRED', 'preview terminal stageKey HIRED');
+
+    const rejOnly = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie,
+      body: {
+        fullName: `Solo Rechazado ${suffix}`,
+        profile: 'Transporte',
+        source: 'Referido',
+        phone: '5599990002',
+      },
+    });
+    const rejOnlyId = rejOnly.data.candidate?.id;
+    const vacR = await jsonFetch(base, '/api/org/recruitment/vacancies', {
+      method: 'POST',
+      cookie,
+      body: { title: 'Vac R', clientName: 'C', positionsTotal: 1 },
+    });
+    await jsonFetch(base, `/api/org/recruitment/vacancies/${vacR.data.vacancy.id}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: rejOnlyId },
+    });
+    const appR = await prisma.recruitmentApplication.findFirst({
+      where: { candidateId: rejOnlyId },
+    });
+    await jsonFetch(base, `/api/org/recruitment/applications/${appR.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { stageId: rejected.id },
+    });
+    const listRej = await jsonFetch(base, '/api/org/recruitment/candidates?limit=50', { cookie });
+    const rowR = listRej.data.candidates.find((c) => c.id === rejOnlyId);
+    check(rowR?.primaryActiveProcess?.listPreviewKind === 'rejected', 'preview Rechazado sin activo');
+
+    const noApp = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie,
+      body: {
+        fullName: `Sin Proceso ${suffix}`,
+        profile: 'Transporte',
+        source: 'Referido',
+        phone: '5599990003',
+      },
+    });
+    const noAppId = noApp.data.candidate?.id;
+    const listBare = await jsonFetch(base, '/api/org/recruitment/candidates?limit=50', { cookie });
+    const rowBare = listBare.data.candidates.find((c) => c.id === noAppId);
+    check(rowBare?.primaryActiveProcess == null, 'sin preview sin applications');
+
+    const termMap = await buildLatestTerminalPreviewByCandidateId(orgA.id, [hiredOnlyId, rejOnlyId]);
+    check(termMap.get(hiredOnlyId)?.listPreviewKind === 'hired', 'terminal map HIRED');
+    check(termMap.get(rejOnlyId)?.listPreviewKind === 'rejected', 'terminal map REJECTED');
+
+    const byHiredStage = await jsonFetch(
+      base,
+      `/api/org/recruitment/candidates?stageId=${encodeURIComponent(hired.id)}&limit=50`,
+      { cookie },
+    );
+    check(
+      byHiredStage.data.candidates.some((c) => c.id === hiredOnlyId),
+      'filtro stageId HIRED',
+    );
+    check(
+      !byHiredStage.data.candidates.some((c) => c.id === noAppId),
+      'filtro stageId excluye sin app en etapa',
+    );
 
     const search = await jsonFetch(
       base,

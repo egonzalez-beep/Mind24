@@ -186,6 +186,7 @@ export async function buildPrimaryActivePreviewByCandidateId(
       if (ctx) pick = ctx;
     }
     map.set(candidateId, {
+      listPreviewKind: 'active',
       stageName: pick.stage?.name || pick.stage?.key || 'Etapa',
       stageKey: pick.stage?.key || null,
       vacancyTitle: pick.vacancy?.title || '—',
@@ -193,6 +194,60 @@ export async function buildPrimaryActivePreviewByCandidateId(
     });
   }
   return map;
+}
+
+/** Resultado terminal (HIRED / REJECTED) más reciente por candidato para listado cartera. */
+export async function buildLatestTerminalPreviewByCandidateId(organizationId, candidateIds) {
+  const map = new Map(candidateIds.map((id) => [id, null]));
+  if (!candidateIds.length) return map;
+
+  const rows = await prisma.recruitmentApplication.findMany({
+    where: {
+      organizationId,
+      candidateId: { in: candidateIds },
+      stage: { key: { in: ['HIRED', 'REJECTED'] } },
+    },
+    include: {
+      vacancy: { select: { id: true, title: true } },
+      stage: { select: { id: true, key: true, name: true } },
+    },
+    orderBy: [{ updatedAt: 'desc' }, { appliedAt: 'desc' }],
+  });
+
+  for (const row of rows) {
+    if (map.get(row.candidateId)) continue;
+    const key = row.stage?.key;
+    map.set(row.candidateId, {
+      listPreviewKind: key === 'HIRED' ? 'hired' : 'rejected',
+      stageName: key === 'HIRED' ? 'Contratado' : 'Rechazado',
+      stageKey: key || null,
+      vacancyTitle: row.vacancy?.title || '—',
+      vacancyId: row.vacancy?.id || null,
+    });
+  }
+  return map;
+}
+
+/** Prioridad: proceso activo → terminal más reciente → null (sin preview). */
+export function resolveCandidateListProcessPreview(activePreview, terminalPreview) {
+  if (activePreview) return activePreview;
+  if (terminalPreview) return terminalPreview;
+  return null;
+}
+
+async function assertRecruitmentStageFilterForOrg(organizationId, stageId) {
+  const id = trimOrNull(stageId);
+  if (!id) return;
+  const stage = await prisma.recruitmentStage.findFirst({
+    where: { id, organizationId },
+    select: { id: true },
+  });
+  if (!stage) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'Etapa no válida para esta organización.';
+    throw err;
+  }
 }
 
 /**
@@ -254,6 +309,7 @@ function buildCandidateListWhere(organizationId, options) {
     profile,
     source,
     tagId,
+    stageId,
     cursor,
   } = options;
 
@@ -298,6 +354,15 @@ function buildCandidateListWhere(organizationId, options) {
     });
   }
 
+  const stageTrim = trimOrNull(stageId);
+  if (stageTrim) {
+    and.push({
+      applications: {
+        some: { organizationId, stageId: stageTrim },
+      },
+    });
+  }
+
   const decoded = cursor ? decodeListCursor(cursor) : null;
   if (cursor && !decoded) {
     const err = new Error('VALIDATION_ERROR');
@@ -324,6 +389,8 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
   if (!Number.isFinite(limit) || limit < 1) limit = RECRUITMENT_CANDIDATE_LIST_DEFAULT_LIMIT;
   limit = Math.min(RECRUITMENT_CANDIDATE_LIST_MAX_LIMIT, Math.floor(limit));
 
+  await assertRecruitmentStageFilterForOrg(organizationId, options.stageId);
+
   const where = buildCandidateListWhere(organizationId, {
     ...options,
     includeArchived,
@@ -347,11 +414,14 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
 
   const pageIds = page.map((r) => r.id);
   const summaryMap = await buildApplicationSummariesByCandidateId(organizationId, pageIds);
-  const previewMap = await buildPrimaryActivePreviewByCandidateId(
-    organizationId,
-    pageIds,
-    options.contextVacancyId || null,
-  );
+  const [previewMap, terminalPreviewMap] = await Promise.all([
+    buildPrimaryActivePreviewByCandidateId(
+      organizationId,
+      pageIds,
+      options.contextVacancyId || null,
+    ),
+    buildLatestTerminalPreviewByCandidateId(organizationId, pageIds),
+  ]);
   const { buildTagPreviewsByCandidateId } = await import('./recruitmentCandidateTag.service.js');
   const tagPreviewMap = await buildTagPreviewsByCandidateId(organizationId, pageIds, 2);
 
@@ -360,7 +430,10 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
       const tp = tagPreviewMap.get(r.id) || { tags: [], extraCount: 0 };
       return serializeRecruitmentCandidate(r, {
         applicationSummary: summaryMap.get(r.id),
-        primaryActiveProcess: previewMap.get(r.id) || null,
+        primaryActiveProcess: resolveCandidateListProcessPreview(
+          previewMap.get(r.id),
+          terminalPreviewMap.get(r.id),
+        ),
         tags: tp.tags,
         tagExtraCount: tp.extraCount,
       });

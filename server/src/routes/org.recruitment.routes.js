@@ -543,6 +543,10 @@ router.get('/candidates', async (req, res, next) => {
       typeof req.query.tagId === 'string' && req.query.tagId.trim()
         ? req.query.tagId.trim()
         : null;
+    const stageId =
+      typeof req.query.stageId === 'string' && req.query.stageId.trim()
+        ? req.query.stageId.trim()
+        : null;
     const result = await listRecruitmentCandidates(u.organizationId, {
       includeArchived,
       archivedOnly,
@@ -550,6 +554,7 @@ router.get('/candidates', async (req, res, next) => {
       profile: req.query.profile,
       source: req.query.source,
       tagId,
+      stageId,
       limit: req.query.limit,
       cursor: req.query.cursor,
       contextVacancyId,

@@ -330,6 +330,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-process-vac{font-size:11px;color:var(--slate-600);margin:2px 0 0;padding-left:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .rec-cand-process-empty{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--slate-400);margin:0;}
 .rec-cand-process-empty .rec-cand-process-dot{background:var(--slate-300);}
+.rec-cand-process-terminal .rec-cand-process-head{color:var(--slate-700);}
+.rec-cand-process-dot--hired{background:#34d399;}
+.rec-cand-process-dot--rejected{background:#f87171;}
+.rec-cand-exp-registrar .rec-cand-exp-val{margin:0;}
 .rec-cand-empty,.rec-cand-error{text-align:center;padding:32px 20px;border:1px dashed var(--slate-200);border-radius:14px;background:rgba(248,250,252,.5);}
 .rec-cand-skeleton{height:72px;border-radius:12px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;}
 @keyframes recCandShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
@@ -3011,6 +3015,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <div class="rec-cand-toolbar-field">
               <label for="rec-cand-tag">Etiqueta</label>
               <select id="rec-cand-tag" class="form-input"><option value="">Todas</option></select>
+            </div>
+            <div class="rec-cand-toolbar-field">
+              <label for="rec-cand-stage">Etapa</label>
+              <select id="rec-cand-stage" class="form-input"><option value="">Todas</option></select>
             </div>
             <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Archivados</label>
           </div>
@@ -9907,7 +9915,7 @@ function recCandExpIcon(kind){
 function recCandRegisteredByExpHtml(c){
   const n=c&&c.registeredBy&&c.registeredBy.fullName;
   if(!n) return '<p class="rec-cand-exp-val">—</p>';
-  return '<p class="rec-cand-exp-val rec-cand-exp-registrar"><span class="rec-cand-exp-icon" aria-hidden="true">'+recCandExpIcon('registrar')+'</span><span>'+tcEsc(n)+'</span></p>';
+  return '<p class="rec-cand-exp-val rec-cand-exp-registrar">'+tcEsc(n)+'</p>';
 }
 function recCandBuildStageRailHtml(stageRows,currentStageId){
   return recCandBuildLabeledStageRailHtml(stageRows,currentStageId);
@@ -10151,6 +10159,23 @@ async function recCandEnsureTagCatalog(){
     if(cur) sel.value=cur;
   }
   return st.candTagCatalog;
+}
+async function recCandEnsureStageCatalog(){
+  const st=recEnsureState();
+  if(st.candStageCatalog&&st.candStageCatalog.length) return st.candStageCatalog;
+  try{
+    const j=await apiJson('/api/org/recruitment/stages');
+    st.candStageCatalog=j.stages||[];
+  }catch(_e){ st.candStageCatalog=[]; }
+  const sel=document.getElementById('rec-cand-stage');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Todas</option>'+(st.candStageCatalog||[]).map(function(s){
+      return '<option value="'+tcEsc(s.id)+'">'+tcEsc(s.name||s.key||'Etapa')+'</option>';
+    }).join('');
+    if(cur) sel.value=cur;
+  }
+  return st.candStageCatalog;
 }
 function recCandRenderDetailTags(c){
   const box=document.getElementById('rec-cand-detail-tags');
@@ -10511,6 +10536,7 @@ function recCandBuildListQuery(st, cursor){
   if(f.source) qs.set('source',f.source);
   if(f.archivedOnly) qs.set('archivedOnly','true');
   if(f.tagId) qs.set('tagId',f.tagId);
+  if(f.stageId) qs.set('stageId',f.stageId);
   if(st.selectedId) qs.set('contextVacancyId',st.selectedId);
   qs.set('limit','25');
   if(cursor) qs.set('cursor',cursor);
@@ -10580,7 +10606,7 @@ function recCandFormApplyDecorIcons(){
 }
 function recCandHasActiveFilters(f){
   f=f||{};
-  return !!(f.q||f.profile||f.source||f.archivedOnly||f.tagId);
+  return !!(f.q||f.profile||f.source||f.archivedOnly||f.tagId||f.stageId);
 }
 function recCandUpdateFiltersUi(){
   const st=recEnsureState();
@@ -10589,33 +10615,46 @@ function recCandUpdateFiltersUi(){
 }
 function recCandClearFilters(){
   const st=recEnsureState();
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'' };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'', stageId:'' };
   const qEl=document.getElementById('rec-cand-q');
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
   const tEl=document.getElementById('rec-cand-tag');
+  const stgEl=document.getElementById('rec-cand-stage');
   const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.value='';
   if(pEl) pEl.value='';
   if(sEl) sEl.value='';
   if(tEl) tEl.value='';
+  if(stgEl) stgEl.value='';
   if(aEl) aEl.checked=false;
   recCandUpdateFiltersUi();
   recCandLoadList(false);
 }
 function recCandRowProcessHtml(c){
   const proc=c.primaryActiveProcess;
-  const sum=c.applicationSummary||{};
-  if(proc&&proc.stageName){
+  const kind=proc&&proc.listPreviewKind;
+  if(kind==='active'&&proc.stageName){
     return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-active">'+
       '<p class="rec-cand-process-kicker">Proceso activo</p>'+
       '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>'+tcEsc(proc.stageName)+'</span></p>'+
       '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
   }
-  if((sum.active||0)>0){
+  if(kind==='hired'){
+    return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-terminal rec-cand-process-hired">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span><span>Contratado</span></p>'+
+      '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
+  }
+  if(kind==='rejected'){
+    return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-terminal rec-cand-process-rejected">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
+      '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
+  }
+  if(proc&&proc.stageName&&!kind){
     return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-active">'+
       '<p class="rec-cand-process-kicker">Proceso activo</p>'+
-      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>En evaluación</span></p></div>';
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>'+tcEsc(proc.stageName)+'</span></p>'+
+      '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
   }
   return '<div class="rec-cand-row-block rec-cand-row-block--process">'+
     '<p class="rec-cand-process-empty"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso activo</p></div>';
@@ -10661,8 +10700,9 @@ function recCandBindFilters(){
   recCandCatalogInits();
   if(st.candFiltersBound) return;
   st.candFiltersBound=true;
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'' };
+  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'', stageId:'' };
   recCandEnsureTagCatalog();
+  recCandEnsureStageCatalog();
   function scheduleReload(){
     clearTimeout(st.candSearchTimer);
     st.candSearchTimer=setTimeout(function(){ recCandLoadList(false); },300);
@@ -10671,11 +10711,13 @@ function recCandBindFilters(){
   const pEl=document.getElementById('rec-cand-profile');
   const sEl=document.getElementById('rec-cand-source');
   const tEl=document.getElementById('rec-cand-tag');
+  const stgEl=document.getElementById('rec-cand-stage');
   const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); recCandUpdateFiltersUi(); scheduleReload(); });
   if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(tEl) tEl.addEventListener('change',function(){ st.candFilters.tagId=tEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(stgEl) stgEl.addEventListener('change',function(){ st.candFilters.stageId=stgEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
   if(aEl) aEl.addEventListener('change',function(){ st.candFilters.archivedOnly=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
   recCandUpdateFiltersUi();
 }
