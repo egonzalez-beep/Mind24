@@ -45,15 +45,38 @@ check(/analyzeRecruitmentResumeUpload/.test(routes), 'ruta usa servicio parse');
 const parseRouteBlock =
   routes.match(/router\.post\(\s*\n\s*'\/candidates\/resume\/parse'[\s\S]*?\n\);/)?.[0] || '';
 check(parseRouteBlock.length > 0 && !/createRecruitmentCandidate/.test(parseRouteBlock), 'parse no crea candidato');
-check(/recCandFormAnalyzeCv/.test(indexHtml), 'UI Analizar CV');
+check(/recCandFormAnalyzeCv/.test(indexHtml), 'UI extraer datos (parser)');
+check(/Extraer datos/.test(indexHtml), 'CTA Extraer datos');
+check(/recCandFormExtractSparkleSvg/.test(indexHtml), 'SVG sparkle en CTA');
 check(/recCandFormApplyParsedFields/.test(indexHtml), 'UI precarga campos');
-check(/Analizando CV/.test(indexHtml), 'estado analizando');
+check(/Extrayendo datos del CV/.test(indexHtml), 'estado extrayendo');
 check(/Datos encontrados en el CV/.test(indexHtml), 'confirmación discreta');
-check(/lectura automática está disponible para PDF/.test(indexHtml), 'hint imágenes sin OCR');
+check(/REC_CAND_FORM_CV_MSG_NOT_PARSEABLE/.test(indexHtml), 'mensaje NOT_PARSEABLE');
+check(/REC_CAND_FORM_CV_MSG_EXTRACT_FAIL/.test(indexHtml), 'mensaje EXTRACTION_FAILED/NO_DATA');
+check(/recCandFormParseFallbackMsg/.test(indexHtml), 'fallback por code');
+const formBody =
+  indexHtml.match(/id="modal-rec-candidate-form"[\s\S]*?class="rec-cand-form-footer"/)?.[0] || '';
+const sectionOrder = [
+  'rec-cand-form-cv-section',
+  'rec-cand-form-data-icon',
+  'rec-cand-form-profile-icon',
+  'rec-cand-form-process-block',
+  'rec-cand-form-loc-icon',
+  'rec-cand-form-notes-section',
+];
+let lastIdx = -1;
+for (const token of sectionOrder) {
+  const idx = formBody.indexOf(token);
+  check(idx > lastIdx, `orden formulario: ${token}`);
+  lastIdx = idx;
+}
+check(/rec-cand-form-cv-section--lead/.test(indexHtml), 'CV como bloque destacado');
+check(/Arrastra aquí el CV para completar los datos automáticamente/.test(indexHtml), 'copy dropzone CV');
 const analyzeFnBlock =
   indexHtml.match(/async function recCandFormAnalyzeCv[\s\S]*?^function recCandFormCvValidate/m)?.[0] || '';
 check(analyzeFnBlock.length > 0 && !/recCandCreateAndOpen/.test(analyzeFnBlock), 'analizar no autosave');
 check(/\/candidates\/resume\/parse/.test(analyzeFnBlock), 'analizar usa endpoint parse');
+check(/recCandFormParseFallbackMsg\(data\.code\)/.test(analyzeFnBlock), 'fallback usa data.code');
 check(/candFormFieldsTouched/.test(indexHtml), 'tracking campos manuales');
 
 console.log('\n=== CV parse — extracción estructurada ===\n');

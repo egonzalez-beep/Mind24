@@ -519,21 +519,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-form-field-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
 .rec-cand-form-field-icon--wa{color:#16A34A;}
 .rec-cand-form-field-icon-wrap .form-input{padding-left:36px;}
+.rec-cand-form-cv-section--lead{margin-bottom:10px;padding:14px 16px 16px;border-radius:12px;border:1px solid rgba(20,184,166,.24);background:linear-gradient(180deg,rgba(240,253,250,.58),rgba(255,255,255,.94));box-shadow:0 1px 4px rgba(15,23,42,.04);}
+.rec-cand-form-cv-section--lead>.rec-cand-form-section-head{margin-top:0;padding-top:0;border-top:none;}
+.rec-cand-form-cv-section--lead .rec-cand-form-section-title{font-size:13px;letter-spacing:.01em;}
 .rec-cand-form-cv-panel{margin-top:2px;}
-.rec-cand-form-cv-panel .rec-cand-cv-drop{padding:16px 14px;border-radius:11px;}
+.rec-cand-form-cv-panel .rec-cand-cv-drop{padding:18px 16px;border-radius:11px;border-color:rgba(20,184,166,.28);background:rgba(255,255,255,.72);}
 .rec-cand-form-cv-panel .rec-cand-cv-drop p{margin:0;}
-.rec-cand-form-cv-upload-icon{display:flex;justify-content:center;margin-bottom:8px;color:var(--purple);}
-.rec-cand-form-cv-upload-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;}
-.rec-cand-form-cv-hint{font-size:13px;color:var(--slate-600);line-height:1.45;}
-.rec-cand-form-cv-hint strong{color:var(--purple);font-weight:600;}
-.rec-cand-form-cv-meta{font-size:11px;color:var(--slate-500);margin-top:6px!important;}
+.rec-cand-form-cv-upload-icon{display:flex;justify-content:center;margin-bottom:10px;color:#0d9488;}
+.rec-cand-form-cv-upload-icon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.75;}
+.rec-cand-form-cv-hint-primary{font-size:13px;font-weight:600;color:var(--slate-700);line-height:1.45;text-align:center;}
+.rec-cand-form-cv-hint-sub{font-size:12px;color:var(--slate-500);margin-top:5px!important;text-align:center;}
+.rec-cand-form-cv-meta{font-size:11px;color:var(--slate-500);margin-top:8px!important;text-align:center;}
 .rec-cand-form-cv-file-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;}
 .rec-cand-form-cv-file-row .rec-cand-form-cv-file-name{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--slate-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rec-cand-form-cv-file-row .rec-cand-form-cv-file-meta{font-size:11px;color:var(--slate-500);}
 .rec-cand-form-cv-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;}
-.rec-cand-form-cv-analyze-btn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid rgba(20,184,166,.45);background:rgba(240,253,250,.85);color:#0f766e;cursor:pointer;font-family:inherit;transition:var(--tr-fast);}
-.rec-cand-form-cv-analyze-btn:hover:not(:disabled){background:rgba(204,251,241,.9);border-color:rgba(13,148,136,.55);}
+.rec-cand-form-cv-analyze-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px;border:1px solid rgba(20,184,166,.45);background:linear-gradient(180deg,rgba(240,253,250,.95),rgba(204,251,241,.55));color:#0f766e;cursor:pointer;font-family:inherit;transition:var(--tr-fast);box-shadow:0 1px 2px rgba(13,148,136,.12);}
+.rec-cand-form-cv-analyze-btn:hover:not(:disabled){background:linear-gradient(180deg,rgba(204,251,241,.95),rgba(153,246,228,.65));border-color:rgba(13,148,136,.55);}
 .rec-cand-form-cv-analyze-btn:disabled{opacity:.55;cursor:default;}
+.rec-cand-form-cv-extract-icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
 .rec-cand-form-cv-parse-msg{font-size:12px;margin-top:8px;line-height:1.45;color:var(--slate-600);}
 .rec-cand-form-cv-parse-msg--ok{color:#0f766e;}
 .rec-cand-form-cv-parse-msg--info{color:var(--slate-500);}
@@ -2306,21 +2310,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
     </header>
     <div class="rec-cand-form-body">
-      <div id="rec-cand-form-process-block" class="rec-cand-form-process-block">
+      <div id="rec-cand-form-cv-section" class="rec-cand-form-cv-section--lead">
         <div class="rec-cand-form-section-head">
-          <span class="rec-cand-form-section-icon" id="rec-cand-form-process-icon" aria-hidden="true"></span>
-          <span class="rec-cand-form-section-title">Proceso</span>
+          <span class="rec-cand-form-section-icon" id="rec-cand-form-cv-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">CV</span>
         </div>
-        <div class="rec-cand-form-grid-row">
-          <div id="rec-cand-form-vac-wrap">
-            <label class="form-label">Asignar a vacante <span class="rec-cand-form-optional">Opcional</span></label>
-            <select id="rec-cand-form-vacancy" class="form-input"><option value="">Seleccionar vacante</option></select>
-          </div>
-          <div id="rec-cand-form-stage-wrap" class="hidden">
-            <label class="form-label">Etapa inicial</label>
-            <select id="rec-cand-form-stage" class="form-input"></select>
-          </div>
-        </div>
+        <div id="rec-cand-form-cv-panel" class="rec-cand-form-cv-panel"></div>
+        <input type="file" id="rec-cand-form-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
+        <p id="rec-cand-form-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
+        <p id="rec-cand-form-cv-parse-msg" class="rec-cand-form-cv-parse-msg hidden" role="status"></p>
       </div>
       <div class="rec-cand-form-section-head">
         <span class="rec-cand-form-section-icon" id="rec-cand-form-data-icon" aria-hidden="true"></span>
@@ -2374,6 +2372,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div id="rec-cand-form-source-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-source-other" class="form-input" maxlength="120" placeholder="Especifica la fuente"></div>
         </div>
       </div>
+      <div id="rec-cand-form-process-block" class="rec-cand-form-process-block">
+        <div class="rec-cand-form-section-head">
+          <span class="rec-cand-form-section-icon" id="rec-cand-form-process-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">Proceso</span>
+        </div>
+        <div class="rec-cand-form-grid-row">
+          <div id="rec-cand-form-vac-wrap">
+            <label class="form-label">Asignar a vacante <span class="rec-cand-form-optional">Opcional</span></label>
+            <select id="rec-cand-form-vacancy" class="form-input"><option value="">Seleccionar vacante</option></select>
+          </div>
+          <div id="rec-cand-form-stage-wrap" class="hidden">
+            <label class="form-label">Etapa inicial</label>
+            <select id="rec-cand-form-stage" class="form-input"></select>
+          </div>
+        </div>
+      </div>
       <div class="rec-cand-form-section-head">
         <span class="rec-cand-form-section-icon" id="rec-cand-form-loc-icon" aria-hidden="true"></span>
         <span class="rec-cand-form-section-title">Ubicación</span>
@@ -2387,16 +2401,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <label class="form-label">Estado</label>
           <input type="text" id="rec-cand-form-state" class="form-input" maxlength="120" placeholder="Ej. CDMX">
         </div>
-      </div>
-      <div id="rec-cand-form-cv-section">
-        <div class="rec-cand-form-section-head">
-          <span class="rec-cand-form-section-icon" id="rec-cand-form-cv-icon" aria-hidden="true"></span>
-          <span class="rec-cand-form-section-title">CV</span>
-        </div>
-        <div id="rec-cand-form-cv-panel" class="rec-cand-form-cv-panel"></div>
-        <input type="file" id="rec-cand-form-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
-        <p id="rec-cand-form-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
-        <p id="rec-cand-form-cv-parse-msg" class="rec-cand-form-cv-parse-msg hidden" role="status"></p>
       </div>
       <div id="rec-cand-form-notes-section">
         <div class="rec-cand-form-section-head">
@@ -10735,15 +10739,25 @@ function recCandFormSetCvErr(msg){
   if(msg){ el.textContent=msg; el.classList.remove('hidden'); }
   else{ el.textContent=''; el.classList.add('hidden'); }
 }
+var REC_CAND_FORM_CV_MSG_NOT_PARSEABLE='El formato seleccionado no permite extraer datos automáticamente. Puedes continuar el registro manualmente.';
+var REC_CAND_FORM_CV_MSG_EXTRACT_FAIL='No pudimos extraer datos automáticamente de este CV. Puedes continuar el registro manualmente.';
+function recCandFormParseFallbackMsg(code){
+  if(code==='NOT_PARSEABLE') return REC_CAND_FORM_CV_MSG_NOT_PARSEABLE;
+  if(code==='EXTRACTION_FAILED'||code==='NO_DATA') return REC_CAND_FORM_CV_MSG_EXTRACT_FAIL;
+  return REC_CAND_FORM_CV_MSG_EXTRACT_FAIL;
+}
+function recCandFormExtractSparkleSvg(){
+  return '<svg class="rec-cand-form-cv-extract-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 2 8 7l-5 1.5L8 10l1.5 5L11 10l5-1.5L11 7 9.5 2Z"/><path d="M18 14l-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3Z"/></svg>';
+}
 function recCandFormSetCvParseMsg(kind,text){
   const el=document.getElementById('rec-cand-form-cv-parse-msg');
   if(!el) return;
   el.classList.remove('rec-cand-form-cv-parse-msg--ok','rec-cand-form-cv-parse-msg--info');
   if(!kind||kind==='hidden'){ el.textContent=''; el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
-  if(kind==='loading'){ el.textContent='Analizando CV…'; el.classList.add('rec-cand-form-cv-parse-msg--info'); return; }
+  if(kind==='loading'){ el.textContent='Extrayendo datos del CV…'; el.classList.add('rec-cand-form-cv-parse-msg--info'); return; }
   if(kind==='ok'){ el.textContent=text||'Datos encontrados en el CV. Revísalos antes de guardar.'; el.classList.add('rec-cand-form-cv-parse-msg--ok'); return; }
-  el.textContent=text||'No pudimos extraer los datos automáticamente. Puedes continuar el registro manualmente.';
+  el.textContent=text||REC_CAND_FORM_CV_MSG_EXTRACT_FAIL;
   el.classList.add('rec-cand-form-cv-parse-msg--info');
 }
 function recCandFormCvExt(file){
@@ -10848,16 +10862,16 @@ async function recCandFormAnalyzeCv(){
     const r=await fetch('/api/org/recruitment/candidates/resume/parse',{method:'POST',body:fd,credentials:'include'});
     const text=await r.text();
     let data=null; try{ data=text?JSON.parse(text):null; }catch(_e){}
-    if(!r.ok) throw new Error((data&&data.message)||'No se pudo analizar el CV.');
+    if(!r.ok) throw new Error(REC_CAND_FORM_CV_MSG_EXTRACT_FAIL);
     if(!data.ok){
-      recCandFormSetCvParseMsg('info',data.message||'No pudimos extraer los datos automáticamente. Puedes continuar el registro manualmente.');
+      recCandFormSetCvParseMsg('info',recCandFormParseFallbackMsg(data.code));
       return;
     }
     recCandFormApplyParsedFields(data.fields||{});
     recCandFormSetCvParseMsg('ok');
     recCandRenderFormCvPanel();
   }catch(e){
-    recCandFormSetCvParseMsg('info',(e&&e.message)||'No pudimos extraer los datos automáticamente. Puedes continuar el registro manualmente.');
+    recCandFormSetCvParseMsg('info',REC_CAND_FORM_CV_MSG_EXTRACT_FAIL);
   }finally{
     st.candFormCvAnalyzing=false;
     if(btn) btn.disabled=false;
@@ -10891,7 +10905,8 @@ function recCandRenderFormCvPanel(){
   if(!f){
     panel.innerHTML='<div class="rec-cand-cv-drop" id="rec-cand-form-cv-drop" role="button" tabindex="0" aria-label="Subir CV">'+
       '<div class="rec-cand-form-cv-upload-icon">'+recCandFormIconSvg('upload')+'</div>'+
-      '<p class="rec-cand-form-cv-hint">Arrastra el CV aquí o <strong>selecciona un archivo</strong></p>'+
+      '<p class="rec-cand-form-cv-hint-primary">Arrastra aquí el CV para completar los datos automáticamente</p>'+
+      '<p class="rec-cand-form-cv-hint-sub">o selecciona un archivo</p>'+
       '<p class="rec-cand-form-cv-meta">PDF, DOC, DOCX, JPG, PNG o WEBP · máx. 10 MB</p></div>';
     const drop=document.getElementById('rec-cand-form-cv-drop');
     drop.__cvDropBound=false;
@@ -10903,9 +10918,9 @@ function recCandRenderFormCvPanel(){
   const analyzing=!!st.candFormCvAnalyzing;
   let actionsHtml='';
   if(kind==='parseable'){
-    actionsHtml='<div class="rec-cand-form-cv-actions"><button type="button" id="rec-cand-form-cv-analyze-btn" class="rec-cand-form-cv-analyze-btn"'+(analyzing?' disabled':'')+' onclick="recCandFormAnalyzeCv()">Analizar CV</button></div>';
+    actionsHtml='<div class="rec-cand-form-cv-actions"><button type="button" id="rec-cand-form-cv-analyze-btn" class="rec-cand-form-cv-analyze-btn"'+(analyzing?' disabled':'')+' onclick="recCandFormAnalyzeCv()">'+recCandFormExtractSparkleSvg()+'<span>Extraer datos</span></button></div>';
   }else if(kind==='image'){
-    actionsHtml='<p class="rec-cand-form-cv-image-hint">CV adjunto. La lectura automática está disponible para PDF, DOC y DOCX.</p>';
+    actionsHtml='<p class="rec-cand-form-cv-image-hint">'+tcEsc(REC_CAND_FORM_CV_MSG_NOT_PARSEABLE)+'</p>';
   }
   panel.innerHTML='<div class="rec-cand-form-cv-file-row">'+
     '<span class="rec-cand-form-section-icon" style="color:var(--purple);">'+recCandFormIconSvg('file')+'</span>'+
@@ -10984,6 +10999,7 @@ async function recCandDeleteCv(){
 function recCandOpenForm(mode,candidate){
   recCandCatalogInits();
   recCandFormApplyDecorIcons();
+  recCandFormBindFieldTouchOnce();
   recCandFormBindFieldTouchOnce();
   const title=document.getElementById('rec-cand-form-title');
   const idEl=document.getElementById('rec-cand-form-id');
