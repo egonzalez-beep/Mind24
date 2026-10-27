@@ -409,7 +409,7 @@ router.post(
         buffer: req.file.buffer,
         mimetype: req.file.mimetype,
         originalName: req.file.originalname,
-        uploadedByUserId: null,
+        uploadedByWorkforceEmployeeId: employeeId,
       });
       res.status(201).json({ resume });
     } catch (e) {

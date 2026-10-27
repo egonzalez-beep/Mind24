@@ -106,12 +106,20 @@ export async function getRecruitmentCandidateResume(organizationId, candidateId)
 export async function uploadRecruitmentCandidateResume({
   organizationId,
   candidateId,
-  uploadedByUserId,
+  uploadedByUserId = null,
+  uploadedByWorkforceEmployeeId = null,
   buffer,
   mimetype,
   originalName,
 }) {
   await assertRecruitmentCandidateInOrg(candidateId, organizationId);
+
+  if (!uploadedByUserId && !uploadedByWorkforceEmployeeId) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'No se pudo registrar quién subió el CV.';
+    throw err;
+  }
 
   if (!buffer || buffer.length > RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES) {
     const err = new Error('VALIDATION_ERROR');
@@ -164,6 +172,7 @@ export async function uploadRecruitmentCandidateResume({
           organizationId,
           candidateId,
           uploadedByUserId,
+          uploadedByWorkforceEmployeeId,
           filePath: relativePath,
           originalFileName: safeOriginal,
           mimeType,
@@ -171,6 +180,7 @@ export async function uploadRecruitmentCandidateResume({
         },
         update: {
           uploadedByUserId,
+          uploadedByWorkforceEmployeeId,
           filePath: relativePath,
           originalFileName: safeOriginal,
           mimeType,
@@ -185,6 +195,12 @@ export async function uploadRecruitmentCandidateResume({
     return sanitizeRecruitmentCandidateResumeForAdmin(saved);
   } catch (e) {
     await fs.promises.unlink(abs).catch(() => {});
+    console.error('[recruitment-candidate-resume] upload failed', {
+      organizationId,
+      candidateId,
+      code: e?.code,
+      message: typeof e?.message === 'string' ? e.message.slice(0, 160) : undefined,
+    });
     throw e;
   }
 }

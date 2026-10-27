@@ -31,6 +31,10 @@ const candSvc = fs.readFileSync(
   path.join(root, 'server/src/services/recruitmentCandidate.service.js'),
   'utf8',
 );
+const resumeSvc = fs.readFileSync(
+  path.join(root, 'server/src/services/recruitmentCandidateResume.service.js'),
+  'utf8',
+);
 
 let failed = 0;
 function check(cond, msg) {
@@ -84,6 +88,7 @@ check(/\/recruitment\/my-candidates/.test(publicRoutes), 'GET my-candidates port
 check(/listMyCandidatesForWorkforcePortal/.test(portalSvc), 'servicio Mis candidatos');
 check(/listCandidatesRegisteredByWorkforceEmployee/.test(candSvc), 'listado por registeredByWorkforceEmployeeId');
 check(/assertRecruitmentCandidateRegisteredByWorkforceEmployee/.test(candSvc), 'resume upload solo propio candidato');
+check(/uploadedByWorkforceEmployeeId/.test(resumeSvc), 'CV workforce persiste uploader empleado');
 check(/filterCandidateIdsByListPreviewKind/.test(candSvc), 'filtros preview reutilizados');
 
 const wfCreateFn = indexHtml.match(/async function recCandWorkforceCreateAndConfirm[\s\S]*?^async function /m)?.[0] || '';
@@ -91,7 +96,7 @@ check(/candFormWorkforceCreatedCandidateId/.test(indexHtml), 'estado partial suc
 check(/recCandWorkforceUploadPendingCvOnly/.test(indexHtml), 'retry solo resume');
 check(/tcEmpRetryPendingCvUpload/.test(indexHtml), 'acción Reintentar CV');
 check(/tcEmpShowCandidateRegisteredCvPartial/.test(indexHtml), 'UI partial success');
-check(/no se pudo guardar el CV/.test(indexHtml), 'mensaje partial success exacto');
+check(/No se pudo guardar el CV/.test(indexHtml), 'mensaje partial success exacto');
 check(/CV guardado/.test(indexHtml), 'confirmación CV tras retry');
 check(!/catch\(_e\)\{[\s\S]*?candFormPendingCvFile=null/.test(wfCreateFn), 'upload fallido no limpia File');
 check(/if\(existingId\)/.test(wfCreateFn), 'segundo submit no vuelve a crear');

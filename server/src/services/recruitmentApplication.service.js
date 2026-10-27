@@ -30,6 +30,7 @@ function serializeApplication(row) {
     interviewScheduledAt: row.interviewScheduledAt
       ? row.interviewScheduledAt.toISOString()
       : null,
+    interviewTimeSpecified: row.interviewTimeSpecified !== false,
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -70,6 +71,7 @@ export async function createRecruitmentApplication({
   changedByUserId,
   initialStageId,
   interviewScheduledAt = undefined,
+  interviewTimeSpecified = undefined,
 }) {
   await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId);
@@ -104,7 +106,14 @@ export async function createRecruitmentApplication({
         stageId: newStage.id,
         position,
         appliedAt,
-        ...(interviewScheduledAt != null ? { interviewScheduledAt } : {}),
+        ...(interviewScheduledAt != null
+          ? {
+              interviewScheduledAt,
+              ...(interviewTimeSpecified !== undefined
+                ? { interviewTimeSpecified }
+                : {}),
+            }
+          : {}),
       },
       include: { candidate: true, stage: true },
     });
@@ -127,17 +136,21 @@ export async function createRecruitmentApplication({
         select: { key: true },
       });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
+      const resolvedAt = resolveInterviewScheduledAtForApplicationUpdate({
+        stageChanged: true,
+        fromStageKey: newStage.key,
+        toStageKey: targetStage?.key,
+        existingInterviewScheduledAt: null,
+        explicitInterviewScheduledAt: interviewScheduledAt,
+      });
       const moveData = {
         stageId: targetStageId,
         position,
-        interviewScheduledAt: resolveInterviewScheduledAtForApplicationUpdate({
-          stageChanged: true,
-          fromStageKey: newStage.key,
-          toStageKey: targetStage?.key,
-          existingInterviewScheduledAt: null,
-          explicitInterviewScheduledAt: interviewScheduledAt,
-        }),
+        interviewScheduledAt: resolvedAt,
       };
+      if (resolvedAt != null && interviewTimeSpecified !== undefined) {
+        moveData.interviewTimeSpecified = interviewTimeSpecified;
+      }
       const moved = await tx.recruitmentApplication.update({
         where: { id: app.id },
         data: moveData,
@@ -175,6 +188,7 @@ export async function updateRecruitmentApplication({
   position,
   notes,
   interviewScheduledAt,
+  interviewTimeSpecified,
   changedByUserId,
 }) {
   const existingRow = await prisma.recruitmentApplication.findFirst({
@@ -218,6 +232,11 @@ export async function updateRecruitmentApplication({
     });
     if (stageChanged || interviewScheduledAt !== undefined) {
       data.interviewScheduledAt = resolvedInterview;
+      if (resolvedInterview == null) {
+        data.interviewTimeSpecified = true;
+      } else if (interviewTimeSpecified !== undefined) {
+        data.interviewTimeSpecified = interviewTimeSpecified;
+      }
     }
 
     const updated = await tx.recruitmentApplication.update({

@@ -74,6 +74,7 @@ const {
   utcInstantFromLocalParts,
   stageKeyAllowsInterviewSchedule,
   formatInterviewScheduledAtLabel,
+  parseInterviewScheduleFields,
   resolveInterviewScheduledAtForApplicationUpdate,
 } = await import('../src/services/recruitmentInterviewSchedule.service.js');
 check(
@@ -176,6 +177,17 @@ const instant = utcInstantFromLocalParts('2026-10-29', 10, 30, 'America/Mexico_C
 check(instant instanceof Date && !Number.isNaN(instant.getTime()), 'instant válido');
 const label = formatInterviewScheduledAtLabel(instant.toISOString(), 'America/Mexico_City');
 check(label && /29/.test(label) && /10:30/.test(label), 'label org timezone');
+const dateOnlyParsed = parseInterviewScheduleFields(
+  { interviewDate: '2026-10-29', interviewTime: '' },
+  'America/Mexico_City',
+);
+check(dateOnlyParsed?.timeSpecified === false, 'entrevista solo fecha');
+const dateOnlyLabel = formatInterviewScheduledAtLabel(
+  dateOnlyParsed.scheduledAt.toISOString(),
+  'America/Mexico_City',
+  { timeSpecified: false },
+);
+check(dateOnlyLabel && !/·/.test(dateOnlyLabel), 'label sin hora inventada');
 
 console.log('\n=== Integración (DB) ===\n');
 let dbOk = false;

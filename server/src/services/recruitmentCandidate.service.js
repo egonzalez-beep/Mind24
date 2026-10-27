@@ -110,6 +110,7 @@ function serializeCandidateApplicationProcess(row) {
     interviewScheduledAt: row.interviewScheduledAt
       ? row.interviewScheduledAt.toISOString()
       : null,
+    interviewTimeSpecified: row.interviewTimeSpecified !== false,
     vacancy: {
       id: row.vacancy.id,
       title: row.vacancy.title,
@@ -202,6 +203,7 @@ export async function buildPrimaryActivePreviewByCandidateId(
       interviewScheduledAt: pick.interviewScheduledAt
         ? pick.interviewScheduledAt.toISOString()
         : null,
+      interviewTimeSpecified: pick.interviewTimeSpecified !== false,
     });
   }
   return map;

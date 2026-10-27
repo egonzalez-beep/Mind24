@@ -164,7 +164,7 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
     const { resolveInterviewScheduledAtForOrg } = await import(
       './recruitmentInterviewSchedule.service.js'
     );
-    const interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+    const interviewSchedule = await resolveInterviewScheduledAtForOrg(
       organizationId,
       { interviewDate, interviewTime },
       { stageKey: st?.key },
@@ -175,7 +175,8 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
       candidateId: candidate.id,
       changedByUserId: null,
       initialStageId: resolvedStageId,
-      interviewScheduledAt: interviewScheduledAt ?? undefined,
+      interviewScheduledAt: interviewSchedule?.scheduledAt ?? undefined,
+      interviewTimeSpecified: interviewSchedule?.timeSpecified,
     });
     stageName = st?.name || st?.key || null;
   }

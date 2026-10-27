@@ -82,15 +82,19 @@ export function utcInstantFromLocalParts(dateKey, hour, minute, timeZone) {
   return new Date(lo);
 }
 
+/** @returns {{ scheduledAt: Date, timeSpecified: boolean } | null} */
 export function parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone) {
   const dateTrim = interviewDate != null ? String(interviewDate).trim() : '';
   const timeTrim = interviewTime != null ? String(interviewTime).trim() : '';
   if (!dateTrim && !timeTrim) return null;
-  if (!dateTrim || !timeTrim) {
+  if (!dateTrim && timeTrim) {
     const err = new Error('VALIDATION_ERROR');
     err.code = 'VALIDATION_ERROR';
-    err.message = 'Indica fecha y hora de entrevista, o deja ambos vacíos.';
+    err.message = 'Indica la fecha de entrevista.';
     throw err;
+  }
+  if (dateTrim && !timeTrim) {
+    return { scheduledAt: localMidnightUtc(dateTrim, timeZone), timeSpecified: false };
   }
   const tm = TIME_RE.exec(timeTrim);
   if (!tm) {
@@ -99,19 +103,25 @@ export function parseInterviewScheduleFields({ interviewDate, interviewTime }, t
     err.message = 'Hora de entrevista no válida.';
     throw err;
   }
-  return utcInstantFromLocalParts(dateTrim, Number(tm[1]), Number(tm[2]), timeZone);
+  return {
+    scheduledAt: utcInstantFromLocalParts(dateTrim, Number(tm[1]), Number(tm[2]), timeZone),
+    timeSpecified: true,
+  };
 }
 
 export async function resolveInterviewScheduledAtForOrg(organizationId, fields, { stageKey } = {}) {
-  const instant = parseInterviewScheduleFields(fields, await resolveOrganizationIanaTimezone(organizationId));
-  if (!instant) return null;
+  const parsed = parseInterviewScheduleFields(
+    fields,
+    await resolveOrganizationIanaTimezone(organizationId),
+  );
+  if (!parsed) return null;
   if (stageKey != null && !stageKeyAllowsInterviewSchedule(stageKey)) {
     const err = new Error('VALIDATION_ERROR');
     err.code = 'VALIDATION_ERROR';
     err.message = 'La fecha de entrevista solo aplica en etapas de entrevista.';
     throw err;
   }
-  return instant;
+  return parsed;
 }
 
 export function serializeInterviewScheduledAt(value) {
@@ -121,7 +131,7 @@ export function serializeInterviewScheduledAt(value) {
   return d.toISOString();
 }
 
-export function formatInterviewScheduledAtLabel(isoUtc, timeZone) {
+export function formatInterviewScheduledAtLabel(isoUtc, timeZone, { timeSpecified = true } = {}) {
   if (!isoUtc) return null;
   const dt = new Date(isoUtc);
   if (Number.isNaN(dt.getTime())) return null;
@@ -132,6 +142,7 @@ export function formatInterviewScheduledAtLabel(isoUtc, timeZone) {
     month: 'short',
     year: 'numeric',
   }).format(dt);
+  if (timeSpecified === false) return dateStr;
   const timeStr = new Intl.DateTimeFormat('es-MX', {
     timeZone: tz,
     hour: '2-digit',

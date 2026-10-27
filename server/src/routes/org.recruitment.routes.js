@@ -814,7 +814,7 @@ router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
     const { resolveInterviewScheduledAtForOrg } = await import(
       '../services/recruitmentInterviewSchedule.service.js'
     );
-    const interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+    const interviewSchedule = await resolveInterviewScheduledAtForOrg(
       u.organizationId,
       { interviewDate: body.interviewDate, interviewTime: body.interviewTime },
       { stageKey },
@@ -825,7 +825,8 @@ router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
       candidateId: body.candidateId,
       changedByUserId: u.id,
       initialStageId: body.stageId,
-      interviewScheduledAt: interviewScheduledAt ?? undefined,
+      interviewScheduledAt: interviewSchedule?.scheduledAt ?? undefined,
+      interviewTimeSpecified: interviewSchedule?.timeSpecified,
     });
     res.status(201).json({ application });
   } catch (e) {
@@ -857,6 +858,7 @@ router.patch('/applications/:id', async (req, res, next) => {
       })
       .parse(req.body);
     let interviewScheduledAt;
+    let interviewTimeSpecified;
     if (body.clearInterview === true) {
       interviewScheduledAt = null;
     } else if (body.interviewDate !== undefined || body.interviewTime !== undefined) {
@@ -881,11 +883,13 @@ router.patch('/applications/:id', async (req, res, next) => {
       const timeTrim = body.interviewTime != null ? String(body.interviewTime).trim() : '';
       if (!dateTrim && !timeTrim) interviewScheduledAt = null;
       else {
-        interviewScheduledAt = await resolveInterviewScheduledAtForOrg(
+        const parsed = await resolveInterviewScheduledAtForOrg(
           u.organizationId,
           { interviewDate: body.interviewDate, interviewTime: body.interviewTime },
           { stageKey: nextStageKey },
         );
+        interviewScheduledAt = parsed?.scheduledAt ?? null;
+        interviewTimeSpecified = parsed?.timeSpecified;
       }
     }
     const application = await updateRecruitmentApplication({
@@ -895,6 +899,7 @@ router.patch('/applications/:id', async (req, res, next) => {
       position: body.position,
       notes: body.notes,
       interviewScheduledAt,
+      interviewTimeSpecified,
       changedByUserId: u.id,
     });
     res.json({ application });

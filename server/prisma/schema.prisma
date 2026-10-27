@@ -135,6 +135,7 @@ model WorkforceEmployee {
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
   recruitmentCandidatesRegistered RecruitmentCandidate[] @relation("RecruitmentCandidateRegisteredBy")
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteWorkforceAuthor")
+  recruitmentCandidateResumesUploaded RecruitmentCandidateResume[] @relation("RecruitmentCandidateResumeWorkforceUploader")
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -628,8 +629,10 @@ model RecruitmentCandidateResume {
   organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   candidateId      String               @unique
   candidate        RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  uploadedByUserId String
-  uploadedBy       User                 @relation(fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  uploadedByUserId String?
+  uploadedBy       User?                @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  uploadedByWorkforceEmployeeId String?
+  uploadedByWorkforceEmployee     WorkforceEmployee? @relation("RecruitmentCandidateResumeWorkforceUploader", fields: [uploadedByWorkforceEmployeeId], references: [id], onDelete: SetNull)
   filePath         String
   originalFileName String
   mimeType         String
@@ -775,6 +778,8 @@ model RecruitmentApplication {
   position       Int
   appliedAt      DateTime @db.Timestamptz(6)
   interviewScheduledAt DateTime? @db.Timestamptz(6)
+  /// false = solo fecha conocida (no mostrar hora en UI).
+  interviewTimeSpecified Boolean @default(true)
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
