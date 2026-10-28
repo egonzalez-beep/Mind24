@@ -124,6 +124,20 @@ check(!/location\.hash/.test(wsTabFn), 'tabs no usan location.hash');
 check(/tcEmpMyCandBuildCardHtml/.test(indexHtml) && /tc-emp-my-cand-card-inner/.test(indexHtml), 'cards candidato responsive');
 check(/recCandFormatInterviewScheduledAt/.test(indexHtml.match(/function tcEmpMyCandInterviewHtml[\s\S]*?^function /m)?.[0] || ''), 'entrevista en card reutiliza helper TZ');
 
+console.log('\n=== Workspace UX V2.1 — polish ===\n');
+check(/let tcEmpMyCandFilter='in_process'/.test(indexHtml), 'filtro inicial in_process');
+check(/tcEmpMyCandFilterUserPicked/.test(indexHtml), 'flag selección manual de filtro');
+const setFilterFn = indexHtml.match(/function tcEmpMyCandSetFilter[\s\S]*?^function /m)?.[0] || '';
+check(/tcEmpMyCandFilterUserPicked=true/.test(setFilterFn), 'click filtro marca selección manual');
+const tabFn = indexHtml.match(/function tcEmpWorkspaceSetTab[\s\S]*?^function /m)?.[0] || '';
+check(!/tcEmpMyCandFilter/.test(tabFn), 'cambio tab no resetea filtro');
+check(/tc-ws-attendance-entrance-compact{display:none/.test(indexHtml), 'sin Entrada duplicada desktop');
+check(/tc-ws-attendance-band--live #tc-ws-att-stat-in{display:none/.test(indexHtml), 'sin Entrada duplicada mobile expandido');
+check(/Sin actividades pendientes/.test(indexHtml) && /tcEmpWorkspaceUpdateHoy/.test(indexHtml), 'Hoy con cero actividades');
+check(/tc-ws-attendance-dot--live/.test(indexHtml), 'indicador jornada activa verde');
+check(!/Cargando…/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'filtros sin vaciar listado');
+check(/tcEmployeeBoot[\s\S]*?tcEmpMyCandFilter='in_process'/.test(indexHtml), 'reload checador vuelve a in_process');
+
 console.log('\n=== Schema portal — unit ===\n');
 
 const { workforceCandidateCreateSchema } = await import(

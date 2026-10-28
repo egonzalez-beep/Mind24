@@ -1276,6 +1276,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-header-brand .tc-emp-brand{margin-bottom:4px;}
 .tc-ws-header-brand .tc-ws-title{margin:0;font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);line-height:1.2;}
 @media(min-width:768px){.tc-ws-header-brand .tc-ws-title{font-size:22px;}}
+@media(min-width:900px){.tc-ws-header-brand .tc-ws-title{font-size:21px;letter-spacing:.03em;white-space:nowrap;}}
 .tc-ws-header-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;}
 .tc-ws-header-user{display:flex;align-items:center;gap:12px;min-width:0;}
 @media(min-width:900px){.tc-ws-header-user{justify-content:center;}}
@@ -1298,17 +1299,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-attendance-mobile-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-ws-attendance-compact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--slate-700);}
 .tc-ws-attendance-compact .tc-emp-state{font-size:15px;font-weight:800;margin:0;color:var(--primary);}
+.tc-ws-attendance-compact .tc-emp-state.tc-ws-attendance-state--live{color:#15803d;}
+.tc-ws-attendance-compact .rec-cand-process-dot.tc-ws-attendance-dot--live{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
 .tc-ws-attendance-entrance-compact{font-size:13px;color:var(--slate-500);margin-left:auto;}
+@media(min-width:768px){.tc-ws-attendance-entrance-compact{display:none!important;}}
+@media(max-width:767px){.tc-ws-attendance-band--live #tc-ws-att-stat-in{display:none!important;}}
 .tc-ws-attendance-chevron{width:18px;height:18px;stroke:var(--slate-400);fill:none;stroke-width:2;flex-shrink:0;transition:transform 180ms ease;margin-left:4px;}
 @media(min-width:768px){.tc-ws-attendance-mobile-toggle{cursor:default;pointer-events:none;}.tc-ws-attendance-chevron{display:none;}}
 .tc-ws-attendance-band--open .tc-ws-attendance-chevron{transform:rotate(180deg);}
 @media(prefers-reduced-motion:reduce){.tc-ws-attendance-chevron{transition:none;}}
 .tc-ws-attendance-details{overflow:hidden;max-height:0;opacity:0;transition:max-height 200ms ease,opacity 180ms ease,margin 180ms ease;margin-top:0;}
-@media(min-width:768px){.tc-ws-attendance-details{max-height:none!important;opacity:1!important;margin-top:12px!important;overflow:visible;}}
+@media(min-width:768px){.tc-ws-attendance-details{max-height:none!important;opacity:1!important;margin-top:8px!important;overflow:visible;}}
 .tc-ws-attendance-band--open .tc-ws-attendance-details{max-height:520px;opacity:1;margin-top:12px;}
 @media(prefers-reduced-motion:reduce){.tc-ws-attendance-details{transition:none;}}
 .tc-ws-attendance-grid{display:grid;gap:12px;}
-@media(min-width:768px){.tc-ws-attendance-grid{grid-template-columns:1fr 1fr auto;align-items:end;gap:16px;}}
+@media(min-width:768px){.tc-ws-attendance{margin-bottom:12px;}.tc-ws-attendance-band{padding:10px 12px;border-radius:12px;}.tc-ws-attendance-kicker{margin:0 0 6px;}.tc-ws-attendance-grid{grid-template-columns:1fr 1fr auto;align-items:end;gap:10px;}.tc-ws-attendance-band .tc-emp-btn{padding:11px 16px;min-width:150px;}.tc-ws-attendance-band .tc-emp-hint{margin:8px 0 0;font-size:11px;}.tc-ws-attendance-privacy{margin-top:8px;padding-top:6px;font-size:10px;line-height:1.45;color:var(--slate-400);border-top-color:var(--slate-100);}}
 .tc-ws-attendance-stat label{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);margin-bottom:4px;}
 .tc-ws-attendance-stat span{font-size:15px;font-weight:700;color:var(--primary);}
 .tc-ws-attendance-band .tc-emp-btn{width:auto;min-width:160px;padding:12px 18px;}
@@ -3448,7 +3453,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div class="tc-ws-header-today" aria-label="Resumen de hoy">
             <span class="tc-ws-hoy-label">Hoy</span>
             <div class="tc-ws-hoy-stat">
-              <span class="tc-ws-hoy-stat-slot" id="tc-ws-hoy-activities">Actividades pendientes <strong id="tc-ws-hoy-activities-n">0</strong></span>
+              <span class="tc-ws-hoy-stat-slot" id="tc-ws-hoy-activities">Sin actividades pendientes</span>
               <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-goals" hidden></span>
               <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-news" hidden></span>
             </div>
@@ -3477,7 +3482,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <div id="tc-emp-signal-row" class="tc-ws-attendance-signal" hidden></div>
               <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
               <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
-              <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+              <p class="tc-emp-privacy tc-ws-attendance-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
             </div>
             <p class="tc-emp-err hidden" id="tc-emp-err"></p>
           </div>
@@ -3507,8 +3512,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <button type="button" class="rec-btn-new tc-ws-cand-register" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
             </div>
             <div class="tc-emp-my-cand-filters" role="group" aria-label="Filtrar mis candidatos">
-              <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="all" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
-              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="in_process" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="all" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
+              <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="in_process" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="rejected" onclick="tcEmpMyCandSetFilter('rejected')">Rechazados</button>
             </div>
@@ -12039,8 +12044,11 @@ function tcEmpWorkspaceUpdateHoy(){
   const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; }).length;
   const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; }).length;
   const open=pending+prog;
-  const nEl=document.getElementById('tc-ws-hoy-activities-n');
-  if(nEl) nEl.textContent=String(open);
+  const slot=document.getElementById('tc-ws-hoy-activities');
+  if(slot){
+    if(open>0) slot.innerHTML='Actividades pendientes <strong>'+String(open)+'</strong>';
+    else slot.textContent='Sin actividades pendientes';
+  }
   const badge=document.getElementById('tc-ws-tab-badge-activities');
   if(badge) badge.textContent=open>0?String(open):'';
 }
@@ -12050,7 +12058,16 @@ function tcEmpWorkspaceInitChrome(){
   if(icAct) icAct.innerHTML=tcWsSvgClipboard();
   if(icCand) icCand.innerHTML=tcWsSvgUsers();
   tcEmpWorkspaceSyncTabs();
+  tcEmpMyCandSyncFilterUi();
   tcEmpWorkspaceUpdateHoy();
+}
+function tcEmpSyncAttendanceLiveIndicator(live){
+  const dot=document.getElementById('tc-emp-attendance-dot');
+  const stateEl=document.getElementById('tc-emp-state');
+  const band=document.getElementById('tc-emp-attendance-active');
+  if(dot) dot.classList.toggle('tc-ws-attendance-dot--live',!!live);
+  if(stateEl) stateEl.classList.toggle('tc-ws-attendance-state--live',!!live);
+  if(band) band.classList.toggle('tc-ws-attendance-band--live',!!live);
 }
 function tcEmpToggleAttendanceDetails(){
   if(window.matchMedia('(min-width:768px)').matches) return;
@@ -12163,8 +12180,10 @@ function tcEmpMyCandSyncFilterUi(){
   });
 }
 function tcEmpMyCandSetFilter(filter){
-  if(tcEmpMyCandFilter===filter) return;
-  tcEmpMyCandFilter=filter||'all';
+  const next=filter||'in_process';
+  if(tcEmpMyCandFilter===next) return;
+  tcEmpMyCandFilterUserPicked=true;
+  tcEmpMyCandFilter=next;
   tcEmpMyCandSyncFilterUi();
   tcEmpLoadMyCandidates(false);
 }
@@ -12185,7 +12204,7 @@ async function tcEmpLoadMyCandidates(append){
   await recEnsureRecruitmentOrgTimeZone();
   try{
     const qs=new URLSearchParams();
-    qs.set('previewFilter',tcEmpMyCandFilter||'all');
+    qs.set('previewFilter',tcEmpMyCandFilter||'in_process');
     qs.set('limit','15');
     if(append&&tcEmpMyCandNextCursor) qs.set('cursor',tcEmpMyCandNextCursor);
     const j=await tcPublicJson('/api/timeclock/public/recruitment/my-candidates?'+qs.toString(),{ signal: signal });
@@ -12213,6 +12232,10 @@ function tcEmpShowCandidateRegisteredSuccess(conf,warn){
   let msg='✓ Candidato registrado correctamente.';
   if(warn) msg+=' '+String(warn);
   tcEmpRecruitmentShowToast(msg);
+  if(!tcEmpMyCandFilterUserPicked){
+    tcEmpMyCandFilter='in_process';
+    tcEmpMyCandSyncFilterUi();
+  }
   tcEmpWorkspaceSetTab('candidates');
 }
 function tcEmpShowCandidateRegisteredCvPartial(conf,extraErr){
@@ -13498,7 +13521,8 @@ const TC_HEARTBEAT_MS=45000;
 let tcEmpMe=null;
 let tcEmpCompleted=null;
 let tcEmpBusy=false;
-let tcEmpMyCandFilter='all';
+let tcEmpMyCandFilter='in_process';
+let tcEmpMyCandFilterUserPicked=false;
 let tcEmpMyCandItems=[];
 let tcEmpMyCandNextCursor=null;
 let tcEmpMyCandLoading=false;
@@ -13605,6 +13629,7 @@ function tcEmpRender(){
   }
   tcEmpSyncAttendanceAccordion();
   if(completed&&completed.checkOutAt){
+    tcEmpSyncAttendanceLiveIndicator(false);
     if(state) state.textContent='Jornada finalizada';
     tcEmpAttendanceSetGridMode('completed');
     if(attIn) attIn.textContent=tcFmtHm(completed.checkInAt);
@@ -13615,6 +13640,7 @@ function tcEmpRender(){
     return;
   }
   if(open&&open.checkInAt){
+    tcEmpSyncAttendanceLiveIndicator(true);
     if(state) state.textContent='Jornada en curso';
     tcEmpAttendanceSetGridMode('open');
     if(attIn) attIn.textContent=tcFmtHm(open.checkInAt);
@@ -13634,6 +13660,7 @@ function tcEmpRender(){
     },1000);
     return;
   }
+  tcEmpSyncAttendanceLiveIndicator(false);
   if(state) state.textContent='Fuera de jornada';
   tcEmpAttendanceSetGridMode('idle');
   if(attIn) attIn.textContent='—';
@@ -13763,6 +13790,8 @@ async function tcEmployeeBoot(){
   showView('timeclock');
   tcEmpStopTimers();
   tcEmpCompleted=null;
+  tcEmpMyCandFilter='in_process';
+  tcEmpMyCandFilterUserPicked=false;
   const token=tcEmpHashToken();
   try{
     if(token){
