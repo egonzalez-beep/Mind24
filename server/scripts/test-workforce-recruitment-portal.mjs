@@ -111,11 +111,13 @@ check(
 
 console.log('\n=== Workspace UX V2 — estático ===\n');
 check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
-check(/tc-ws-header/.test(indexHtml) && /tc-ws-hoy-activities/.test(indexHtml), 'header + resumen Hoy');
-check(/tc-ws-hoy-stat-slot--future/.test(indexHtml), 'slots futuros Metas/Novedades');
-check(!/Metas/.test(indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || ''), 'sin tab Metas visible');
+check(/tc-ws-header/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header mini card jornada');
+check(/tc-ws-quick-indicators/.test(indexHtml), 'quick indicators preparados');
+const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || '';
+check(!/>\s*Metas\s*</.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'sin tab Metas/Novedades visibles');
 check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
-check(/tcEmpToggleAttendanceDetails/.test(indexHtml) && /aria-expanded/.test(indexHtml.match(/tc-emp-attendance-toggle[\s\S]{0,200}/)?.[0] || ''), 'asistencia colapsable mobile');
+check(/tcEmpToggleJornadaDetails/.test(indexHtml) && /tc-ws-jornada-details-toggle/.test(indexHtml), 'detalle jornada expandible');
+check(!/class="tc-ws-attendance-band"/.test(indexHtml), 'sin banda asistencia horizontal grande');
 check(/tcEmpMyCandFetchSeq/.test(indexHtml) && /AbortController/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'stale requests candidatos');
 check(/tc-emp-my-cand-list--loading/.test(indexHtml), 'loading listado sin vaciar DOM');
 check(!/Cargando…/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'filtros no reemplazan listado con Cargando');
@@ -131,12 +133,19 @@ const setFilterFn = indexHtml.match(/function tcEmpMyCandSetFilter[\s\S]*?^funct
 check(/tcEmpMyCandFilterUserPicked=true/.test(setFilterFn), 'click filtro marca selección manual');
 const tabFn = indexHtml.match(/function tcEmpWorkspaceSetTab[\s\S]*?^function /m)?.[0] || '';
 check(!/tcEmpMyCandFilter/.test(tabFn), 'cambio tab no resetea filtro');
-check(/tc-ws-attendance-entrance-compact{display:none/.test(indexHtml), 'sin Entrada duplicada desktop');
-check(/tc-ws-attendance-band--live #tc-ws-att-stat-in{display:none/.test(indexHtml), 'sin Entrada duplicada mobile expandido');
-check(/Sin actividades pendientes/.test(indexHtml) && /tcEmpWorkspaceUpdateHoy/.test(indexHtml), 'Hoy con cero actividades');
 check(/tc-ws-attendance-dot--live/.test(indexHtml), 'indicador jornada activa verde');
 check(!/Cargando…/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'filtros sin vaciar listado');
 check(/tcEmployeeBoot[\s\S]*?tcEmpMyCandFilter='in_process'/.test(indexHtml), 'reload checador vuelve a in_process');
+
+console.log('\n=== Workspace UX V2.2 — jornada compacta ===\n');
+check(/function tcShiftDurationSeconds/.test(indexHtml), 'helper duración jornada');
+check(/Math\.floor\(Number\(sec\)/.test(indexHtml.match(/function tcFmtDuration[\s\S]*?^function /m)?.[0] || ''), 'tcFmtDuration sin decimales');
+check(/tcFmtDurationHuman\(sec\)/.test(indexHtml.match(/function tcEmpRender[\s\S]*?^function /m)?.[0] || ''), 'jornada finalizada human readable');
+check(/tc-ws-jornada-view-live/.test(indexHtml) && /tc-ws-jornada-view-done/.test(indexHtml), 'vistas jornada live/done');
+check(/tcEmpWorkspaceUpdateTabBadges/.test(indexHtml), 'contador actividades solo en tab');
+check(!/tc-ws-hoy-label/.test(indexHtml), 'sin bloque Hoy en header');
+check(/tc-emp-attendance-idle/.test(indexHtml) && /Sin jornada asignada/.test(indexHtml), 'sin jornada asignada compacto');
+check(/onclick="tcEmpPrimaryAction\(\)"/.test(indexHtml), 'CTA entrada/salida intacto');
 
 console.log('\n=== Schema portal — unit ===\n');
 

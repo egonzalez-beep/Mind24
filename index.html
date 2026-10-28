@@ -1283,44 +1283,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-header-user .tc-emp-hello{font-size:18px;margin:0;}
 @media(min-width:768px){.tc-ws-header-user .tc-emp-hello{font-size:20px;}}
 .tc-ws-header-user .tc-emp-meta{margin:2px 0 0;font-size:13px;}
-.tc-ws-header-today{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
-@media(min-width:900px){.tc-ws-header-today{align-items:flex-end;text-align:right;}}
-.tc-ws-hoy-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
-.tc-ws-hoy-stat{font-size:12px;font-weight:600;color:var(--slate-600);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.tc-ws-hoy-stat strong{font-weight:800;color:var(--purple-dark);}
-.tc-ws-hoy-stat-slot:empty{display:none;}
-.tc-ws-attendance{margin-bottom:16px;}
-.tc-ws-attendance-idle{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:12px;background:var(--slate-50);border:1px solid var(--slate-100);font-size:13px;color:var(--slate-600);margin:0;}
-.tc-ws-attendance-idle .tc-ws-attendance-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);width:100%;}
-@media(min-width:768px){.tc-ws-attendance-idle .tc-ws-attendance-kicker{width:auto;margin-right:4px;}}
-.tc-ws-attendance-band{border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;background:#fff;}
-.tc-ws-attendance-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin:0 0 8px;}
-.tc-ws-attendance-mobile-toggle{display:block;width:100%;border:none;background:transparent;padding:0;margin:0;font:inherit;text-align:left;cursor:pointer;border-radius:8px;}
-.tc-ws-attendance-mobile-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-ws-attendance-compact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--slate-700);}
-.tc-ws-attendance-compact .tc-emp-state{font-size:15px;font-weight:800;margin:0;color:var(--primary);}
-.tc-ws-attendance-compact .tc-emp-state.tc-ws-attendance-state--live{color:#15803d;}
-.tc-ws-attendance-compact .rec-cand-process-dot.tc-ws-attendance-dot--live{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
-.tc-ws-attendance-entrance-compact{font-size:13px;color:var(--slate-500);margin-left:auto;}
-@media(min-width:768px){.tc-ws-attendance-entrance-compact{display:none!important;}}
-@media(max-width:767px){.tc-ws-attendance-band--live #tc-ws-att-stat-in{display:none!important;}}
-.tc-ws-attendance-chevron{width:18px;height:18px;stroke:var(--slate-400);fill:none;stroke-width:2;flex-shrink:0;transition:transform 180ms ease;margin-left:4px;}
-@media(min-width:768px){.tc-ws-attendance-mobile-toggle{cursor:default;pointer-events:none;}.tc-ws-attendance-chevron{display:none;}}
-.tc-ws-attendance-band--open .tc-ws-attendance-chevron{transform:rotate(180deg);}
-@media(prefers-reduced-motion:reduce){.tc-ws-attendance-chevron{transition:none;}}
-.tc-ws-attendance-details{overflow:hidden;max-height:0;opacity:0;transition:max-height 200ms ease,opacity 180ms ease,margin 180ms ease;margin-top:0;}
-@media(min-width:768px){.tc-ws-attendance-details{max-height:none!important;opacity:1!important;margin-top:8px!important;overflow:visible;}}
-.tc-ws-attendance-band--open .tc-ws-attendance-details{max-height:520px;opacity:1;margin-top:12px;}
-@media(prefers-reduced-motion:reduce){.tc-ws-attendance-details{transition:none;}}
-.tc-ws-attendance-grid{display:grid;gap:12px;}
-@media(min-width:768px){.tc-ws-attendance{margin-bottom:12px;}.tc-ws-attendance-band{padding:10px 12px;border-radius:12px;}.tc-ws-attendance-kicker{margin:0 0 6px;}.tc-ws-attendance-grid{grid-template-columns:1fr 1fr auto;align-items:end;gap:10px;}.tc-ws-attendance-band .tc-emp-btn{padding:11px 16px;min-width:150px;}.tc-ws-attendance-band .tc-emp-hint{margin:8px 0 0;font-size:11px;}.tc-ws-attendance-privacy{margin-top:8px;padding-top:6px;font-size:10px;line-height:1.45;color:var(--slate-400);border-top-color:var(--slate-100);}}
-.tc-ws-attendance-stat label{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);margin-bottom:4px;}
-.tc-ws-attendance-stat span{font-size:15px;font-weight:700;color:var(--primary);}
-.tc-ws-attendance-band .tc-emp-btn{width:auto;min-width:160px;padding:12px 18px;}
-@media(max-width:767px){.tc-ws-attendance-band .tc-emp-btn{width:100%;}}
-.tc-ws-attendance-band .tc-emp-hint{font-size:12px;margin:10px 0 0;}
-.tc-ws-attendance-band .tc-emp-privacy{margin-top:12px;padding-top:10px;font-size:11px;}
-.tc-ws-attendance-band .tc-emp-err{margin:8px 0 0;}
+.tc-ws-header-jornada{min-width:0;width:100%;}
+@media(min-width:900px){.tc-ws-header-jornada{width:auto;max-width:min(340px,34vw);justify-self:end;}}
+.tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
+.tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
+.tc-ws-jornada-info svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+.tc-ws-jornada-info:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-ws-jornada-idle-only{margin:0;font-size:13px;color:var(--slate-600);line-height:1.4;}
+.tc-ws-jornada-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--slate-700);}
+.tc-ws-jornada-row--actions{margin-top:8px;justify-content:space-between;gap:10px;}
+.tc-ws-jornada-row .tc-emp-state{font-size:14px;font-weight:800;margin:0;color:var(--primary);}
+.tc-ws-jornada-row .tc-emp-state.tc-ws-attendance-state--live{color:#15803d;}
+.tc-ws-jornada-row .rec-cand-process-dot.tc-ws-attendance-dot--live{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
+.tc-ws-jornada-elapsed{margin-left:auto;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--primary);}
+.tc-ws-jornada-entrada{font-size:12px;color:var(--slate-600);}
+.tc-ws-jornada-entrada span{font-weight:700;color:var(--slate-800);}
+.tc-ws-jornada-cta{min-height:40px;padding:8px 14px!important;font-size:11px!important;letter-spacing:.03em!important;width:auto!important;min-width:0!important;white-space:nowrap;}
+@media(max-width:767px){.tc-ws-jornada-row--actions .tc-ws-jornada-cta{flex-shrink:0;}}
+.tc-ws-jornada-done-title{margin:0;font-size:13px;font-weight:700;color:var(--slate-800);}
+.tc-ws-jornada-done-title strong{font-weight:800;color:var(--primary);}
+.tc-ws-jornada-done-range{margin:4px 0 0;font-size:12px;color:var(--slate-600);}
+.tc-ws-jornada-wait-label{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--slate-700);}
+.tc-ws-jornada-details{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);font-size:11px;color:var(--slate-500);line-height:1.45;}
+.tc-ws-jornada-details[hidden]{display:none!important;}
+.tc-ws-jornada-mini--open .tc-ws-jornada-details{display:block;}
+.tc-ws-jornada-signal{margin-bottom:6px;font-size:11px;}
+.tc-ws-jornada-privacy{margin:6px 0 0;font-size:10px;color:var(--slate-400);line-height:1.45;}
+.tc-ws-jornada-mini .tc-emp-hint{margin:0 0 6px;font-size:11px;color:var(--slate-500);}
+.tc-ws-jornada-mini .tc-emp-err{margin:8px 0 0;font-size:12px;}
+.tc-ws-quick-indicators{margin:-4px 0 10px;display:flex;justify-content:flex-end;}
+.tc-ws-quick-indicators-inner{display:flex;gap:8px;align-items:center;}
+.tc-ws-quick-indicator{position:relative;width:36px;height:36px;border-radius:10px;border:1px dashed var(--slate-200);display:none;}
+.tc-ws-quick-indicator--future{display:none!important;}
+.tc-ws-quick-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#f87171;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;display:none;}
 .tc-ws-tabs-wrap{margin-bottom:14px;border-bottom:1px solid var(--slate-200);}
 .tc-ws-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .tc-ws-tabs::-webkit-scrollbar{display:none;}
@@ -3450,43 +3447,52 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <p class="tc-emp-meta" id="tc-emp-role"></p>
             </div>
           </div>
-          <div class="tc-ws-header-today" aria-label="Resumen de hoy">
-            <span class="tc-ws-hoy-label">Hoy</span>
-            <div class="tc-ws-hoy-stat">
-              <span class="tc-ws-hoy-stat-slot" id="tc-ws-hoy-activities">Sin actividades pendientes</span>
-              <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-goals" hidden></span>
-              <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-news" hidden></span>
-            </div>
+          <div class="tc-ws-header-jornada">
+            <article class="tc-ws-jornada-mini" id="tc-emp-jornada-mini" aria-label="Jornada">
+              <div class="tc-ws-jornada-mini-top">
+                <span class="tc-ws-jornada-label">Jornada</span>
+                <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-details-toggle" aria-expanded="false" aria-controls="tc-ws-jornada-details" onclick="tcEmpToggleJornadaDetails()" title="Más información sobre asistencia">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                </button>
+              </div>
+              <p class="tc-ws-jornada-idle-only hidden" id="tc-emp-attendance-idle" role="status">Sin jornada asignada</p>
+              <div id="tc-emp-attendance-active" class="hidden">
+                <div id="tc-ws-jornada-view-live" class="tc-ws-jornada-view hidden">
+                  <div class="tc-ws-jornada-row">
+                    <span class="rec-cand-process-dot" id="tc-emp-attendance-dot" aria-hidden="true"></span>
+                    <span class="tc-emp-state" id="tc-emp-state">En curso</span>
+                    <span class="tc-ws-jornada-elapsed" id="tc-emp-elapsed">00:00:00</span>
+                  </div>
+                  <div class="tc-ws-jornada-row tc-ws-jornada-row--actions">
+                    <span class="tc-ws-jornada-entrada">Entrada <span id="tc-emp-att-in">—</span></span>
+                    <button type="button" class="tc-ws-jornada-cta tc-emp-btn tc-emp-btn-out" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar salida</button>
+                  </div>
+                </div>
+                <div id="tc-ws-jornada-view-done" class="tc-ws-jornada-view hidden">
+                  <p class="tc-ws-jornada-done-title"><span aria-hidden="true">✓</span> Finalizada · <strong id="tc-emp-att-dur-human">—</strong></p>
+                  <p class="tc-ws-jornada-done-range" id="tc-emp-att-range">—</p>
+                </div>
+                <div id="tc-ws-jornada-view-wait" class="tc-ws-jornada-view hidden">
+                  <p class="tc-ws-jornada-wait-label" id="tc-emp-state-wait">Fuera de jornada</p>
+                  <button type="button" class="tc-ws-jornada-cta tc-emp-btn" id="tc-emp-primary-wait" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+                </div>
+              </div>
+              <div id="tc-ws-jornada-details" class="tc-ws-jornada-details" hidden>
+                <div id="tc-emp-signal-row" class="tc-ws-jornada-signal"></div>
+                <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+                <p class="tc-emp-privacy tc-ws-jornada-privacy" id="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+              </div>
+              <p class="tc-emp-err hidden" id="tc-emp-err"></p>
+            </article>
           </div>
         </header>
-        <div class="tc-ws-attendance">
-          <p class="tc-ws-attendance-idle hidden" id="tc-emp-attendance-idle" role="status"><span class="tc-ws-attendance-kicker">Asistencia</span><span>Sin jornada asignada</span></p>
-          <div id="tc-emp-attendance-active" class="tc-ws-attendance-band hidden">
-            <p class="tc-ws-attendance-kicker">Asistencia</p>
-            <button type="button" class="tc-ws-attendance-mobile-toggle" id="tc-emp-attendance-toggle" aria-expanded="false" aria-controls="tc-emp-attendance-details" onclick="tcEmpToggleAttendanceDetails()">
-              <div class="tc-ws-attendance-compact">
-                <span class="rec-cand-process-dot" id="tc-emp-attendance-dot" aria-hidden="true"></span>
-                <span class="tc-emp-state" id="tc-emp-state">Fuera de jornada</span>
-                <span class="tc-ws-attendance-entrance-compact" id="tc-emp-attendance-entrance-compact"></span>
-                <svg class="tc-ws-attendance-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-            </button>
-            <div id="tc-emp-attendance-details" class="tc-ws-attendance-details">
-              <div class="tc-ws-attendance-grid">
-                <div class="tc-ws-attendance-stat" id="tc-ws-att-stat-in"><label>Entrada</label><span id="tc-emp-att-in">—</span></div>
-                <div class="tc-ws-attendance-stat" id="tc-ws-att-stat-elapsed"><label>Tiempo transcurrido</label><span id="tc-emp-elapsed">00:00:00</span></div>
-                <div class="tc-ws-attendance-stat tc-ws-attendance-stat--out hidden" id="tc-ws-att-stat-out"><label>Salida</label><span id="tc-emp-att-out">—</span></div>
-                <div class="tc-ws-attendance-stat tc-ws-attendance-stat--dur hidden" id="tc-ws-att-stat-dur"><label>Duración</label><span id="tc-emp-att-dur">—</span></div>
-                <div class="tc-ws-attendance-action" id="tc-ws-att-action-wrap"><button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button></div>
-              </div>
-              <div id="tc-emp-signal-row" class="tc-ws-attendance-signal" hidden></div>
-              <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
-              <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
-              <p class="tc-emp-privacy tc-ws-attendance-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
-            </div>
-            <p class="tc-emp-err hidden" id="tc-emp-err"></p>
+        <div class="tc-ws-quick-indicators" aria-hidden="true">
+          <div class="tc-ws-quick-indicators-inner">
+            <span class="tc-ws-quick-indicator tc-ws-quick-indicator--future" id="tc-ws-quick-goals" hidden title="Metas (próximamente)"></span>
+            <span class="tc-ws-quick-indicator tc-ws-quick-indicator--future" id="tc-ws-quick-news" hidden title="Novedades (próximamente)"></span>
           </div>
         </div>
+        <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
         <div class="tc-ws-tabs-wrap">
           <div class="tc-ws-tabs" role="tablist" aria-label="Módulos del espacio de trabajo">
             <button type="button" role="tab" class="tc-ws-tab tc-ws-tab--on" id="tc-ws-tab-activities" aria-selected="true" aria-controls="tc-ws-panel-activities" onclick="tcEmpWorkspaceSetTab('activities')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Actividades</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-activities"></span></button>
@@ -7649,12 +7655,18 @@ function tcEmpPortalAvatarRender(me){
   if(wrap) wrap.innerHTML=tcEmpPortalAvatarInnerHtml(me);
 }
 function tcFmtDuration(sec){
-  const n=Math.max(0, Number(sec)||0);
+  const n=Math.max(0, Math.floor(Number(sec)||0));
   const h=Math.floor(n/3600);
   const m=Math.floor((n%3600)/60);
-  const s=n%60;
+  const s=Math.floor(n%60);
   const pad=function(v){ return String(v).padStart(2,'0'); };
   return pad(h)+':'+pad(m)+':'+pad(s);
+}
+function tcShiftDurationSeconds(checkInAt, checkOutAt){
+  if(!checkInAt||!checkOutAt) return 0;
+  const ms=new Date(checkOutAt).getTime()-new Date(checkInAt).getTime();
+  if(!Number.isFinite(ms)) return 0;
+  return Math.max(0, Math.floor(ms/1000));
 }
 function tcFmtHm(iso){
   if(!iso) return '—';
@@ -12040,15 +12052,10 @@ function tcEmpWorkspaceSyncTabs(){
   if(tAct){ tAct.classList.toggle('tc-ws-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
   if(tCand){ tCand.classList.toggle('tc-ws-tab--on',!onAct); tCand.setAttribute('aria-selected',(!onAct)?'true':'false'); }
 }
-function tcEmpWorkspaceUpdateHoy(){
+function tcEmpWorkspaceUpdateTabBadges(){
   const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; }).length;
   const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; }).length;
   const open=pending+prog;
-  const slot=document.getElementById('tc-ws-hoy-activities');
-  if(slot){
-    if(open>0) slot.innerHTML='Actividades pendientes <strong>'+String(open)+'</strong>';
-    else slot.textContent='Sin actividades pendientes';
-  }
   const badge=document.getElementById('tc-ws-tab-badge-activities');
   if(badge) badge.textContent=open>0?String(open):'';
 }
@@ -12059,68 +12066,38 @@ function tcEmpWorkspaceInitChrome(){
   if(icCand) icCand.innerHTML=tcWsSvgUsers();
   tcEmpWorkspaceSyncTabs();
   tcEmpMyCandSyncFilterUi();
-  tcEmpWorkspaceUpdateHoy();
+  tcEmpWorkspaceUpdateTabBadges();
+}
+function tcEmpPrimaryButtonEl(){
+  const waitView=document.getElementById('tc-ws-jornada-view-wait');
+  if(waitView&&!waitView.classList.contains('hidden')) return document.getElementById('tc-emp-primary-wait');
+  return document.getElementById('tc-emp-primary');
 }
 function tcEmpSyncAttendanceLiveIndicator(live){
   const dot=document.getElementById('tc-emp-attendance-dot');
   const stateEl=document.getElementById('tc-emp-state');
-  const band=document.getElementById('tc-emp-attendance-active');
   if(dot) dot.classList.toggle('tc-ws-attendance-dot--live',!!live);
   if(stateEl) stateEl.classList.toggle('tc-ws-attendance-state--live',!!live);
-  if(band) band.classList.toggle('tc-ws-attendance-band--live',!!live);
 }
-function tcEmpToggleAttendanceDetails(){
-  if(window.matchMedia('(min-width:768px)').matches) return;
-  tcEmpAttendanceMobileOpen=!tcEmpAttendanceMobileOpen;
-  tcEmpSyncAttendanceAccordion();
+function tcEmpToggleJornadaDetails(){
+  tcEmpJornadaDetailsOpen=!tcEmpJornadaDetailsOpen;
+  tcEmpSyncJornadaDetailsUi();
 }
-function tcEmpSyncAttendanceAccordion(){
-  const band=document.getElementById('tc-emp-attendance-active');
-  const btn=document.getElementById('tc-emp-attendance-toggle');
-  const mobile=window.matchMedia('(max-width:767px)').matches;
-  if(band){
-    if(!mobile) band.classList.add('tc-ws-attendance-band--open');
-    else band.classList.toggle('tc-ws-attendance-band--open',!!tcEmpAttendanceMobileOpen);
-  }
-  if(btn){
-    if(mobile) btn.setAttribute('aria-expanded',tcEmpAttendanceMobileOpen?'true':'false');
-    else btn.setAttribute('aria-expanded','true');
-  }
+function tcEmpSyncJornadaDetailsUi(){
+  const mini=document.getElementById('tc-emp-jornada-mini');
+  const panel=document.getElementById('tc-ws-jornada-details');
+  const btn=document.getElementById('tc-ws-jornada-details-toggle');
+  if(panel) panel.hidden=!tcEmpJornadaDetailsOpen;
+  if(mini) mini.classList.toggle('tc-ws-jornada-mini--open',!!tcEmpJornadaDetailsOpen);
+  if(btn) btn.setAttribute('aria-expanded',tcEmpJornadaDetailsOpen?'true':'false');
 }
-function tcEmpAttendanceSetGridMode(mode){
-  const statIn=document.getElementById('tc-ws-att-stat-in');
-  const statEl=document.getElementById('tc-ws-att-stat-elapsed');
-  const statOut=document.getElementById('tc-ws-att-stat-out');
-  const statDur=document.getElementById('tc-ws-att-stat-dur');
-  const action=document.getElementById('tc-ws-att-action-wrap');
-  const sig=document.getElementById('tc-emp-signal-row');
-  const compactEnt=document.getElementById('tc-emp-attendance-entrance-compact');
-  if(mode==='completed'){
-    if(statIn) statIn.classList.remove('hidden');
-    if(statEl) statEl.classList.add('hidden');
-    if(statOut) statOut.classList.remove('hidden');
-    if(statDur) statDur.classList.remove('hidden');
-    if(action) action.classList.add('hidden');
-    if(sig) sig.classList.add('hidden');
-    if(compactEnt) compactEnt.textContent='';
-    return;
-  }
-  if(mode==='open'){
-    if(statIn) statIn.classList.remove('hidden');
-    if(statEl) statEl.classList.remove('hidden');
-    if(statOut) statOut.classList.add('hidden');
-    if(statDur) statDur.classList.add('hidden');
-    if(action) action.classList.remove('hidden');
-    if(sig) sig.classList.remove('hidden');
-    return;
-  }
-  if(statIn) statIn.classList.remove('hidden');
-  if(statEl) statEl.classList.add('hidden');
-  if(statOut) statOut.classList.add('hidden');
-  if(statDur) statDur.classList.add('hidden');
-  if(action) action.classList.remove('hidden');
-  if(sig) sig.classList.add('hidden');
-  if(compactEnt) compactEnt.textContent='';
+function tcEmpJornadaSetView(mode){
+  const live=document.getElementById('tc-ws-jornada-view-live');
+  const done=document.getElementById('tc-ws-jornada-view-done');
+  const wait=document.getElementById('tc-ws-jornada-view-wait');
+  if(live) live.classList.toggle('hidden',mode!=='live');
+  if(done) done.classList.toggle('hidden',mode!=='done');
+  if(wait) wait.classList.toggle('hidden',mode!=='wait');
 }
 function tcEmpMyCandTagsHtml(c){
   const tags=c.tags||[];
@@ -12821,10 +12798,10 @@ let tcHistoryKeyHandler=null;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function tcFmtDurationHuman(sec){
-  const n=Math.max(0, Number(sec)||0);
+  const n=Math.max(0, Math.floor(Number(sec)||0));
   const h=Math.floor(n/3600);
   const m=Math.floor((n%3600)/60);
-  if(h&&m) return h+' h '+m+' min';
+  if(h&&m) return h+' h '+String(m).padStart(2,'0')+' min';
   if(h) return h+' h';
   if(m) return m+' min';
   return '0 min';
@@ -13529,7 +13506,7 @@ let tcEmpMyCandLoading=false;
 let tcEmpMyCandFetchSeq=0;
 let tcEmpMyCandAbort=null;
 let tcEmpWorkspaceTab='activities';
-let tcEmpAttendanceMobileOpen=false;
+let tcEmpJornadaDetailsOpen=false;
 let tcClockTimer=null;
 let tcCounterTimer=null;
 let tcHeartbeatTimer=null;
@@ -13588,7 +13565,7 @@ function tcEmpShowApp(){
   if(gate) gate.classList.add('hidden');
   if(app) app.classList.remove('hidden');
   tcEmpWorkspaceInitChrome();
-  tcEmpSyncAttendanceAccordion();
+  tcEmpSyncJornadaDetailsUi();
 }
 function tcEmpApplyAttendanceShell(me, completed, open){
   const idle=document.getElementById('tc-emp-attendance-idle');
@@ -13607,14 +13584,15 @@ function tcEmpRender(){
   const hello=document.getElementById('tc-emp-hello');
   const role=document.getElementById('tc-emp-role');
   const state=document.getElementById('tc-emp-state');
-  const btn=document.getElementById('tc-emp-primary');
+  const stateWait=document.getElementById('tc-emp-state-wait');
   const hint=document.getElementById('tc-emp-hint');
   const attIn=document.getElementById('tc-emp-att-in');
-  const attOut=document.getElementById('tc-emp-att-out');
-  const attDur=document.getElementById('tc-emp-att-dur');
+  const attRange=document.getElementById('tc-emp-att-range');
+  const attDurHuman=document.getElementById('tc-emp-att-dur-human');
   const elapsedEl=document.getElementById('tc-emp-elapsed');
-  const compactEnt=document.getElementById('tc-emp-attendance-entrance-compact');
   const sigRow=document.getElementById('tc-emp-signal-row');
+  const btnLive=document.getElementById('tc-emp-primary');
+  const btnWait=document.getElementById('tc-emp-primary-wait');
   if(hello) hello.textContent='Hola, '+(me.fullName||'');
   tcEmpPortalAvatarRender(me);
   const bits=[];
@@ -13625,33 +13603,32 @@ function tcEmpRender(){
   if(!showAttendance){
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     if(!(open&&open.checkInAt)) tcEmpStopHeartbeat();
+    tcEmpJornadaSetView('wait');
     return;
   }
-  tcEmpSyncAttendanceAccordion();
   if(completed&&completed.checkOutAt){
     tcEmpSyncAttendanceLiveIndicator(false);
-    if(state) state.textContent='Jornada finalizada';
-    tcEmpAttendanceSetGridMode('completed');
-    if(attIn) attIn.textContent=tcFmtHm(completed.checkInAt);
-    if(attOut) attOut.textContent=tcFmtHm(completed.checkOutAt);
-    if(attDur) attDur.textContent=tcFmtDuration((new Date(completed.checkOutAt)-new Date(completed.checkInAt))/1000);
-    if(btn){ btn.classList.add('hidden'); btn.disabled=false; }
+    tcEmpJornadaSetView('done');
+    const sec=tcShiftDurationSeconds(completed.checkInAt, completed.checkOutAt);
+    if(attDurHuman) attDurHuman.textContent=tcFmtDurationHuman(sec);
+    if(attRange) attRange.textContent=tcFmtHm(completed.checkInAt)+' → '+tcFmtHm(completed.checkOutAt);
+    if(sigRow) sigRow.innerHTML='';
     if(hint) hint.textContent='Tu jornada quedó registrada. Puedes cerrar esta página.';
+    if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     return;
   }
   if(open&&open.checkInAt){
     tcEmpSyncAttendanceLiveIndicator(true);
-    if(state) state.textContent='Jornada en curso';
-    tcEmpAttendanceSetGridMode('open');
+    tcEmpJornadaSetView('live');
+    if(state) state.textContent='En curso';
     if(attIn) attIn.textContent=tcFmtHm(open.checkInAt);
-    if(compactEnt) compactEnt.textContent='Entrada: '+tcFmtHm(open.checkInAt);
     if(elapsedEl) elapsedEl.textContent=tcEmpElapsed();
-    if(sigRow){ sigRow.innerHTML='<strong>Señal de conexión:</strong> '+tcSignalDotHtml(me.webSignal,true); }
-    if(btn){
-      btn.classList.remove('hidden');
-      btn.classList.add('tc-emp-btn-out');
-      btn.textContent='Registrar salida';
-      btn.disabled=false;
+    if(sigRow){ sigRow.innerHTML=tcSignalDotHtml(me.webSignal,true); }
+    if(btnLive){
+      btnLive.classList.remove('hidden');
+      btnLive.classList.add('tc-emp-btn-out');
+      btnLive.textContent='Registrar salida';
+      btnLive.disabled=false;
     }
     if(hint) hint.textContent='La jornada termina solo cuando registras tu salida.';
     if(!tcCounterTimer) tcCounterTimer=setInterval(function(){
@@ -13661,15 +13638,16 @@ function tcEmpRender(){
     return;
   }
   tcEmpSyncAttendanceLiveIndicator(false);
-  if(state) state.textContent='Fuera de jornada';
-  tcEmpAttendanceSetGridMode('idle');
-  if(attIn) attIn.textContent='—';
-  if(btn){
-    btn.classList.remove('hidden','tc-emp-btn-out');
-    btn.textContent='Registrar entrada';
-    btn.disabled=false;
+  tcEmpJornadaSetView('wait');
+  if(stateWait) stateWait.textContent='Fuera de jornada';
+  if(sigRow) sigRow.innerHTML='';
+  if(btnWait){
+    btnWait.classList.remove('hidden','tc-emp-btn-out');
+    btnWait.textContent='Registrar entrada';
+    btnWait.disabled=false;
   }
   if(hint) hint.textContent='Tu horario de entrada será registrado automáticamente por Mind24.';
+  if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
 }
 function tcEmpStartHeartbeat(){
   if(tcHeartbeatTimer) return;
@@ -13737,7 +13715,7 @@ function tcEmpRenderTasks(){
     html+='</div>';
   }
   body.innerHTML=html;
-  tcEmpWorkspaceUpdateHoy();
+  tcEmpWorkspaceUpdateTabBadges();
 }
 async function tcEmpLoadTasks(){
   const body=document.getElementById('tc-emp-tasks-body');
@@ -13812,7 +13790,7 @@ async function tcEmployeeBoot(){
 }
 async function tcEmpPrimaryAction(){
   if(tcEmpBusy) return;
-  const btn=document.getElementById('tc-emp-primary');
+  const btn=tcEmpPrimaryButtonEl();
   const open=tcEmpMe&&tcEmpMe.openSession;
   if(!open&&!(tcEmpMe&&tcEmpMe.attendanceEnabled)){
     tcEmpSetError('Este colaborador no tiene jornada de asistencia asignada.');
