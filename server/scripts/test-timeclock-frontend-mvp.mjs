@@ -17,6 +17,10 @@ const tokenService = fs.readFileSync(
   path.join(root, 'server/src/services/timeclockToken.service.js'),
   'utf8',
 );
+const tcPublicRoutes = fs.readFileSync(
+  path.join(root, 'server/src/routes/timeclock.public.routes.js'),
+  'utf8',
+);
 
 let failed = 0;
 function check(cond, msg) {
@@ -120,6 +124,9 @@ check(/tc-emp-attendance-idle/.test(indexHtml), 'Mi jornada idle attendance stat
 check(/Sin jornada asignada/.test(indexHtml), 'idle attendance copy portal');
 check(/tcEmpApplyAttendanceShell/.test(indexHtml) && /attendanceEnabled/.test(indexHtml), 'Mi jornada respects attendanceEnabled');
 check(/tc-emp-attendance-active/.test(indexHtml), 'attendance panel wrapper');
+const mePublicFn = tcPublicRoutes.match(/function sessionToPublicMe[\s\S]*?^}/m)?.[0] || '';
+check(/employeeId: emp\.id/.test(mePublicFn) && /organizationId: emp\.organizationId/.test(mePublicFn), 'portal /me incluye ids para storage aislado');
+check(/tcEmpPortalStorageIdentity/.test(indexHtml), 'helper identidad portal en frontend');
 
 console.log(failed === 0 ? '\n✓ Timeclock 1C frontend tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);

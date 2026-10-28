@@ -89,6 +89,8 @@ function sessionToPublicMe(emp, openSession) {
   const profilePhotoVersion =
     hasProfilePhoto && emp.updatedAt ? new Date(emp.updatedAt).getTime() : null;
   return {
+    employeeId: emp.id,
+    organizationId: emp.organizationId,
     fullName: emp.fullName,
     position: emp.position,
     department: emp.department,

@@ -7,3 +7,5 @@ server/.env.*
 !server/.env.example
 *.log
 .DS_Store
+server/audit-out.txt
+server/scripts/output/

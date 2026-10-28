@@ -1282,6 +1282,39 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @media(min-width:768px){.tc-ws-hero-brand .tc-ws-title{font-size:22px;}}
 @media(min-width:900px){.tc-ws-hero-brand .tc-ws-title{font-size:20px;letter-spacing:.03em;}}
 .tc-ws-hero-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;line-height:1.35;}
+.tc-ws-quick-actions{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-top:12px;max-width:100%;}
+@media(max-width:420px){.tc-ws-quick-actions{gap:4px;}}
+.tc-ws-quick-btn{position:relative;flex:0 0 auto;width:36px;height:36px;padding:0;border:none;border-radius:10px;background:transparent;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:color 160ms ease,background 160ms ease,box-shadow 160ms ease;}
+@media(max-width:420px){.tc-ws-quick-btn{width:32px;height:32px;border-radius:9px;}}
+.tc-ws-quick-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+@media(max-width:420px){.tc-ws-quick-btn svg{width:18px;height:18px;}}
+.tc-ws-quick-btn:hover,.tc-ws-quick-btn:focus-visible{color:var(--purple-dark);background:rgba(124,58,237,.08);outline:none;}
+.tc-ws-quick-btn:focus-visible{box-shadow:0 0 0 2px rgba(124,58,237,.35);}
+.tc-ws-quick-btn--active{color:var(--purple-dark);background:rgba(124,58,237,.1);}
+.tc-ws-quick-btn--soon{opacity:.52;cursor:default;}
+.tc-ws-quick-btn--soon:hover,.tc-ws-quick-btn--soon:focus-visible{color:var(--slate-500);background:transparent;box-shadow:none;}
+.tc-ws-quick-badge{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;font-size:9px;font-weight:800;line-height:15px;text-align:center;pointer-events:none;box-sizing:border-box;display:none;}
+.tc-ws-quick-badge:not(:empty){display:block;}
+.tc-ws-quick-badge--violet{background:rgba(124,58,237,.14);color:var(--purple-dark);}
+.tc-ws-quick-badge--red{background:#ef4444;color:#fff;border:1.5px solid #fff;}
+.tc-ws-quick-tip{position:fixed;left:0;top:0;z-index:5010;padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.12);font-size:11px;font-weight:600;color:var(--slate-700);white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 120ms ease,visibility 120ms ease;}
+.tc-ws-quick-tip--open{opacity:1;visibility:visible;}
+.tc-ws-novedades-popover{position:fixed;z-index:5020;width:min(340px,calc(100vw - 24px));max-height:min(70vh,480px);display:flex;flex-direction:column;border-radius:14px;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
+.tc-ws-novedades-popover.hidden{display:none!important;}
+.tc-ws-novedades-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
+.tc-ws-novedades-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-ws-novedades-mark-all{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:4px 6px;border-radius:6px;}
+.tc-ws-novedades-mark-all:hover{background:var(--purple-light);}
+.tc-ws-novedades-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:72px;max-height:min(calc(70vh - 52px),428px);}
+.tc-ws-novedades-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
+.tc-ws-novedades-item:hover{background:var(--slate-50);}
+.tc-ws-novedades-item--unread{background:rgba(254,242,242,.45);border-color:rgba(239,68,68,.12);}
+.tc-ws-novedades-item-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#fca5a5;box-shadow:0 0 0 3px rgba(252,165,165,.35);}
+.tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.4);}
+.tc-ws-novedades-item-body{flex:1;min-width:0;}
+.tc-ws-novedades-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;}
+.tc-ws-novedades-item-time{margin:3px 0 0;font-size:11px;color:var(--slate-500);font-weight:500;}
+.tc-ws-novedades-empty{font-size:12px;color:var(--slate-400);padding:16px 8px;text-align:center;margin:0;}
 .tc-ws-hero-user{display:flex;align-items:center;gap:12px;}
 .tc-ws-hero-user .tc-emp-greet-text{min-width:0;}
 .tc-ws-hero-user .tc-emp-hello{font-size:17px;margin:0;line-height:1.25;font-weight:800;color:var(--primary);}
@@ -1334,11 +1367,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-jornada-signal .tc-signal-line{display:inline-flex;align-items:center;gap:6px;max-width:100%;}
 .tc-ws-jornada-signal-muted{font-size:11px;color:var(--slate-400);}
 .tc-ws-jornada-mini .tc-emp-err{margin:6px 0 0;font-size:12px;flex-shrink:0;}
-.tc-ws-quick-indicators{margin:-4px 0 10px;display:flex;justify-content:flex-end;}
-.tc-ws-quick-indicators-inner{display:flex;gap:8px;align-items:center;}
-.tc-ws-quick-indicator{position:relative;width:36px;height:36px;border-radius:10px;border:1px dashed var(--slate-200);display:none;}
-.tc-ws-quick-indicator--future{display:none!important;}
-.tc-ws-quick-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#f87171;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;display:none;}
 .tc-ws-tabs-wrap{margin-bottom:14px;border-bottom:1px solid var(--slate-200);}
 .tc-ws-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .tc-ws-tabs::-webkit-scrollbar{display:none;}
@@ -3484,6 +3512,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <div class="tc-emp-brand">MIND24</div>
             <h1 class="tc-ws-title tc-emp-title">Mi espacio de trabajo</h1>
             <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
+            <nav class="tc-ws-quick-actions" id="tc-ws-quick-actions" aria-label="Accesos rápidos">
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-activities" data-tc-ws-quick="activities" aria-label="Actividades" onclick="tcEmpQuickGoActivities()"><span class="tc-ws-quick-icon" aria-hidden="true"></span><span class="tc-ws-quick-badge tc-ws-quick-badge--violet" id="tc-ws-quick-badge-activities" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-register" data-tc-ws-quick="register" aria-label="Registrar candidato" onclick="tcEmpQuickRegisterCandidate()"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-candidates" data-tc-ws-quick="candidates-in_process" aria-label="Candidatos · En proceso" onclick="tcEmpQuickGoCandidates('in_process')"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-hired" data-tc-ws-quick="candidates-hired" aria-label="Contratados" onclick="tcEmpQuickGoCandidates('hired')"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn tc-ws-quick-btn--soon" id="tc-ws-quick-goals" data-tc-ws-quick="goals" aria-disabled="true" aria-label="Metas · Próximamente"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-novedades" data-tc-ws-quick="novedades" aria-label="Novedades" aria-expanded="false" aria-controls="tc-ws-novedades-popover" aria-haspopup="dialog" onclick="tcEmpNovedadesToggle(event)"><span class="tc-ws-quick-icon" aria-hidden="true"></span><span class="tc-ws-quick-badge tc-ws-quick-badge--red" id="tc-ws-quick-badge-novedades" aria-hidden="true"></span></button>
+            </nav>
+            <span class="tc-ws-quick-tip" id="tc-ws-quick-tip" role="tooltip"></span>
           </div>
           <div class="tc-ws-hero-user">
             <div id="tc-emp-avatar-wrap" aria-hidden="true"></div>
@@ -3539,12 +3576,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
           </div>
         </header>
-        <div class="tc-ws-quick-indicators" aria-hidden="true">
-          <div class="tc-ws-quick-indicators-inner">
-            <span class="tc-ws-quick-indicator tc-ws-quick-indicator--future" id="tc-ws-quick-goals" hidden title="Metas (próximamente)"></span>
-            <span class="tc-ws-quick-indicator tc-ws-quick-indicator--future" id="tc-ws-quick-news" hidden title="Novedades (próximamente)"></span>
-          </div>
-        </div>
         <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
         <div class="tc-ws-tabs-wrap">
           <div class="tc-ws-tabs" role="tablist" aria-label="Módulos del espacio de trabajo">
@@ -3888,6 +3919,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <!-- Mind Fitness (fuera de vistas para que position:fixed no quede atrapado en .hidden) -->
+<div id="tc-ws-novedades-popover" class="tc-ws-novedades-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-ws-novedades-popover-title" aria-hidden="true">
+  <div class="tc-ws-novedades-popover-head">
+    <h3 id="tc-ws-novedades-popover-title">Novedades</h3>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button type="button" class="tc-ws-novedades-mark-all" onclick="tcEmpNovedadesMarkAllRead()">Marcar como leídas</button>
+      <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar novedades" onclick="tcEmpNovedadesClose(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+  </div>
+  <div class="tc-ws-novedades-popover-body" id="tc-ws-novedades-body"></div>
+</div>
 <div id="mind24-notif-popover" class="mind24-notif-popover hidden" role="dialog" aria-modal="false" aria-labelledby="mind24-notif-popover-title" aria-hidden="true">
   <div class="mind24-notif-popover-head">
     <h3 id="mind24-notif-popover-title">Notificaciones</h3>
@@ -12091,8 +12132,95 @@ function tcEmpMyCandEmptyMessage(filter){
 function tcWsSvgClipboard(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="10" width="8" height="12" rx="1"/></svg>';
 }
+function tcWsSvgClipboardList(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>';
+}
 function tcWsSvgUsers(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+}
+function tcWsSvgUserPlus(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>';
+}
+function tcWsSvgUserCheck(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
+}
+function tcWsSvgTarget(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+}
+function tcWsSvgBell(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
+}
+let tcEmpQuickTipBtn=null;
+function tcEmpOpenQuickTip(btn, label){
+  const tip=document.getElementById('tc-ws-quick-tip');
+  if(!btn||!tip||!label) return;
+  tcEmpQuickTipBtn=btn;
+  tip.textContent=label;
+  const r=btn.getBoundingClientRect();
+  const w=tip.offsetWidth||120;
+  let left=r.left + (r.width/2) - (w/2);
+  left=Math.max(8, Math.min(left, window.innerWidth - w - 8));
+  tip.style.left=left+'px';
+  tip.style.top=(r.bottom + 8)+'px';
+  tip.classList.add('tc-ws-quick-tip--open');
+}
+function tcEmpCloseQuickTip(){
+  const tip=document.getElementById('tc-ws-quick-tip');
+  tcEmpQuickTipBtn=null;
+  if(tip) tip.classList.remove('tc-ws-quick-tip--open');
+}
+function tcEmpQuickEnsureTooltips(){
+  const map=[
+    ['tc-ws-quick-activities','Actividades'],
+    ['tc-ws-quick-register','Registrar candidato'],
+    ['tc-ws-quick-candidates','Candidatos'],
+    ['tc-ws-quick-hired','Contratados'],
+    ['tc-ws-quick-goals','Metas · Próximamente'],
+    ['tc-ws-quick-novedades','Novedades'],
+  ];
+  map.forEach(function(pair){
+    const btn=document.getElementById(pair[0]);
+    if(!btn||btn.dataset.tcQuickTipBound) return;
+    btn.dataset.tcQuickTipBound='1';
+    btn.addEventListener('mouseenter',function(){ tcEmpOpenQuickTip(btn,pair[1]); });
+    btn.addEventListener('focus',function(){ tcEmpOpenQuickTip(btn,pair[1]); });
+    btn.addEventListener('mouseleave',function(){ if(tcEmpQuickTipBtn===btn) tcEmpCloseQuickTip(); });
+    btn.addEventListener('blur',function(){ if(tcEmpQuickTipBtn===btn) tcEmpCloseQuickTip(); });
+  });
+}
+function tcEmpQuickGoActivities(){
+  tcEmpNovedadesClose(false);
+  if(tcEmpWorkspaceTab==='activities') tcEmpWorkspaceResetPanelScroll('activities');
+  else tcEmpWorkspaceSetTab('activities');
+}
+function tcEmpQuickRegisterCandidate(){
+  tcEmpNovedadesClose(false);
+  tcEmpOpenRegisterCandidate();
+}
+function tcEmpQuickGoCandidates(filter){
+  tcEmpNovedadesClose(false);
+  const next=filter||'in_process';
+  if(tcEmpWorkspaceTab!=='candidates') tcEmpWorkspaceSetTab('candidates');
+  if(tcEmpMyCandFilter!==next){
+    tcEmpMyCandFilterUserPicked=true;
+    tcEmpMyCandFilter=next;
+    tcEmpMyCandSyncFilterUi();
+    tcEmpWorkspaceResetPanelScroll('candidates');
+    tcEmpLoadMyCandidates(false);
+  }else tcEmpWorkspaceResetPanelScroll('candidates');
+  tcEmpWorkspaceSyncQuickActions();
+}
+function tcEmpWorkspaceSyncQuickActions(){
+  const act=document.getElementById('tc-ws-quick-activities');
+  const reg=document.getElementById('tc-ws-quick-register');
+  const cand=document.getElementById('tc-ws-quick-candidates');
+  const hired=document.getElementById('tc-ws-quick-hired');
+  const onAct=tcEmpWorkspaceTab==='activities';
+  const onCand=tcEmpWorkspaceTab==='candidates';
+  if(act) act.classList.toggle('tc-ws-quick-btn--active',onAct);
+  if(reg) reg.classList.toggle('tc-ws-quick-btn--active',false);
+  if(cand) cand.classList.toggle('tc-ws-quick-btn--active',onCand&&tcEmpMyCandFilter==='in_process');
+  if(hired) hired.classList.toggle('tc-ws-quick-btn--active',onCand&&tcEmpMyCandFilter==='hired');
 }
 function tcEmpWorkspaceGetPanelScrollEl(forTab){
   const tab=forTab||tcEmpWorkspaceTab;
@@ -12109,6 +12237,7 @@ function tcEmpWorkspaceSetTab(tab){
   tcEmpWorkspaceTab=next;
   tcEmpWorkspaceSyncTabs();
   tcEmpWorkspaceResetPanelScroll(next);
+  tcEmpWorkspaceSyncQuickActions();
 }
 function tcEmpWorkspaceSyncTabs(){
   const act=document.getElementById('tc-ws-panel-activities');
@@ -12127,16 +12256,319 @@ function tcEmpWorkspaceUpdateTabBadges(){
   const open=pending+prog;
   const badge=document.getElementById('tc-ws-tab-badge-activities');
   if(badge) badge.textContent=open>0?String(open):'';
+  const qBadge=document.getElementById('tc-ws-quick-badge-activities');
+  if(qBadge) qBadge.textContent=open>0?String(open):'';
+}
+function tcEmpWorkspaceInitQuickIcons(){
+  const pairs=[
+    ['tc-ws-quick-activities',tcWsSvgClipboardList],
+    ['tc-ws-quick-register',tcWsSvgUserPlus],
+    ['tc-ws-quick-candidates',tcWsSvgUsers],
+    ['tc-ws-quick-hired',tcWsSvgUserCheck],
+    ['tc-ws-quick-goals',tcWsSvgTarget],
+    ['tc-ws-quick-novedades',tcWsSvgBell],
+  ];
+  pairs.forEach(function(p){
+    const btn=document.getElementById(p[0]);
+    const ic=btn&&btn.querySelector('.tc-ws-quick-icon');
+    if(ic) ic.innerHTML=p[1]();
+  });
+  tcEmpQuickEnsureTooltips();
 }
 function tcEmpWorkspaceInitChrome(){
   const icAct=document.querySelector('#tc-ws-tab-activities .tc-ws-tab-icon');
   const icCand=document.querySelector('#tc-ws-tab-candidates .tc-ws-tab-icon');
   if(icAct) icAct.innerHTML=tcWsSvgClipboard();
   if(icCand) icCand.innerHTML=tcWsSvgUsers();
+  tcEmpWorkspaceInitQuickIcons();
+  tcEmpNovedadesEnsureListeners();
   tcEmpWorkspaceSyncTabs();
   tcEmpMyCandSyncFilterUi();
+  tcEmpWorkspaceSyncQuickActions();
   tcEmpWorkspaceUpdateTabBadges();
+  tcEmpNovedadesRefreshFromData();
 }
+let tcEmpNovedadesOpen=false;
+let tcEmpNovedadesBound=false;
+let tcEmpNovedadesItems=[];
+let tcEmpNovedadesAnchorBtn=null;
+let tcEmpNovedadesMemState=null;
+const TC_EMP_NOVEDADES_STORE_MAX=150;
+function tcEmpPortalStorageIdentity(){
+  const me=tcEmpMe||{};
+  if(!me.employeeId||!me.organizationId) return null;
+  return {
+    orgId: String(me.organizationId),
+    employeeId: String(me.employeeId),
+  };
+}
+function tcEmpNovedadesResetSessionState(){
+  tcEmpNovedadesMemState=null;
+  tcEmpNovedadesItems=[];
+}
+function tcEmpNovedadesStorageKey(){
+  const id=tcEmpPortalStorageIdentity();
+  if(!id) return null;
+  return 'tc_ws_novedades_v1:'+location.hostname+':'+id.orgId+':'+id.employeeId;
+}
+function tcEmpNovedadesTrimState(state){
+  if(!state) return;
+  let readIds=state.readIds||{};
+  const readKeys=Object.keys(readIds);
+  if(readKeys.length>TC_EMP_NOVEDADES_STORE_MAX){
+    readKeys.sort(function(a,b){
+      return String(readIds[b]||'').localeCompare(String(readIds[a]||''));
+    });
+    const next={};
+    readKeys.slice(0, TC_EMP_NOVEDADES_STORE_MAX).forEach(function(k){ next[k]=readIds[k]; });
+    state.readIds=next;
+    readIds=next;
+  }
+  let candSnap=state.candSnap||{};
+  const snapKeys=Object.keys(candSnap);
+  if(snapKeys.length>TC_EMP_NOVEDADES_STORE_MAX){
+    const protect=new Set((tcEmpMyCandItems||[]).map(function(c){ return c.id; }));
+    const drop=snapKeys.filter(function(k){ return !protect.has(k); });
+    while(Object.keys(candSnap).length>TC_EMP_NOVEDADES_STORE_MAX&&drop.length){
+      delete candSnap[drop.pop()];
+    }
+    const rest=Object.keys(candSnap);
+    while(rest.length>TC_EMP_NOVEDADES_STORE_MAX){
+      delete candSnap[rest.shift()];
+    }
+    state.candSnap=candSnap;
+  }
+}
+function tcEmpNovedadesLoadState(){
+  const key=tcEmpNovedadesStorageKey();
+  const empty={ readIds:{}, firstSeenAt:null, candSnap:{} };
+  if(!key){
+    if(!tcEmpNovedadesMemState) tcEmpNovedadesMemState=Object.assign({}, empty);
+    return tcEmpNovedadesMemState;
+  }
+  try{
+    const raw=localStorage.getItem(key);
+    if(!raw) return { readIds:{}, firstSeenAt:null, candSnap:{} };
+    const j=JSON.parse(raw);
+    return {
+      readIds:(j&&j.readIds)||{},
+      firstSeenAt:(j&&j.firstSeenAt)||null,
+      candSnap:(j&&j.candSnap)||{},
+    };
+  }catch(_){ return { readIds:{}, firstSeenAt:null, candSnap:{} }; }
+}
+function tcEmpNovedadesSaveState(state){
+  if(!state) return;
+  const key=tcEmpNovedadesStorageKey();
+  tcEmpNovedadesTrimState(state);
+  if(!key){
+    tcEmpNovedadesMemState=state;
+    return;
+  }
+  try{
+    localStorage.setItem(key, JSON.stringify({
+      readIds:state.readIds||{},
+      firstSeenAt:state.firstSeenAt||null,
+      candSnap:state.candSnap||{},
+    }));
+  }catch(_){}
+}
+function tcEmpNovedadesFmtTime(iso){
+  return mind24NotifFmtTime(iso);
+}
+function tcEmpNovedadesCandidateSnap(c){
+  const proc=c.primaryActiveProcess;
+  const kind=proc&&proc.listPreviewKind?String(proc.listPreviewKind):'none';
+  const stage=proc&&proc.stageName?String(proc.stageName):'';
+  return kind+'|'+stage;
+}
+function tcEmpNovedadesBuildFeed(){
+  const state=tcEmpNovedadesLoadState();
+  if(!state.firstSeenAt){
+    state.firstSeenAt=new Date().toISOString();
+    tcEmpNovedadesSaveState(state);
+  }
+  const firstSeenMs=new Date(state.firstSeenAt).getTime();
+  const now=Date.now();
+  const items=[];
+  (tcEmpTasks||[]).forEach(function(t){
+    if(t.dueAt){
+      const dueMs=new Date(t.dueAt).getTime();
+      if(!Number.isNaN(dueMs)&&dueMs<now){
+        items.push({
+          id:'task_overdue:'+t.id,
+          kind:'task_overdue',
+          message:'Actividad vencida: '+String(t.title||'Sin título'),
+          at:t.dueAt,
+          taskId:t.id,
+        });
+      }
+    }
+    const createdMs=t.createdAt?new Date(t.createdAt).getTime():NaN;
+    if(t.status==='PENDING'&&!Number.isNaN(createdMs)&&createdMs>firstSeenMs){
+      items.push({
+        id:'task_new:'+t.id,
+        kind:'task_new',
+        message:'Nueva actividad: '+String(t.title||'Sin título'),
+        at:t.createdAt,
+        taskId:t.id,
+      });
+    }
+  });
+  const nextSnap=Object.assign({}, state.candSnap||{});
+  (tcEmpMyCandItems||[]).forEach(function(c){
+    const snap=tcEmpNovedadesCandidateSnap(c);
+    const prev=state.candSnap&&state.candSnap[c.id];
+    if(prev&&prev!==snap){
+      const proc=c.primaryActiveProcess;
+      const kind=proc&&proc.listPreviewKind;
+      let msg='Actualización de candidato: '+String(c.fullName||'—');
+      if(kind==='hired') msg=String(c.fullName||'Candidato')+' fue contratado';
+      else if(kind==='rejected') msg='Proceso cerrado para '+String(c.fullName||'candidato');
+      else if(proc&&proc.stageName) msg=String(c.fullName||'Candidato')+': '+String(proc.stageName);
+      items.push({
+        id:'cand_update:'+c.id+':'+snap,
+        kind:'cand_update',
+        message:msg,
+        at:c.createdAt,
+        candidateId:c.id,
+        filter:kind==='hired'?'hired':(kind==='rejected'?'rejected':'in_process'),
+      });
+    }
+    nextSnap[c.id]=snap;
+  });
+  state.candSnap=nextSnap;
+  tcEmpNovedadesSaveState(state);
+  items.sort(function(a,b){
+    const ta=new Date(a.at||0).getTime();
+    const tb=new Date(b.at||0).getTime();
+    return tb-ta;
+  });
+  const readIds=state.readIds||{};
+  return items.map(function(it){
+    return Object.assign({}, it, { read: !!readIds[it.id] });
+  });
+}
+function tcEmpNovedadesUnreadCount(items){
+  return (items||tcEmpNovedadesItems).filter(function(n){ return !n.read; }).length;
+}
+function tcEmpNovedadesUpdateBadge(){
+  const n=tcEmpNovedadesUnreadCount();
+  const badge=document.getElementById('tc-ws-quick-badge-novedades');
+  if(badge) badge.textContent=n>0?(n>99?'99+':String(n)):'';
+}
+function tcEmpNovedadesRefreshFromData(){
+  tcEmpNovedadesItems=tcEmpNovedadesBuildFeed();
+  tcEmpNovedadesUpdateBadge();
+  if(tcEmpNovedadesOpen) tcEmpNovedadesRenderList();
+}
+function tcEmpNovedadesRenderList(){
+  const body=document.getElementById('tc-ws-novedades-body');
+  if(!body) return;
+  if(!tcEmpNovedadesItems.length){
+    body.innerHTML='<p class="tc-ws-novedades-empty">No tienes novedades pendientes</p>';
+    return;
+  }
+  body.innerHTML=tcEmpNovedadesItems.map(function(n){
+    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread');
+    return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(\''+n.id+'\')">'+
+      '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>'+
+      '<span class="tc-ws-novedades-item-body"><p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>'+
+      '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.at))+'</p></span></button>';
+  }).join('');
+}
+function tcEmpNovedadesMarkRead(id){
+  const state=tcEmpNovedadesLoadState();
+  state.readIds=state.readIds||{};
+  state.readIds[id]=new Date().toISOString();
+  tcEmpNovedadesSaveState(state);
+  tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){
+    return n.id===id?Object.assign({},n,{read:true}):n;
+  });
+  tcEmpNovedadesUpdateBadge();
+  tcEmpNovedadesRenderList();
+}
+function tcEmpNovedadesMarkAllRead(){
+  const state=tcEmpNovedadesLoadState();
+  state.readIds=state.readIds||{};
+  tcEmpNovedadesItems.forEach(function(n){
+    state.readIds[n.id]=new Date().toISOString();
+  });
+  tcEmpNovedadesSaveState(state);
+  tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){ return Object.assign({},n,{read:true}); });
+  tcEmpNovedadesUpdateBadge();
+  tcEmpNovedadesRenderList();
+}
+function tcEmpNovedadesPosition(){
+  const pop=document.getElementById('tc-ws-novedades-popover');
+  const btn=tcEmpNovedadesAnchorBtn||document.getElementById('tc-ws-quick-novedades');
+  if(!pop||!btn||pop.classList.contains('hidden')) return;
+  const r=btn.getBoundingClientRect();
+  const w=pop.offsetWidth||340;
+  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  let top=r.bottom+8;
+  if(top+pop.offsetHeight>window.innerHeight-12) top=Math.max(12,r.top-pop.offsetHeight-8);
+  pop.style.left=left+'px';
+  pop.style.top=top+'px';
+}
+function tcEmpNovedadesClose(focusBtn){
+  const pop=document.getElementById('tc-ws-novedades-popover');
+  const btn=document.getElementById('tc-ws-quick-novedades');
+  tcEmpNovedadesOpen=false;
+  if(pop){ pop.classList.add('hidden'); pop.setAttribute('aria-hidden','true'); }
+  if(btn) btn.setAttribute('aria-expanded','false');
+  if(focusBtn&&btn) btn.focus();
+}
+async function tcEmpNovedadesOpenPopover(btn){
+  tcEmpNovedadesAnchorBtn=btn||document.getElementById('tc-ws-quick-novedades');
+  const pop=document.getElementById('tc-ws-novedades-popover');
+  const body=document.getElementById('tc-ws-novedades-body');
+  if(!pop||!body) return;
+  tcEmpCloseJornadaInfoTip();
+  tcEmpCloseQuickTip();
+  tcEmpNovedadesRefreshFromData();
+  tcEmpNovedadesOpen=true;
+  pop.classList.remove('hidden');
+  pop.setAttribute('aria-hidden','false');
+  if(tcEmpNovedadesAnchorBtn) tcEmpNovedadesAnchorBtn.setAttribute('aria-expanded','true');
+  tcEmpNovedadesRenderList();
+  tcEmpNovedadesPosition();
+}
+function tcEmpNovedadesToggle(ev){
+  const btn=ev&&ev.currentTarget?ev.currentTarget:document.getElementById('tc-ws-quick-novedades');
+  if(tcEmpNovedadesOpen) tcEmpNovedadesClose(false);
+  else tcEmpNovedadesOpenPopover(btn);
+}
+function tcEmpNovedadesOpenItem(id){
+  const item=tcEmpNovedadesItems.find(function(n){ return n.id===id; });
+  if(!item) return;
+  tcEmpNovedadesMarkRead(id);
+  tcEmpNovedadesClose(false);
+  if(item.kind==='task_new'||item.kind==='task_overdue') tcEmpQuickGoActivities();
+  else if(item.kind==='cand_update') tcEmpQuickGoCandidates(item.filter||'in_process');
+}
+function tcEmpNovedadesEnsureListeners(){
+  if(tcEmpNovedadesBound) return;
+  tcEmpNovedadesBound=true;
+  document.addEventListener('mousedown',function(ev){
+    if(!tcEmpNovedadesOpen) return;
+    const pop=document.getElementById('tc-ws-novedades-popover');
+    if(pop&&pop.contains(ev.target)) return;
+    if(ev.target.closest('#tc-ws-quick-novedades')) return;
+    tcEmpNovedadesClose(false);
+  });
+  document.addEventListener('keydown',function(ev){
+    if(ev.key==='Escape'&&tcEmpNovedadesOpen) tcEmpNovedadesClose(true);
+  });
+  window.addEventListener('resize',function(){ if(tcEmpNovedadesOpen) tcEmpNovedadesPosition(); });
+}
+window.tcEmpQuickGoActivities=tcEmpQuickGoActivities;
+window.tcEmpQuickRegisterCandidate=tcEmpQuickRegisterCandidate;
+window.tcEmpQuickGoCandidates=tcEmpQuickGoCandidates;
+window.tcEmpNovedadesToggle=tcEmpNovedadesToggle;
+window.tcEmpNovedadesClose=tcEmpNovedadesClose;
+window.tcEmpNovedadesMarkAllRead=tcEmpNovedadesMarkAllRead;
+window.tcEmpNovedadesOpenItem=tcEmpNovedadesOpenItem;
 function tcEmpPrimaryButtonEl(){
   const waitView=document.getElementById('tc-ws-jornada-view-wait');
   if(waitView&&!waitView.classList.contains('hidden')) return document.getElementById('tc-emp-primary-wait');
@@ -12262,6 +12694,7 @@ function tcEmpMyCandSetFilter(filter){
   tcEmpMyCandFilterUserPicked=true;
   tcEmpMyCandFilter=next;
   tcEmpMyCandSyncFilterUi();
+  tcEmpWorkspaceSyncQuickActions();
   tcEmpWorkspaceResetPanelScroll('candidates');
   tcEmpLoadMyCandidates(false);
 }
@@ -12292,6 +12725,7 @@ async function tcEmpLoadMyCandidates(append){
     else tcEmpMyCandItems=rows;
     tcEmpMyCandNextCursor=j.nextCursor||null;
     tcEmpMyCandRenderList();
+    tcEmpNovedadesRefreshFromData();
   }catch(e){
     if(e&&e.name==='AbortError') return;
     if(fetchSeq!==tcEmpMyCandFetchSeq) return;
@@ -13820,6 +14254,7 @@ function tcEmpRenderTasks(){
   }
   body.innerHTML=html;
   tcEmpWorkspaceUpdateTabBadges();
+  tcEmpNovedadesRefreshFromData();
 }
 async function tcEmpLoadTasks(){
   const body=document.getElementById('tc-emp-tasks-body');
@@ -13861,6 +14296,7 @@ async function tcEmpLoadMe(){
   else tcEmpStartHeartbeat();
   tcEmpShowApp();
   tcEmpRender();
+  tcEmpNovedadesRefreshFromData();
   await tcEmpLoadTasks();
   await tcEmpLoadMyCandidates(false);
 }
@@ -13872,6 +14308,7 @@ async function tcEmployeeBoot(){
   showView('timeclock');
   tcEmpStopTimers();
   tcEmpCompleted=null;
+  tcEmpNovedadesResetSessionState();
   tcEmpMyCandFilter='in_process';
   tcEmpMyCandFilterUserPicked=false;
   const token=tcEmpHashToken();

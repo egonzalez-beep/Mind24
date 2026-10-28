@@ -112,7 +112,46 @@ check(
 console.log('\n=== Workspace UX V2 — estático ===\n');
 check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
 check(/tc-ws-hero/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header hero unificado + jornada');
-check(/tc-ws-quick-indicators/.test(indexHtml), 'quick indicators preparados');
+check(/tc-ws-quick-actions/.test(indexHtml) && /tc-ws-quick-novedades/.test(indexHtml), 'barra accesos rápidos + novedades');
+check(/tcEmpQuickGoActivities/.test(indexHtml) && /tcEmpQuickRegisterCandidate/.test(indexHtml) && /tcEmpQuickGoCandidates/.test(indexHtml), 'atajos conectados a tabs/modal');
+check(/tc-ws-quick-goals[\s\S]*aria-disabled="true"/.test(indexHtml) && /Metas · Próximamente/.test(indexHtml), 'Metas deshabilitado con tooltip');
+check(/tc-ws-novedades-popover/.test(indexHtml) && /No tienes novedades pendientes/.test(indexHtml), 'popover Novedades');
+check(/tcEmpPortalStorageIdentity/.test(indexHtml) && /tcEmpNovedadesStorageKey/.test(indexHtml), 'identidad y clave storage centralizadas');
+check(!/tcEmpTasks\[0\]\.employeeId/.test(indexHtml.match(/function tcEmpPortalStorageIdentity[\s\S]*?^function /m)?.[0] || ''), 'identidad no depende de tcEmpTasks');
+check(/me\.employeeId/.test(indexHtml.match(/function tcEmpPortalStorageIdentity[\s\S]*?^function /m)?.[0] || ''), 'identidad desde tcEmpMe');
+check(/tcEmpNovedadesRefreshFromData\(\)/.test(indexHtml.match(/async function tcEmpLoadMe[\s\S]*?^async function /m)?.[0] || ''), 'novedades tras /me antes de actividades');
+check(/TC_EMP_NOVEDADES_STORE_MAX/.test(indexHtml) && /tcEmpNovedadesTrimState/.test(indexHtml), 'limite readIds y candSnap');
+check(!/onclick=/.test(indexHtml.match(/id="tc-ws-quick-goals"[^>]*>[\s\S]*?<\/button>/)?.[0] || indexHtml.match(/id="tc-ws-quick-goals"[^>]*\/>/)?.[0] || ''), 'Metas sin acción');
+check(/if\(tcEmpNovedadesBound\) return/.test(indexHtml) && /dataset\.tcQuickTipBound/.test(indexHtml), 'listeners quick/novedades no duplicados');
+check(/tcEmpNovedadesToggle/.test(indexHtml) && /tcEmpNovedadesClose/.test(indexHtml), 'popover abrir/cerrar');
+check(/localStorage/.test(indexHtml.match(/function tcEmpNovedadesSaveState[\s\S]*?^function /m)?.[0] || ''), 'persistencia local novedades');
+check(/tc-ws-quick-badge--red/.test(indexHtml) && /tc-ws-quick-badge--violet/.test(indexHtml), 'badges actividades y novedades');
+const meFn = publicRoutes.match(/function sessionToPublicMe[\s\S]*?^}/m)?.[0] || '';
+check(/employeeId: emp\.id/.test(meFn) && /organizationId: emp\.organizationId/.test(meFn), '/me expone employeeId y organizationId');
+const idFnBlock = indexHtml.match(/function tcEmpPortalStorageIdentity[\s\S]*?\n}/)?.[0] || '';
+const keyFnBlock = indexHtml.match(/function tcEmpNovedadesStorageKey[\s\S]*?\n}/)?.[0] || '';
+const runIdentity = new Function(
+  'tcEmpMe',
+  'tcEmpTasks',
+  'location',
+  idFnBlock + '\nreturn tcEmpPortalStorageIdentity();',
+);
+const runKey = new Function(
+  'tcEmpMe',
+  'tcEmpTasks',
+  'location',
+  idFnBlock + keyFnBlock + '\nreturn tcEmpNovedadesStorageKey();',
+);
+const loc = { hostname: 'portal.test' };
+check(!/'0'/.test(idFnBlock) && /!me\.employeeId\|\|!me\.organizationId/.test(idFnBlock), 'identidad exige employeeId y organizationId');
+check(runIdentity({ employeeId: 'emp-a', organizationId: 'org-z' }, [], loc)?.employeeId === 'emp-a', 'colaborador sin tareas tiene identidad');
+check(runKey({ employeeId: 'emp-a', organizationId: 'org-z' }, [], loc) === 'tc_ws_novedades_v1:portal.test:org-z:emp-a', 'aislamiento hostname+org+empleado');
+check(runKey({ employeeId: 'emp-a' }, [], loc) === null, 'sin organizationId clave null');
+check(runKey({ organizationId: 'org-z' }, [], loc) === null, 'sin employeeId clave null');
+check(runKey(null, [], loc) === null, 'sin sesión clave null');
+check(/tcEmpNovedadesMemState/.test(indexHtml) && /tcEmpNovedadesResetSessionState/.test(indexHtml), 'novedades en memoria sin persistencia');
+check(!/if\(!tcEmpPortalStorageIdentity\(\)\)[\s\S]*?tcEmpNovedadesItems=\[\]/.test(indexHtml.match(/function tcEmpNovedadesRefreshFromData[\s\S]*?^function /m)?.[0] || ''), 'refresh mantiene feed sin clave storage');
+check(/tc-ws-quick-tip/.test(indexHtml) && /position:fixed/.test(indexHtml.match(/\.tc-ws-quick-tip\{[\s\S]*?\}/)?.[0] || ''), 'tooltips accesos sin clipping');
 const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || '';
 check(!/>\s*Metas\s*</.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'sin tab Metas/Novedades visibles');
 check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
