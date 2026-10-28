@@ -1214,7 +1214,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 32px;}
 @media(min-width:768px){.tc-emp-shell{padding:28px 24px 40px;align-items:center;}}
-.tc-emp-card{width:100%;max-width:1140px;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:24px 18px 22px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
+.tc-emp-card{width:100%;max-width:1140px;min-width:0;box-sizing:border-box;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:24px 18px 22px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
 @media(min-width:768px){.tc-emp-card{padding:32px 36px 28px;border-radius:22px;}}
 .tc-emp-brand{font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--purple);margin-bottom:6px;}
 .tc-emp-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:18px;}
@@ -1257,7 +1257,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-my-cand-empty,.tc-emp-my-cand-err{font-size:13px;color:var(--slate-500);text-align:center;padding:16px 10px;border:1px dashed var(--slate-200);border-radius:12px;background:rgba(248,250,252,.6);}
 .tc-emp-my-cand-more-wrap{text-align:center;margin-top:10px;}
 .tc-emp-my-cand-more{font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);cursor:pointer;}
-.tc-emp-my-cand-list{min-height:72px;transition:opacity 180ms ease;}
+.tc-emp-my-cand-list{min-height:0;transition:opacity 180ms ease;}
 .tc-emp-my-cand-list--loading{opacity:.55;pointer-events:none;}
 .tc-emp-my-cand-card-inner{display:flex;flex-direction:column;gap:10px;}
 @media(min-width:768px){.tc-emp-my-cand-card-inner{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:20px;}}
@@ -1329,6 +1329,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-tab-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(124,58,237,.12);color:var(--purple-dark);}
 .tc-ws-tab-badge:empty{display:none;}
 .tc-ws-panel[hidden]{display:none!important;}
+#tc-emp-app{width:100%;min-width:0;box-sizing:border-box;}
+.tc-ws-panel{width:100%;min-width:0;box-sizing:border-box;}
+.tc-ws-panel-scroll{width:100%;min-width:0;box-sizing:border-box;}
+@media(min-width:900px){
+.tc-ws-panel-scroll{min-height:clamp(300px,42vh,520px);max-height:clamp(360px,58vh,680px);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.42) transparent;}
+.tc-ws-panel-scroll::-webkit-scrollbar{width:8px;}
+.tc-ws-panel-scroll::-webkit-scrollbar-track{background:transparent;}
+.tc-ws-panel-scroll::-webkit-scrollbar-thumb{background:rgba(100,116,139,.36);border-radius:999px;}
+}
+@media(max-width:899px){
+.tc-ws-panel-scroll{min-height:clamp(220px,36vh,420px);overflow:visible;max-height:none;}
+}
+.tc-emp-tasks-empty,.tc-emp-my-cand-empty{min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
@@ -3461,7 +3474,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                   <div class="tc-ws-jornada-row">
                     <span class="rec-cand-process-dot" id="tc-emp-attendance-dot" aria-hidden="true"></span>
                     <span class="tc-emp-state" id="tc-emp-state">En curso</span>
-                    <span class="tc-ws-jornada-elapsed" id="tc-emp-elapsed">00:00:00</span>
+                    <span class="tc-ws-jornada-elapsed" id="tc-emp-elapsed">0 min</span>
                   </div>
                   <div class="tc-ws-jornada-row tc-ws-jornada-row--actions">
                     <span class="tc-ws-jornada-entrada">Entrada <span id="tc-emp-att-in">—</span></span>
@@ -3502,7 +3515,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <section class="tc-ws-panel tc-emp-tasks" id="tc-ws-panel-activities" role="tabpanel" aria-labelledby="tc-ws-tab-activities">
           <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title visually-hidden">Mis actividades</h2>
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
-          <div id="tc-emp-tasks-body"></div>
+          <div class="tc-ws-panel-scroll" id="tc-ws-panel-activities-scroll">
+            <div id="tc-emp-tasks-body"></div>
+          </div>
         </section>
         <section class="tc-ws-panel tc-emp-recruitment hidden" id="tc-ws-panel-candidates" role="tabpanel" aria-labelledby="tc-ws-tab-candidates" hidden>
           <p class="tc-emp-recruitment-toast hidden" id="tc-emp-recruitment-toast" role="status"></p>
@@ -3523,9 +3538,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="rejected" onclick="tcEmpMyCandSetFilter('rejected')">Rechazados</button>
             </div>
-            <div class="tc-emp-my-cand-list" id="tc-emp-my-cand-list" role="list"></div>
-            <div class="tc-emp-my-cand-more-wrap hidden" id="tc-emp-my-cand-more-wrap">
-              <button type="button" class="tc-emp-my-cand-more" id="tc-emp-my-cand-more-btn" onclick="tcEmpLoadMyCandidates(true)">Cargar más</button>
+            <div class="tc-ws-panel-scroll" id="tc-ws-cand-list-scroll">
+              <div class="tc-emp-my-cand-list" id="tc-emp-my-cand-list" role="list"></div>
+              <div class="tc-emp-my-cand-more-wrap hidden" id="tc-emp-my-cand-more-wrap">
+                <button type="button" class="tc-emp-my-cand-more" id="tc-emp-my-cand-more-btn" onclick="tcEmpLoadMyCandidates(true)">Cargar más</button>
+              </div>
             </div>
           </div>
         </section>
@@ -12035,11 +12052,21 @@ function tcWsSvgClipboard(){
 function tcWsSvgUsers(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
 }
+function tcEmpWorkspaceGetPanelScrollEl(forTab){
+  const tab=forTab||tcEmpWorkspaceTab;
+  if(tab==='candidates') return document.getElementById('tc-ws-cand-list-scroll');
+  return document.getElementById('tc-ws-panel-activities-scroll');
+}
+function tcEmpWorkspaceResetPanelScroll(forTab){
+  const el=tcEmpWorkspaceGetPanelScrollEl(forTab);
+  if(el) el.scrollTop=0;
+}
 function tcEmpWorkspaceSetTab(tab){
   const next=tab==='candidates'?'candidates':'activities';
   if(tcEmpWorkspaceTab===next) return;
   tcEmpWorkspaceTab=next;
   tcEmpWorkspaceSyncTabs();
+  tcEmpWorkspaceResetPanelScroll(next);
 }
 function tcEmpWorkspaceSyncTabs(){
   const act=document.getElementById('tc-ws-panel-activities');
@@ -12162,6 +12189,7 @@ function tcEmpMyCandSetFilter(filter){
   tcEmpMyCandFilterUserPicked=true;
   tcEmpMyCandFilter=next;
   tcEmpMyCandSyncFilterUi();
+  tcEmpWorkspaceResetPanelScroll('candidates');
   tcEmpLoadMyCandidates(false);
 }
 async function tcEmpLoadMyCandidates(append){
@@ -12731,7 +12759,8 @@ async function tcViewJornada(id){
     const sess=j.session||j.openSession||null;
     const jornadaOpen=!!(sess&&!sess.checkOutAt);
     if(body){
-      const dur=sess&&sess.durationSec!=null?tcFmtDuration(sess.durationSec):(sess&&sess.checkInAt&&sess.checkOutAt?tcFmtDuration((new Date(sess.checkOutAt)-new Date(sess.checkInAt))/1000):'—');
+      const durSec=sess&&sess.durationSec!=null?Math.max(0,Math.floor(Number(sess.durationSec)||0)):(sess&&sess.checkInAt&&sess.checkOutAt?tcShiftDurationSeconds(sess.checkInAt,sess.checkOutAt):null);
+      const dur=durSec!=null?tcFmtDuration(durSec):'—';
       const entFmt=sess&&sess.checkInAt?new Date(sess.checkInAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const outFmt=sess&&sess.checkOutAt?new Date(sess.checkOutAt).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
       const altaFmt=tcFmtEmployeeAlta(emp.createdAt);
@@ -12799,11 +12828,11 @@ const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function tcFmtDurationHuman(sec){
   const n=Math.max(0, Math.floor(Number(sec)||0));
-  const h=Math.floor(n/3600);
-  const m=Math.floor((n%3600)/60);
-  if(h&&m) return h+' h '+String(m).padStart(2,'0')+' min';
-  if(h) return h+' h';
-  if(m) return m+' min';
+  const totalMin=Math.floor(n/60);
+  const h=Math.floor(totalMin/60);
+  const m=totalMin%60;
+  if(h>0) return h+' h '+String(m).padStart(2,'0')+' min';
+  if(totalMin>0) return totalMin+' min';
   return '0 min';
 }
 function tcLocalTodayParts(tz){
@@ -13540,9 +13569,9 @@ function tcEmpTickClock(){
 }
 function tcEmpElapsed(){
   const open=tcEmpMe&&tcEmpMe.openSession;
-  if(!open||!open.checkInAt) return '00:00:00';
+  if(!open||!open.checkInAt) return '0 min';
   const sec=Math.max(0, Math.floor((Date.now()-new Date(open.checkInAt).getTime())/1000));
-  return tcFmtDuration(sec);
+  return tcFmtDurationHuman(sec);
 }
 function tcEmpSetError(msg){
   const el=document.getElementById('tc-emp-err');
@@ -13609,7 +13638,7 @@ function tcEmpRender(){
   if(completed&&completed.checkOutAt){
     tcEmpSyncAttendanceLiveIndicator(false);
     tcEmpJornadaSetView('done');
-    const sec=tcShiftDurationSeconds(completed.checkInAt, completed.checkOutAt);
+    const sec=completed.durationSec!=null?Math.max(0,Math.floor(Number(completed.durationSec)||0)):tcShiftDurationSeconds(completed.checkInAt, completed.checkOutAt);
     if(attDurHuman) attDurHuman.textContent=tcFmtDurationHuman(sec);
     if(attRange) attRange.textContent=tcFmtHm(completed.checkInAt)+' → '+tcFmtHm(completed.checkOutAt);
     if(sigRow) sigRow.innerHTML='';

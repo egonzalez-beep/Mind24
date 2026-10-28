@@ -147,6 +147,31 @@ check(!/tc-ws-hoy-label/.test(indexHtml), 'sin bloque Hoy en header');
 check(/tc-emp-attendance-idle/.test(indexHtml) && /Sin jornada asignada/.test(indexHtml), 'sin jornada asignada compacto');
 check(/onclick="tcEmpPrimaryAction\(\)"/.test(indexHtml), 'CTA entrada/salida intacto');
 
+console.log('\n=== Workspace UX V2.3 — shell estable + duración ===\n');
+check(/#tc-emp-app\{width:100%;min-width:0/.test(indexHtml), 'shell workspace ancho estable');
+check(/\.tc-ws-panel-scroll/.test(indexHtml) && /tc-ws-panel-activities-scroll/.test(indexHtml) && /tc-ws-cand-list-scroll/.test(indexHtml), 'paneles operativos con scroll');
+check(/min-height:clamp\(300px,42vh,520px\)/.test(indexHtml), 'min-height panel desktop');
+check(/max-height:clamp\(360px,58vh,680px\)/.test(indexHtml), 'max-height panel desktop');
+check(/@media\(max-width:899px\)[\s\S]*?\.tc-ws-panel-scroll\{[^}]*overflow:visible/.test(indexHtml), 'mobile sin scroll interno');
+check(/function tcEmpWorkspaceResetPanelScroll/.test(indexHtml), 'reset scroll panel');
+const resetScrollFn = indexHtml.match(/function tcEmpWorkspaceResetPanelScroll[\s\S]*?^function /m)?.[0] || '';
+check(/scrollTop\s*=\s*0/.test(resetScrollFn), 'reset scrollTop panel');
+check(/tcEmpWorkspaceResetPanelScroll\(next\)/.test(indexHtml.match(/function tcEmpWorkspaceSetTab[\s\S]*?^function /m)?.[0] || ''), 'cambio tab resetea scroll panel');
+check(/tcEmpWorkspaceResetPanelScroll\('candidates'\)/.test(indexHtml.match(/function tcEmpMyCandSetFilter[\s\S]*?^function /m)?.[0] || ''), 'cambio filtro resetea scroll candidatos');
+check(/\.tc-emp-my-cand-empty\{[^}]*min-height:120px/.test(indexHtml), 'empty state conserva altura');
+const humanFnBlock = indexHtml.match(/function tcFmtDurationHuman[\s\S]*?^function /m)?.[0] || '';
+check(/Math\.floor\(n\/60\)/.test(humanFnBlock), 'duración humana por minutos completos');
+check(/return tcFmtDurationHuman\(sec\)/.test(indexHtml.match(/function tcEmpElapsed[\s\S]*?^function /m)?.[0] || ''), 'jornada en curso sin segundos HH:MM:SS');
+const runHuman = new Function(
+  humanFnBlock.replace(/\nfunction $/, '') + '\nreturn tcFmtDurationHuman;',
+)();
+check(runHuman(1768) === '29 min', '29m28s → 29 min');
+check(runHuman(3599) === '59 min', '59m59s → 59 min');
+check(runHuman(3600) === '1 h 00 min', '1h00m → 1 h 00 min');
+check(runHuman(3849) === '1 h 04 min', '1h04m09s → 1 h 04 min');
+check(!/\d\.\d/.test(runHuman(1768.581)), 'duración sin decimales');
+check(!/:\d{2}:\d{2}/.test(indexHtml.match(/function tcEmpRender[\s\S]*?^function /m)?.[0] || ''), 'render jornada no usa HH:MM:SS en mini card');
+
 console.log('\n=== Schema portal — unit ===\n');
 
 const { workforceCandidateCreateSchema } = await import(
