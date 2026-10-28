@@ -109,6 +109,21 @@ check(
   'Registrar candidato resetea flujo completo',
 );
 
+console.log('\n=== Workspace UX V2 — estático ===\n');
+check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
+check(/tc-ws-header/.test(indexHtml) && /tc-ws-hoy-activities/.test(indexHtml), 'header + resumen Hoy');
+check(/tc-ws-hoy-stat-slot--future/.test(indexHtml), 'slots futuros Metas/Novedades');
+check(!/Metas/.test(indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || ''), 'sin tab Metas visible');
+check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
+check(/tcEmpToggleAttendanceDetails/.test(indexHtml) && /aria-expanded/.test(indexHtml.match(/tc-emp-attendance-toggle[\s\S]{0,200}/)?.[0] || ''), 'asistencia colapsable mobile');
+check(/tcEmpMyCandFetchSeq/.test(indexHtml) && /AbortController/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'stale requests candidatos');
+check(/tc-emp-my-cand-list--loading/.test(indexHtml), 'loading listado sin vaciar DOM');
+check(!/Cargando…/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'filtros no reemplazan listado con Cargando');
+const wsTabFn = indexHtml.match(/function tcEmpWorkspaceSetTab[\s\S]*?^function /m)?.[0] || '';
+check(!/location\.hash/.test(wsTabFn), 'tabs no usan location.hash');
+check(/tcEmpMyCandBuildCardHtml/.test(indexHtml) && /tc-emp-my-cand-card-inner/.test(indexHtml), 'cards candidato responsive');
+check(/recCandFormatInterviewScheduledAt/.test(indexHtml.match(/function tcEmpMyCandInterviewHtml[\s\S]*?^function /m)?.[0] || ''), 'entrevista en card reutiliza helper TZ');
+
 console.log('\n=== Schema portal — unit ===\n');
 
 const { workforceCandidateCreateSchema } = await import(

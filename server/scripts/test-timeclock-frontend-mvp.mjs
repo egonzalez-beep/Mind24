@@ -117,7 +117,7 @@ check(/Jornada esperada/.test(indexHtml), 'admin jornada esperada label');
 check(/Sin jornada esperada/.test(indexHtml), 'sin jornada esperada option');
 check(/tcExpectedWorkRead/.test(indexHtml) && /expectedWorkMinutes/.test(indexHtml), 'expected work wired create/edit');
 check(/tc-emp-attendance-idle/.test(indexHtml), 'Mi jornada idle attendance state');
-check(/Sin jornada de asistencia asignada/.test(indexHtml), 'idle attendance copy');
+check(/Sin jornada asignada/.test(indexHtml), 'idle attendance copy portal');
 check(/tcEmpApplyAttendanceShell/.test(indexHtml) && /attendanceEnabled/.test(indexHtml), 'Mi jornada respects attendanceEnabled');
 check(/tc-emp-attendance-active/.test(indexHtml), 'attendance panel wrapper');
 

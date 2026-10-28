@@ -1212,8 +1212,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
 .tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:center;justify-content:center;padding:32px 20px;}
-.tc-emp-card{width:100%;max-width:520px;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:36px 32px 28px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
+.tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 32px;}
+@media(min-width:768px){.tc-emp-shell{padding:28px 24px 40px;align-items:center;}}
+.tc-emp-card{width:100%;max-width:1140px;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:24px 18px 22px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
+@media(min-width:768px){.tc-emp-card{padding:32px 36px 28px;border-radius:22px;}}
 .tc-emp-brand{font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--purple);margin-bottom:6px;}
 .tc-emp-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:18px;}
 .tc-emp-hello{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.2;margin-bottom:6px;}
@@ -1255,6 +1257,83 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-my-cand-empty,.tc-emp-my-cand-err{font-size:13px;color:var(--slate-500);text-align:center;padding:16px 10px;border:1px dashed var(--slate-200);border-radius:12px;background:rgba(248,250,252,.6);}
 .tc-emp-my-cand-more-wrap{text-align:center;margin-top:10px;}
 .tc-emp-my-cand-more{font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);cursor:pointer;}
+.tc-emp-my-cand-list{min-height:72px;transition:opacity 180ms ease;}
+.tc-emp-my-cand-list--loading{opacity:.55;pointer-events:none;}
+.tc-emp-my-cand-card-inner{display:flex;flex-direction:column;gap:10px;}
+@media(min-width:768px){.tc-emp-my-cand-card-inner{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:20px;}}
+.tc-emp-my-cand-card-left{min-width:0;flex:1;}
+.tc-emp-my-cand-card-right{min-width:0;font-size:12px;color:var(--slate-600);}
+@media(min-width:768px){.tc-emp-my-cand-card-right{flex:0 1 42%;text-align:right;}}
+.tc-emp-my-cand-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(245,243,255,.9);color:var(--purple-dark);border:1px solid rgba(124,58,237,.2);}
+.tc-emp-my-cand-badge--hired{background:rgba(240,253,244,.95);color:#15803d;border-color:rgba(34,197,94,.25);}
+.tc-emp-my-cand-badge--rejected{background:rgba(254,242,242,.95);color:#b91c1c;border-color:rgba(248,113,113,.3);}
+.tc-emp-my-cand-card-right .tc-emp-my-cand-interview{justify-content:flex-start;margin-top:6px;}
+@media(min-width:768px){.tc-emp-my-cand-card-right .tc-emp-my-cand-interview{justify-content:flex-end;}.tc-emp-my-cand-card-right .rec-cand-process-head{justify-content:flex-end;}}
+.tc-emp-my-cand-card-right .tc-emp-my-cand-reg{margin-top:4px;}
+.tc-ws-header{display:grid;gap:16px;margin-bottom:18px;}
+@media(min-width:900px){.tc-ws-header{grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;}}
+.tc-ws-header-brand{min-width:0;}
+.tc-ws-header-brand .tc-emp-brand{margin-bottom:4px;}
+.tc-ws-header-brand .tc-ws-title{margin:0;font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);line-height:1.2;}
+@media(min-width:768px){.tc-ws-header-brand .tc-ws-title{font-size:22px;}}
+.tc-ws-header-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;}
+.tc-ws-header-user{display:flex;align-items:center;gap:12px;min-width:0;}
+@media(min-width:900px){.tc-ws-header-user{justify-content:center;}}
+.tc-ws-header-user .tc-emp-hello{font-size:18px;margin:0;}
+@media(min-width:768px){.tc-ws-header-user .tc-emp-hello{font-size:20px;}}
+.tc-ws-header-user .tc-emp-meta{margin:2px 0 0;font-size:13px;}
+.tc-ws-header-today{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+@media(min-width:900px){.tc-ws-header-today{align-items:flex-end;text-align:right;}}
+.tc-ws-hoy-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
+.tc-ws-hoy-stat{font-size:12px;font-weight:600;color:var(--slate-600);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tc-ws-hoy-stat strong{font-weight:800;color:var(--purple-dark);}
+.tc-ws-hoy-stat-slot:empty{display:none;}
+.tc-ws-attendance{margin-bottom:16px;}
+.tc-ws-attendance-idle{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:12px;background:var(--slate-50);border:1px solid var(--slate-100);font-size:13px;color:var(--slate-600);margin:0;}
+.tc-ws-attendance-idle .tc-ws-attendance-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);width:100%;}
+@media(min-width:768px){.tc-ws-attendance-idle .tc-ws-attendance-kicker{width:auto;margin-right:4px;}}
+.tc-ws-attendance-band{border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;background:#fff;}
+.tc-ws-attendance-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin:0 0 8px;}
+.tc-ws-attendance-mobile-toggle{display:block;width:100%;border:none;background:transparent;padding:0;margin:0;font:inherit;text-align:left;cursor:pointer;border-radius:8px;}
+.tc-ws-attendance-mobile-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-ws-attendance-compact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--slate-700);}
+.tc-ws-attendance-compact .tc-emp-state{font-size:15px;font-weight:800;margin:0;color:var(--primary);}
+.tc-ws-attendance-entrance-compact{font-size:13px;color:var(--slate-500);margin-left:auto;}
+.tc-ws-attendance-chevron{width:18px;height:18px;stroke:var(--slate-400);fill:none;stroke-width:2;flex-shrink:0;transition:transform 180ms ease;margin-left:4px;}
+@media(min-width:768px){.tc-ws-attendance-mobile-toggle{cursor:default;pointer-events:none;}.tc-ws-attendance-chevron{display:none;}}
+.tc-ws-attendance-band--open .tc-ws-attendance-chevron{transform:rotate(180deg);}
+@media(prefers-reduced-motion:reduce){.tc-ws-attendance-chevron{transition:none;}}
+.tc-ws-attendance-details{overflow:hidden;max-height:0;opacity:0;transition:max-height 200ms ease,opacity 180ms ease,margin 180ms ease;margin-top:0;}
+@media(min-width:768px){.tc-ws-attendance-details{max-height:none!important;opacity:1!important;margin-top:12px!important;overflow:visible;}}
+.tc-ws-attendance-band--open .tc-ws-attendance-details{max-height:520px;opacity:1;margin-top:12px;}
+@media(prefers-reduced-motion:reduce){.tc-ws-attendance-details{transition:none;}}
+.tc-ws-attendance-grid{display:grid;gap:12px;}
+@media(min-width:768px){.tc-ws-attendance-grid{grid-template-columns:1fr 1fr auto;align-items:end;gap:16px;}}
+.tc-ws-attendance-stat label{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);margin-bottom:4px;}
+.tc-ws-attendance-stat span{font-size:15px;font-weight:700;color:var(--primary);}
+.tc-ws-attendance-band .tc-emp-btn{width:auto;min-width:160px;padding:12px 18px;}
+@media(max-width:767px){.tc-ws-attendance-band .tc-emp-btn{width:100%;}}
+.tc-ws-attendance-band .tc-emp-hint{font-size:12px;margin:10px 0 0;}
+.tc-ws-attendance-band .tc-emp-privacy{margin-top:12px;padding-top:10px;font-size:11px;}
+.tc-ws-attendance-band .tc-emp-err{margin:8px 0 0;}
+.tc-ws-tabs-wrap{margin-bottom:14px;border-bottom:1px solid var(--slate-200);}
+.tc-ws-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tc-ws-tabs::-webkit-scrollbar{display:none;}
+.tc-ws-tab{flex:1 0 auto;min-height:44px;padding:10px 16px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 160ms ease,border-color 160ms ease;}
+@media(min-width:768px){.tc-ws-tab{flex:0 1 auto;padding:10px 20px;}}
+.tc-ws-tab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.tc-ws-tab--on{color:var(--purple-dark);border-bottom-color:var(--purple);}
+.tc-ws-tab:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-ws-tab-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(124,58,237,.12);color:var(--purple-dark);}
+.tc-ws-tab-badge:empty{display:none;}
+.tc-ws-panel[hidden]{display:none!important;}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
+.tc-ws-cand-register{min-height:42px;padding:8px 14px;font-size:12px;font-weight:700;width:auto!important;max-width:none!important;}
+.tc-emp-tasks{margin-top:0;padding-top:0;border-top:none;}
+.tc-emp-recruitment{margin-top:0;padding-top:0;border-top:none;}
+.tc-emp-my-cand{margin-top:0;padding-top:0;border-top:none;}
 .rec-cand-exp-registrar{display:inline-flex;align-items:center;gap:6px;}
 .rec-cand-exp-registrar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
 .rec-cand-row-line--registrar .rec-cand-row-line-text{font-size:12px;color:var(--slate-500);}
@@ -3348,39 +3427,73 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   <div class="tc-emp-shell">
     <div class="tc-emp-card">
       <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
-      <div class="tc-emp-brand">MIND24</div>
-      <h1 class="tc-emp-title">Mi espacio de trabajo</h1>
-      <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
       <div id="tc-emp-gate" class="hidden">
+        <div class="tc-emp-brand">MIND24</div>
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
       </div>
       <div id="tc-emp-app" class="hidden">
-        <div class="tc-emp-greet-row">
-          <div id="tc-emp-avatar-wrap" aria-hidden="true"></div>
-          <div class="tc-emp-greet-text">
-            <h1 class="tc-emp-hello" id="tc-emp-hello">Hola</h1>
-            <p class="tc-emp-meta" id="tc-emp-role"></p>
+        <header class="tc-ws-header">
+          <div class="tc-ws-header-brand">
+            <div class="tc-emp-brand">MIND24</div>
+            <h1 class="tc-ws-title tc-emp-title">Mi espacio de trabajo</h1>
+            <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
+          </div>
+          <div class="tc-ws-header-user">
+            <div id="tc-emp-avatar-wrap" aria-hidden="true"></div>
+            <div class="tc-emp-greet-text">
+              <h2 class="tc-emp-hello" id="tc-emp-hello">Hola</h2>
+              <p class="tc-emp-meta" id="tc-emp-role"></p>
+            </div>
+          </div>
+          <div class="tc-ws-header-today" aria-label="Resumen de hoy">
+            <span class="tc-ws-hoy-label">Hoy</span>
+            <div class="tc-ws-hoy-stat">
+              <span class="tc-ws-hoy-stat-slot" id="tc-ws-hoy-activities">Actividades pendientes <strong id="tc-ws-hoy-activities-n">0</strong></span>
+              <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-goals" hidden></span>
+              <span class="tc-ws-hoy-stat-slot tc-ws-hoy-stat-slot--future" id="tc-ws-hoy-news" hidden></span>
+            </div>
+          </div>
+        </header>
+        <div class="tc-ws-attendance">
+          <p class="tc-ws-attendance-idle hidden" id="tc-emp-attendance-idle" role="status"><span class="tc-ws-attendance-kicker">Asistencia</span><span>Sin jornada asignada</span></p>
+          <div id="tc-emp-attendance-active" class="tc-ws-attendance-band hidden">
+            <p class="tc-ws-attendance-kicker">Asistencia</p>
+            <button type="button" class="tc-ws-attendance-mobile-toggle" id="tc-emp-attendance-toggle" aria-expanded="false" aria-controls="tc-emp-attendance-details" onclick="tcEmpToggleAttendanceDetails()">
+              <div class="tc-ws-attendance-compact">
+                <span class="rec-cand-process-dot" id="tc-emp-attendance-dot" aria-hidden="true"></span>
+                <span class="tc-emp-state" id="tc-emp-state">Fuera de jornada</span>
+                <span class="tc-ws-attendance-entrance-compact" id="tc-emp-attendance-entrance-compact"></span>
+                <svg class="tc-ws-attendance-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div id="tc-emp-attendance-details" class="tc-ws-attendance-details">
+              <div class="tc-ws-attendance-grid">
+                <div class="tc-ws-attendance-stat" id="tc-ws-att-stat-in"><label>Entrada</label><span id="tc-emp-att-in">—</span></div>
+                <div class="tc-ws-attendance-stat" id="tc-ws-att-stat-elapsed"><label>Tiempo transcurrido</label><span id="tc-emp-elapsed">00:00:00</span></div>
+                <div class="tc-ws-attendance-stat tc-ws-attendance-stat--out hidden" id="tc-ws-att-stat-out"><label>Salida</label><span id="tc-emp-att-out">—</span></div>
+                <div class="tc-ws-attendance-stat tc-ws-attendance-stat--dur hidden" id="tc-ws-att-stat-dur"><label>Duración</label><span id="tc-emp-att-dur">—</span></div>
+                <div class="tc-ws-attendance-action" id="tc-ws-att-action-wrap"><button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button></div>
+              </div>
+              <div id="tc-emp-signal-row" class="tc-ws-attendance-signal" hidden></div>
+              <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
+              <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
+              <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+            </div>
+            <p class="tc-emp-err hidden" id="tc-emp-err"></p>
           </div>
         </div>
-        <div class="tc-emp-clock"><span id="tc-emp-date">—</span><span id="tc-emp-now">—</span></div>
-        <p class="tc-emp-attendance-idle hidden" id="tc-emp-attendance-idle" role="status">Sin jornada de asistencia asignada</p>
-        <div id="tc-emp-attendance-active">
-          <p class="tc-emp-panel-head">Asistencia</p>
-          <div class="tc-emp-status">Estado</div>
-          <div class="tc-emp-state" id="tc-emp-state">Fuera de jornada</div>
-          <div class="tc-emp-rows" id="tc-emp-rows"></div>
-          <p class="tc-emp-err hidden" id="tc-emp-err"></p>
-          <button type="button" class="tc-emp-btn" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
-          <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
-          <p class="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
+        <div class="tc-ws-tabs-wrap">
+          <div class="tc-ws-tabs" role="tablist" aria-label="Módulos del espacio de trabajo">
+            <button type="button" role="tab" class="tc-ws-tab tc-ws-tab--on" id="tc-ws-tab-activities" aria-selected="true" aria-controls="tc-ws-panel-activities" onclick="tcEmpWorkspaceSetTab('activities')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Actividades</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-activities"></span></button>
+            <button type="button" role="tab" class="tc-ws-tab" id="tc-ws-tab-candidates" aria-selected="false" aria-controls="tc-ws-panel-candidates" onclick="tcEmpWorkspaceSetTab('candidates')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Candidatos</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-candidates"></span></button>
+          </div>
         </div>
-        <section class="tc-emp-tasks" id="tc-emp-tasks" aria-labelledby="tc-emp-tasks-title">
-          <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title">Mis actividades</h2>
+        <section class="tc-ws-panel tc-emp-tasks" id="tc-ws-panel-activities" role="tabpanel" aria-labelledby="tc-ws-tab-activities">
+          <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title visually-hidden">Mis actividades</h2>
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
           <div id="tc-emp-tasks-body"></div>
         </section>
-        <section class="tc-emp-recruitment" id="tc-emp-recruitment" aria-labelledby="tc-emp-recruitment-title">
-          <h2 id="tc-emp-recruitment-title" class="tc-emp-panel-head">Reclutamiento</h2>
+        <section class="tc-ws-panel tc-emp-recruitment hidden" id="tc-ws-panel-candidates" role="tabpanel" aria-labelledby="tc-ws-tab-candidates" hidden>
           <p class="tc-emp-recruitment-toast hidden" id="tc-emp-recruitment-toast" role="status"></p>
           <div class="tc-emp-recruitment-cv-partial hidden" id="tc-emp-recruitment-cv-partial" role="alert">
             <p class="tc-emp-recruitment-cv-partial-title">Candidato registrado</p>
@@ -3388,10 +3501,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <p class="tc-emp-recruitment-cv-partial-err hidden" id="tc-emp-recruitment-cv-partial-err"></p>
             <button type="button" class="tc-emp-recruitment-cv-partial-retry" id="tc-emp-recruitment-cv-partial-retry" onclick="tcEmpRetryPendingCvUpload()">Reintentar CV</button>
           </div>
-          <button type="button" class="rec-btn-new" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
           <div class="tc-emp-my-cand" id="tc-emp-my-candidates" aria-labelledby="tc-emp-my-cand-title">
-            <h3 class="tc-emp-my-cand-title" id="tc-emp-my-cand-title">Mis candidatos</h3>
-            <div class="tc-emp-my-cand-filters" role="tablist" aria-label="Filtrar mis candidatos">
+            <div class="tc-ws-cand-head">
+              <h3 class="tc-emp-my-cand-title" id="tc-emp-my-cand-title">Mis candidatos</h3>
+              <button type="button" class="rec-btn-new tc-ws-cand-register" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
+            </div>
+            <div class="tc-emp-my-cand-filters" role="group" aria-label="Filtrar mis candidatos">
               <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="all" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="in_process" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
               <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
@@ -11866,6 +11981,130 @@ function tcEmpMyCandProcessHtml(proc){
   }
   return '<div class="tc-emp-my-cand-process"><p class="rec-cand-process-empty"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso</p></div>';
 }
+function tcEmpMyCandStatusBadgeHtml(proc){
+  const kind=proc&&proc.listPreviewKind;
+  if(kind==='active') return '<span class="tc-emp-my-cand-badge"><span class="rec-cand-process-dot" aria-hidden="true"></span>En proceso</span>';
+  if(kind==='hired') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--hired"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span>Contratado</span>';
+  if(kind==='rejected') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--rejected"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span>Rechazado</span>';
+  return '';
+}
+function tcEmpMyCandProcessRightHtml(proc){
+  const kind=proc&&proc.listPreviewKind;
+  if(kind==='active'&&proc.stageName){
+    return '<p class="rec-cand-process-kicker" style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);">Etapa actual</p>'+
+      '<p class="rec-cand-process-head" style="margin:0;"><span class="rec-cand-process-dot" aria-hidden="true"></span><span>'+tcEsc(proc.stageName)+'</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac" style="margin:4px 0 0;padding-left:13px;">'+tcEsc(proc.vacancyTitle)+'</p>':'');
+  }
+  if(kind==='hired'){
+    return '<p class="rec-cand-process-head" style="margin:0;"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span><span>Contratado</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac" style="margin:4px 0 0;padding-left:13px;">'+tcEsc(proc.vacancyTitle)+'</p>':'');
+  }
+  if(kind==='rejected'){
+    return '<p class="rec-cand-process-head" style="margin:0;"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac" style="margin:4px 0 0;padding-left:13px;">'+tcEsc(proc.vacancyTitle)+'</p>':'');
+  }
+  return '<p class="rec-cand-process-empty" style="margin:0;"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso</p>';
+}
+function tcEmpMyCandEmptyMessage(filter){
+  const f=filter||'all';
+  if(f==='in_process') return 'No hay candidatos en proceso.';
+  if(f==='hired') return 'No hay candidatos contratados.';
+  if(f==='rejected') return 'No hay candidatos rechazados.';
+  return 'Aún no has registrado candidatos.';
+}
+function tcWsSvgClipboard(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="10" width="8" height="12" rx="1"/></svg>';
+}
+function tcWsSvgUsers(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+}
+function tcEmpWorkspaceSetTab(tab){
+  const next=tab==='candidates'?'candidates':'activities';
+  if(tcEmpWorkspaceTab===next) return;
+  tcEmpWorkspaceTab=next;
+  tcEmpWorkspaceSyncTabs();
+}
+function tcEmpWorkspaceSyncTabs(){
+  const act=document.getElementById('tc-ws-panel-activities');
+  const cand=document.getElementById('tc-ws-panel-candidates');
+  const tAct=document.getElementById('tc-ws-tab-activities');
+  const tCand=document.getElementById('tc-ws-tab-candidates');
+  const onAct=tcEmpWorkspaceTab==='activities';
+  if(act){ act.hidden=!onAct; act.classList.toggle('hidden',!onAct); }
+  if(cand){ cand.hidden=onAct; cand.classList.toggle('hidden',onAct); }
+  if(tAct){ tAct.classList.toggle('tc-ws-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
+  if(tCand){ tCand.classList.toggle('tc-ws-tab--on',!onAct); tCand.setAttribute('aria-selected',(!onAct)?'true':'false'); }
+}
+function tcEmpWorkspaceUpdateHoy(){
+  const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; }).length;
+  const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; }).length;
+  const open=pending+prog;
+  const nEl=document.getElementById('tc-ws-hoy-activities-n');
+  if(nEl) nEl.textContent=String(open);
+  const badge=document.getElementById('tc-ws-tab-badge-activities');
+  if(badge) badge.textContent=open>0?String(open):'';
+}
+function tcEmpWorkspaceInitChrome(){
+  const icAct=document.querySelector('#tc-ws-tab-activities .tc-ws-tab-icon');
+  const icCand=document.querySelector('#tc-ws-tab-candidates .tc-ws-tab-icon');
+  if(icAct) icAct.innerHTML=tcWsSvgClipboard();
+  if(icCand) icCand.innerHTML=tcWsSvgUsers();
+  tcEmpWorkspaceSyncTabs();
+  tcEmpWorkspaceUpdateHoy();
+}
+function tcEmpToggleAttendanceDetails(){
+  if(window.matchMedia('(min-width:768px)').matches) return;
+  tcEmpAttendanceMobileOpen=!tcEmpAttendanceMobileOpen;
+  tcEmpSyncAttendanceAccordion();
+}
+function tcEmpSyncAttendanceAccordion(){
+  const band=document.getElementById('tc-emp-attendance-active');
+  const btn=document.getElementById('tc-emp-attendance-toggle');
+  const mobile=window.matchMedia('(max-width:767px)').matches;
+  if(band){
+    if(!mobile) band.classList.add('tc-ws-attendance-band--open');
+    else band.classList.toggle('tc-ws-attendance-band--open',!!tcEmpAttendanceMobileOpen);
+  }
+  if(btn){
+    if(mobile) btn.setAttribute('aria-expanded',tcEmpAttendanceMobileOpen?'true':'false');
+    else btn.setAttribute('aria-expanded','true');
+  }
+}
+function tcEmpAttendanceSetGridMode(mode){
+  const statIn=document.getElementById('tc-ws-att-stat-in');
+  const statEl=document.getElementById('tc-ws-att-stat-elapsed');
+  const statOut=document.getElementById('tc-ws-att-stat-out');
+  const statDur=document.getElementById('tc-ws-att-stat-dur');
+  const action=document.getElementById('tc-ws-att-action-wrap');
+  const sig=document.getElementById('tc-emp-signal-row');
+  const compactEnt=document.getElementById('tc-emp-attendance-entrance-compact');
+  if(mode==='completed'){
+    if(statIn) statIn.classList.remove('hidden');
+    if(statEl) statEl.classList.add('hidden');
+    if(statOut) statOut.classList.remove('hidden');
+    if(statDur) statDur.classList.remove('hidden');
+    if(action) action.classList.add('hidden');
+    if(sig) sig.classList.add('hidden');
+    if(compactEnt) compactEnt.textContent='';
+    return;
+  }
+  if(mode==='open'){
+    if(statIn) statIn.classList.remove('hidden');
+    if(statEl) statEl.classList.remove('hidden');
+    if(statOut) statOut.classList.add('hidden');
+    if(statDur) statDur.classList.add('hidden');
+    if(action) action.classList.remove('hidden');
+    if(sig) sig.classList.remove('hidden');
+    return;
+  }
+  if(statIn) statIn.classList.remove('hidden');
+  if(statEl) statEl.classList.add('hidden');
+  if(statOut) statOut.classList.add('hidden');
+  if(statDur) statDur.classList.add('hidden');
+  if(action) action.classList.remove('hidden');
+  if(sig) sig.classList.add('hidden');
+  if(compactEnt) compactEnt.textContent='';
+}
 function tcEmpMyCandTagsHtml(c){
   const tags=c.tags||[];
   const extra=Number(c.tagExtraCount)||0;
@@ -11889,14 +12128,20 @@ function tcEmpMyCandInterviewHtml(c){
 }
 function tcEmpMyCandBuildCardHtml(c){
   const arch=c.archivedAt?' tc-emp-my-cand-card--archived':'';
+  const proc=c.primaryActiveProcess;
   return '<article class="tc-emp-my-cand-card'+arch+'" role="listitem">'+
+    '<div class="tc-emp-my-cand-card-inner">'+
+    '<div class="tc-emp-my-cand-card-left">'+
     '<p class="tc-emp-my-cand-name">'+tcEsc(c.fullName||'—')+'</p>'+
     '<p class="tc-emp-my-cand-prof">'+tcEsc(recCandProfilePrimaryLabel(c))+'</p>'+
-    tcEmpMyCandProcessHtml(c.primaryActiveProcess)+
-    tcEmpMyCandInterviewHtml(c)+
+    tcEmpMyCandStatusBadgeHtml(proc)+
     tcEmpMyCandTagsHtml(c)+
+    '</div>'+
+    '<div class="tc-emp-my-cand-card-right">'+
+    tcEmpMyCandProcessRightHtml(proc)+
+    tcEmpMyCandInterviewHtml(c)+
     tcEmpMyCandRegDateHtml(c)+
-    '</article>';
+    '</div></div></article>';
 }
 function tcEmpMyCandRenderList(){
   const listEl=document.getElementById('tc-emp-my-cand-list');
@@ -11904,7 +12149,7 @@ function tcEmpMyCandRenderList(){
   if(!listEl) return;
   const rows=tcEmpMyCandItems||[];
   if(!rows.length){
-    listEl.innerHTML='<p class="tc-emp-my-cand-empty">Aún no has registrado candidatos.</p>';
+    listEl.innerHTML='<p class="tc-emp-my-cand-empty">'+tcEsc(tcEmpMyCandEmptyMessage(tcEmpMyCandFilter))+'</p>';
     if(moreWrap) moreWrap.classList.add('hidden');
     return;
   }
@@ -11924,36 +12169,51 @@ function tcEmpMyCandSetFilter(filter){
   tcEmpLoadMyCandidates(false);
 }
 async function tcEmpLoadMyCandidates(append){
-  if(tcEmpMyCandLoading) return;
-  tcEmpMyCandLoading=true;
-  await recEnsureRecruitmentOrgTimeZone();
+  if(append&&tcEmpMyCandLoading) return;
   const listEl=document.getElementById('tc-emp-my-cand-list');
+  const moreBtn=document.getElementById('tc-emp-my-cand-more-btn');
+  const fetchSeq=++tcEmpMyCandFetchSeq;
+  if(tcEmpMyCandAbort){ try{ tcEmpMyCandAbort.abort(); }catch(_){} }
+  tcEmpMyCandAbort=new AbortController();
+  const signal=tcEmpMyCandAbort.signal;
+  tcEmpMyCandLoading=true;
+  if(listEl) listEl.classList.add('tc-emp-my-cand-list--loading');
+  if(moreBtn) moreBtn.disabled=true;
   if(!append){
-    tcEmpMyCandItems=[];
     tcEmpMyCandNextCursor=null;
-    if(listEl) listEl.innerHTML='<p class="tc-emp-my-cand-empty">Cargando…</p>';
   }
+  await recEnsureRecruitmentOrgTimeZone();
   try{
     const qs=new URLSearchParams();
     qs.set('previewFilter',tcEmpMyCandFilter||'all');
     qs.set('limit','15');
     if(append&&tcEmpMyCandNextCursor) qs.set('cursor',tcEmpMyCandNextCursor);
-    const j=await tcPublicJson('/api/timeclock/public/recruitment/my-candidates?'+qs.toString());
+    const j=await tcPublicJson('/api/timeclock/public/recruitment/my-candidates?'+qs.toString(),{ signal: signal });
+    if(fetchSeq!==tcEmpMyCandFetchSeq) return;
     const rows=j.candidates||[];
     if(append) tcEmpMyCandItems=(tcEmpMyCandItems||[]).concat(rows);
     else tcEmpMyCandItems=rows;
     tcEmpMyCandNextCursor=j.nextCursor||null;
     tcEmpMyCandRenderList();
   }catch(e){
-    if(listEl&&!append) listEl.innerHTML='<p class="tc-emp-my-cand-err">'+(e&&e.message?tcEsc(e.message):'No se pudo cargar tus candidatos.')+'</p>';
+    if(e&&e.name==='AbortError') return;
+    if(fetchSeq!==tcEmpMyCandFetchSeq) return;
+    if(listEl&&!append&&!(tcEmpMyCandItems||[]).length){
+      listEl.innerHTML='<p class="tc-emp-my-cand-err">'+(e&&e.message?tcEsc(e.message):'No se pudo cargar tus candidatos.')+'</p>';
+    }
   }finally{
-    tcEmpMyCandLoading=false;
+    if(fetchSeq===tcEmpMyCandFetchSeq){
+      tcEmpMyCandLoading=false;
+      if(listEl) listEl.classList.remove('tc-emp-my-cand-list--loading');
+      if(moreBtn) moreBtn.disabled=false;
+    }
   }
 }
 function tcEmpShowCandidateRegisteredSuccess(conf,warn){
   let msg='✓ Candidato registrado correctamente.';
   if(warn) msg+=' '+String(warn);
   tcEmpRecruitmentShowToast(msg);
+  tcEmpWorkspaceSetTab('candidates');
 }
 function tcEmpShowCandidateRegisteredCvPartial(conf,extraErr){
   tcEmpRecruitmentShowCvPartial(extraErr||'');
@@ -13242,6 +13502,10 @@ let tcEmpMyCandFilter='all';
 let tcEmpMyCandItems=[];
 let tcEmpMyCandNextCursor=null;
 let tcEmpMyCandLoading=false;
+let tcEmpMyCandFetchSeq=0;
+let tcEmpMyCandAbort=null;
+let tcEmpWorkspaceTab='activities';
+let tcEmpAttendanceMobileOpen=false;
 let tcClockTimer=null;
 let tcCounterTimer=null;
 let tcHeartbeatTimer=null;
@@ -13299,6 +13563,8 @@ function tcEmpShowApp(){
   const app=document.getElementById('tc-emp-app');
   if(gate) gate.classList.add('hidden');
   if(app) app.classList.remove('hidden');
+  tcEmpWorkspaceInitChrome();
+  tcEmpSyncAttendanceAccordion();
 }
 function tcEmpApplyAttendanceShell(me, completed, open){
   const idle=document.getElementById('tc-emp-attendance-idle');
@@ -13317,39 +13583,44 @@ function tcEmpRender(){
   const hello=document.getElementById('tc-emp-hello');
   const role=document.getElementById('tc-emp-role');
   const state=document.getElementById('tc-emp-state');
-  const rows=document.getElementById('tc-emp-rows');
   const btn=document.getElementById('tc-emp-primary');
   const hint=document.getElementById('tc-emp-hint');
+  const attIn=document.getElementById('tc-emp-att-in');
+  const attOut=document.getElementById('tc-emp-att-out');
+  const attDur=document.getElementById('tc-emp-att-dur');
+  const elapsedEl=document.getElementById('tc-emp-elapsed');
+  const compactEnt=document.getElementById('tc-emp-attendance-entrance-compact');
+  const sigRow=document.getElementById('tc-emp-signal-row');
   if(hello) hello.textContent='Hola, '+(me.fullName||'');
   tcEmpPortalAvatarRender(me);
   const bits=[];
   if(me.position) bits.push(me.position);
   if(me.department) bits.push(me.department);
   if(role) role.textContent=bits.join(' · ');
-  tcEmpTickClock();
-  if(!tcClockTimer) tcClockTimer=setInterval(tcEmpTickClock, 1000);
   const showAttendance=tcEmpApplyAttendanceShell(me, completed, open);
   if(!showAttendance){
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     if(!(open&&open.checkInAt)) tcEmpStopHeartbeat();
     return;
   }
+  tcEmpSyncAttendanceAccordion();
   if(completed&&completed.checkOutAt){
     if(state) state.textContent='Jornada finalizada';
-    if(rows) rows.innerHTML=
-      '<div><strong>Entrada:</strong> '+tcEsc(tcFmtHm(completed.checkInAt))+'</div>'+
-      '<div><strong>Salida:</strong> '+tcEsc(tcFmtHm(completed.checkOutAt))+'</div>'+
-      '<div><strong>Duración:</strong> '+tcEsc(tcFmtDuration((new Date(completed.checkOutAt)-new Date(completed.checkInAt))/1000))+'</div>';
+    tcEmpAttendanceSetGridMode('completed');
+    if(attIn) attIn.textContent=tcFmtHm(completed.checkInAt);
+    if(attOut) attOut.textContent=tcFmtHm(completed.checkOutAt);
+    if(attDur) attDur.textContent=tcFmtDuration((new Date(completed.checkOutAt)-new Date(completed.checkInAt))/1000);
     if(btn){ btn.classList.add('hidden'); btn.disabled=false; }
     if(hint) hint.textContent='Tu jornada quedó registrada. Puedes cerrar esta página.';
     return;
   }
   if(open&&open.checkInAt){
     if(state) state.textContent='Jornada en curso';
-    if(rows) rows.innerHTML=
-      '<div><strong>Entrada:</strong> '+tcEsc(tcFmtHm(open.checkInAt))+'</div>'+
-      '<div><strong>Tiempo transcurrido:</strong> <span id="tc-emp-elapsed">'+tcEsc(tcEmpElapsed())+'</span></div>'+
-      '<div id="tc-emp-signal-row"><strong>Señal:</strong> '+tcSignalDotHtml(me.webSignal,true)+'</div>';
+    tcEmpAttendanceSetGridMode('open');
+    if(attIn) attIn.textContent=tcFmtHm(open.checkInAt);
+    if(compactEnt) compactEnt.textContent='Entrada: '+tcFmtHm(open.checkInAt);
+    if(elapsedEl) elapsedEl.textContent=tcEmpElapsed();
+    if(sigRow){ sigRow.innerHTML='<strong>Señal de conexión:</strong> '+tcSignalDotHtml(me.webSignal,true); }
     if(btn){
       btn.classList.remove('hidden');
       btn.classList.add('tc-emp-btn-out');
@@ -13364,7 +13635,8 @@ function tcEmpRender(){
     return;
   }
   if(state) state.textContent='Fuera de jornada';
-  if(rows) rows.innerHTML='';
+  tcEmpAttendanceSetGridMode('idle');
+  if(attIn) attIn.textContent='—';
   if(btn){
     btn.classList.remove('hidden','tc-emp-btn-out');
     btn.textContent='Registrar entrada';
@@ -13395,7 +13667,7 @@ async function tcEmpSendHeartbeat(){
     });
     if(j&&j.webSignal) tcEmpMe.webSignal=j.webSignal;
     const sigRow=document.getElementById('tc-emp-signal-row');
-    if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML='<strong>Señal:</strong> '+tcSignalDotHtml(tcEmpMe.webSignal,true);
+    if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML='<strong>Señal de conexión:</strong> '+tcSignalDotHtml(tcEmpMe.webSignal,true);
   }catch(_){}
 }
 let tcEmpTasks=[];
@@ -13438,6 +13710,7 @@ function tcEmpRenderTasks(){
     html+='</div>';
   }
   body.innerHTML=html;
+  tcEmpWorkspaceUpdateHoy();
 }
 async function tcEmpLoadTasks(){
   const body=document.getElementById('tc-emp-tasks-body');

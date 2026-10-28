@@ -72,6 +72,7 @@ check(/recCandFormResetModalScroll/.test(indexHtml), 'reset scroll modal');
 check(/tc-emp-recruitment-toast/.test(indexHtml), 'toast compacto reclutamiento');
 check(/tc-emp-recruitment-cv-partial/.test(indexHtml), 'alerta partial CV persistente');
 check(!/tc-emp-cand-success/.test(indexHtml), 'sin card success al final del workspace');
+check(/tc-ws-panel-candidates/.test(indexHtml), 'tab candidatos panel dedicado');
 
 console.log('\n=== CV upload workforce ===\n');
 check(/uploadedByWorkforceEmployeeId:\s*employeeId/.test(publicRoutes), 'route pasa workforce employee');
