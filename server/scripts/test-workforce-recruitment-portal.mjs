@@ -111,7 +111,7 @@ check(
 
 console.log('\n=== Workspace UX V2 — estático ===\n');
 check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
-check(/tc-ws-header/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header mini card jornada');
+check(/tc-ws-hero/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header hero unificado + jornada');
 check(/tc-ws-quick-indicators/.test(indexHtml), 'quick indicators preparados');
 const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || '';
 check(!/>\s*Metas\s*</.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'sin tab Metas/Novedades visibles');
@@ -150,8 +150,9 @@ check(/onclick="tcEmpPrimaryAction\(\)"/.test(indexHtml), 'CTA entrada/salida in
 console.log('\n=== Workspace UX V2.3 — shell estable + duración ===\n');
 check(/#tc-emp-app\{width:100%;min-width:0/.test(indexHtml), 'shell workspace ancho estable');
 check(/\.tc-ws-panel-scroll/.test(indexHtml) && /tc-ws-panel-activities-scroll/.test(indexHtml) && /tc-ws-cand-list-scroll/.test(indexHtml), 'paneles operativos con scroll');
-check(/min-height:clamp\(300px,42vh,520px\)/.test(indexHtml), 'min-height panel desktop');
-check(/max-height:clamp\(360px,58vh,680px\)/.test(indexHtml), 'max-height panel desktop');
+check(/tc-ws-stage/.test(indexHtml) && /height:clamp\(400px,52vh,580px\)/.test(indexHtml), 'stage tabs altura fija desktop');
+check(/tc-ws-stage \.tc-ws-panel:not\(\[hidden\]\)\{position:absolute/.test(indexHtml), 'paneles mismo viewport al cambiar tab');
+check(/tc-emp-shell--portal/.test(indexHtml) && /max-height:100vh/.test(indexHtml.match(/\.tc-emp-shell--portal[\s\S]*?\}/)?.[0] || ''), 'sin scroll exterior laptop');
 check(/@media\(max-width:899px\)[\s\S]*?\.tc-ws-panel-scroll\{[^}]*overflow:visible/.test(indexHtml), 'mobile sin scroll interno');
 check(/function tcEmpWorkspaceResetPanelScroll/.test(indexHtml), 'reset scroll panel');
 const resetScrollFn = indexHtml.match(/function tcEmpWorkspaceResetPanelScroll[\s\S]*?^function /m)?.[0] || '';

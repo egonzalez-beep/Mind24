@@ -1214,8 +1214,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 32px;}
 @media(min-width:768px){.tc-emp-shell{padding:28px 24px 40px;align-items:center;}}
+@media(min-width:900px){.tc-emp-shell--portal{height:100vh;max-height:100vh;overflow:hidden;align-items:center;padding:20px 24px;}}
 .tc-emp-card{width:100%;max-width:1140px;min-width:0;box-sizing:border-box;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:24px 18px 22px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
 @media(min-width:768px){.tc-emp-card{padding:32px 36px 28px;border-radius:22px;}}
+@media(min-width:900px){.tc-emp-card--portal{max-height:calc(100vh - 40px);overflow:hidden;display:flex;flex-direction:column;}}
 .tc-emp-brand{font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--purple);margin-bottom:6px;}
 .tc-emp-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:18px;}
 .tc-emp-hello{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.2;margin-bottom:6px;}
@@ -1270,22 +1272,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-my-cand-card-right .tc-emp-my-cand-interview{justify-content:flex-start;margin-top:6px;}
 @media(min-width:768px){.tc-emp-my-cand-card-right .tc-emp-my-cand-interview{justify-content:flex-end;}.tc-emp-my-cand-card-right .rec-cand-process-head{justify-content:flex-end;}}
 .tc-emp-my-cand-card-right .tc-emp-my-cand-reg{margin-top:4px;}
-.tc-ws-header{display:grid;gap:16px;margin-bottom:18px;}
-@media(min-width:900px){.tc-ws-header{grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;}}
-.tc-ws-header-brand{min-width:0;}
-.tc-ws-header-brand .tc-emp-brand{margin-bottom:4px;}
-.tc-ws-header-brand .tc-ws-title{margin:0;font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);line-height:1.2;}
-@media(min-width:768px){.tc-ws-header-brand .tc-ws-title{font-size:22px;}}
-@media(min-width:900px){.tc-ws-header-brand .tc-ws-title{font-size:21px;letter-spacing:.03em;white-space:nowrap;}}
-.tc-ws-header-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;}
-.tc-ws-header-user{display:flex;align-items:center;gap:12px;min-width:0;}
-@media(min-width:900px){.tc-ws-header-user{justify-content:center;}}
-.tc-ws-header-user .tc-emp-hello{font-size:18px;margin:0;}
-@media(min-width:768px){.tc-ws-header-user .tc-emp-hello{font-size:20px;}}
-.tc-ws-header-user .tc-emp-meta{margin:2px 0 0;font-size:13px;}
-.tc-ws-header-jornada{min-width:0;width:100%;}
-@media(min-width:900px){.tc-ws-header-jornada{width:auto;max-width:min(340px,34vw);justify-self:end;}}
+.tc-ws-hero{margin:0 0 16px;}
+.tc-ws-hero-inner{display:grid;gap:14px;padding:16px 16px 14px;border-radius:16px;border:1px solid rgba(148,163,184,.28);background:linear-gradient(128deg,#fafbff 0%,#f8fafc 42%,#ffffff 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 2px rgba(15,23,42,.04);}
+@media(min-width:900px){.tc-ws-hero-inner{grid-template-columns:minmax(0,1.05fr) minmax(0,1.15fr) minmax(260px,0.95fr);align-items:stretch;gap:0;padding:0;overflow:hidden;}}
+.tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{min-width:0;}
+@media(min-width:900px){.tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{padding:18px 20px;}.tc-ws-hero-brand{border-right:1px solid rgba(148,163,184,.2);}.tc-ws-hero-user{border-right:1px solid rgba(148,163,184,.2);display:flex;align-items:center;}.tc-ws-hero-jornada{display:flex;align-items:center;}}
+.tc-ws-hero-brand .tc-emp-brand{margin-bottom:4px;}
+.tc-ws-hero-brand .tc-ws-title{margin:0;font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);line-height:1.2;}
+@media(min-width:768px){.tc-ws-hero-brand .tc-ws-title{font-size:22px;}}
+@media(min-width:900px){.tc-ws-hero-brand .tc-ws-title{font-size:20px;letter-spacing:.03em;}}
+.tc-ws-hero-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;line-height:1.35;}
+.tc-ws-hero-user{display:flex;align-items:center;gap:12px;}
+.tc-ws-hero-user .tc-emp-greet-text{min-width:0;}
+.tc-ws-hero-user .tc-emp-hello{font-size:17px;margin:0;line-height:1.25;font-weight:800;color:var(--primary);}
+@media(min-width:768px){.tc-ws-hero-user .tc-emp-hello{font-size:18px;}}
+.tc-ws-hero-user .tc-emp-meta{margin:3px 0 0;font-size:12px;color:var(--slate-500);}
+.tc-ws-hero-jornada{width:100%;}
+@media(min-width:900px){.tc-ws-hero-jornada .tc-ws-jornada-mini{width:100%;}}
 .tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:rgba(148,163,184,.22);background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);}
 .tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
 .tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
 .tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
@@ -1330,18 +1335,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-tab-badge:empty{display:none;}
 .tc-ws-panel[hidden]{display:none!important;}
 #tc-emp-app{width:100%;min-width:0;box-sizing:border-box;}
-.tc-ws-panel{width:100%;min-width:0;box-sizing:border-box;}
-.tc-ws-panel-scroll{width:100%;min-width:0;box-sizing:border-box;}
+@media(min-width:900px){#tc-emp-app.tc-emp-app--ready{flex:1;min-height:0;display:flex;flex-direction:column;}}
+.tc-ws-tabs-wrap{flex-shrink:0;}
+.tc-ws-stage{width:100%;min-width:0;box-sizing:border-box;}
 @media(min-width:900px){
-.tc-ws-panel-scroll{min-height:clamp(300px,42vh,520px);max-height:clamp(360px,58vh,680px);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.42) transparent;}
+.tc-ws-stage{position:relative;flex:1;min-height:clamp(400px,52vh,580px);height:clamp(400px,52vh,580px);max-height:clamp(400px,52vh,580px);}
+.tc-ws-stage .tc-ws-panel:not([hidden]){position:absolute;inset:0;display:flex!important;flex-direction:column;min-height:0;overflow:hidden;}
+}
+.tc-ws-panel{width:100%;min-width:0;box-sizing:border-box;}
+.tc-ws-panel-scroll{width:100%;min-width:0;box-sizing:border-box;flex:1;min-height:0;}
+.tc-emp-my-cand--in-stage{flex:1;min-height:0;display:flex;flex-direction:column;}
+@media(min-width:900px){
+.tc-ws-panel-scroll{overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.42) transparent;}
 .tc-ws-panel-scroll::-webkit-scrollbar{width:8px;}
 .tc-ws-panel-scroll::-webkit-scrollbar-track{background:transparent;}
 .tc-ws-panel-scroll::-webkit-scrollbar-thumb{background:rgba(100,116,139,.36);border-radius:999px;}
 }
 @media(max-width:899px){
-.tc-ws-panel-scroll{min-height:clamp(220px,36vh,420px);overflow:visible;max-height:none;}
+.tc-ws-stage .tc-ws-panel:not([hidden]){display:flex;flex-direction:column;}
+.tc-ws-panel-scroll{min-height:clamp(220px,36vh,420px);overflow:visible;max-height:none;flex:none;}
 }
-.tc-emp-tasks-empty,.tc-emp-my-cand-empty{min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;}
+.tc-ws-panel-scroll:has(.tc-emp-tasks-empty),.tc-ws-panel-scroll:has(.tc-emp-my-cand-empty){display:flex;flex-direction:column;}
+.tc-emp-tasks-empty,.tc-emp-my-cand-empty{min-height:120px;flex:1;display:flex;align-items:center;justify-content:center;text-align:center;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
@@ -3439,28 +3454,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 
 <!-- ════════════════════ CHECADOR EMPLEADO ════════════════════ -->
 <div id="view-timeclock" class="hidden">
-  <div class="tc-emp-shell">
-    <div class="tc-emp-card">
+  <div class="tc-emp-shell tc-emp-shell--portal">
+    <div class="tc-emp-card tc-emp-card--portal">
       <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
       <div id="tc-emp-gate" class="hidden">
         <div class="tc-emp-brand">MIND24</div>
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
       </div>
       <div id="tc-emp-app" class="hidden">
-        <header class="tc-ws-header">
-          <div class="tc-ws-header-brand">
+        <header class="tc-ws-hero">
+          <div class="tc-ws-hero-inner">
+          <div class="tc-ws-hero-brand">
             <div class="tc-emp-brand">MIND24</div>
             <h1 class="tc-ws-title tc-emp-title">Mi espacio de trabajo</h1>
             <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
           </div>
-          <div class="tc-ws-header-user">
+          <div class="tc-ws-hero-user">
             <div id="tc-emp-avatar-wrap" aria-hidden="true"></div>
             <div class="tc-emp-greet-text">
               <h2 class="tc-emp-hello" id="tc-emp-hello">Hola</h2>
               <p class="tc-emp-meta" id="tc-emp-role"></p>
             </div>
           </div>
-          <div class="tc-ws-header-jornada">
+          <div class="tc-ws-hero-jornada">
             <article class="tc-ws-jornada-mini" id="tc-emp-jornada-mini" aria-label="Jornada">
               <div class="tc-ws-jornada-mini-top">
                 <span class="tc-ws-jornada-label">Jornada</span>
@@ -3498,6 +3514,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <p class="tc-emp-err hidden" id="tc-emp-err"></p>
             </article>
           </div>
+          </div>
         </header>
         <div class="tc-ws-quick-indicators" aria-hidden="true">
           <div class="tc-ws-quick-indicators-inner">
@@ -3512,6 +3529,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <button type="button" role="tab" class="tc-ws-tab" id="tc-ws-tab-candidates" aria-selected="false" aria-controls="tc-ws-panel-candidates" onclick="tcEmpWorkspaceSetTab('candidates')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Candidatos</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-candidates"></span></button>
           </div>
         </div>
+        <div class="tc-ws-stage" id="tc-ws-stage">
         <section class="tc-ws-panel tc-emp-tasks" id="tc-ws-panel-activities" role="tabpanel" aria-labelledby="tc-ws-tab-activities">
           <h2 id="tc-emp-tasks-title" class="tc-emp-tasks-title visually-hidden">Mis actividades</h2>
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
@@ -3527,7 +3545,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <p class="tc-emp-recruitment-cv-partial-err hidden" id="tc-emp-recruitment-cv-partial-err"></p>
             <button type="button" class="tc-emp-recruitment-cv-partial-retry" id="tc-emp-recruitment-cv-partial-retry" onclick="tcEmpRetryPendingCvUpload()">Reintentar CV</button>
           </div>
-          <div class="tc-emp-my-cand" id="tc-emp-my-candidates" aria-labelledby="tc-emp-my-cand-title">
+          <div class="tc-emp-my-cand tc-emp-my-cand--in-stage" id="tc-emp-my-candidates" aria-labelledby="tc-emp-my-cand-title">
             <div class="tc-ws-cand-head">
               <h3 class="tc-emp-my-cand-title" id="tc-emp-my-cand-title">Mis candidatos</h3>
               <button type="button" class="rec-btn-new tc-ws-cand-register" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
@@ -3546,6 +3564,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             </div>
           </div>
         </section>
+        </div>
       </div>
     </div>
   </div>
@@ -13584,7 +13603,7 @@ function tcEmpShowGate(msg){
   const gate=document.getElementById('tc-emp-gate');
   const app=document.getElementById('tc-emp-app');
   const gm=document.getElementById('tc-emp-gate-msg');
-  if(app) app.classList.add('hidden');
+  if(app){ app.classList.add('hidden'); app.classList.remove('tc-emp-app--ready'); }
   if(gate) gate.classList.remove('hidden');
   if(gm) gm.textContent=msg||'Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.';
 }
@@ -13592,7 +13611,7 @@ function tcEmpShowApp(){
   const gate=document.getElementById('tc-emp-gate');
   const app=document.getElementById('tc-emp-app');
   if(gate) gate.classList.add('hidden');
-  if(app) app.classList.remove('hidden');
+  if(app){ app.classList.remove('hidden'); app.classList.add('tc-emp-app--ready'); }
   tcEmpWorkspaceInitChrome();
   tcEmpSyncJornadaDetailsUi();
 }
