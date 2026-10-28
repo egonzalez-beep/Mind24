@@ -1289,8 +1289,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-hero-user .tc-emp-meta{margin:3px 0 0;font-size:12px;color:var(--slate-500);}
 .tc-ws-hero-jornada{width:100%;}
 @media(min-width:900px){.tc-ws-hero-jornada .tc-ws-jornada-mini{width:100%;}}
-.tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);box-sizing:border-box;display:flex;flex-direction:column;min-height:168px;}
-@media(min-width:900px){.tc-ws-jornada-mini{height:168px;max-height:168px;overflow:visible;}}
+.tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);box-sizing:border-box;display:flex;flex-direction:column;min-height:152px;overflow:hidden;}
+@media(min-width:900px){.tc-ws-jornada-mini{height:152px;max-height:152px;}}
 .tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:rgba(148,163,184,.22);background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);}
 .tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-shrink:0;}
 .tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
@@ -1298,34 +1298,38 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:help;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
 .tc-ws-jornada-info svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
 .tc-ws-jornada-info:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-ws-jornada-info-tip{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(268px,72vw);padding:10px 12px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.12);font-size:11px;line-height:1.45;color:var(--slate-600);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 140ms ease,visibility 140ms ease;}
+.tc-ws-jornada-info-tip{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(280px,78vw);padding:10px 12px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.12);font-size:11px;line-height:1.45;color:var(--slate-600);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 140ms ease,visibility 140ms ease;display:flex;flex-direction:column;gap:6px;text-align:left;}
+.tc-ws-jornada-info-tip-lead{display:block;font-weight:600;color:var(--slate-700);}
+.tc-ws-jornada-info-tip-privacy{display:block;color:var(--slate-500);}
 .tc-ws-jornada-info-wrap:hover .tc-ws-jornada-info-tip,.tc-ws-jornada-info-wrap:focus-within .tc-ws-jornada-info-tip{opacity:1;visibility:visible;}
 .tc-ws-jornada-body{flex:1;min-height:0;display:flex;flex-direction:column;}
-.tc-ws-jornada-stage{position:relative;flex:1;min-height:86px;}
+#tc-emp-attendance-active{flex:1;min-height:0;display:flex;flex-direction:column;}
+.tc-ws-jornada-stage{position:relative;flex:1;min-height:78px;}
 .tc-ws-jornada-stage>.tc-ws-jornada-view{position:absolute;inset:0;}
 .tc-ws-jornada-stage>.tc-ws-jornada-view.hidden{display:none!important;}
 .tc-ws-jornada-idle-only{margin:0;font-size:13px;color:var(--slate-600);line-height:1.4;flex:1;display:flex;align-items:center;}
 .tc-ws-jornada-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--slate-700);}
 .tc-ws-jornada-row--actions{margin-top:8px;justify-content:space-between;gap:10px;}
+.tc-ws-jornada-mini .tc-ws-jornada-row--actions{flex-direction:column;align-items:stretch;gap:8px;}
+.tc-ws-jornada-mini .tc-ws-jornada-row--actions .tc-ws-jornada-entrada{width:100%;}
 .tc-ws-jornada-row .tc-emp-state{font-size:14px;font-weight:800;margin:0;color:var(--primary);}
 .tc-ws-jornada-row .tc-emp-state.tc-ws-attendance-state--live{color:#15803d;}
 .tc-ws-jornada-row .rec-cand-process-dot.tc-ws-attendance-dot--live{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
 .tc-ws-jornada-elapsed{margin-left:auto;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--primary);}
 .tc-ws-jornada-entrada{font-size:12px;color:var(--slate-600);}
 .tc-ws-jornada-entrada span{font-weight:700;color:var(--slate-800);}
-.tc-ws-jornada-cta{min-height:40px;padding:8px 14px!important;font-size:11px!important;letter-spacing:.03em!important;width:auto!important;min-width:0!important;white-space:nowrap;}
-@media(max-width:767px){.tc-ws-jornada-row--actions .tc-ws-jornada-cta{flex-shrink:0;}}
+.tc-ws-jornada-cta{min-height:38px;padding:8px 12px!important;font-size:11px!important;font-weight:700!important;letter-spacing:.03em!important;width:100%!important;max-width:100%!important;min-width:0!important;white-space:nowrap;text-transform:uppercase;border-radius:10px!important;box-sizing:border-box;}
+.tc-ws-jornada-cta--in{border:1px solid rgba(124,58,237,.35)!important;background:#fff!important;color:var(--purple-dark)!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important;}
+.tc-ws-jornada-cta--in:hover{background:var(--purple-light)!important;border-color:rgba(124,58,237,.5)!important;}
+.tc-ws-jornada-cta--out{background:linear-gradient(135deg,#1e293b,#334155)!important;border:none!important;color:#fff!important;}
 .tc-ws-jornada-done-title{margin:0;font-size:13px;font-weight:700;color:var(--slate-800);}
 .tc-ws-jornada-done-title strong{font-weight:800;color:var(--primary);}
 .tc-ws-jornada-done-range{margin:4px 0 0;font-size:12px;color:var(--slate-600);}
 .tc-ws-jornada-wait-label{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--slate-700);}
-.tc-ws-jornada-foot{margin-top:6px;padding-top:8px;border-top:1px solid var(--slate-100);flex-shrink:0;min-height:52px;box-sizing:border-box;}
-.tc-ws-jornada-signal{margin:0 0 4px;font-size:11px;min-height:18px;color:var(--slate-600);}
-.tc-ws-jornada-signal:empty{min-height:18px;}
-.tc-ws-jornada-signal .tc-signal-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tc-ws-jornada-foot{margin-top:auto;padding-top:8px;border-top:1px solid var(--slate-100);flex-shrink:0;min-height:24px;box-sizing:border-box;}
+.tc-ws-jornada-signal{margin:0;font-size:11px;min-height:18px;line-height:1.35;color:var(--slate-600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tc-ws-jornada-signal .tc-signal-line{display:inline-flex;align-items:center;gap:6px;max-width:100%;}
 .tc-ws-jornada-signal-muted{font-size:11px;color:var(--slate-400);}
-.tc-ws-jornada-hint{margin:0;font-size:11px;color:var(--slate-500);line-height:1.35;min-height:2.7em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
-.tc-ws-jornada-cta-spacer{display:inline-block;min-width:118px;min-height:40px;visibility:hidden;}
 .tc-ws-jornada-mini .tc-emp-err{margin:6px 0 0;font-size:12px;flex-shrink:0;}
 .tc-ws-quick-indicators{margin:-4px 0 10px;display:flex;justify-content:flex-end;}
 .tc-ws-quick-indicators-inner{display:flex;gap:8px;align-items:center;}
@@ -3493,7 +3497,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                   <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-info-btn" aria-describedby="tc-ws-jornada-info-tip" title="Privacidad de asistencia">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                   </button>
-                  <span class="tc-ws-jornada-info-tip" id="tc-ws-jornada-info-tip" role="tooltip">Mind24 no monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</span>
+                  <span class="tc-ws-jornada-info-tip" id="tc-ws-jornada-info-tip" role="tooltip"></span>
                 </span>
               </div>
               <div class="tc-ws-jornada-body">
@@ -3508,28 +3512,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                   </div>
                   <div class="tc-ws-jornada-row tc-ws-jornada-row--actions">
                     <span class="tc-ws-jornada-entrada">Entrada <span id="tc-emp-att-in">—</span></span>
-                    <button type="button" class="tc-ws-jornada-cta tc-emp-btn tc-emp-btn-out" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar salida</button>
+                    <button type="button" class="tc-ws-jornada-cta tc-ws-jornada-cta--out" id="tc-emp-primary" onclick="tcEmpPrimaryAction()">Registrar salida</button>
                   </div>
                 </div>
                 <div id="tc-ws-jornada-view-done" class="tc-ws-jornada-view hidden">
                   <p class="tc-ws-jornada-done-title"><span aria-hidden="true">✓</span> Finalizada · <strong id="tc-emp-att-dur-human">—</strong></p>
                   <p class="tc-ws-jornada-done-range" id="tc-emp-att-range">—</p>
-                  <div class="tc-ws-jornada-row tc-ws-jornada-row--actions" aria-hidden="true">
-                    <span class="tc-ws-jornada-entrada">Entrada —</span>
-                    <span class="tc-ws-jornada-cta-spacer"></span>
-                  </div>
                 </div>
                 <div id="tc-ws-jornada-view-wait" class="tc-ws-jornada-view hidden">
                   <p class="tc-ws-jornada-wait-label" id="tc-emp-state-wait">Fuera de jornada</p>
                   <div class="tc-ws-jornada-row tc-ws-jornada-row--actions">
-                    <span class="tc-ws-jornada-entrada" aria-hidden="true">&nbsp;</span>
-                    <button type="button" class="tc-ws-jornada-cta tc-emp-btn" id="tc-emp-primary-wait" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+                    <button type="button" class="tc-ws-jornada-cta tc-ws-jornada-cta--in" id="tc-emp-primary-wait" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
                   </div>
                 </div>
                 </div>
                 <div class="tc-ws-jornada-foot">
                   <div id="tc-emp-signal-row" class="tc-ws-jornada-signal"></div>
-                  <p class="tc-ws-jornada-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
                 </div>
               </div>
               </div>
@@ -12151,6 +12149,22 @@ function tcEmpJornadaSignalHtml(code){
   if(!code) return '<span class="tc-ws-jornada-signal-muted">Señal de conexión: —</span>';
   return '<strong>Señal de conexión:</strong> '+tcSignalDotHtml(code,false);
 }
+var TC_JORNADA_INFO_PRIVACY='Mind24 no monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.';
+function tcEmpJornadaInfoTipHtml(mode){
+  let lead='';
+  if(mode==='live') lead='La jornada termina solo cuando registras tu salida.';
+  else if(mode==='done') lead='Tu jornada quedó registrada. Puedes cerrar esta página.';
+  else if(mode==='wait') lead='Registra tu entrada para iniciar la jornada.';
+  else if(mode==='idle') lead='Sin jornada de asistencia asignada para este colaborador.';
+  let html='';
+  if(lead) html+='<span class="tc-ws-jornada-info-tip-lead">'+tcEsc(lead)+'</span>';
+  html+='<span class="tc-ws-jornada-info-tip-privacy">'+tcEsc(TC_JORNADA_INFO_PRIVACY)+'</span>';
+  return html;
+}
+function tcEmpSyncJornadaInfoTip(mode){
+  const el=document.getElementById('tc-ws-jornada-info-tip');
+  if(el) el.innerHTML=tcEmpJornadaInfoTipHtml(mode||'wait');
+}
 function tcEmpJornadaSetView(mode){
   const live=document.getElementById('tc-ws-jornada-view-live');
   const done=document.getElementById('tc-ws-jornada-view-done');
@@ -13626,6 +13640,7 @@ function tcEmpShowApp(){
   if(gate) gate.classList.add('hidden');
   if(app){ app.classList.remove('hidden'); app.classList.add('tc-emp-app--ready'); }
   tcEmpWorkspaceInitChrome();
+  tcEmpSyncJornadaInfoTip('wait');
 }
 function tcEmpApplyAttendanceShell(me, completed, open){
   const idle=document.getElementById('tc-emp-attendance-idle');
@@ -13645,7 +13660,6 @@ function tcEmpRender(){
   const role=document.getElementById('tc-emp-role');
   const state=document.getElementById('tc-emp-state');
   const stateWait=document.getElementById('tc-emp-state-wait');
-  const hint=document.getElementById('tc-emp-hint');
   const attIn=document.getElementById('tc-emp-att-in');
   const attRange=document.getElementById('tc-emp-att-range');
   const attDurHuman=document.getElementById('tc-emp-att-dur-human');
@@ -13664,6 +13678,7 @@ function tcEmpRender(){
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     if(!(open&&open.checkInAt)) tcEmpStopHeartbeat();
     tcEmpJornadaSetView('wait');
+    tcEmpSyncJornadaInfoTip('idle');
     return;
   }
   if(completed&&completed.checkOutAt){
@@ -13673,7 +13688,7 @@ function tcEmpRender(){
     if(attDurHuman) attDurHuman.textContent=tcFmtDurationHuman(sec);
     if(attRange) attRange.textContent=tcFmtHm(completed.checkInAt)+' → '+tcFmtHm(completed.checkOutAt);
     if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(null);
-    if(hint) hint.textContent='Tu jornada quedó registrada. Puedes cerrar esta página.';
+    tcEmpSyncJornadaInfoTip('done');
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     return;
   }
@@ -13686,11 +13701,10 @@ function tcEmpRender(){
     if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(me.webSignal);
     if(btnLive){
       btnLive.classList.remove('hidden');
-      btnLive.classList.add('tc-emp-btn-out');
       btnLive.textContent='Registrar salida';
       btnLive.disabled=false;
     }
-    if(hint) hint.textContent='La jornada termina solo cuando registras tu salida.';
+    tcEmpSyncJornadaInfoTip('live');
     if(!tcCounterTimer) tcCounterTimer=setInterval(function(){
       const el=document.getElementById('tc-emp-elapsed');
       if(el) el.textContent=tcEmpElapsed();
@@ -13702,11 +13716,11 @@ function tcEmpRender(){
   if(stateWait) stateWait.textContent='Fuera de jornada';
   if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(null);
   if(btnWait){
-    btnWait.classList.remove('hidden','tc-emp-btn-out');
+    btnWait.classList.remove('hidden');
     btnWait.textContent='Registrar entrada';
     btnWait.disabled=false;
   }
-  if(hint) hint.textContent='Tu horario de entrada será registrado automáticamente por Mind24.';
+  tcEmpSyncJornadaInfoTip('wait');
   if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
 }
 function tcEmpStartHeartbeat(){

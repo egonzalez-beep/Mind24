@@ -117,8 +117,10 @@ const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candida
 check(!/>\s*Metas\s*</.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'sin tab Metas/Novedades visibles');
 check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
 check(/tc-ws-jornada-info-tip/.test(indexHtml) && /no monitorea otras aplicaciones/.test(indexHtml), 'privacidad jornada en tooltip');
-check(/height:168px/.test(indexHtml.match(/\.tc-ws-jornada-mini[\s\S]*?\.tc-ws-jornada-mini-top/)?.[0] || ''), 'tarjeta jornada altura fija desktop');
-check(/tc-ws-jornada-foot/.test(indexHtml) && /tcEmpJornadaSignalHtml/.test(indexHtml), 'pie jornada estable señal+hint');
+check(/height:152px/.test(indexHtml.match(/\.tc-ws-jornada-mini[\s\S]*?\.tc-ws-jornada-mini-top/)?.[0] || ''), 'tarjeta jornada altura fija desktop');
+check(/tc-ws-jornada-foot/.test(indexHtml) && /tcEmpJornadaSignalHtml/.test(indexHtml), 'pie jornada estable señal');
+check(/tcEmpSyncJornadaInfoTip/.test(indexHtml) && /tc-ws-jornada-cta--in/.test(indexHtml), 'leyendas en tooltip y CTA entrada blanco');
+check(!/tc-ws-jornada-hint/.test(indexHtml.match(/id="tc-emp-jornada-mini"[\s\S]*?<\/article>/)?.[0] || ''), 'sin hint fuera de la caja');
 check(!/tc-ws-jornada-details/.test(indexHtml.match(/id="tc-emp-jornada-mini"[\s\S]*?<\/article>/)?.[0] || ''), 'sin panel expandible jornada');
 check(!/class="tc-ws-attendance-band"/.test(indexHtml), 'sin banda asistencia horizontal grande');
 check(/tcEmpMyCandFetchSeq/.test(indexHtml) && /AbortController/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'stale requests candidatos');

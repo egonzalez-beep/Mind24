@@ -81,7 +81,7 @@ check(!/Eliminar colaborador/.test(indexHtml), 'no eliminar colaborador button')
 check(!/Control de productividad/.test(indexHtml), 'no productividad naming');
 check(/Hola,/.test(indexHtml), 'greeting uses name');
 check(/Registrar entrada/.test(indexHtml), 'check-in CTA');
-check(/Tu horario de entrada será registrado automáticamente por Mind24/.test(indexHtml), 'check-in hint');
+check(/Registra tu entrada para iniciar la jornada/.test(indexHtml), 'check-in hint en tooltip jornada');
 check(/Registrar salida/.test(indexHtml), 'check-out CTA');
 check(/¿Deseas finalizar tu jornada\?/.test(indexHtml), 'checkout confirm');
 check(/Jornada finalizada/.test(indexHtml), 'completed state stays on screen');
