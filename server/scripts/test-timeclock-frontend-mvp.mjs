@@ -91,7 +91,7 @@ check(!/mousemove/.test(indexHtml.slice(indexHtml.indexOf('tcEmpSendHeartbeat'),
 check(/Con señal reciente/.test(indexHtml) && /Página en segundo plano/.test(indexHtml) && /Sin señal reciente/.test(indexHtml), 'signal labels');
 check(!/Activo laboral/.test(indexHtml) && !/Inactivo laboral/.test(indexHtml), 'no labor activity copy');
 check(
-  /Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia\. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página\./.test(
+  /Mind24 no monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página\./.test(
     indexHtml,
   ),
   'privacy copy',

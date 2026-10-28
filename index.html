@@ -1289,14 +1289,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-hero-user .tc-emp-meta{margin:3px 0 0;font-size:12px;color:var(--slate-500);}
 .tc-ws-hero-jornada{width:100%;}
 @media(min-width:900px){.tc-ws-hero-jornada .tc-ws-jornada-mini{width:100%;}}
-.tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);box-sizing:border-box;display:flex;flex-direction:column;min-height:168px;}
+@media(min-width:900px){.tc-ws-jornada-mini{height:168px;max-height:168px;overflow:visible;}}
 .tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:rgba(148,163,184,.22);background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);}
-.tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-shrink:0;}
 .tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
-.tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
+.tc-ws-jornada-info-wrap{position:relative;flex-shrink:0;}
+.tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:help;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
 .tc-ws-jornada-info svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
 .tc-ws-jornada-info:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-ws-jornada-idle-only{margin:0;font-size:13px;color:var(--slate-600);line-height:1.4;}
+.tc-ws-jornada-info-tip{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(268px,72vw);padding:10px 12px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.12);font-size:11px;line-height:1.45;color:var(--slate-600);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 140ms ease,visibility 140ms ease;}
+.tc-ws-jornada-info-wrap:hover .tc-ws-jornada-info-tip,.tc-ws-jornada-info-wrap:focus-within .tc-ws-jornada-info-tip{opacity:1;visibility:visible;}
+.tc-ws-jornada-body{flex:1;min-height:0;display:flex;flex-direction:column;}
+.tc-ws-jornada-stage{position:relative;flex:1;min-height:86px;}
+.tc-ws-jornada-stage>.tc-ws-jornada-view{position:absolute;inset:0;}
+.tc-ws-jornada-stage>.tc-ws-jornada-view.hidden{display:none!important;}
+.tc-ws-jornada-idle-only{margin:0;font-size:13px;color:var(--slate-600);line-height:1.4;flex:1;display:flex;align-items:center;}
 .tc-ws-jornada-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--slate-700);}
 .tc-ws-jornada-row--actions{margin-top:8px;justify-content:space-between;gap:10px;}
 .tc-ws-jornada-row .tc-emp-state{font-size:14px;font-weight:800;margin:0;color:var(--primary);}
@@ -1311,13 +1319,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-jornada-done-title strong{font-weight:800;color:var(--primary);}
 .tc-ws-jornada-done-range{margin:4px 0 0;font-size:12px;color:var(--slate-600);}
 .tc-ws-jornada-wait-label{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--slate-700);}
-.tc-ws-jornada-details{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);font-size:11px;color:var(--slate-500);line-height:1.45;}
-.tc-ws-jornada-details[hidden]{display:none!important;}
-.tc-ws-jornada-mini--open .tc-ws-jornada-details{display:block;}
-.tc-ws-jornada-signal{margin-bottom:6px;font-size:11px;}
-.tc-ws-jornada-privacy{margin:6px 0 0;font-size:10px;color:var(--slate-400);line-height:1.45;}
-.tc-ws-jornada-mini .tc-emp-hint{margin:0 0 6px;font-size:11px;color:var(--slate-500);}
-.tc-ws-jornada-mini .tc-emp-err{margin:8px 0 0;font-size:12px;}
+.tc-ws-jornada-foot{margin-top:6px;padding-top:8px;border-top:1px solid var(--slate-100);flex-shrink:0;min-height:52px;box-sizing:border-box;}
+.tc-ws-jornada-signal{margin:0 0 4px;font-size:11px;min-height:18px;color:var(--slate-600);}
+.tc-ws-jornada-signal:empty{min-height:18px;}
+.tc-ws-jornada-signal .tc-signal-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tc-ws-jornada-signal-muted{font-size:11px;color:var(--slate-400);}
+.tc-ws-jornada-hint{margin:0;font-size:11px;color:var(--slate-500);line-height:1.35;min-height:2.7em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
+.tc-ws-jornada-cta-spacer{display:inline-block;min-width:118px;min-height:40px;visibility:hidden;}
+.tc-ws-jornada-mini .tc-emp-err{margin:6px 0 0;font-size:12px;flex-shrink:0;}
 .tc-ws-quick-indicators{margin:-4px 0 10px;display:flex;justify-content:flex-end;}
 .tc-ws-quick-indicators-inner{display:flex;gap:8px;align-items:center;}
 .tc-ws-quick-indicator{position:relative;width:36px;height:36px;border-radius:10px;border:1px dashed var(--slate-200);display:none;}
@@ -3480,12 +3489,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <article class="tc-ws-jornada-mini" id="tc-emp-jornada-mini" aria-label="Jornada">
               <div class="tc-ws-jornada-mini-top">
                 <span class="tc-ws-jornada-label">Jornada</span>
-                <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-details-toggle" aria-expanded="false" aria-controls="tc-ws-jornada-details" onclick="tcEmpToggleJornadaDetails()" title="Más información sobre asistencia">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                </button>
+                <span class="tc-ws-jornada-info-wrap">
+                  <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-info-btn" aria-describedby="tc-ws-jornada-info-tip" title="Privacidad de asistencia">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  </button>
+                  <span class="tc-ws-jornada-info-tip" id="tc-ws-jornada-info-tip" role="tooltip">Mind24 no monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</span>
+                </span>
               </div>
+              <div class="tc-ws-jornada-body">
               <p class="tc-ws-jornada-idle-only hidden" id="tc-emp-attendance-idle" role="status">Sin jornada asignada</p>
               <div id="tc-emp-attendance-active" class="hidden">
+                <div class="tc-ws-jornada-stage">
                 <div id="tc-ws-jornada-view-live" class="tc-ws-jornada-view hidden">
                   <div class="tc-ws-jornada-row">
                     <span class="rec-cand-process-dot" id="tc-emp-attendance-dot" aria-hidden="true"></span>
@@ -3500,16 +3514,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                 <div id="tc-ws-jornada-view-done" class="tc-ws-jornada-view hidden">
                   <p class="tc-ws-jornada-done-title"><span aria-hidden="true">✓</span> Finalizada · <strong id="tc-emp-att-dur-human">—</strong></p>
                   <p class="tc-ws-jornada-done-range" id="tc-emp-att-range">—</p>
+                  <div class="tc-ws-jornada-row tc-ws-jornada-row--actions" aria-hidden="true">
+                    <span class="tc-ws-jornada-entrada">Entrada —</span>
+                    <span class="tc-ws-jornada-cta-spacer"></span>
+                  </div>
                 </div>
                 <div id="tc-ws-jornada-view-wait" class="tc-ws-jornada-view hidden">
                   <p class="tc-ws-jornada-wait-label" id="tc-emp-state-wait">Fuera de jornada</p>
-                  <button type="button" class="tc-ws-jornada-cta tc-emp-btn" id="tc-emp-primary-wait" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+                  <div class="tc-ws-jornada-row tc-ws-jornada-row--actions">
+                    <span class="tc-ws-jornada-entrada" aria-hidden="true">&nbsp;</span>
+                    <button type="button" class="tc-ws-jornada-cta tc-emp-btn" id="tc-emp-primary-wait" onclick="tcEmpPrimaryAction()">Registrar entrada</button>
+                  </div>
+                </div>
+                </div>
+                <div class="tc-ws-jornada-foot">
+                  <div id="tc-emp-signal-row" class="tc-ws-jornada-signal"></div>
+                  <p class="tc-ws-jornada-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
                 </div>
               </div>
-              <div id="tc-ws-jornada-details" class="tc-ws-jornada-details" hidden>
-                <div id="tc-emp-signal-row" class="tc-ws-jornada-signal"></div>
-                <p class="tc-emp-hint" id="tc-emp-hint">Tu horario de entrada será registrado automáticamente por Mind24.</p>
-                <p class="tc-emp-privacy tc-ws-jornada-privacy" id="tc-emp-privacy">Mind24 registra tu horario de entrada y salida y la señal de conexión de esta página para control de asistencia. No monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.</p>
               </div>
               <p class="tc-emp-err hidden" id="tc-emp-err"></p>
             </article>
@@ -12125,17 +12147,9 @@ function tcEmpSyncAttendanceLiveIndicator(live){
   if(dot) dot.classList.toggle('tc-ws-attendance-dot--live',!!live);
   if(stateEl) stateEl.classList.toggle('tc-ws-attendance-state--live',!!live);
 }
-function tcEmpToggleJornadaDetails(){
-  tcEmpJornadaDetailsOpen=!tcEmpJornadaDetailsOpen;
-  tcEmpSyncJornadaDetailsUi();
-}
-function tcEmpSyncJornadaDetailsUi(){
-  const mini=document.getElementById('tc-emp-jornada-mini');
-  const panel=document.getElementById('tc-ws-jornada-details');
-  const btn=document.getElementById('tc-ws-jornada-details-toggle');
-  if(panel) panel.hidden=!tcEmpJornadaDetailsOpen;
-  if(mini) mini.classList.toggle('tc-ws-jornada-mini--open',!!tcEmpJornadaDetailsOpen);
-  if(btn) btn.setAttribute('aria-expanded',tcEmpJornadaDetailsOpen?'true':'false');
+function tcEmpJornadaSignalHtml(code){
+  if(!code) return '<span class="tc-ws-jornada-signal-muted">Señal de conexión: —</span>';
+  return '<strong>Señal de conexión:</strong> '+tcSignalDotHtml(code,false);
 }
 function tcEmpJornadaSetView(mode){
   const live=document.getElementById('tc-ws-jornada-view-live');
@@ -13554,7 +13568,6 @@ let tcEmpMyCandLoading=false;
 let tcEmpMyCandFetchSeq=0;
 let tcEmpMyCandAbort=null;
 let tcEmpWorkspaceTab='activities';
-let tcEmpJornadaDetailsOpen=false;
 let tcClockTimer=null;
 let tcCounterTimer=null;
 let tcHeartbeatTimer=null;
@@ -13613,7 +13626,6 @@ function tcEmpShowApp(){
   if(gate) gate.classList.add('hidden');
   if(app){ app.classList.remove('hidden'); app.classList.add('tc-emp-app--ready'); }
   tcEmpWorkspaceInitChrome();
-  tcEmpSyncJornadaDetailsUi();
 }
 function tcEmpApplyAttendanceShell(me, completed, open){
   const idle=document.getElementById('tc-emp-attendance-idle');
@@ -13660,7 +13672,7 @@ function tcEmpRender(){
     const sec=completed.durationSec!=null?Math.max(0,Math.floor(Number(completed.durationSec)||0)):tcShiftDurationSeconds(completed.checkInAt, completed.checkOutAt);
     if(attDurHuman) attDurHuman.textContent=tcFmtDurationHuman(sec);
     if(attRange) attRange.textContent=tcFmtHm(completed.checkInAt)+' → '+tcFmtHm(completed.checkOutAt);
-    if(sigRow) sigRow.innerHTML='';
+    if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(null);
     if(hint) hint.textContent='Tu jornada quedó registrada. Puedes cerrar esta página.';
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
     return;
@@ -13671,7 +13683,7 @@ function tcEmpRender(){
     if(state) state.textContent='En curso';
     if(attIn) attIn.textContent=tcFmtHm(open.checkInAt);
     if(elapsedEl) elapsedEl.textContent=tcEmpElapsed();
-    if(sigRow){ sigRow.innerHTML=tcSignalDotHtml(me.webSignal,true); }
+    if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(me.webSignal);
     if(btnLive){
       btnLive.classList.remove('hidden');
       btnLive.classList.add('tc-emp-btn-out');
@@ -13688,7 +13700,7 @@ function tcEmpRender(){
   tcEmpSyncAttendanceLiveIndicator(false);
   tcEmpJornadaSetView('wait');
   if(stateWait) stateWait.textContent='Fuera de jornada';
-  if(sigRow) sigRow.innerHTML='';
+  if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(null);
   if(btnWait){
     btnWait.classList.remove('hidden','tc-emp-btn-out');
     btnWait.textContent='Registrar entrada';
@@ -13720,7 +13732,7 @@ async function tcEmpSendHeartbeat(){
     });
     if(j&&j.webSignal) tcEmpMe.webSignal=j.webSignal;
     const sigRow=document.getElementById('tc-emp-signal-row');
-    if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML='<strong>Señal de conexión:</strong> '+tcSignalDotHtml(tcEmpMe.webSignal,true);
+    if(sigRow&&tcEmpMe.openSession) sigRow.innerHTML=tcEmpJornadaSignalHtml(tcEmpMe.webSignal);
   }catch(_){}
 }
 let tcEmpTasks=[];
