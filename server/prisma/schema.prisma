@@ -68,6 +68,7 @@ model Organization {
   recruitmentApplications RecruitmentApplication[]
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
+  recruitmentApplicationInterviewEvents RecruitmentApplicationInterviewEvent[]
   recruitmentVacancyDocuments RecruitmentVacancyDocument[]
   recruitmentVacancyStages RecruitmentVacancyStage[]
   recruitmentCandidateResumes RecruitmentCandidateResume[]
@@ -339,6 +340,7 @@ model User {
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[]
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
+  recruitmentApplicationInterviewEventsAuthored RecruitmentApplicationInterviewEvent[] @relation("RecruitmentInterviewEventUser")
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteAuthor")
   recruitmentVacancyNotesAuthored RecruitmentVacancyNote[] @relation("RecruitmentVacancyNoteAuthor")
   recruitmentCandidateTagAssignmentsCreated RecruitmentCandidateTagAssignment[] @relation("RecruitmentCandidateTagAssignedBy")
@@ -758,6 +760,7 @@ model RecruitmentStage {
   vacancyStages       RecruitmentVacancyStage[]
   stageEventsFrom     RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventFrom")
   stageEventsTo       RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventTo")
+  interviewEvents     RecruitmentApplicationInterviewEvent[]
 
   @@unique([organizationId, key])
   @@index([organizationId, position])
@@ -785,6 +788,7 @@ model RecruitmentApplication {
   updatedAt      DateTime @updatedAt
 
   stageEvents RecruitmentApplicationStageEvent[]
+  interviewEvents RecruitmentApplicationInterviewEvent[]
 
   @@unique([candidateId, vacancyId])
   @@index([organizationId])
@@ -792,6 +796,35 @@ model RecruitmentApplication {
   @@index([organizationId, stageId])
   @@index([vacancyId, stageId, position])
   @@index([organizationId, candidateId])
+}
+
+enum RecruitmentApplicationInterviewEventType {
+  ATTENDED
+  NO_SHOW
+  RESCHEDULED
+}
+
+/// Resultado histórico de una cita de entrevista (snapshot; no reemplaza stage history).
+model RecruitmentApplicationInterviewEvent {
+  id                         String   @id @default(cuid())
+  organizationId             String
+  organization               Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applicationId              String
+  application                RecruitmentApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  stageId                    String
+  stage                      RecruitmentStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  eventType                  RecruitmentApplicationInterviewEventType
+  scheduledAt                DateTime @db.Timestamptz(6)
+  scheduledTimeSpecified     Boolean  @default(true)
+  rescheduledToAt            DateTime? @db.Timestamptz(6)
+  rescheduledToTimeSpecified Boolean?
+  createdByUserId            String
+  createdBy                  User @relation("RecruitmentInterviewEventUser", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt                  DateTime @default(now())
+
+  @@index([applicationId, createdAt])
+  @@index([organizationId])
+  @@index([organizationId, applicationId])
 }
 
 model RecruitmentApplicationStageEvent {

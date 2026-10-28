@@ -844,6 +844,33 @@ router.get('/vacancies/:vacancyId/applications', async (req, res, next) => {
   }
 });
 
+router.post('/applications/:applicationId/interview-events', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        eventType: z.enum(['ATTENDED', 'NO_SHOW', 'RESCHEDULED']),
+        interviewDate: z.string().max(10).optional().nullable(),
+        interviewTime: z.string().max(5).optional().nullable(),
+      })
+      .parse(req.body);
+    const { recordRecruitmentApplicationInterviewEvent } = await import(
+      '../services/recruitmentApplicationInterviewEvent.service.js'
+    );
+    const result = await recordRecruitmentApplicationInterviewEvent({
+      organizationId: u.organizationId,
+      applicationId: req.params.applicationId,
+      eventType: body.eventType,
+      createdByUserId: u.id,
+      interviewDate: body.interviewDate,
+      interviewTime: body.interviewTime,
+    });
+    res.status(201).json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.patch('/applications/:id', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);

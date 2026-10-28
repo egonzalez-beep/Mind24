@@ -719,6 +719,12 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
     }),
   ]);
 
+  const appIds = applications.map((a) => a.id);
+  const { listInterviewEventsForApplications } = await import(
+    './recruitmentApplicationInterviewEvent.service.js'
+  );
+  const interviewEventsByAppId = await listInterviewEventsForApplications(organizationId, appIds);
+
   const summaryMap = await buildApplicationSummariesByCandidateId(organizationId, [candidateId]);
   const { listRecruitmentCandidateTagAssignments } = await import(
     './recruitmentCandidateTag.service.js'
@@ -731,7 +737,14 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
       assignedTags,
     }),
     resume: serializeResumeMetadata(resumeRow),
-    applications: applications.map(serializeCandidateApplicationProcess),
+    applications: applications.map((row) => {
+      const interviewEvents = interviewEventsByAppId.get(row.id) || [];
+      return {
+        ...serializeCandidateApplicationProcess(row),
+        interviewEvents,
+        lastInterviewEvent: interviewEvents[0] || null,
+      };
+    }),
   };
 }
 

@@ -524,6 +524,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-hero-interview svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
 .rec-cand-hero-interview-edit{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .rec-cand-hero-interview-edit .form-input{max-width:160px;}
+.rec-cand-hero-interview-kicker{margin:8px 0 0;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
+.rec-cand-hero-interview-outcomes{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.rec-cand-hero-interview-outcome-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);cursor:pointer;font-family:inherit;}
+.rec-cand-hero-interview-outcome-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.rec-cand-hero-interview-outcome-btn:disabled{opacity:.55;cursor:wait;}
+.rec-cand-hero-interview-last{margin:6px 0 0;font-size:12px;color:var(--slate-600);}
+.rec-cand-hero-interview-hist{margin:8px 0 0;padding:0 0 0 16px;font-size:11px;color:var(--slate-600);line-height:1.45;}
+.rec-cand-hero-interview-hist-date{color:var(--slate-500);}
 .tc-emp-my-cand-interview{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--slate-600);}
 .tc-emp-my-cand-interview svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
 .rec-cand-form-grid-row--3{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -9912,6 +9920,131 @@ function recCandInterviewFieldsFromForm(){
 function recCandInterviewCalendarSvg(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>';
 }
+function recCandInterviewCheckSvg(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+}
+function recCandInterviewXSvg(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
+}
+function recCandInterviewRescheduleSvg(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>';
+}
+function recCandInterviewEventTypeLabel(t){
+  if(t==='ATTENDED') return 'Asistió';
+  if(t==='NO_SHOW') return 'No se presentó';
+  if(t==='RESCHEDULED') return 'Reagendada';
+  return t||'';
+}
+function recCandHeroInterviewOutcomeActionsHtml(app){
+  const stageKey=app.stage&&app.stage.key;
+  if(!REC_CAND_INTERVIEW_STAGE_KEYS[stageKey]||!app.interviewScheduledAt) return '';
+  return '<div class="rec-cand-hero-interview-outcomes" id="rec-cand-hero-interview-outcomes">'+
+    '<button type="button" class="rec-cand-hero-interview-outcome-btn" onclick="recCandSubmitInterviewEvent(\'ATTENDED\')">'+recCandInterviewCheckSvg()+'<span>Asistió</span></button>'+
+    '<button type="button" class="rec-cand-hero-interview-outcome-btn" onclick="recCandSubmitInterviewEvent(\'NO_SHOW\')">'+recCandInterviewXSvg()+'<span>No se presentó</span></button>'+
+    '<button type="button" class="rec-cand-hero-interview-outcome-btn" onclick="recCandToggleHeroInterviewReschedule()">'+recCandInterviewRescheduleSvg()+'<span>Reagendar</span></button></div>';
+}
+function recCandHeroInterviewLastResultHtml(app){
+  const last=app.lastInterviewEvent;
+  if(!last||app.interviewScheduledAt||last.eventType==='RESCHEDULED') return '';
+  const when=recCandFormatInterviewScheduledAt(last.scheduledAt,last.scheduledTimeSpecified!==false);
+  return '<p class="rec-cand-hero-interview-last">Última entrevista · '+tcEsc(recCandInterviewEventTypeLabel(last.eventType))+
+    (when?' · '+tcEsc(when):'')+'</p>';
+}
+function recCandHeroInterviewHistoryHtml(app){
+  const events=app.interviewEvents||[];
+  if(!events.length) return '';
+  const items=events.slice(0,8).map(function(ev){
+    const dt=recCandFmtDetailDate(ev.createdAt);
+    let line='';
+    if(ev.eventType==='NO_SHOW') line='No se presentó a entrevista'+(ev.stageName?' ('+ev.stageName+')':'');
+    else if(ev.eventType==='ATTENDED') line='Asistió a entrevista'+(ev.stageName?' ('+ev.stageName+')':'');
+    else if(ev.eventType==='RESCHEDULED'){
+      const from=recCandFormatInterviewScheduledAt(ev.scheduledAt,ev.scheduledTimeSpecified!==false);
+      const to=ev.rescheduledToAt?recCandFormatInterviewScheduledAt(ev.rescheduledToAt,ev.rescheduledToTimeSpecified!==false):'';
+      line='Entrevista reagendada'+(from&&to?': '+from+' → '+to:(from?' · '+from:''));
+    }
+    return '<li><span class="rec-cand-hero-interview-hist-date">'+tcEsc(dt)+'</span> '+tcEsc(line)+'</li>';
+  }).join('');
+  return '<ul class="rec-cand-hero-interview-hist" aria-label="Historial de entrevistas">'+items+'</ul>';
+}
+function recCandHeroInterviewBlockHtml(app){
+  const stageKey=app.stage&&app.stage.key;
+  const inInterviewStage=!!REC_CAND_INTERVIEW_STAGE_KEYS[stageKey];
+  const ivLabel=app.interviewScheduledAt?recCandFormatInterviewScheduledAt(app.interviewScheduledAt,app.interviewTimeSpecified!==false):'';
+  let html='';
+  if(ivLabel&&inInterviewStage){
+    html+='<p class="rec-cand-hero-interview-kicker">Entrevista programada</p>'+
+      '<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row">'+recCandInterviewCalendarSvg()+
+      '<span id="rec-cand-hero-interview-label">'+tcEsc(ivLabel)+'</span>'+
+      '<button type="button" class="rec-stages-ghost-btn" style="font-size:11px;padding:2px 8px;" onclick="recCandToggleHeroInterviewEdit()">Editar</button></div>'+
+      recCandHeroInterviewOutcomeActionsHtml(app);
+  }else if(inInterviewStage){
+    html+='<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row"><button type="button" class="rec-stages-ghost-btn" style="font-size:11px;" onclick="recCandToggleHeroInterviewEdit(true)">+ Fecha de entrevista</button></div>';
+  }
+  html+=recCandHeroInterviewLastResultHtml(app);
+  html+='<div class="rec-cand-hero-interview-edit hidden" id="rec-cand-hero-interview-edit">'+
+    '<input type="date" id="rec-cand-hero-interview-date" class="form-input" aria-label="Fecha entrevista">'+
+    '<input type="time" id="rec-cand-hero-interview-time" class="form-input" aria-label="Hora entrevista (opcional)" step="60">'+
+    '<button type="button" class="rec-stages-ghost-btn" id="rec-cand-hero-interview-save" onclick="recCandSaveHeroInterview()">Guardar</button>'+
+    '<button type="button" class="rec-stages-ghost-btn" onclick="recCandClearHeroInterview()">Quitar</button></div>';
+  html+=recCandHeroInterviewHistoryHtml(app);
+  return html;
+}
+async function recCandSubmitInterviewEvent(eventType){
+  if(eventType==='NO_SHOW'){
+    if(!window.confirm('¿Marcar esta entrevista como No se presentó?')) return;
+  }
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!app) return;
+  const appId=recCandGetAppId(app);
+  const outcomes=document.getElementById('rec-cand-hero-interview-outcomes');
+  const disable=function(on){ if(outcomes) outcomes.querySelectorAll('button').forEach(function(b){ b.disabled=on; }); };
+  disable(true);
+  recCandSetOpErr('');
+  try{
+    const body={ eventType:eventType };
+    if(eventType==='RESCHEDULED'){
+      const date=(document.getElementById('rec-cand-hero-interview-date')?.value||'').trim();
+      const time=(document.getElementById('rec-cand-hero-interview-time')?.value||'').trim();
+      if(!date){ recCandSetOpErr('Indica la nueva fecha de entrevista.'); return; }
+      body.interviewDate=date;
+      body.interviewTime=time||null;
+    }
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId)+'/interview-events',{ method:'POST', body:JSON.stringify(body) });
+    st.heroInterviewRescheduleMode=false;
+    const edit=document.getElementById('rec-cand-hero-interview-edit');
+    if(edit) edit.classList.add('hidden');
+    const cid=st.detailCandidateId;
+    if(cid){
+      const c=await recCandFetchDetail(cid);
+      st.detailCandidate=c;
+      await recCandRenderDetail(c,false);
+    }
+  }catch(e){
+    const msg=(e&&e.message)||'No se pudo registrar el resultado.';
+    recCandSetOpErr(msg);
+    if(e&&e.httpStatus===409){
+      const cid=st.detailCandidateId;
+      if(cid){
+        try{
+          const c=await recCandFetchDetail(cid);
+          st.detailCandidate=c;
+          await recCandRenderDetail(c,false);
+        }catch(_refresh){}
+      }
+    }
+  }finally{ disable(false); }
+}
+function recCandToggleHeroInterviewReschedule(){
+  recEnsureState().heroInterviewRescheduleMode=true;
+  const edit=document.getElementById('rec-cand-hero-interview-edit');
+  if(edit){
+    edit.classList.remove('hidden');
+    const dEl=document.getElementById('rec-cand-hero-interview-date');
+    if(dEl) dEl.focus();
+  }
+}
 var REC_CAND_SOURCE_OPTS=['Indeed','OCC','Computrabajo','LinkedIn','Facebook / Meta','Referido','Bolsa de empleo','Base propia','Otro'];
 var REC_CAND_PROFILE_OPTS=['Ventas','Atención a clientes','Administrativo','Contabilidad / Finanzas','Recursos Humanos','Logística / Almacén','Mantenimiento','Producción / Operativo','Calidad','Seguridad','Transporte','Tecnología','Otro'];
 function recCandCatalogInits(){
@@ -10159,18 +10292,7 @@ function recCandHeroHtml(app){
   }
   const dt=recCandFmtDetailDate(app.updatedAt||app.appliedAt);
   const pillCls=recCandStagePillClass(stage);
-  const ivLabel=app.interviewScheduledAt?recCandFormatInterviewScheduledAt(app.interviewScheduledAt,app.interviewTimeSpecified!==false):'';
-  const ivRow=ivLabel
-    ? '<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row">'+recCandInterviewCalendarSvg()+'<span id="rec-cand-hero-interview-label">'+tcEsc(ivLabel)+'</span><button type="button" class="rec-stages-ghost-btn" style="font-size:11px;padding:2px 8px;" onclick="recCandToggleHeroInterviewEdit()">Editar</button></div>'+
-      '<div class="rec-cand-hero-interview-edit hidden" id="rec-cand-hero-interview-edit">'+
-      '<input type="date" id="rec-cand-hero-interview-date" class="form-input" aria-label="Fecha entrevista">'+
-      '<input type="time" id="rec-cand-hero-interview-time" class="form-input" aria-label="Hora entrevista" step="60">'+
-      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandSaveHeroInterview()">Guardar</button>'+
-      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandClearHeroInterview()">Quitar</button></div>'
-    : '<div class="rec-cand-hero-interview" id="rec-cand-hero-interview-row"><button type="button" class="rec-stages-ghost-btn" style="font-size:11px;" onclick="recCandToggleHeroInterviewEdit(true)">+ Fecha de entrevista</button></div>'+
-      '<div class="rec-cand-hero-interview-edit hidden" id="rec-cand-hero-interview-edit">'+
-      '<input type="date" id="rec-cand-hero-interview-date" class="form-input"><input type="time" id="rec-cand-hero-interview-time" class="form-input" step="60">'+
-      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandSaveHeroInterview()">Guardar</button></div>';
+  const ivRow=recCandHeroInterviewBlockHtml(app);
   return '<article class="rec-cand-pipeline-hero">'+
     '<p class="rec-cand-hero-kicker">Proceso principal</p>'+
     '<div class="rec-cand-hero-head">'+
@@ -10193,9 +10315,13 @@ function recCandToggleHeroInterviewEdit(forceOpen){
   if(!edit||!app) return;
   const open=forceOpen===true||edit.classList.contains('hidden');
   if(open){
+    st.heroInterviewRescheduleMode=false;
     awaitRecCandHeroInterviewPrefill(app);
     edit.classList.remove('hidden');
-  }else edit.classList.add('hidden');
+  }else{
+    st.heroInterviewRescheduleMode=false;
+    edit.classList.add('hidden');
+  }
 }
 function awaitRecCandHeroInterviewPrefill(app){
   const parts=recCandInterviewLocalPartsFromIso(app&&app.interviewScheduledAt,app&&app.interviewTimeSpecified);
@@ -10208,6 +10334,10 @@ async function recCandSaveHeroInterview(){
   const st=recEnsureState();
   const app=st.detailPrimaryApplication;
   if(!app) return;
+  if(st.heroInterviewRescheduleMode){
+    await recCandSubmitInterviewEvent('RESCHEDULED');
+    return;
+  }
   const appId=recCandGetAppId(app);
   const date=(document.getElementById('rec-cand-hero-interview-date')?.value||'').trim();
   const time=(document.getElementById('rec-cand-hero-interview-time')?.value||'').trim();
