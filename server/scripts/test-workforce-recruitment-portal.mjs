@@ -121,7 +121,7 @@ check(/height:152px/.test(indexHtml.match(/\.tc-ws-jornada-mini[\s\S]*?\.tc-ws-j
 check(/tc-ws-jornada-foot/.test(indexHtml) && /tcEmpJornadaSignalHtml/.test(indexHtml), 'pie jornada estable señal');
 check(/tcEmpSyncJornadaInfoTip/.test(indexHtml) && /tc-ws-jornada-cta--in/.test(indexHtml), 'leyendas en tooltip y CTA entrada blanco');
 check(/tcEmpOpenJornadaInfoTip/.test(indexHtml) && /position:fixed/.test(indexHtml.match(/\.tc-ws-jornada-info-tip\{[\s\S]*?\}/)?.[0] || ''), 'tooltip jornada flotante sin recorte');
-check(/data-jornada-mode="live"[\s\S]*\.tc-ws-jornada-foot\{display:none/.test(indexHtml), 'en curso sin pie duplicado');
+check(/:not\(\[data-jornada-mode="done"\]\)[\s\S]*\.tc-ws-jornada-foot\{display:none/.test(indexHtml), 'señal solo en jornada finalizada');
 check(!/tc-ws-jornada-hint/.test(indexHtml.match(/id="tc-emp-jornada-mini"[\s\S]*?<\/article>/)?.[0] || ''), 'sin hint fuera de la caja');
 check(!/tc-ws-jornada-details/.test(indexHtml.match(/id="tc-emp-jornada-mini"[\s\S]*?<\/article>/)?.[0] || ''), 'sin panel expandible jornada');
 check(!/class="tc-ws-attendance-band"/.test(indexHtml), 'sin banda asistencia horizontal grande');
