@@ -77,6 +77,8 @@ model Organization {
   recruitmentCandidateTags RecruitmentCandidateTag[]
   recruitmentCandidateTagAssignments RecruitmentCandidateTagAssignment[]
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
+  workforceGoals              WorkforceGoal[]
+  workforceGoalPeriods        WorkforceGoalPeriod[]
 }
 
 enum WorkforceRecruitmentNovedadEventType {
@@ -145,6 +147,8 @@ model WorkforceEmployee {
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteWorkforceAuthor")
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[] @relation("RecruitmentCandidateResumeWorkforceUploader")
   workforceRecruitmentNovedadesReceived WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadRecipient")
+  workforceGoals                      WorkforceGoal[]
+  workforceGoalPeriods                WorkforceGoalPeriod[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -239,6 +243,76 @@ model WorkforceTaskEvent {
   createdAt       DateTime                @default(now())
 
   @@index([taskId, createdAt])
+}
+
+enum WorkforceGoalType {
+  COMPLIANCE
+  QUANTITATIVE
+}
+
+enum WorkforceGoalPeriodicity {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum WorkforceGoalBinaryResult {
+  MET
+  NOT_MET
+}
+
+/// Meta de resultado medible asignada a un colaborador (independiente de WorkforceTask).
+model WorkforceGoal {
+  id              String                   @id @default(cuid())
+  organizationId  String
+  organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        WorkforceEmployee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdByUserId String
+  createdBy       User                     @relation("WorkforceGoalCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  title           String
+  description     String?                  @db.Text
+  goalType        WorkforceGoalType
+  periodicity     WorkforceGoalPeriodicity
+  targetValue     Float?
+  unit            String?
+  startDate       DateTime                 @db.Date
+  endDate         DateTime?                @db.Date
+  archivedAt      DateTime?                @db.Timestamptz(6)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  periods WorkforceGoalPeriod[]
+
+  @@index([organizationId, employeeId])
+  @@index([employeeId, archivedAt])
+  @@index([organizationId])
+}
+
+/// Registro de cumplimiento por periodo (snapshot de objetivo + resultado).
+model WorkforceGoalPeriod {
+  id                String                     @id @default(cuid())
+  organizationId    String
+  organization      Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  goalId            String
+  goal              WorkforceGoal              @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  employeeId        String
+  employee          WorkforceEmployee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodStart       DateTime                   @db.Timestamptz(6)
+  periodEnd         DateTime                   @db.Timestamptz(6)
+  targetSnapshot    Float
+  achievedValue     Float?
+  binaryResult      WorkforceGoalBinaryResult?
+  completionPercent Float?
+  employeeComment   String?                    @db.Text
+  submittedAt       DateTime?                  @db.Timestamptz(6)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  @@unique([goalId, periodStart])
+  @@index([organizationId, employeeId])
+  @@index([goalId, periodStart])
+  @@index([organizationId, goalId])
 }
 
 model RemoteWorkSession {
@@ -343,6 +417,7 @@ model User {
   remoteWorkEventsActed RemoteWorkEvent[] @relation("RemoteWorkEventActor")
   workforceTasksCreated WorkforceTask[] @relation("WorkforceTaskCreatedBy")
   workforceTaskEventsActed WorkforceTaskEvent[] @relation("WorkforceTaskEventUser")
+  workforceGoalsCreated    WorkforceGoal[] @relation("WorkforceGoalCreatedBy")
   workforceDocumentsUploaded WorkforceDocument[]
   recruitmentVacancyDocumentsUploaded RecruitmentVacancyDocument[]
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[]

@@ -30,6 +30,14 @@ import {
   patchWorkforceTaskAsAdmin,
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
+import {
+  archiveWorkforceGoal,
+  createWorkforceGoalForEmployee,
+  listWorkforceGoalPeriodsForAdmin,
+  listWorkforceGoalsForAdmin,
+  WORKFORCE_GOAL_PERIODICITIES,
+  WORKFORCE_GOAL_TYPES,
+} from '../services/workforceGoal.service.js';
 import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
 import {
   createWorkforceDocument,
@@ -397,6 +405,84 @@ router.patch('/tasks/:taskId', async (req, res, next) => {
       expectedUpdatedAt: body.expectedUpdatedAt,
     });
     res.json({ task });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const goalTypeSchema = z.enum(WORKFORCE_GOAL_TYPES);
+const goalPeriodicitySchema = z.enum(WORKFORCE_GOAL_PERIODICITIES);
+const goalDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+router.post('/employees/:id/goals', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        title: z.string().min(1).max(200),
+        description: z.string().max(4000).optional().nullable(),
+        goalType: goalTypeSchema,
+        periodicity: goalPeriodicitySchema,
+        targetValue: z.number().finite().optional().nullable(),
+        unit: z.string().max(64).optional().nullable(),
+        startDate: goalDateSchema,
+        endDate: goalDateSchema.optional().nullable(),
+      })
+      .parse(req.body);
+    await assertWorkforceEmployeeInOrg(req.params.id, u.organizationId);
+    const goal = await createWorkforceGoalForEmployee({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      createdByUserId: u.id,
+      title: body.title,
+      description: body.description,
+      goalType: body.goalType,
+      periodicity: body.periodicity,
+      targetValue: body.targetValue,
+      unit: body.unit,
+      startDate: body.startDate,
+      endDate: body.endDate ?? null,
+    });
+    res.status(201).json({ goal });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/goals', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const goals = await listWorkforceGoalsForAdmin({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+    });
+    res.json({ goals });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/goals/:goalId/periods', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const out = await listWorkforceGoalPeriodsForAdmin({
+      organizationId: u.organizationId,
+      goalId: req.params.goalId,
+    });
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/goals/:goalId/archive', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const goal = await archiveWorkforceGoal({
+      organizationId: u.organizationId,
+      goalId: req.params.goalId,
+    });
+    res.json({ goal });
   } catch (e) {
     next(e);
   }

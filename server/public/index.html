@@ -1081,9 +1081,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-top-left{grid-column:1;min-width:200px;max-width:min(320px,34vw);width:max-content;}
 .tc-jornada-top-right{grid-column:2;min-width:0;display:flex;align-items:flex-start;justify-content:flex-start;gap:12px;flex-wrap:wrap;}
 .tc-jornada-act-head{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
-.tc-kanban-add-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border:none;border-radius:8px;background:var(--assess-gradient);color:#fff;font-family:inherit;font-size:17px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,.22);transition:var(--tr-fast);padding:0;flex-shrink:0;}
-.tc-kanban-add-btn:hover{filter:brightness(1.06);transform:translateY(-1px);}
-.tc-kanban-add-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-op-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid rgba(124,58,237,.18);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;font-family:inherit;}
+.tc-op-icon-btn svg{width:18px;height:18px;display:block;pointer-events:none;}
+.tc-op-icon-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.32);color:var(--purple-dark);}
+.tc-op-icon-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-op-icon-btn[disabled]{opacity:.45;cursor:not-allowed;}
+.tc-jornada-op-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;width:100%;}
+.tc-jornada-op-tabs{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--slate-200);border-radius:9px;padding:2px;background:var(--slate-50);}
+.tc-jornada-op-tab{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-500);padding:6px 12px;border-radius:7px;cursor:pointer;transition:background .15s,color .15s;}
+.tc-jornada-op-tab--on{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.06);}
+.tc-jornada-op-tab:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
+.tc-jornada-op-actions{display:inline-flex;align-items:center;gap:6px;}
+.tc-goals-list{display:flex;flex-direction:column;gap:10px;min-height:120px;}
+.tc-jornada-aside .tc-goals-list{max-width:100%;}
+.tc-jornada-aside .tc-goal-card{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:10px 16px;}
+.tc-jornada-aside .tc-goal-card-main{flex:1;min-width:min(100%,200px);}
+.tc-jornada-aside .tc-goal-card-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:120px;}
+.tc-goal-card{border:1px solid var(--slate-200);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:8px;}
+.tc-goal-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.tc-goal-card-title{margin:0;font-size:14px;font-weight:700;color:var(--primary);}
+.tc-goal-card-meta{font-size:11px;color:var(--slate-500);font-weight:500;}
+.tc-goal-status{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
+.tc-goal-status--pending{background:rgba(237,233,254,.75);color:var(--purple-dark);}
+.tc-goal-status--met{background:rgba(187,247,208,.55);color:#15803d;}
+.tc-goal-status--partial{background:rgba(253,230,138,.55);color:#b45309;}
+.tc-goal-status--not_met,.tc-goal-status--overdue{background:rgba(254,202,202,.55);color:#b91c1c;}
+.tc-goal-status--inactive{background:var(--slate-100);color:var(--slate-500);}
+.tc-goal-progress{height:6px;border-radius:999px;background:var(--slate-100);overflow:hidden;}
+.tc-goal-progress-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--purple),#a78bfa);max-width:100%;}
+.tc-goal-empty{font-size:12px;color:var(--slate-400);padding:16px 4px;text-align:center;margin:0;}
+.tc-goal-report-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px;}
+.tc-goal-report-input{flex:1;min-width:120px;max-width:160px;border:1px solid var(--slate-200);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;}
+.tc-goal-report-btn{border:1px solid rgba(124,58,237,.25);background:#fff;color:var(--purple-dark);font-family:inherit;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer;}
+.tc-goal-report-btn:hover{background:var(--purple-light);}
+.tc-goal-report-btn--ghost{color:var(--slate-600);border-color:var(--slate-200);}
+.tc-goal-type-fields.hidden{display:none!important;}
 .tc-jornada-meta{margin-top:16px;padding-top:14px;border-top:1px solid var(--slate-100);display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
 .tc-jornada-alta{font-size:11px;color:var(--slate-400);line-height:1.4;}
 .tc-history-toggle--inline{margin-top:2px;}
@@ -3478,6 +3510,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           </div>
         </div>
       </div>
+      <div id="tc-goal-assign-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-goal-assign-title" aria-hidden="true" onclick="tcGoalCloseAssign()">
+        <div class="tc-task-modal" onclick="event.stopPropagation()">
+          <h3 id="tc-goal-assign-title">Asignar meta</h3>
+          <p class="tc-task-modal-err hidden" id="tc-goal-assign-err"></p>
+          <label for="tc-goal-assign-title-input">Título *</label>
+          <input type="text" id="tc-goal-assign-title-input" maxlength="200" autocomplete="off" />
+          <label for="tc-goal-assign-desc-input">Descripción</label>
+          <textarea id="tc-goal-assign-desc-input" maxlength="4000" rows="2"></textarea>
+          <label for="tc-goal-assign-type-input">Tipo *</label>
+          <select id="tc-goal-assign-type-input" onchange="tcGoalSyncAssignTypeFields()">
+            <option value="COMPLIANCE">Cumplimiento</option>
+            <option value="QUANTITATIVE">Cuantitativa</option>
+          </select>
+          <label for="tc-goal-assign-periodicity-input">Periodicidad *</label>
+          <select id="tc-goal-assign-periodicity-input">
+            <option value="DAILY">Diaria</option>
+            <option value="WEEKLY">Semanal</option>
+            <option value="MONTHLY">Mensual</option>
+          </select>
+          <div id="tc-goal-assign-quant-fields" class="tc-goal-type-fields">
+            <label for="tc-goal-assign-target-input">Valor objetivo *</label>
+            <input type="number" id="tc-goal-assign-target-input" min="0.0001" step="any" />
+            <label for="tc-goal-assign-unit-input">Unidad de medida</label>
+            <input type="text" id="tc-goal-assign-unit-input" maxlength="64" autocomplete="off" />
+          </div>
+          <label for="tc-goal-assign-start-input">Fecha de inicio *</label>
+          <input type="date" id="tc-goal-assign-start-input" />
+          <label for="tc-goal-assign-end-input">Fecha de finalización</label>
+          <input type="date" id="tc-goal-assign-end-input" />
+          <div class="tc-task-modal-actions">
+            <button type="button" class="card-action" onclick="tcGoalCloseAssign()">Cancelar</button>
+            <button type="button" class="tc-kanban-assign-btn" id="tc-goal-assign-submit" onclick="tcGoalSubmitAssign()">Asignar meta</button>
+          </div>
+        </div>
+      </div>
       <div id="tc-task-edit-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-task-edit-title" aria-hidden="true" onclick="tcKanbanCloseEdit()">
         <div class="tc-task-modal" onclick="event.stopPropagation()">
           <h3 id="tc-task-edit-title">Editar actividad</h3>
@@ -3521,7 +3588,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-register" data-tc-ws-quick="register" aria-label="Registrar candidato" onclick="tcEmpQuickRegisterCandidate()"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-candidates" data-tc-ws-quick="candidates-in_process" aria-label="Candidatos · En proceso" onclick="tcEmpQuickGoCandidates('in_process')"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-hired" data-tc-ws-quick="candidates-hired" aria-label="Contratados" onclick="tcEmpQuickGoCandidates('hired')"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
-              <button type="button" class="tc-ws-quick-btn tc-ws-quick-btn--soon" id="tc-ws-quick-goals" data-tc-ws-quick="goals" aria-disabled="true" aria-label="Metas · Próximamente"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
+              <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-goals" data-tc-ws-quick="goals" aria-label="Metas" onclick="tcEmpQuickGoGoals()"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-novedades" data-tc-ws-quick="novedades" aria-label="Novedades" aria-expanded="false" aria-controls="tc-ws-novedades-popover" aria-haspopup="dialog" onclick="tcEmpNovedadesToggle(event)"><span class="tc-ws-quick-icon" aria-hidden="true"></span><span class="tc-ws-quick-badge tc-ws-quick-badge--red" id="tc-ws-quick-badge-novedades" aria-hidden="true"></span></button>
             </nav>
             <span class="tc-ws-quick-tip" id="tc-ws-quick-tip" role="tooltip"></span>
@@ -3584,6 +3651,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="tc-ws-tabs-wrap">
           <div class="tc-ws-tabs" role="tablist" aria-label="Módulos del espacio de trabajo">
             <button type="button" role="tab" class="tc-ws-tab tc-ws-tab--on" id="tc-ws-tab-activities" aria-selected="true" aria-controls="tc-ws-panel-activities" onclick="tcEmpWorkspaceSetTab('activities')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Actividades</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-activities"></span></button>
+            <button type="button" role="tab" class="tc-ws-tab" id="tc-ws-tab-goals" aria-selected="false" aria-controls="tc-ws-panel-goals" onclick="tcEmpWorkspaceSetTab('goals')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Metas</span></button>
             <button type="button" role="tab" class="tc-ws-tab" id="tc-ws-tab-candidates" aria-selected="false" aria-controls="tc-ws-panel-candidates" onclick="tcEmpWorkspaceSetTab('candidates')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Candidatos</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-candidates"></span></button>
           </div>
         </div>
@@ -3593,6 +3661,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <p class="tc-emp-tasks-toast hidden" id="tc-emp-tasks-toast" role="status"></p>
           <div class="tc-ws-panel-scroll" id="tc-ws-panel-activities-scroll">
             <div id="tc-emp-tasks-body"></div>
+          </div>
+        </section>
+        <section class="tc-ws-panel tc-emp-goals hidden" id="tc-ws-panel-goals" role="tabpanel" aria-labelledby="tc-ws-tab-goals" hidden>
+          <h2 class="visually-hidden">Mis metas</h2>
+          <div class="tc-ws-panel-scroll" id="tc-ws-panel-goals-scroll">
+            <div id="tc-emp-goals-body"></div>
           </div>
         </section>
         <section class="tc-ws-panel tc-emp-recruitment hidden" id="tc-ws-panel-candidates" role="tabpanel" aria-labelledby="tc-ws-tab-candidates" hidden>
@@ -12151,6 +12225,9 @@ function tcWsSvgUserCheck(){
 function tcWsSvgTarget(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
 }
+function tcSvgPlus(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
+}
 function tcWsSvgBell(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 }
@@ -12179,7 +12256,7 @@ function tcEmpQuickEnsureTooltips(){
     ['tc-ws-quick-register','Registrar candidato'],
     ['tc-ws-quick-candidates','Candidatos'],
     ['tc-ws-quick-hired','Contratados'],
-    ['tc-ws-quick-goals','Metas · Próximamente'],
+    ['tc-ws-quick-goals','Metas'],
     ['tc-ws-quick-novedades','Novedades'],
   ];
   map.forEach(function(pair){
@@ -12196,6 +12273,11 @@ function tcEmpQuickGoActivities(){
   tcEmpNovedadesClose(false);
   if(tcEmpWorkspaceTab==='activities') tcEmpWorkspaceResetPanelScroll('activities');
   else tcEmpWorkspaceSetTab('activities');
+}
+function tcEmpQuickGoGoals(){
+  tcEmpNovedadesClose(false);
+  if(tcEmpWorkspaceTab==='goals') tcEmpWorkspaceResetPanelScroll('goals');
+  else tcEmpWorkspaceSetTab('goals');
 }
 function tcEmpQuickRegisterCandidate(){
   tcEmpNovedadesClose(false);
@@ -12240,9 +12322,12 @@ function tcEmpWorkspaceSyncQuickActions(){
   const reg=document.getElementById('tc-ws-quick-register');
   const cand=document.getElementById('tc-ws-quick-candidates');
   const hired=document.getElementById('tc-ws-quick-hired');
+  const goals=document.getElementById('tc-ws-quick-goals');
   const onAct=tcEmpWorkspaceTab==='activities';
+  const onGoals=tcEmpWorkspaceTab==='goals';
   const onCand=tcEmpWorkspaceTab==='candidates';
   if(act) act.classList.toggle('tc-ws-quick-btn--active',onAct);
+  if(goals) goals.classList.toggle('tc-ws-quick-btn--active',onGoals);
   if(reg) reg.classList.toggle('tc-ws-quick-btn--active',false);
   if(cand) cand.classList.toggle('tc-ws-quick-btn--active',onCand&&tcEmpMyCandFilter==='in_process');
   if(hired) hired.classList.toggle('tc-ws-quick-btn--active',onCand&&tcEmpMyCandFilter==='hired');
@@ -12250,6 +12335,7 @@ function tcEmpWorkspaceSyncQuickActions(){
 function tcEmpWorkspaceGetPanelScrollEl(forTab){
   const tab=forTab||tcEmpWorkspaceTab;
   if(tab==='candidates') return document.getElementById('tc-ws-cand-list-scroll');
+  if(tab==='goals') return document.getElementById('tc-ws-panel-goals-scroll');
   return document.getElementById('tc-ws-panel-activities-scroll');
 }
 function tcEmpWorkspaceResetPanelScroll(forTab){
@@ -12257,7 +12343,9 @@ function tcEmpWorkspaceResetPanelScroll(forTab){
   if(el) el.scrollTop=0;
 }
 function tcEmpWorkspaceSetTab(tab){
-  const next=tab==='candidates'?'candidates':'activities';
+  let next='activities';
+  if(tab==='candidates') next='candidates';
+  else if(tab==='goals') next='goals';
   if(tcEmpWorkspaceTab===next) return;
   tcEmpWorkspaceTab=next;
   tcEmpWorkspaceSyncTabs();
@@ -12266,14 +12354,21 @@ function tcEmpWorkspaceSetTab(tab){
 }
 function tcEmpWorkspaceSyncTabs(){
   const act=document.getElementById('tc-ws-panel-activities');
+  const goals=document.getElementById('tc-ws-panel-goals');
   const cand=document.getElementById('tc-ws-panel-candidates');
   const tAct=document.getElementById('tc-ws-tab-activities');
+  const tGoals=document.getElementById('tc-ws-tab-goals');
   const tCand=document.getElementById('tc-ws-tab-candidates');
   const onAct=tcEmpWorkspaceTab==='activities';
+  const onGoals=tcEmpWorkspaceTab==='goals';
+  const onCand=tcEmpWorkspaceTab==='candidates';
   if(act){ act.hidden=!onAct; act.classList.toggle('hidden',!onAct); }
-  if(cand){ cand.hidden=onAct; cand.classList.toggle('hidden',onAct); }
+  if(goals){ goals.hidden=!onGoals; goals.classList.toggle('hidden',!onGoals); }
+  if(cand){ cand.hidden=!onCand; cand.classList.toggle('hidden',!onCand); }
   if(tAct){ tAct.classList.toggle('tc-ws-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
-  if(tCand){ tCand.classList.toggle('tc-ws-tab--on',!onAct); tCand.setAttribute('aria-selected',(!onAct)?'true':'false'); }
+  if(tGoals){ tGoals.classList.toggle('tc-ws-tab--on',onGoals); tGoals.setAttribute('aria-selected',onGoals?'true':'false'); }
+  if(tCand){ tCand.classList.toggle('tc-ws-tab--on',onCand); tCand.setAttribute('aria-selected',onCand?'true':'false'); }
+  if(onGoals) tcEmpLoadGoals(false);
 }
 function tcEmpWorkspaceUpdateTabBadges(){
   const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; }).length;
@@ -12302,8 +12397,10 @@ function tcEmpWorkspaceInitQuickIcons(){
 }
 function tcEmpWorkspaceInitChrome(){
   const icAct=document.querySelector('#tc-ws-tab-activities .tc-ws-tab-icon');
+  const icGoals=document.querySelector('#tc-ws-tab-goals .tc-ws-tab-icon');
   const icCand=document.querySelector('#tc-ws-tab-candidates .tc-ws-tab-icon');
   if(icAct) icAct.innerHTML=tcWsSvgClipboard();
+  if(icGoals) icGoals.innerHTML=tcWsSvgTarget();
   if(icCand) icCand.innerHTML=tcWsSvgUsers();
   tcEmpWorkspaceInitQuickIcons();
   tcEmpNovedadesEnsureListeners();
@@ -13265,6 +13362,11 @@ async function tcViewJornada(id){
   const card=document.getElementById('tc-jornada-card');
   const body=document.getElementById('tc-jornada-body');
   tcHideCalPopover();
+  tcGoalsAdminList=[];
+  tcGoalHistoryOpenId=null;
+  tcJornadaOpTab='activities';
+  const asidePre=document.getElementById('tc-jornada-aside');
+  if(asidePre) asidePre.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
   try{
     const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
     const emp=out.employee||{};
@@ -13297,10 +13399,15 @@ async function tcViewJornada(id){
         '<div class="card-subtitle tc-jornada-sub-row" id="tc-jornada-sub">'+tcEmpAvatarInnerHtml(emp)+'<span>'+tcEsc(emp.fullName||'—')+'</span></div>'+
         '</div>'+
         '<div class="tc-jornada-top-right">'+
-        '<div class="tc-jornada-act-head">'+
-        '<div class="tc-jornada-top-title tc-jornada-top-title--act">Actividades</div>'+
-        '<button type="button" class="tc-kanban-add-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">+</button>'+
-        '</div></div></div>'+
+        '<div class="tc-jornada-op-head">'+
+        '<div class="tc-jornada-op-tabs" role="tablist" aria-label="Operaciones del colaborador">'+
+        '<button type="button" role="tab" class="tc-jornada-op-tab tc-jornada-op-tab--on" id="tc-jornada-tab-activities" aria-selected="true" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'activities\')">Actividades</button>'+
+        '<button type="button" role="tab" class="tc-jornada-op-tab" id="tc-jornada-tab-goals" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'goals\')">Metas</button>'+
+        '</div>'+
+        '<div class="tc-jornada-op-actions">'+
+        '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlus()+'</button>'+
+        '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcWsSvgTarget()+'</button>'+
+        '</div></div></div></div>'+
         '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
@@ -13314,14 +13421,8 @@ async function tcViewJornada(id){
         '<div class="tc-jornada-aside" id="tc-jornada-aside"></div>'+
         '</div>';
     }
-    const aside=document.getElementById('tc-jornada-aside');
-    if(aside){
-      aside.innerHTML=tcKanbanShellHtml();
-      tcKanbanEmpId=emp.id;
-      tcKanbanEmpTz=emp.timezone||'America/Mexico_City';
-      tcKanbanCompletedShowAll=false;
-      await tcKanbanLoad();
-    }
+    tcJornadaOpTab='activities';
+    tcJornadaRenderAside();
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
@@ -14025,14 +14126,374 @@ async function tcKanbanMoveTask(taskId, status){
   const colTasks=tcKanbanTasksInColumn(status, taskId);
   await tcKanbanApplyMove(taskId, status, colTasks.length);
 }
+let tcJornadaOpTab='activities';
+let tcGoalsAdminList=[];
+let tcGoalAssignInFlight=false;
+let tcGoalHistoryOpenId=null;
+const TC_GOAL_TYPE_LABELS={ COMPLIANCE:'Cumplimiento', QUANTITATIVE:'Cuantitativa' };
+const TC_GOAL_PERIOD_LABELS={ DAILY:'Diaria', WEEKLY:'Semanal', MONTHLY:'Mensual' };
+const TC_GOAL_STATUS_LABELS={ PENDING:'Pendiente', MET:'Cumplida', NOT_MET:'No cumplida', PARTIAL:'Parcial', OVERDUE:'Vencida sin reporte', INACTIVE:'Inactiva' };
+function tcGoalStatusClass(st){
+  const m={ PENDING:'pending', MET:'met', NOT_MET:'not_met', PARTIAL:'partial', OVERDUE:'overdue', INACTIVE:'inactive' };
+  return 'tc-goal-status--'+(m[st]||'pending');
+}
+function tcGoalFmtPct(p){
+  if(p==null||!Number.isFinite(Number(p))) return '—';
+  const n=Math.round(Number(p)*10)/10;
+  return String(n).replace(/\.0$/,'')+'%';
+}
+function tcGoalFmtPeriodRange(period,tz){
+  if(!period) return '—';
+  try{
+    const opt={ timeZone:tz||'America/Mexico_City', day:'numeric', month:'short' };
+    const a=new Date(period.periodStart).toLocaleDateString('es-MX',opt);
+    const b=new Date(period.periodEnd).toLocaleDateString('es-MX',Object.assign({},opt,{year:'numeric'}));
+    return a+' – '+b;
+  }catch(_){ return '—'; }
+}
+function tcGoalResultSummary(goal,period){
+  if(!period) return '—';
+  if(goal.goalType==='COMPLIANCE'){
+    if(period.binaryResult==='MET') return 'Cumplida';
+    if(period.binaryResult==='NOT_MET') return 'No cumplida';
+    return 'Sin reporte';
+  }
+  if(period.achievedValue!=null&&Number.isFinite(Number(period.achievedValue))){
+    const u=goal.unit?(' '+goal.unit):'';
+    return String(period.achievedValue)+u+' / '+String(period.targetSnapshot)+u;
+  }
+  return 'Sin reporte';
+}
+function tcJornadaSetOpTab(tab){
+  if(tab!=='activities'&&tab!=='goals') return;
+  tcJornadaOpTab=tab;
+  const tAct=document.getElementById('tc-jornada-tab-activities');
+  const tGoals=document.getElementById('tc-jornada-tab-goals');
+  const onAct=tab==='activities';
+  if(tAct){ tAct.classList.toggle('tc-jornada-op-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
+  if(tGoals){ tGoals.classList.toggle('tc-jornada-op-tab--on',!onAct); tGoals.setAttribute('aria-selected',!onAct?'true':'false'); }
+  tcJornadaRenderAside();
+}
+function tcJornadaRenderAside(){
+  const aside=document.getElementById('tc-jornada-aside');
+  if(!aside||!tcJornadaEmpId) return;
+  if(tcJornadaOpTab==='goals'){
+    aside.innerHTML='<div class="tc-goals-list" id="tc-jornada-goals-list"><p class="tc-goal-empty">Cargando…</p></div>';
+    tcGoalsLoad();
+    return;
+  }
+  aside.innerHTML=tcKanbanShellHtml();
+  tcKanbanEmpId=tcJornadaEmpId;
+  tcKanbanEmpTz=tcJornadaTz;
+  tcKanbanCompletedShowAll=false;
+  tcKanbanLoad();
+}
+async function tcGoalsLoad(){
+  const listEl=document.getElementById('tc-jornada-goals-list');
+  if(!tcJornadaEmpId||!listEl) return;
+  try{
+    const out=await tcAdminFetchEmployeeGoals(tcJornadaEmpId);
+    tcGoalsAdminList=(out&&out.goals)||[];
+    tcGoalsRenderAdmin();
+  }catch(e){
+    listEl.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar las metas.')+'</p>';
+  }
+}
+function tcGoalsRenderAdmin(){
+  const listEl=document.getElementById('tc-jornada-goals-list');
+  if(!listEl) return;
+  if(!tcGoalsAdminList.length){
+    listEl.innerHTML='<p class="tc-goal-empty">Este colaborador aún no tiene metas asignadas.</p>';
+    return;
+  }
+  const tz=tcJornadaTz||'America/Mexico_City';
+  listEl.innerHTML=tcGoalsAdminList.map(function(g){
+    const cp=g.currentPeriod;
+    const st=cp?cp.displayStatus:(g.archivedAt?'INACTIVE':'PENDING');
+    const pct=cp&&cp.completionPercent!=null?tcGoalFmtPct(cp.completionPercent):'—';
+    const prog=cp&&g.goalType==='QUANTITATIVE'&&cp.completionPercent!=null
+      ?('<div class="tc-goal-progress" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+Math.min(100,Math.max(0,Number(cp.completionPercent)||0))+'%"></div></div>')
+      :'';
+    const obj=g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento binario';
+    const histOpen=tcGoalHistoryOpenId===g.id;
+    return '<article class="tc-goal-card" data-goal-id="'+g.id+'">'+
+      '<div class="tc-goal-card-main">'+
+      '<div class="tc-goal-card-head">'+
+      '<h4 class="tc-goal-card-title">'+tcEsc(g.title)+'</h4>'+
+      '<span class="tc-goal-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_LABELS[st]||st)+'</span></div>'+
+      '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_TYPE_LABELS[g.goalType]||g.goalType)+' · '+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · Objetivo: '+tcEsc(obj)+'</p>'+
+      (cp?('<p class="tc-goal-card-meta">Periodo: '+tcEsc(tcGoalFmtPeriodRange(cp,tz))+' · '+tcEsc(tcGoalResultSummary(g,cp))+' · '+tcEsc(pct)+'</p>'):'')+
+      prog+
+      '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalToggleHistory(\''+g.id+'\')">'+(histOpen?'Ocultar historial':'Ver historial')+'</button>'+
+      (histOpen?('<div class="tc-goal-history" id="tc-goal-history-'+g.id+'"><p class="tc-goal-card-meta">Cargando historial…</p></div>'):'')+
+      '</div>'+
+      '<div class="tc-goal-card-side">'+
+      (g.archivedAt?'':('<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalArchive(\''+g.id+'\')">Archivar</button>'))+
+      '</div></article>';
+  }).join('');
+  if(tcGoalHistoryOpenId) tcGoalLoadHistory(tcGoalHistoryOpenId);
+}
+async function tcGoalToggleHistory(goalId){
+  tcGoalHistoryOpenId=tcGoalHistoryOpenId===goalId?null:goalId;
+  tcGoalsRenderAdmin();
+}
+async function tcGoalLoadHistory(goalId){
+  const box=document.getElementById('tc-goal-history-'+goalId);
+  if(!box) return;
+  try{
+    const out=await tcAdminFetchGoalPeriods(goalId);
+    const goal=out.goal||{};
+    const periods=(out.periods||[]).slice(0,24);
+    const tz=tcJornadaTz||'America/Mexico_City';
+    if(!periods.length){
+      box.innerHTML='<p class="tc-goal-card-meta">Sin periodos registrados.</p>';
+      return;
+    }
+    box.innerHTML='<ul class="tc-goal-history-list" style="margin:8px 0 0;padding:0;list-style:none;">'+periods.map(function(p){
+      return '<li class="tc-goal-card-meta" style="padding:4px 0;border-top:1px solid var(--slate-100);">'+tcEsc(tcGoalFmtPeriodRange(p,tz))+' · '+tcEsc(tcGoalResultSummary(goal,p))+' · '+tcEsc(tcGoalFmtPct(p.completionPercent))+' · '+tcEsc(TC_GOAL_STATUS_LABELS[p.displayStatus]||p.displayStatus)+'</li>';
+    }).join('')+'</ul>';
+  }catch(e){
+    box.innerHTML='<p class="tc-goal-card-meta">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p>';
+  }
+}
+async function tcGoalArchive(goalId){
+  if(!goalId||!window.confirm('¿Archivar esta meta? El colaborador ya no podrá reportar periodos nuevos.')) return;
+  try{
+    await tcAdminArchiveGoal(goalId);
+    tcGoalHistoryOpenId=null;
+    await tcGoalsLoad();
+  }catch(e){ alert(e.message||'No se pudo archivar.'); }
+}
+function tcGoalSyncAssignTypeFields(){
+  const typeEl=document.getElementById('tc-goal-assign-type-input');
+  const box=document.getElementById('tc-goal-assign-quant-fields');
+  const quant=typeEl&&typeEl.value==='QUANTITATIVE';
+  if(box) box.classList.toggle('hidden',!quant);
+}
+function tcGoalOpenAssign(){
+  if(!tcJornadaEmpId){ alert('Abre la jornada de un colaborador para asignar metas.'); return; }
+  tcGoalSyncAssignTypeFields();
+  const m=document.getElementById('tc-goal-assign-modal');
+  const err=document.getElementById('tc-goal-assign-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  ['tc-goal-assign-title-input','tc-goal-assign-desc-input','tc-goal-assign-target-input','tc-goal-assign-unit-input','tc-goal-assign-end-input'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  const typeEl=document.getElementById('tc-goal-assign-type-input');
+  const perEl=document.getElementById('tc-goal-assign-periodicity-input');
+  const startEl=document.getElementById('tc-goal-assign-start-input');
+  if(typeEl) typeEl.value='COMPLIANCE';
+  if(perEl) perEl.value='DAILY';
+  if(startEl){
+    const t=tcLocalTodayParts(tcJornadaTz||'America/Mexico_City');
+    startEl.value=t.y+'-'+String(t.m).padStart(2,'0')+'-'+String(t.d).padStart(2,'0');
+  }
+  tcGoalSyncAssignTypeFields();
+  if(m){ m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); const ti=document.getElementById('tc-goal-assign-title-input'); if(ti) ti.focus(); }
+}
+function tcGoalCloseAssign(){
+  const m=document.getElementById('tc-goal-assign-modal');
+  if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+}
+async function tcGoalSubmitAssign(){
+  if(!tcJornadaEmpId||tcGoalAssignInFlight) return;
+  const ti=document.getElementById('tc-goal-assign-title-input');
+  const di=document.getElementById('tc-goal-assign-desc-input');
+  const typeEl=document.getElementById('tc-goal-assign-type-input');
+  const perEl=document.getElementById('tc-goal-assign-periodicity-input');
+  const targetEl=document.getElementById('tc-goal-assign-target-input');
+  const unitEl=document.getElementById('tc-goal-assign-unit-input');
+  const startEl=document.getElementById('tc-goal-assign-start-input');
+  const endEl=document.getElementById('tc-goal-assign-end-input');
+  const err=document.getElementById('tc-goal-assign-err');
+  const submitBtn=document.getElementById('tc-goal-assign-submit');
+  const title=(ti&&ti.value||'').trim();
+  if(!title){
+    if(err){ err.textContent='El título es obligatorio.'; err.classList.remove('hidden'); }
+    return;
+  }
+  const goalType=typeEl?typeEl.value:'COMPLIANCE';
+  const body={
+    title:title,
+    description:(di&&di.value||'').trim()||null,
+    goalType:goalType,
+    periodicity:perEl?perEl.value:'DAILY',
+    startDate:startEl&&startEl.value,
+    endDate:(endEl&&endEl.value)||null,
+  };
+  if(!body.startDate){
+    if(err){ err.textContent='Indica la fecha de inicio.'; err.classList.remove('hidden'); }
+    return;
+  }
+  if(goalType==='QUANTITATIVE'){
+    const tv=Number(targetEl&&targetEl.value);
+    if(!Number.isFinite(tv)||tv<=0){
+      if(err){ err.textContent='El valor objetivo debe ser mayor a cero.'; err.classList.remove('hidden'); }
+      return;
+    }
+    body.targetValue=tv;
+    body.unit=(unitEl&&unitEl.value||'').trim()||null;
+  }
+  tcGoalAssignInFlight=true;
+  if(submitBtn) submitBtn.disabled=true;
+  try{
+    await tcAdminCreateEmployeeGoal(tcJornadaEmpId, body);
+    tcGoalCloseAssign();
+    if(tcJornadaOpTab==='goals') await tcGoalsLoad();
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo asignar la meta.'; err.classList.remove('hidden'); }
+  }finally{
+    tcGoalAssignInFlight=false;
+    if(submitBtn) submitBtn.disabled=false;
+  }
+}
+let tcEmpGoalsLoadInFlight=false;
+let tcEmpGoalsCache=[];
+const tcEmpGoalReportInFlight={};
+function tcEmpGoalSortRank(st){
+  const rank={ OVERDUE:0, PENDING:1, MET:2, PARTIAL:2, NOT_MET:2, INACTIVE:3 };
+  return rank[st]??9;
+}
+function tcEmpGoalPreviewPct(goal,target,raw){
+  const val=Number(raw);
+  if(!Number.isFinite(val)||val<0) return '—';
+  const t=Number(target);
+  if(!Number.isFinite(t)||t<=0) return '—';
+  return tcGoalFmtPct((val/t)*100);
+}
+async function tcEmpLoadGoals(showLoading){
+  const body=document.getElementById('tc-emp-goals-body');
+  if(!body||tcEmpGoalsLoadInFlight) return;
+  if(showLoading!==false) body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
+  tcEmpGoalsLoadInFlight=true;
+  try{
+    const out=await tcPublicFetchGoals();
+    tcEmpGoalsCache=(out&&out.goals)||[];
+    tcEmpRenderGoals();
+  }catch(e){
+    body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
+  }finally{
+    tcEmpGoalsLoadInFlight=false;
+  }
+}
+function tcEmpRenderGoals(){
+  const body=document.getElementById('tc-emp-goals-body');
+  if(!body) return;
+  if(!tcEmpGoalsCache.length){
+    body.innerHTML='<p class="tc-goal-empty">No tienes metas activas asignadas.</p>';
+    return;
+  }
+  const tz=(tcEmpMe&&tcEmpMe.timezone)||'America/Mexico_City';
+  const rows=[];
+  tcEmpGoalsCache.forEach(function(item){
+    const goal=item.goal||{};
+    const periods=item.periods||[];
+    let doneShown=0;
+    periods.forEach(function(p){
+      const st=p.displayStatus||'PENDING';
+      if(st==='INACTIVE') return;
+      if(st==='OVERDUE'||st==='PENDING'){
+        rows.push({ goal:goal, period:p, rank:tcEmpGoalSortRank(st), sortKey:p.periodStart });
+        return;
+      }
+      if(doneShown<3){
+        doneShown+=1;
+        rows.push({ goal:goal, period:p, rank:tcEmpGoalSortRank(st), sortKey:p.periodStart });
+      }
+    });
+  });
+  rows.sort(function(a,b){
+    if(a.rank!==b.rank) return a.rank-b.rank;
+    return String(b.sortKey).localeCompare(String(a.sortKey));
+  });
+  body.innerHTML=rows.map(function(row){
+    const g=row.goal;
+    const p=row.period;
+    const st=p.displayStatus||'PENDING';
+    const canReport=!g.archivedAt&&st!=='INACTIVE';
+    const now=Date.now();
+    const future=new Date(p.periodStart).getTime()>now;
+    const showForm=canReport&&!future;
+    const pct=p.completionPercent!=null?tcGoalFmtPct(p.completionPercent):'—';
+    const prog=g.goalType==='QUANTITATIVE'&&p.completionPercent!=null
+      ?('<div class="tc-goal-progress" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+Math.min(100,Math.max(0,Number(p.completionPercent)||0))+'%"></div></div>')
+      :'';
+    let form='';
+    if(showForm){
+      if(g.goalType==='COMPLIANCE'){
+        form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
+          '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'MET\')">Cumplida</button>'+
+          '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'NOT_MET\')">No cumplida</button>'+
+          '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" />'+
+          '</div>';
+      }else{
+        form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
+          '<label class="visually-hidden" for="tc-emp-goal-val-'+p.id+'">Resultado alcanzado</label>'+
+          '<input type="number" min="0" step="any" class="tc-goal-report-input" id="tc-emp-goal-val-'+p.id+'" data-target-snapshot="'+String(p.targetSnapshot)+'" placeholder="Resultado" aria-label="Resultado alcanzado" oninput="tcEmpGoalUpdatePreview(this)" />'+
+          '<span class="tc-goal-card-meta" id="tc-emp-goal-preview-'+p.id+'">Objetivo: '+tcEsc(String(p.targetSnapshot))+(g.unit?(' '+g.unit):'')+'</span>'+
+          '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" />'+
+          '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportQuantitative(\''+p.id+'\')">Registrar resultado</button>'+
+          '</div>';
+      }
+    }
+    return '<article class="tc-goal-card">'+
+      '<div class="tc-goal-card-head">'+
+      '<h4 class="tc-goal-card-title">'+tcEsc(g.title)+'</h4>'+
+      '<span class="tc-goal-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_LABELS[st]||st)+'</span></div>'+
+      '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · Periodo: '+tcEsc(tcGoalFmtPeriodRange(p,tz))+'</p>'+
+      '<p class="tc-goal-card-meta">'+tcEsc(tcGoalResultSummary(g,p))+' · '+tcEsc(pct)+'</p>'+
+      prog+form+
+      '</article>';
+  }).join('');
+}
+function tcEmpGoalUpdatePreview(inputEl){
+  if(!inputEl||!inputEl.id) return;
+  const periodId=inputEl.id.replace('tc-emp-goal-val-','');
+  const prev=document.getElementById('tc-emp-goal-preview-'+periodId);
+  if(!prev) return;
+  const base=prev.textContent.split(' · Vista previa:')[0];
+  const targetSnapshot=inputEl.getAttribute('data-target-snapshot');
+  const pct=tcEmpGoalPreviewPct(null,targetSnapshot,inputEl.value);
+  prev.textContent=base+(pct!=='—'?' · Vista previa: '+pct:'');
+}
+async function tcEmpGoalReportBinary(periodId,binaryResult){
+  if(tcEmpGoalReportInFlight[periodId]) return;
+  const commentEl=document.getElementById('tc-emp-goal-comment-'+periodId);
+  tcEmpGoalReportInFlight[periodId]=true;
+  try{
+    await tcPublicReportGoalPeriod(periodId,{ binaryResult:binaryResult, employeeComment:(commentEl&&commentEl.value||'').trim()||null });
+    await tcEmpLoadGoals(false);
+  }catch(e){ alert(e.message||'No se pudo registrar el resultado.'); }
+  finally{ delete tcEmpGoalReportInFlight[periodId]; }
+}
+async function tcEmpGoalReportQuantitative(periodId){
+  if(tcEmpGoalReportInFlight[periodId]) return;
+  const valEl=document.getElementById('tc-emp-goal-val-'+periodId);
+  const commentEl=document.getElementById('tc-emp-goal-comment-'+periodId);
+  const achievedValue=Number(valEl&&valEl.value);
+  if(!Number.isFinite(achievedValue)||achievedValue<0){
+    alert('Indica un resultado numérico válido.');
+    return;
+  }
+  tcEmpGoalReportInFlight[periodId]=true;
+  try{
+    await tcPublicReportGoalPeriod(periodId,{ achievedValue:achievedValue, employeeComment:(commentEl&&commentEl.value||'').trim()||null });
+    await tcEmpLoadGoals(false);
+  }catch(e){ alert(e.message||'No se pudo registrar el resultado.'); }
+  finally{ delete tcEmpGoalReportInFlight[periodId]; }
+}
 function tcCloseJornada(){
   tcCloseHistoryDialog(false);
   tcJornadaEmpId=null;
   tcHistoryPayload=null;
   tcKanbanTasks=[];
   tcKanbanEmpId=null;
+  tcGoalsAdminList=[];
+  tcGoalHistoryOpenId=null;
   tcKanbanCloseAssign();
   tcKanbanCloseEdit();
+  tcGoalCloseAssign();
   const card=document.getElementById('tc-jornada-card');
   if(card) card.classList.add('hidden');
 }
@@ -14380,6 +14841,24 @@ async function tcAdminFetchEmployeeTasks(employeeId, status){
 async function tcAdminCreateEmployeeTask(employeeId, body){
   return apiJson('/api/org/timeclock/employees/'+encodeURIComponent(employeeId)+'/tasks',{method:'POST',body:JSON.stringify(body)});
 }
+async function tcAdminFetchEmployeeGoals(employeeId){
+  return apiJson('/api/org/timeclock/employees/'+encodeURIComponent(employeeId)+'/goals');
+}
+async function tcAdminCreateEmployeeGoal(employeeId, body){
+  return apiJson('/api/org/timeclock/employees/'+encodeURIComponent(employeeId)+'/goals',{method:'POST',body:JSON.stringify(body)});
+}
+async function tcAdminFetchGoalPeriods(goalId){
+  return apiJson('/api/org/timeclock/goals/'+encodeURIComponent(goalId)+'/periods');
+}
+async function tcAdminArchiveGoal(goalId){
+  return apiJson('/api/org/timeclock/goals/'+encodeURIComponent(goalId)+'/archive',{method:'POST',body:JSON.stringify({})});
+}
+async function tcPublicFetchGoals(){
+  return tcPublicJson('/api/timeclock/public/goals');
+}
+async function tcPublicReportGoalPeriod(periodId, body){
+  return tcPublicJson('/api/timeclock/public/goals/periods/'+encodeURIComponent(periodId)+'/report',{method:'POST',body:JSON.stringify(body)});
+}
 async function tcAdminUpdateWorkforceTask(taskId, body){
   return apiJson('/api/org/timeclock/tasks/'+encodeURIComponent(taskId),{method:'PATCH',body:JSON.stringify(body)});
 }
@@ -14444,6 +14923,18 @@ window.tcAdminUpdateTaskStatus=tcAdminUpdateTaskStatus;
 window.tcAdminUpdateTaskPosition=tcAdminUpdateTaskPosition;
 window.tcPublicFetchTasks=tcPublicFetchTasks;
 window.tcPublicUpdateTaskStatus=tcPublicUpdateTaskStatus;
+window.tcJornadaSetOpTab=tcJornadaSetOpTab;
+window.tcGoalOpenAssign=tcGoalOpenAssign;
+window.tcGoalCloseAssign=tcGoalCloseAssign;
+window.tcGoalSubmitAssign=tcGoalSubmitAssign;
+window.tcGoalSyncAssignTypeFields=tcGoalSyncAssignTypeFields;
+window.tcGoalToggleHistory=tcGoalToggleHistory;
+window.tcGoalArchive=tcGoalArchive;
+window.tcEmpQuickGoGoals=tcEmpQuickGoGoals;
+window.tcEmpLoadGoals=tcEmpLoadGoals;
+window.tcEmpGoalReportBinary=tcEmpGoalReportBinary;
+window.tcEmpGoalReportQuantitative=tcEmpGoalReportQuantitative;
+window.tcEmpGoalUpdatePreview=tcEmpGoalUpdatePreview;
 window.tcKanbanOpenAssign=tcKanbanOpenAssign;
 window.tcKanbanCloseAssign=tcKanbanCloseAssign;
 window.tcKanbanSubmitAssign=tcKanbanSubmitAssign;

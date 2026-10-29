@@ -50,6 +50,12 @@ import {
   markWorkforceRecruitmentNovedadRead,
 } from '../services/workforceRecruitmentNovedad.service.js';
 import {
+  listWorkforceGoalPeriodsForEmployee,
+  listWorkforceGoalsForEmployee,
+  reportWorkforceGoalPeriod,
+  WORKFORCE_GOAL_BINARY_RESULTS,
+} from '../services/workforceGoal.service.js';
+import {
   RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES,
   isAllowedRecruitmentCandidateResumeFile,
   uploadRecruitmentCandidateResume,
@@ -420,6 +426,54 @@ router.post(
         uploadedByWorkforceEmployeeId: employeeId,
       });
       res.status(201).json({ resume });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/goals', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const items = await listWorkforceGoalsForEmployee(req.timeclockEmployee);
+    res.json({ goals: items });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/goals/:goalId/periods', requireTimeclockSession, async (req, res, next) => {
+  try {
+    const out = await listWorkforceGoalPeriodsForEmployee({
+      employee: req.timeclockEmployee,
+      goalId: req.params.goalId,
+    });
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post(
+  '/goals/periods/:periodId/report',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  async (req, res, next) => {
+    try {
+      const body = z
+        .object({
+          binaryResult: z.enum(WORKFORCE_GOAL_BINARY_RESULTS).optional(),
+          achievedValue: z.number().finite().optional(),
+          employeeComment: z.string().max(2000).optional().nullable(),
+        })
+        .parse(req.body ?? {});
+      const period = await reportWorkforceGoalPeriod({
+        employee: req.timeclockEmployee,
+        periodId: req.params.periodId,
+        binaryResult: body.binaryResult,
+        achievedValue: body.achievedValue,
+        employeeComment: body.employeeComment,
+      });
+      res.json({ period });
     } catch (e) {
       next(e);
     }

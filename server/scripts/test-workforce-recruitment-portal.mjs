@@ -114,7 +114,7 @@ check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
 check(/tc-ws-hero/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header hero unificado + jornada');
 check(/tc-ws-quick-actions/.test(indexHtml) && /tc-ws-quick-novedades/.test(indexHtml), 'barra accesos rápidos + novedades');
 check(/tcEmpQuickGoActivities/.test(indexHtml) && /tcEmpQuickRegisterCandidate/.test(indexHtml) && /tcEmpQuickGoCandidates/.test(indexHtml), 'atajos conectados a tabs/modal');
-check(/tc-ws-quick-goals[\s\S]*aria-disabled="true"/.test(indexHtml) && /Metas · Próximamente/.test(indexHtml), 'Metas deshabilitado con tooltip');
+check(/tcEmpQuickGoGoals/.test(indexHtml) && !/id="tc-ws-quick-goals"[^>]*aria-disabled/.test(indexHtml), 'Metas quick action activa');
 check(/tc-ws-novedades-popover/.test(indexHtml) && /No tienes novedades pendientes/.test(indexHtml), 'popover Novedades');
 check(/tcEmpPortalStorageIdentity/.test(indexHtml) && /tcEmpNovedadesLegacyStorageKey/.test(indexHtml), 'identidad y limpieza storage legacy');
 check(!/tcEmpTasks\[0\]\.employeeId/.test(indexHtml.match(/function tcEmpPortalStorageIdentity[\s\S]*?^function /m)?.[0] || ''), 'identidad no depende de tcEmpTasks');
@@ -123,7 +123,7 @@ check(/tcEmpNovedadesStartPolling\(\)/.test(indexHtml.match(/async function tcEm
 check(/TC_EMP_NOVEDADES_POLL_MS=20000/.test(indexHtml) && /tcEmpNovedadesPollInFlight/.test(indexHtml), 'polling 20s con guard inFlight');
 check(/\/api\/timeclock\/public\/novedades/.test(indexHtml) && /novedades\/unread-count/.test(indexHtml), 'API novedades en frontend');
 check(!/tcEmpNovedadesBuildFeed/.test(indexHtml), 'sin feed inferido cliente');
-check(!/onclick=/.test(indexHtml.match(/id="tc-ws-quick-goals"[^>]*>[\s\S]*?<\/button>/)?.[0] || indexHtml.match(/id="tc-ws-quick-goals"[^>]*\/>/)?.[0] || ''), 'Metas sin acción');
+check(/onclick="tcEmpQuickGoGoals\(\)"/.test(indexHtml.match(/id="tc-ws-quick-goals"[^>]*>[\s\S]*?<\/button>/)?.[0] || ''), 'Metas abre tab');
 check(/if\(tcEmpNovedadesBound\) return/.test(indexHtml) && /dataset\.tcQuickTipBound/.test(indexHtml), 'listeners quick/novedades no duplicados');
 check(/tcEmpNovedadesToggle/.test(indexHtml) && /tcEmpNovedadesClose/.test(indexHtml), 'popover abrir/cerrar');
 check(/tcEmpNovedadesPurgeLegacyStorage/.test(indexHtml) && /localStorage\.removeItem/.test(indexHtml.match(/function tcEmpNovedadesPurgeLegacyStorage[\s\S]*?^function /m)?.[0] || ''), 'purge storage legacy sin fuente de verdad');
@@ -155,7 +155,7 @@ check(/tcEmpNovedadesResetSessionState/.test(indexHtml) && /tcEmpNovedadesStopPo
 check(/document\.hidden/.test(indexHtml.match(/function tcEmpNovedadesPollUnreadCount[\s\S]*?^function /m)?.[0] || ''), 'polling pausa en pestaña oculta');
 check(/tc-ws-quick-tip/.test(indexHtml) && /position:fixed/.test(indexHtml.match(/\.tc-ws-quick-tip\{[\s\S]*?\}/)?.[0] || ''), 'tooltips accesos sin clipping');
 const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || '';
-check(!/>\s*Metas\s*</.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'sin tab Metas/Novedades visibles');
+check(/id="tc-ws-tab-goals"/.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'tab Metas visible, Novedades solo quick action');
 check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
 check(/tc-ws-jornada-info-tip/.test(indexHtml) && /no monitorea otras aplicaciones/.test(indexHtml), 'privacidad jornada en tooltip');
 check(/height:152px/.test(indexHtml.match(/\.tc-ws-jornada-mini[\s\S]*?\.tc-ws-jornada-mini-top/)?.[0] || ''), 'tarjeta jornada altura fija desktop');
@@ -188,7 +188,10 @@ check(/tcEmployeeBoot[\s\S]*?tcEmpMyCandFilter='in_process'/.test(indexHtml), 'r
 console.log('\n=== Workspace UX V2.2 — jornada compacta ===\n');
 check(/function tcShiftDurationSeconds/.test(indexHtml), 'helper duración jornada');
 check(/Math\.floor\(Number\(sec\)/.test(indexHtml.match(/function tcFmtDuration[\s\S]*?^function /m)?.[0] || ''), 'tcFmtDuration sin decimales');
-check(/tcFmtDurationHuman\(sec\)/.test(indexHtml.match(/function tcEmpRender[\s\S]*?^function /m)?.[0] || ''), 'jornada finalizada human readable');
+check(
+  /tcFmtDurationHuman\(sec\)/.test(indexHtml.match(/function tcEmpRender\(\)[\s\S]*?^function /m)?.[0] || ''),
+  'jornada finalizada human readable',
+);
 check(/tc-ws-jornada-view-live/.test(indexHtml) && /tc-ws-jornada-view-done/.test(indexHtml), 'vistas jornada live/done');
 check(/tcEmpWorkspaceUpdateTabBadges/.test(indexHtml), 'contador actividades solo en tab');
 check(!/tc-ws-hoy-label/.test(indexHtml), 'sin bloque Hoy en header');
