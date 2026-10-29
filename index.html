@@ -1305,8 +1305,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-novedades-popover.hidden{display:none!important;}
 .tc-ws-novedades-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
 .tc-ws-novedades-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
-.tc-ws-novedades-mark-all{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:4px 6px;border-radius:6px;}
-.tc-ws-novedades-mark-all:hover{background:var(--purple-light);}
+.mind24-mark-all-read-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid rgba(124,58,237,.16);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;flex-shrink:0;font-family:inherit;}
+.mind24-mark-all-read-btn svg{width:18px;height:18px;display:block;pointer-events:none;}
+.mind24-mark-all-read-btn:hover:not(:disabled){background:var(--purple-light);border-color:rgba(124,58,237,.32);color:var(--purple-dark);}
+.mind24-mark-all-read-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.mind24-mark-all-read-btn:disabled{opacity:.45;cursor:not-allowed;background:transparent;border-color:var(--slate-200);color:var(--slate-400);}
+.mind24-mark-all-read-btn--done{background:var(--purple-light);border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
 .tc-ws-novedades-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:72px;max-height:min(calc(70vh - 52px),428px);}
 .tc-ws-novedades-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
 .tc-ws-novedades-item:hover{background:var(--slate-50);}
@@ -1479,8 +1483,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mind24-notif-popover.hidden{display:none!important;}
 .mind24-notif-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
 .mind24-notif-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
-.mind24-notif-mark-all{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:4px 6px;border-radius:6px;}
-.mind24-notif-mark-all:hover{background:var(--purple-light);}
 .mind24-notif-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:80px;}
 .mind24-notif-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
 .mind24-notif-item:hover{background:var(--slate-50);}
@@ -3925,7 +3927,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   <div class="tc-ws-novedades-popover-head">
     <h3 id="tc-ws-novedades-popover-title">Novedades</h3>
     <div style="display:flex;align-items:center;gap:4px;">
-      <button type="button" class="tc-ws-novedades-mark-all" onclick="tcEmpNovedadesMarkAllRead()">Marcar como leídas</button>
+      <button type="button" id="tc-ws-novedades-mark-all" class="mind24-mark-all-read-btn" aria-label="Marcar todas como leídas" title="Marcar todas como leídas" onclick="tcEmpNovedadesMarkAllRead()" disabled><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="m9 11 2 2 4-4"/></svg></button>
       <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar novedades" onclick="tcEmpNovedadesClose(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
   </div>
@@ -3935,7 +3937,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   <div class="mind24-notif-popover-head">
     <h3 id="mind24-notif-popover-title">Notificaciones</h3>
     <div style="display:flex;align-items:center;gap:4px;">
-      <button type="button" class="mind24-notif-mark-all" onclick="mind24NotifMarkAllRead()">Marcar todas como leídas</button>
+      <button type="button" id="mind24-notif-mark-all" class="mind24-mark-all-read-btn" aria-label="Marcar todas como leídas" title="Marcar todas como leídas" onclick="mind24NotifMarkAllRead()" disabled><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="m9 11 2 2 4-4"/></svg></button>
       <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar" onclick="mind24NotifClose(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
   </div>
@@ -12319,8 +12321,29 @@ let tcEmpNovedadesPollTimer=null;
 let tcEmpNovedadesPollInFlight=false;
 let tcEmpNovedadesListInFlight=false;
 let tcEmpNovedadesLastUnreadCount=0;
+let tcEmpNovedadesMarkAllInFlight=false;
 let tcEmpNovedadesVisibilityBound=false;
 const TC_EMP_NOVEDADES_POLL_MS=20000;
+function mind24SyncMarkAllReadBtn(btnId, unreadCount, inFlight){
+  const btn=document.getElementById(btnId);
+  if(!btn) return;
+  const n=Math.max(0,Number(unreadCount)||0);
+  const busy=!!inFlight;
+  const enabled=n>0&&!busy;
+  btn.disabled=!enabled;
+  btn.setAttribute('aria-disabled',enabled?'false':'true');
+}
+function mind24MarkAllReadBtnFlash(btnId){
+  const btn=document.getElementById(btnId);
+  if(!btn) return;
+  btn.classList.add('mind24-mark-all-read-btn--done');
+  window.setTimeout(function(){ btn.classList.remove('mind24-mark-all-read-btn--done'); }, 650);
+}
+function tcEmpNovedadesSyncMarkAllBtn(){
+  const fromItems=(tcEmpNovedadesItems||[]).filter(function(n){ return !n.read; }).length;
+  const n=Math.max(tcEmpNovedadesLastUnreadCount, fromItems);
+  mind24SyncMarkAllReadBtn('tc-ws-novedades-mark-all', n, tcEmpNovedadesMarkAllInFlight);
+}
 function tcEmpPortalStorageIdentity(){
   const me=tcEmpMe||{};
   if(!me.employeeId||!me.organizationId) return null;
@@ -12358,6 +12381,7 @@ function tcEmpNovedadesUpdateBadge(count){
   tcEmpNovedadesLastUnreadCount=n;
   const badge=document.getElementById('tc-ws-quick-badge-novedades');
   if(badge) badge.textContent=n>0?(n>99?'99+':String(n)):'';
+  tcEmpNovedadesSyncMarkAllBtn();
 }
 async function tcEmpNovedadesFetchList(){
   if(tcEmpNovedadesListInFlight) return;
@@ -12366,6 +12390,7 @@ async function tcEmpNovedadesFetchList(){
     const j=await tcPublicJson('/api/timeclock/public/novedades?limit=30');
     tcEmpNovedadesItems=(j&&j.novedades)||[];
     tcEmpNovedadesRenderList();
+    tcEmpNovedadesSyncMarkAllBtn();
   }catch(_){
     /* polling / popover: errores temporales sin alertas invasivas */
   }finally{
@@ -12415,6 +12440,7 @@ function tcEmpNovedadesRenderList(){
   if(!body) return;
   if(!tcEmpNovedadesItems.length){
     body.innerHTML='<p class="tc-ws-novedades-empty">No tienes novedades pendientes</p>';
+    tcEmpNovedadesSyncMarkAllBtn();
     return;
   }
   body.innerHTML=tcEmpNovedadesItems.map(function(n){
@@ -12445,12 +12471,21 @@ async function tcEmpNovedadesMarkRead(id){
   }
 }
 async function tcEmpNovedadesMarkAllRead(){
+  if(tcEmpNovedadesMarkAllInFlight) return;
+  const fromItems=(tcEmpNovedadesItems||[]).filter(function(n){ return !n.read; }).length;
+  if(tcEmpNovedadesLastUnreadCount<=0&&fromItems<=0) return;
+  tcEmpNovedadesMarkAllInFlight=true;
+  tcEmpNovedadesSyncMarkAllBtn();
   try{
     await tcPublicJson('/api/timeclock/public/novedades/read-all',{ method:'POST', body:JSON.stringify({}) });
     tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){ return Object.assign({},n,{read:true}); });
     tcEmpNovedadesUpdateBadge(0);
     tcEmpNovedadesRenderList();
-  }catch(_){}
+    mind24MarkAllReadBtnFlash('tc-ws-novedades-mark-all');
+  }catch(_){}finally{
+    tcEmpNovedadesMarkAllInFlight=false;
+    tcEmpNovedadesSyncMarkAllBtn();
+  }
 }
 function tcEmpNovedadesPosition(){
   const pop=document.getElementById('tc-ws-novedades-popover');
@@ -12864,6 +12899,13 @@ function tcOnShow(){
   tcLoadEmployees();
 }
 const MIND24_NOTIF_POLL_MS=60000;
+let mind24NotifMarkAllInFlight=false;
+let mind24NotifLastUnreadCount=0;
+function mind24NotifSyncMarkAllBtn(){
+  const fromItems=(mind24NotifItems||[]).filter(function(n){ return !n.read; }).length;
+  const n=Math.max(mind24NotifLastUnreadCount, fromItems);
+  mind24SyncMarkAllReadBtn('mind24-notif-mark-all', n, mind24NotifMarkAllInFlight);
+}
 let mind24NotifOpen=false;
 let mind24NotifBound=false;
 let mind24NotifPollTimer=null;
@@ -12893,6 +12935,8 @@ function mind24NotifFmtTime(iso){
 }
 function mind24NotifUpdateBadges(count){
   const n=Math.max(0,Number(count)||0);
+  mind24NotifLastUnreadCount=n;
+  mind24NotifSyncMarkAllBtn();
   document.querySelectorAll('.mind24-notif-bell').forEach(function(btn){
     const badge=btn.querySelector('.mind24-notif-badge');
     btn.classList.toggle('mind24-notif-has-unread',n>0);
@@ -12934,6 +12978,7 @@ function mind24NotifRenderList(append){
   if(!body) return;
   if(!mind24NotifItems.length){
     body.innerHTML='<p class="mind24-notif-empty">No hay notificaciones todavía.</p>';
+    mind24NotifSyncMarkAllBtn();
     return;
   }
   const html=mind24NotifItems.map(function(n){
@@ -12945,6 +12990,7 @@ function mind24NotifRenderList(append){
   }).join('');
   const more=mind24NotifHasMore?'<button type="button" class="mind24-notif-more" onclick="mind24NotifLoadMore()">Ver anteriores</button>':'';
   body.innerHTML=html+more;
+  mind24NotifSyncMarkAllBtn();
 }
 async function mind24NotifFetchList(opts){
   const append=opts&&opts.append;
@@ -12986,12 +13032,21 @@ async function mind24NotifLoadMore(){
   try{ await mind24NotifFetchList({append:true}); }catch(_){}
 }
 async function mind24NotifMarkAllRead(){
+  if(mind24NotifMarkAllInFlight) return;
+  const fromItems=(mind24NotifItems||[]).filter(function(n){ return !n.read; }).length;
+  if(mind24NotifLastUnreadCount<=0&&fromItems<=0) return;
+  mind24NotifMarkAllInFlight=true;
+  mind24NotifSyncMarkAllBtn();
   try{
     await apiJson('/api/org/notifications/read-all',{method:'POST',body:JSON.stringify({})});
     mind24NotifItems=mind24NotifItems.map(function(n){ return Object.assign({},n,{read:true}); });
     mind24NotifRenderList(false);
     await mind24NotifRefreshBadge();
-  }catch(_){}
+    mind24MarkAllReadBtnFlash('mind24-notif-mark-all');
+  }catch(_){}finally{
+    mind24NotifMarkAllInFlight=false;
+    mind24NotifSyncMarkAllBtn();
+  }
 }
 async function mind24NotifOpenItem(id){
   const itemBefore=mind24NotifItems.find(function(n){ return n.id===id; });

@@ -54,7 +54,8 @@ check(/syncOverdueTaskNotifications/.test(notifSvc), 'sync vencidas en consulta'
 check(/task_overdue:/.test(notifSvc), 'dedupe vencida por task+dueAt');
 check(/mind24-notif-popover/.test(indexHtml) && /mind24NotifInit/.test(indexHtml), 'UX campana + popover');
 check(/MIND24_NOTIF_POLL_MS=60000/.test(indexHtml), 'polling 60s');
-check(/Marcar todas como leídas/.test(indexHtml), 'marcar todas');
+check(/id="mind24-notif-mark-all"/.test(indexHtml) && /aria-label="Marcar todas como leídas"/.test(indexHtml), 'marcar todas icono accesible');
+check(/id="tc-ws-novedades-mark-all"/.test(indexHtml) && /mind24-mark-all-read-btn/.test(indexHtml), 'novedades marcar todas icono');
 
 console.log('\n=== Notificaciones — unit dedupe ===\n');
 
