@@ -299,9 +299,27 @@ export async function listWorkforceGoalsForAdmin({ organizationId, employeeId })
       },
       orderBy: { periodStart: 'desc' },
     });
+    const openPeriod = await prisma.workforceGoalPeriod.findFirst({
+      where: {
+        goalId: goal.id,
+        organizationId,
+        periodStart: { lte: now },
+        binaryResult: null,
+        achievedValue: null,
+      },
+      orderBy: { periodStart: 'desc' },
+    });
+    let focusPeriod = openPeriod || currentPeriod;
+    if (!focusPeriod) {
+      focusPeriod = await prisma.workforceGoalPeriod.findFirst({
+        where: { goalId: goal.id, organizationId, periodStart: { lte: now } },
+        orderBy: { periodStart: 'desc' },
+      });
+    }
     out.push(
       serializeGoal(goal, {
         currentPeriod: currentPeriod ? serializePeriod(currentPeriod, goal, now) : null,
+        focusPeriod: focusPeriod ? serializePeriod(focusPeriod, goal, now) : null,
       }),
     );
   }

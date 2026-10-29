@@ -1116,6 +1116,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-goal-report-btn:hover{background:var(--purple-light);}
 .tc-goal-report-btn--ghost{color:var(--slate-600);border-color:var(--slate-200);}
 .tc-goal-type-fields.hidden{display:none!important;}
+.tc-jornada-aside-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-shrink:0;}
+.tc-jornada-aside-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
+.tc-jornada-aside-head-actions{display:inline-flex;align-items:center;gap:8px;}
+.tc-goals-kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:140px;max-width:100%;}
+@media(max-width:900px){.tc-goals-kanban{grid-template-columns:1fr;max-height:min(420px,55vh);overflow-y:auto;overflow-x:hidden;}}
+.tc-goals-kanban-col{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tc-goals-kanban-col-head{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);padding:2px 4px;}
+.tc-goals-kanban-col-body{display:flex;flex-direction:column;gap:8px;min-height:48px;}
+.tc-goals-kanban-card{border:1px solid var(--slate-200);border-radius:10px;padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:6px;min-width:0;}
+.tc-goals-kanban-card-title{margin:0;font-size:13px;font-weight:700;color:var(--primary);line-height:1.3;}
+.tc-goal-card-v2{border:1px solid var(--slate-200);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:10px;max-width:100%;box-sizing:border-box;}
+.tc-goal-card-v2-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.tc-goal-card-v2-head-left{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1;}
+.tc-goal-card-v2-icon{width:36px;height:36px;border:1px solid rgba(124,58,237,.2);border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:var(--purple-dark);flex-shrink:0;background:#fff;}
+.tc-goal-card-v2-icon svg{width:18px;height:18px;display:block;}
+.tc-goal-card-v2-titles{min-width:0;flex:1;}
+.tc-goal-card-v2-title{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--primary);line-height:1.25;}
+.tc-goal-period-pill{display:inline-flex;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--purple-dark);background:rgba(237,233,254,.7);padding:2px 8px;border-radius:999px;}
+.tc-goal-card-v2-status{flex-shrink:0;margin-left:auto;}
+.tc-goal-progress--met .tc-goal-progress-bar{background:linear-gradient(90deg,#22c55e,#86efac);}
+.tc-goal-progress--not_met .tc-goal-progress-bar{background:linear-gradient(90deg,#f87171,#fecaca);}
+.tc-goal-progress--partial .tc-goal-progress-bar{background:linear-gradient(90deg,#f59e0b,#fde68a);}
+.tc-goal-progress--pending .tc-goal-progress-bar{background:var(--slate-300);width:0!important;}
+.tc-goal-progress--overdue .tc-goal-progress-bar{background:linear-gradient(90deg,#fb7185,#fecdd3);width:0!important;}
+.tc-emp-goals-subnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.tc-emp-goals-subtab{border:1px solid var(--slate-200);background:#fff;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--slate-500);padding:7px 12px;border-radius:8px;cursor:pointer;}
+.tc-emp-goals-subtab--on{background:var(--purple-light);border-color:rgba(124,58,237,.28);color:var(--purple-dark);}
+.tc-emp-goals-subtab:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-goal-assign-section{margin:0 0 14px;padding:0;border:none;}
+.tc-goal-assign-section legend{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);margin-bottom:8px;padding:0;}
+.tc-goal-assign-hint{font-size:12px;color:var(--slate-500);margin:6px 0 0;line-height:1.45;}
+.tc-goal-assign-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate-600);margin:8px 0;}
+.tc-goal-toast{font-size:12px;color:var(--purple-dark);background:rgba(237,233,254,.6);border:1px solid rgba(124,58,237,.18);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
+.tc-jornada-op-actions{display:none!important;}
 .tc-jornada-meta{margin-top:16px;padding-top:14px;border-top:1px solid var(--slate-100);display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
 .tc-jornada-alta{font-size:11px;color:var(--slate-400);line-height:1.4;}
 .tc-history-toggle--inline{margin-top:2px;}
@@ -3511,34 +3545,49 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
       </div>
       <div id="tc-goal-assign-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-goal-assign-title" aria-hidden="true" onclick="tcGoalCloseAssign()">
-        <div class="tc-task-modal" onclick="event.stopPropagation()">
+        <div class="tc-task-modal tc-goal-assign-modal" onclick="event.stopPropagation()">
           <h3 id="tc-goal-assign-title">Asignar meta</h3>
           <p class="tc-task-modal-err hidden" id="tc-goal-assign-err"></p>
-          <label for="tc-goal-assign-title-input">Título *</label>
-          <input type="text" id="tc-goal-assign-title-input" maxlength="200" autocomplete="off" />
-          <label for="tc-goal-assign-desc-input">Descripción</label>
-          <textarea id="tc-goal-assign-desc-input" maxlength="4000" rows="2"></textarea>
-          <label for="tc-goal-assign-type-input">Tipo *</label>
-          <select id="tc-goal-assign-type-input" onchange="tcGoalSyncAssignTypeFields()">
-            <option value="COMPLIANCE">Cumplimiento</option>
-            <option value="QUANTITATIVE">Cuantitativa</option>
-          </select>
-          <label for="tc-goal-assign-periodicity-input">Periodicidad *</label>
-          <select id="tc-goal-assign-periodicity-input">
-            <option value="DAILY">Diaria</option>
-            <option value="WEEKLY">Semanal</option>
-            <option value="MONTHLY">Mensual</option>
-          </select>
-          <div id="tc-goal-assign-quant-fields" class="tc-goal-type-fields">
-            <label for="tc-goal-assign-target-input">Valor objetivo *</label>
-            <input type="number" id="tc-goal-assign-target-input" min="0.0001" step="any" />
-            <label for="tc-goal-assign-unit-input">Unidad de medida</label>
-            <input type="text" id="tc-goal-assign-unit-input" maxlength="64" autocomplete="off" />
-          </div>
-          <label for="tc-goal-assign-start-input">Fecha de inicio *</label>
-          <input type="date" id="tc-goal-assign-start-input" />
-          <label for="tc-goal-assign-end-input">Fecha de finalización</label>
-          <input type="date" id="tc-goal-assign-end-input" />
+          <fieldset class="tc-goal-assign-section">
+            <legend>Información</legend>
+            <label for="tc-goal-assign-title-input">Título *</label>
+            <input type="text" id="tc-goal-assign-title-input" maxlength="200" autocomplete="off" />
+            <label for="tc-goal-assign-desc-input">Descripción</label>
+            <textarea id="tc-goal-assign-desc-input" maxlength="4000" rows="2"></textarea>
+          </fieldset>
+          <fieldset class="tc-goal-assign-section">
+            <legend>Tipo</legend>
+            <select id="tc-goal-assign-type-input" onchange="tcGoalSyncAssignTypeFields()">
+              <option value="COMPLIANCE">Cumplimiento</option>
+              <option value="QUANTITATIVE">Cuantitativa</option>
+            </select>
+            <div id="tc-goal-assign-quant-fields" class="tc-goal-type-fields">
+              <label for="tc-goal-assign-target-input">Valor objetivo *</label>
+              <input type="number" id="tc-goal-assign-target-input" min="0.0001" step="any" />
+              <label for="tc-goal-assign-unit-input">Unidad de medida</label>
+              <input type="text" id="tc-goal-assign-unit-input" maxlength="64" autocomplete="off" />
+            </div>
+          </fieldset>
+          <fieldset class="tc-goal-assign-section">
+            <legend>Frecuencia</legend>
+            <select id="tc-goal-assign-periodicity-input" onchange="tcGoalSyncAssignPeriodHint()">
+              <option value="DAILY">Diaria</option>
+              <option value="WEEKLY">Semanal</option>
+              <option value="MONTHLY">Mensual</option>
+            </select>
+            <p class="tc-goal-assign-hint" id="tc-goal-assign-period-hint">Se generará automáticamente un nuevo periodo cada día.</p>
+          </fieldset>
+          <fieldset class="tc-goal-assign-section">
+            <legend>Vigencia</legend>
+            <label for="tc-goal-assign-start-input">Comienza *</label>
+            <input type="date" id="tc-goal-assign-start-input" />
+            <label class="tc-goal-assign-toggle"><input type="checkbox" id="tc-goal-assign-end-toggle" onchange="tcGoalSyncAssignEndToggle()" /> Definir fecha de finalización</label>
+            <div id="tc-goal-assign-end-wrap" class="hidden">
+              <label for="tc-goal-assign-end-input">Finaliza</label>
+              <input type="date" id="tc-goal-assign-end-input" />
+            </div>
+            <p class="tc-goal-assign-hint" id="tc-goal-assign-open-hint">Esta meta se repetirá hasta que el administrador la elimine.</p>
+          </fieldset>
           <div class="tc-task-modal-actions">
             <button type="button" class="card-action" onclick="tcGoalCloseAssign()">Cancelar</button>
             <button type="button" class="tc-kanban-assign-btn" id="tc-goal-assign-submit" onclick="tcGoalSubmitAssign()">Asignar meta</button>
@@ -3666,6 +3715,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <section class="tc-ws-panel tc-emp-goals hidden" id="tc-ws-panel-goals" role="tabpanel" aria-labelledby="tc-ws-tab-goals" hidden>
           <h2 class="visually-hidden">Mis metas</h2>
           <div class="tc-ws-panel-scroll" id="tc-ws-panel-goals-scroll">
+            <div class="tc-emp-goals-subnav" role="tablist" aria-label="Vista de metas">
+              <button type="button" role="tab" class="tc-emp-goals-subtab tc-emp-goals-subtab--on" id="tc-emp-goals-tab-todo" aria-selected="true" onclick="tcEmpGoalsSetView('todo')">Por cumplir</button>
+              <button type="button" role="tab" class="tc-emp-goals-subtab" id="tc-emp-goals-tab-done" aria-selected="false" onclick="tcEmpGoalsSetView('done')">Completadas</button>
+              <button type="button" role="tab" class="tc-emp-goals-subtab" id="tc-emp-goals-tab-history" aria-selected="false" onclick="tcEmpGoalsSetView('history')">Historial</button>
+            </div>
+            <p class="tc-goal-toast hidden" id="tc-emp-goals-toast" role="status"></p>
             <div id="tc-emp-goals-body"></div>
           </div>
         </section>
@@ -4975,6 +5030,7 @@ function closeModal(id){
     document.body.style.pointerEvents='';
   }
   if(id==='modal-empresa'){['emp-s0','emp-s1','emp-s2','emp-s3','emp-s-crear'].forEach((s,i)=>{const el=document.getElementById(s);if(el)el.classList.toggle('hidden',i!==0);});}
+  if(typeof tcEmpRefreshActiveWorkspaceTabAfterInteraction==='function') tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 function closeAllModals(){
   const evalModal=document.getElementById('modal-evaluacion');
@@ -7531,6 +7587,7 @@ function tcCloseEmpEdit(){
   tcEditEmpCache=null;
   const bd=document.getElementById('tc-emp-edit-backdrop');
   if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+  tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 async function tcSaveEmpEdit(){
   const id=(document.getElementById('tc-emp-edit-id')||{}).value;
@@ -7694,6 +7751,7 @@ function tcCloseEmpDocs(){
   tcDocsUnwireDropZone();
   const bd=document.getElementById('tc-docs-backdrop');
   if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+  tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 function tcDocsView(docId){
   window.open('/api/org/timeclock/documents/'+encodeURIComponent(docId)+'/file','_blank','noopener,noreferrer');
@@ -12223,10 +12281,16 @@ function tcWsSvgUserCheck(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
 }
 function tcWsSvgTarget(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+}
+function tcSvgPlusOutline(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
+}
+function tcSvgTargetPlusOutline(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="6"/><circle cx="12" cy="10" r="2"/><path d="M12 16v6"/><path d="M9 19h6"/></svg>';
 }
 function tcSvgPlus(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
+  return tcSvgPlusOutline();
 }
 function tcWsSvgBell(){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
@@ -12421,6 +12485,113 @@ let tcEmpNovedadesLastUnreadCount=0;
 let tcEmpNovedadesMarkAllInFlight=false;
 let tcEmpNovedadesVisibilityBound=false;
 const TC_EMP_NOVEDADES_POLL_MS=20000;
+const TC_EMP_WS_POLL_MS=20000;
+const tcEmpGoalReportInFlight={};
+let tcEmpGoalsLoadInFlight=false;
+let tcEmpWsPollTimer=null;
+let tcEmpWsPollInFlight=false;
+let tcEmpWsPollDebounce=null;
+let tcEmpWsPollBound=false;
+let tcEmpWorkspaceFormDirty=false;
+let tcEmpWsPendingRefreshWhileHidden=false;
+let tcEmpWsRefreshAfterInteractionTimer=null;
+function tcEmpWorkspaceMarkFormDirty(){ tcEmpWorkspaceFormDirty=true; }
+function tcEmpWorkspaceClearFormDirty(){ tcEmpWorkspaceFormDirty=false; }
+function tcEmpWorkspaceHasBlockingInteraction(){
+  if(document.hidden) return true;
+  if(typeof tcEmpBusy!=='undefined'&&tcEmpBusy) return true;
+  if(tcEmpGoalsLoadInFlight) return true;
+  if(tcEmpWsPollInFlight) return true;
+  if(Object.keys(tcEmpGoalReportInFlight).length>0) return true;
+  if(typeof tcGoalAssignInFlight!=='undefined'&&tcGoalAssignInFlight) return true;
+  if(tcEmpWorkspaceFormDirty) return true;
+  if(document.querySelector('.tc-task-modal-backdrop:not(.hidden)')) return true;
+  return false;
+}
+function tcEmpWsIsEmployeePortalActive(){
+  const v=document.getElementById('view-timeclock');
+  return !!(tcEmpMe&&tcEmpMe.employeeId&&v&&!v.classList.contains('hidden'));
+}
+async function tcEmpWsExecuteActiveTabSilentRefresh(){
+  if(!tcEmpWsIsEmployeePortalActive()) return;
+  if(document.hidden){ tcEmpWsPendingRefreshWhileHidden=true; return; }
+  if(tcEmpWorkspaceHasBlockingInteraction()) return;
+  if(tcEmpWsPollInFlight||tcEmpGoalsLoadInFlight||tcEmpMyCandLoading) return;
+  const scrollEl=typeof tcEmpWorkspaceScrollEl==='function'?tcEmpWorkspaceScrollEl():null;
+  const scrollTop=scrollEl?scrollEl.scrollTop:0;
+  tcEmpWsPollInFlight=true;
+  try{
+    if(tcEmpWorkspaceTab==='activities') await tcEmpLoadTasksSilent(true);
+    else if(tcEmpWorkspaceTab==='goals') await tcEmpLoadGoals(false,true);
+    else if(tcEmpWorkspaceTab==='candidates') await tcEmpLoadMyCandidates(false,{ force:true, silent:true });
+  }finally{
+    tcEmpWsPollInFlight=false;
+    if(scrollEl) scrollEl.scrollTop=scrollTop;
+  }
+}
+function tcEmpRefreshActiveWorkspaceTabAfterInteraction(){
+  if(!tcEmpWsIsEmployeePortalActive()) return;
+  clearTimeout(tcEmpWsRefreshAfterInteractionTimer);
+  tcEmpWsRefreshAfterInteractionTimer=setTimeout(function(){
+    tcEmpWsRefreshAfterInteractionTimer=null;
+    tcEmpWsExecuteActiveTabSilentRefresh();
+  }, 0);
+}
+function tcEmpWsTasksFingerprint(tasks){
+  return (tasks||[]).map(function(t){ return t.id+':'+(t.updatedAt||'')+':'+t.status; }).join('|');
+}
+async function tcEmpLoadTasksSilent(force){
+  if(!force&&tcEmpWorkspaceHasBlockingInteraction()) return;
+  try{
+    const out=await tcPublicFetchTasks();
+    const next=(out&&out.tasks)||[];
+    if(tcEmpWsTasksFingerprint(next)===tcEmpWsTasksFingerprint(tcEmpTasks)) return;
+    tcEmpTasks=next;
+    tcEmpRenderTasks();
+  }catch(_){}
+}
+async function tcEmpWsPollTick(){
+  if(tcEmpWorkspaceHasBlockingInteraction()) return;
+  if(tcEmpWsPollInFlight) return;
+  tcEmpWsPollInFlight=true;
+  try{
+    if(tcEmpWorkspaceTab==='activities') await tcEmpLoadTasksSilent(false);
+    else if(tcEmpWorkspaceTab==='goals') await tcEmpLoadGoals(false,false);
+  }finally{ tcEmpWsPollInFlight=false; }
+}
+function tcEmpWsOnVisibilityOrFocus(){
+  if(document.hidden) return;
+  if(tcEmpWsPendingRefreshWhileHidden){
+    tcEmpWsPendingRefreshWhileHidden=false;
+    tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+  }
+  clearTimeout(tcEmpWsPollDebounce);
+  tcEmpWsPollDebounce=setTimeout(function(){ tcEmpWsPollTick(); }, 450);
+}
+function tcEmpStopWsPolling(){
+  if(tcEmpWsPollTimer){ clearInterval(tcEmpWsPollTimer); tcEmpWsPollTimer=null; }
+  if(tcEmpWsPollBound){
+    document.removeEventListener('visibilitychange', tcEmpWsOnVisibilityOrFocus);
+    window.removeEventListener('focus', tcEmpWsOnVisibilityOrFocus);
+    tcEmpWsPollBound=false;
+  }
+  clearTimeout(tcEmpWsPollDebounce);
+  clearTimeout(tcEmpWsRefreshAfterInteractionTimer);
+  tcEmpWsRefreshAfterInteractionTimer=null;
+  tcEmpWsPendingRefreshWhileHidden=false;
+  tcEmpWsPollInFlight=false;
+  tcEmpWorkspaceClearFormDirty();
+}
+function tcEmpStartWsPolling(){
+  tcEmpStopWsPolling();
+  if(!(tcEmpMe&&tcEmpMe.employeeId)) return;
+  if(!tcEmpWsPollBound){
+    document.addEventListener('visibilitychange', tcEmpWsOnVisibilityOrFocus);
+    window.addEventListener('focus', tcEmpWsOnVisibilityOrFocus);
+    tcEmpWsPollBound=true;
+  }
+  tcEmpWsPollTimer=setInterval(tcEmpWsPollTick, TC_EMP_WS_POLL_MS);
+}
 function mind24SyncMarkAllReadBtn(btnId, unreadCount, inFlight){
   const btn=document.getElementById(btnId);
   if(!btn) return;
@@ -12461,6 +12632,7 @@ function tcEmpNovedadesPurgeLegacyStorage(){
 }
 function tcEmpNovedadesResetSessionState(){
   tcEmpNovedadesStopPolling();
+  tcEmpStopWsPolling();
   tcEmpNovedadesItems=[];
   tcEmpNovedadesLastUnreadCount=0;
   tcEmpNovedadesUpdateBadge(0);
@@ -12783,8 +12955,12 @@ function tcEmpMyCandSetFilter(filter){
   tcEmpWorkspaceResetPanelScroll('candidates');
   tcEmpLoadMyCandidates(false);
 }
-async function tcEmpLoadMyCandidates(append){
+async function tcEmpLoadMyCandidates(append,opts){
+  opts=opts||{};
+  const force=!!opts.force;
+  const silent=!!opts.silent;
   if(append&&tcEmpMyCandLoading) return;
+  if(!force&&!append&&tcEmpWorkspaceHasBlockingInteraction&&tcEmpWorkspaceHasBlockingInteraction()) return;
   const listEl=document.getElementById('tc-emp-my-cand-list');
   const moreBtn=document.getElementById('tc-emp-my-cand-more-btn');
   const fetchSeq=++tcEmpMyCandFetchSeq;
@@ -12792,7 +12968,7 @@ async function tcEmpLoadMyCandidates(append){
   tcEmpMyCandAbort=new AbortController();
   const signal=tcEmpMyCandAbort.signal;
   tcEmpMyCandLoading=true;
-  if(listEl) listEl.classList.add('tc-emp-my-cand-list--loading');
+  if(listEl&&!silent) listEl.classList.add('tc-emp-my-cand-list--loading');
   if(moreBtn) moreBtn.disabled=true;
   if(!append){
     tcEmpMyCandNextCursor=null;
@@ -13403,10 +13579,6 @@ async function tcViewJornada(id){
         '<div class="tc-jornada-op-tabs" role="tablist" aria-label="Operaciones del colaborador">'+
         '<button type="button" role="tab" class="tc-jornada-op-tab tc-jornada-op-tab--on" id="tc-jornada-tab-activities" aria-selected="true" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'activities\')">Actividades</button>'+
         '<button type="button" role="tab" class="tc-jornada-op-tab" id="tc-jornada-tab-goals" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'goals\')">Metas</button>'+
-        '</div>'+
-        '<div class="tc-jornada-op-actions">'+
-        '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlus()+'</button>'+
-        '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcWsSvgTarget()+'</button>'+
         '</div></div></div></div>'+
         '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
@@ -13858,6 +14030,9 @@ const TC_KANBAN_EMPTY={PENDING:'Sin pendientes',IN_PROGRESS:'Sin actividades en 
 const TC_KANBAN_COMPLETED_CAP=8;
 function tcKanbanShellHtml(){
   return '<div class="tc-kanban-wrap">'+
+    '<div class="tc-jornada-aside-head">'+
+    '<span class="tc-jornada-aside-title">Actividades</span>'+
+    '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlusOutline()+'</button></div>'+
     '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
     '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
 }
@@ -13971,6 +14146,7 @@ function tcKanbanOpenAssign(){
 function tcKanbanCloseAssign(){
   const m=document.getElementById('tc-task-assign-modal');
   if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+  tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 async function tcKanbanSubmitAssign(){
   if(!tcKanbanEmpId) return;
@@ -14017,6 +14193,7 @@ function tcKanbanCloseEdit(){
   tcKanbanEditTask=null;
   const m=document.getElementById('tc-task-edit-modal');
   if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+  tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 async function tcKanbanSubmitEdit(){
   const idEl=document.getElementById('tc-task-edit-id');
@@ -14133,6 +14310,9 @@ let tcGoalHistoryOpenId=null;
 const TC_GOAL_TYPE_LABELS={ COMPLIANCE:'Cumplimiento', QUANTITATIVE:'Cuantitativa' };
 const TC_GOAL_PERIOD_LABELS={ DAILY:'Diaria', WEEKLY:'Semanal', MONTHLY:'Mensual' };
 const TC_GOAL_STATUS_LABELS={ PENDING:'Pendiente', MET:'Cumplida', NOT_MET:'No cumplida', PARTIAL:'Parcial', OVERDUE:'Vencida sin reporte', INACTIVE:'Inactiva' };
+const TC_GOAL_STATUS_UI={ PENDING:'PENDIENTE', MET:'CUMPLIDA', NOT_MET:'NO CUMPLIDA', PARTIAL:'PARCIAL', OVERDUE:'VENCIDA', INACTIVE:'INACTIVA' };
+let tcGoalsAdminShowArchived=false;
+let tcEmpGoalsView='todo';
 function tcGoalStatusClass(st){
   const m={ PENDING:'pending', MET:'met', NOT_MET:'not_met', PARTIAL:'partial', OVERDUE:'overdue', INACTIVE:'inactive' };
   return 'tc-goal-status--'+(m[st]||'pending');
@@ -14174,11 +14354,55 @@ function tcJornadaSetOpTab(tab){
   if(tGoals){ tGoals.classList.toggle('tc-jornada-op-tab--on',!onAct); tGoals.setAttribute('aria-selected',!onAct?'true':'false'); }
   tcJornadaRenderAside();
 }
+function tcGoalsBoardShellHtml(){
+  const archLabel=tcGoalsAdminShowArchived?'Ver activas':'Ver eliminadas';
+  return '<div class="tc-goals-board-wrap">'+
+    '<div class="tc-jornada-aside-head">'+
+    '<span class="tc-jornada-aside-title">Metas</span>'+
+    '<div class="tc-jornada-aside-head-actions">'+
+    '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalsToggleArchivedView()">'+archLabel+'</button>'+
+    '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcSvgTargetPlusOutline()+'</button>'+
+    '</div></div>'+
+    '<p class="tc-goal-toast hidden" id="tc-goals-admin-toast" role="status"></p>'+
+    '<div class="tc-goals-kanban" id="tc-jornada-goals-list"><p class="tc-goal-empty">Cargando…</p></div></div>';
+}
+function tcGoalsToggleArchivedView(){
+  tcGoalsAdminShowArchived=!tcGoalsAdminShowArchived;
+  tcJornadaRenderAside();
+}
+function tcGoalShowAdminToast(msg){
+  const el=document.getElementById('tc-goals-admin-toast');
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.remove('hidden');
+  window.setTimeout(function(){ if(el.textContent===msg) el.classList.add('hidden'); }, 4000);
+}
+function tcGoalPeriodHasReport(p){
+  if(!p) return false;
+  if(p.binaryResult!=null) return true;
+  if(p.achievedValue!=null&&Number.isFinite(Number(p.achievedValue))) return true;
+  if(p.submittedAt) return true;
+  return false;
+}
+function tcGoalAdminKanbanColumn(st,p){
+  if(!tcGoalPeriodHasReport(p)) return 'pending';
+  if(st==='MET') return 'met';
+  if(st==='PARTIAL'||st==='NOT_MET') return 'partial';
+  return 'pending';
+}
+function tcGoalProgressHtml(st,pctNum){
+  const pct=pctNum!=null&&Number.isFinite(Number(pctNum))?Math.max(0,Number(pctNum)):0;
+  const barW=Math.min(100,pct);
+  const mod=st==='MET'?'met':st==='NOT_MET'?'not_met':st==='PARTIAL'?'partial':st==='OVERDUE'?'overdue':'pending';
+  const label=pctNum!=null&&Number.isFinite(Number(pctNum))?tcGoalFmtPct(pctNum):'—';
+  return '<div class="tc-goal-progress tc-goal-progress--'+mod+'" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+barW+'%"></div></div>'+
+    '<span class="tc-goal-card-meta">'+tcEsc(label)+'</span>';
+}
 function tcJornadaRenderAside(){
   const aside=document.getElementById('tc-jornada-aside');
   if(!aside||!tcJornadaEmpId) return;
   if(tcJornadaOpTab==='goals'){
-    aside.innerHTML='<div class="tc-goals-list" id="tc-jornada-goals-list"><p class="tc-goal-empty">Cargando…</p></div>';
+    aside.innerHTML=tcGoalsBoardShellHtml();
     tcGoalsLoad();
     return;
   }
@@ -14199,38 +14423,43 @@ async function tcGoalsLoad(){
     listEl.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar las metas.')+'</p>';
   }
 }
+function tcGoalsRenderAdminKanbanCard(g,cp,tz){
+  const st=cp?cp.displayStatus:(g.archivedAt?'INACTIVE':'PENDING');
+  const obj=g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento';
+  const pct=cp&&cp.completionPercent!=null?cp.completionPercent:null;
+  const histOpen=tcGoalHistoryOpenId===g.id;
+  return '<article class="tc-goals-kanban-card" data-goal-id="'+g.id+'">'+
+    '<h4 class="tc-goals-kanban-card-title">'+tcEsc(g.title)+'</h4>'+
+    '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · '+tcEsc(obj)+'</p>'+
+    (cp?('<p class="tc-goal-card-meta">'+tcEsc(tcGoalFmtPeriodRange(cp,tz))+' · '+tcEsc(tcGoalResultSummary(g,cp))+'</p>'):'')+
+    tcGoalProgressHtml(st,pct)+
+    '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalToggleHistory(\''+g.id+'\')">'+(histOpen?'Ocultar historial':'Historial')+'</button>'+
+    (histOpen?('<div class="tc-goal-history" id="tc-goal-history-'+g.id+'"><p class="tc-goal-card-meta">Cargando…</p></div>'):'')+
+    (!g.archivedAt?('<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalDelete(\''+g.id+'\')">Eliminar meta</button>'):'')+
+    '</article>';
+}
 function tcGoalsRenderAdmin(){
   const listEl=document.getElementById('tc-jornada-goals-list');
   if(!listEl) return;
-  if(!tcGoalsAdminList.length){
-    listEl.innerHTML='<p class="tc-goal-empty">Este colaborador aún no tiene metas asignadas.</p>';
+  const visible=tcGoalsAdminList.filter(function(g){
+    return tcGoalsAdminShowArchived?!!g.archivedAt:!g.archivedAt;
+  });
+  if(!visible.length){
+    listEl.innerHTML='<p class="tc-goal-empty">'+(tcGoalsAdminShowArchived?'No hay metas eliminadas.':'Este colaborador aún no tiene metas asignadas.')+'</p>';
     return;
   }
   const tz=tcJornadaTz||'America/Mexico_City';
-  listEl.innerHTML=tcGoalsAdminList.map(function(g){
-    const cp=g.currentPeriod;
+  const cols={ pending:[], partial:[], met:[] };
+  visible.forEach(function(g){
+    const cp=g.focusPeriod||g.currentPeriod;
     const st=cp?cp.displayStatus:(g.archivedAt?'INACTIVE':'PENDING');
-    const pct=cp&&cp.completionPercent!=null?tcGoalFmtPct(cp.completionPercent):'—';
-    const prog=cp&&g.goalType==='QUANTITATIVE'&&cp.completionPercent!=null
-      ?('<div class="tc-goal-progress" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+Math.min(100,Math.max(0,Number(cp.completionPercent)||0))+'%"></div></div>')
-      :'';
-    const obj=g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento binario';
-    const histOpen=tcGoalHistoryOpenId===g.id;
-    return '<article class="tc-goal-card" data-goal-id="'+g.id+'">'+
-      '<div class="tc-goal-card-main">'+
-      '<div class="tc-goal-card-head">'+
-      '<h4 class="tc-goal-card-title">'+tcEsc(g.title)+'</h4>'+
-      '<span class="tc-goal-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_LABELS[st]||st)+'</span></div>'+
-      '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_TYPE_LABELS[g.goalType]||g.goalType)+' · '+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · Objetivo: '+tcEsc(obj)+'</p>'+
-      (cp?('<p class="tc-goal-card-meta">Periodo: '+tcEsc(tcGoalFmtPeriodRange(cp,tz))+' · '+tcEsc(tcGoalResultSummary(g,cp))+' · '+tcEsc(pct)+'</p>'):'')+
-      prog+
-      '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalToggleHistory(\''+g.id+'\')">'+(histOpen?'Ocultar historial':'Ver historial')+'</button>'+
-      (histOpen?('<div class="tc-goal-history" id="tc-goal-history-'+g.id+'"><p class="tc-goal-card-meta">Cargando historial…</p></div>'):'')+
-      '</div>'+
-      '<div class="tc-goal-card-side">'+
-      (g.archivedAt?'':('<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalArchive(\''+g.id+'\')">Archivar</button>'))+
-      '</div></article>';
-  }).join('');
+    const col=tcGoalAdminKanbanColumn(st,cp);
+    cols[col].push(tcGoalsRenderAdminKanbanCard(g,cp,tz));
+  });
+  listEl.innerHTML=
+    '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Pendientes</div><div class="tc-goals-kanban-col-body">'+(cols.pending.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>'+
+    '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Parciales / No cumplidas</div><div class="tc-goals-kanban-col-body">'+(cols.partial.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>'+
+    '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Cumplidas</div><div class="tc-goals-kanban-col-body">'+(cols.met.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>';
   if(tcGoalHistoryOpenId) tcGoalLoadHistory(tcGoalHistoryOpenId);
 }
 async function tcGoalToggleHistory(goalId){
@@ -14256,13 +14485,37 @@ async function tcGoalLoadHistory(goalId){
     box.innerHTML='<p class="tc-goal-card-meta">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p>';
   }
 }
-async function tcGoalArchive(goalId){
-  if(!goalId||!window.confirm('¿Archivar esta meta? El colaborador ya no podrá reportar periodos nuevos.')) return;
+async function tcGoalDelete(goalId){
+  if(!goalId||!window.confirm('La meta dejará de renovarse y se ocultará de las metas activas. Su historial se conservará.')) return;
   try{
     await tcAdminArchiveGoal(goalId);
     tcGoalHistoryOpenId=null;
+    tcGoalShowAdminToast('Meta eliminada. El historial se conserva.');
     await tcGoalsLoad();
-  }catch(e){ alert(e.message||'No se pudo archivar.'); }
+  }catch(e){ alert(e.message||'No se pudo eliminar la meta.'); }
+}
+function tcGoalSyncAssignPeriodHint(){
+  const perEl=document.getElementById('tc-goal-assign-periodicity-input');
+  const hint=document.getElementById('tc-goal-assign-period-hint');
+  if(!perEl||!hint) return;
+  const map={
+    DAILY:'Se generará automáticamente un nuevo periodo cada día.',
+    WEEKLY:'Se renovará automáticamente cada lunes.',
+    MONTHLY:'Se renovará automáticamente al iniciar cada mes.',
+  };
+  hint.textContent=map[perEl.value]||map.DAILY;
+}
+function tcGoalSyncAssignEndToggle(){
+  const toggle=document.getElementById('tc-goal-assign-end-toggle');
+  const wrap=document.getElementById('tc-goal-assign-end-wrap');
+  const openHint=document.getElementById('tc-goal-assign-open-hint');
+  const on=!!(toggle&&toggle.checked);
+  if(wrap) wrap.classList.toggle('hidden',!on);
+  if(openHint) openHint.classList.toggle('hidden',on);
+  if(!on){
+    const endEl=document.getElementById('tc-goal-assign-end-input');
+    if(endEl) endEl.value='';
+  }
 }
 function tcGoalSyncAssignTypeFields(){
   const typeEl=document.getElementById('tc-goal-assign-type-input');
@@ -14283,18 +14536,23 @@ function tcGoalOpenAssign(){
   const typeEl=document.getElementById('tc-goal-assign-type-input');
   const perEl=document.getElementById('tc-goal-assign-periodicity-input');
   const startEl=document.getElementById('tc-goal-assign-start-input');
+  const endToggle=document.getElementById('tc-goal-assign-end-toggle');
   if(typeEl) typeEl.value='COMPLIANCE';
   if(perEl) perEl.value='DAILY';
+  if(endToggle) endToggle.checked=false;
+  tcGoalSyncAssignEndToggle();
   if(startEl){
     const t=tcLocalTodayParts(tcJornadaTz||'America/Mexico_City');
     startEl.value=t.y+'-'+String(t.m).padStart(2,'0')+'-'+String(t.d).padStart(2,'0');
   }
   tcGoalSyncAssignTypeFields();
+  tcGoalSyncAssignPeriodHint();
   if(m){ m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); const ti=document.getElementById('tc-goal-assign-title-input'); if(ti) ti.focus(); }
 }
 function tcGoalCloseAssign(){
   const m=document.getElementById('tc-goal-assign-modal');
   if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); }
+  tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 async function tcGoalSubmitAssign(){
   if(!tcJornadaEmpId||tcGoalAssignInFlight) return;
@@ -14320,7 +14578,7 @@ async function tcGoalSubmitAssign(){
     goalType:goalType,
     periodicity:perEl?perEl.value:'DAILY',
     startDate:startEl&&startEl.value,
-    endDate:(endEl&&endEl.value)||null,
+    endDate:(document.getElementById('tc-goal-assign-end-toggle')?.checked&&endEl&&endEl.value)?endEl.value:null,
   };
   if(!body.startDate){
     if(err){ err.textContent='Indica la fecha de inicio.'; err.classList.remove('hidden'); }
@@ -14340,7 +14598,9 @@ async function tcGoalSubmitAssign(){
   try{
     await tcAdminCreateEmployeeGoal(tcJornadaEmpId, body);
     tcGoalCloseAssign();
+    tcGoalShowAdminToast('Meta asignada.');
     if(tcJornadaOpTab==='goals') await tcGoalsLoad();
+    else tcJornadaSetOpTab('goals');
   }catch(e){
     if(err){ err.textContent=e.message||'No se pudo asignar la meta.'; err.classList.remove('hidden'); }
   }finally{
@@ -14348,9 +14608,7 @@ async function tcGoalSubmitAssign(){
     if(submitBtn) submitBtn.disabled=false;
   }
 }
-let tcEmpGoalsLoadInFlight=false;
 let tcEmpGoalsCache=[];
-const tcEmpGoalReportInFlight={};
 function tcEmpGoalSortRank(st){
   const rank={ OVERDUE:0, PENDING:1, MET:2, PARTIAL:2, NOT_MET:2, INACTIVE:3 };
   return rank[st]??9;
@@ -14362,20 +14620,79 @@ function tcEmpGoalPreviewPct(goal,target,raw){
   if(!Number.isFinite(t)||t<=0) return '—';
   return tcGoalFmtPct((val/t)*100);
 }
-async function tcEmpLoadGoals(showLoading){
+async function tcEmpLoadGoals(showLoading,force){
   const body=document.getElementById('tc-emp-goals-body');
-  if(!body||tcEmpGoalsLoadInFlight) return;
-  if(showLoading!==false) body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
+  if(!body) return;
+  if(!force&&tcEmpWorkspaceHasBlockingInteraction()) return;
+  if(tcEmpGoalsLoadInFlight&&!force) return;
+  if(showLoading!==false&&!force) body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
   tcEmpGoalsLoadInFlight=true;
   try{
     const out=await tcPublicFetchGoals();
     tcEmpGoalsCache=(out&&out.goals)||[];
     tcEmpRenderGoals();
   }catch(e){
-    body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
+    if(!force||showLoading!==false) body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
   }finally{
     tcEmpGoalsLoadInFlight=false;
   }
+}
+function tcEmpGoalsBindDirtyListeners(){
+  const body=document.getElementById('tc-emp-goals-body');
+  if(!body) return;
+  body.querySelectorAll('input,textarea').forEach(function(el){
+    if(el.dataset.tcEmpDirtyBound) return;
+    el.dataset.tcEmpDirtyBound='1';
+    el.addEventListener('input', tcEmpWorkspaceMarkFormDirty);
+  });
+}
+function tcEmpGoalsSetView(view){
+  tcEmpGoalsView=view||'todo';
+  ['todo','done','history'].forEach(function(v){
+    const btn=document.getElementById('tc-emp-goals-tab-'+v);
+    const on=tcEmpGoalsView===v;
+    if(btn){ btn.classList.toggle('tc-emp-goals-subtab--on',on); btn.setAttribute('aria-selected',on?'true':'false'); }
+  });
+  tcEmpRenderGoals();
+}
+function tcEmpGoalObjectiveLabel(g){
+  return g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento binario';
+}
+function tcEmpBuildGoalCardHtml(g,p,tz,showForm){
+  const st=p.displayStatus||'PENDING';
+  const pct=p.completionPercent;
+  let form='';
+  if(showForm){
+    if(g.goalType==='COMPLIANCE'){
+      form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
+        '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'MET\')">Cumplida</button>'+
+        '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'NOT_MET\')">No cumplida</button>'+
+        '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" oninput="tcEmpWorkspaceMarkFormDirty()" />'+
+        '</div>';
+    }else{
+      form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
+        '<label class="visually-hidden" for="tc-emp-goal-val-'+p.id+'">Resultado alcanzado</label>'+
+        '<input type="number" min="0" step="any" class="tc-goal-report-input" id="tc-emp-goal-val-'+p.id+'" data-target-snapshot="'+String(p.targetSnapshot)+'" placeholder="Resultado" aria-label="Resultado alcanzado" oninput="tcEmpGoalUpdatePreview(this);tcEmpWorkspaceMarkFormDirty()" />'+
+        '<span class="tc-goal-card-meta" id="tc-emp-goal-preview-'+p.id+'">Objetivo: '+tcEsc(String(p.targetSnapshot))+(g.unit?(' '+g.unit):'')+'</span>'+
+        '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" oninput="tcEmpWorkspaceMarkFormDirty()" />'+
+        '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportQuantitative(\''+p.id+'\')">Registrar resultado</button>'+
+        '</div>';
+    }
+  }
+  const comment=p.employeeComment?('<p class="tc-goal-card-meta">Comentario: '+tcEsc(p.employeeComment)+'</p>'):'';
+  return '<article class="tc-goal-card-v2">'+
+    '<div class="tc-goal-card-v2-head">'+
+    '<div class="tc-goal-card-v2-head-left">'+
+    '<span class="tc-goal-card-v2-icon">'+tcWsSvgTarget()+'</span>'+
+    '<div class="tc-goal-card-v2-titles"><h4 class="tc-goal-card-v2-title">'+tcEsc(g.title)+'</h4>'+
+    '<span class="tc-goal-period-pill">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+'</span></div></div>'+
+    '<span class="tc-goal-status tc-goal-card-v2-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_UI[st]||st)+'</span></div>'+
+    '<p class="tc-goal-card-meta">Objetivo: '+tcEsc(tcEmpGoalObjectiveLabel(g))+' · Resultado: '+tcEsc(tcGoalResultSummary(g,p))+'</p>'+
+    '<p class="tc-goal-card-meta">Periodo: '+tcEsc(tcGoalFmtPeriodRange(p,tz))+'</p>'+
+    comment+
+    tcGoalProgressHtml(st,pct)+
+    form+
+    '</article>';
 }
 function tcEmpRenderGoals(){
   const body=document.getElementById('tc-emp-goals-body');
@@ -14385,67 +14702,48 @@ function tcEmpRenderGoals(){
     return;
   }
   const tz=(tcEmpMe&&tcEmpMe.timezone)||'America/Mexico_City';
+  const now=Date.now();
   const rows=[];
   tcEmpGoalsCache.forEach(function(item){
     const goal=item.goal||{};
-    const periods=item.periods||[];
-    let doneShown=0;
-    periods.forEach(function(p){
+    (item.periods||[]).forEach(function(p){
       const st=p.displayStatus||'PENDING';
       if(st==='INACTIVE') return;
-      if(st==='OVERDUE'||st==='PENDING'){
-        rows.push({ goal:goal, period:p, rank:tcEmpGoalSortRank(st), sortKey:p.periodStart });
-        return;
-      }
-      if(doneShown<3){
-        doneShown+=1;
-        rows.push({ goal:goal, period:p, rank:tcEmpGoalSortRank(st), sortKey:p.periodStart });
-      }
+      if(new Date(p.periodStart).getTime()>now) return;
+      rows.push({ goal:goal, period:p, st:st, sortKey:p.periodStart, submitted:p.submittedAt||'' });
     });
   });
-  rows.sort(function(a,b){
-    if(a.rank!==b.rank) return a.rank-b.rank;
-    return String(b.sortKey).localeCompare(String(a.sortKey));
-  });
-  body.innerHTML=rows.map(function(row){
-    const g=row.goal;
-    const p=row.period;
-    const st=p.displayStatus||'PENDING';
-    const canReport=!g.archivedAt&&st!=='INACTIVE';
-    const now=Date.now();
-    const future=new Date(p.periodStart).getTime()>now;
-    const showForm=canReport&&!future;
-    const pct=p.completionPercent!=null?tcGoalFmtPct(p.completionPercent):'—';
-    const prog=g.goalType==='QUANTITATIVE'&&p.completionPercent!=null
-      ?('<div class="tc-goal-progress" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+Math.min(100,Math.max(0,Number(p.completionPercent)||0))+'%"></div></div>')
-      :'';
-    let form='';
-    if(showForm){
-      if(g.goalType==='COMPLIANCE'){
-        form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
-          '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'MET\')">Cumplida</button>'+
-          '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcEmpGoalReportBinary(\''+p.id+'\',\'NOT_MET\')">No cumplida</button>'+
-          '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" />'+
-          '</div>';
-      }else{
-        form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
-          '<label class="visually-hidden" for="tc-emp-goal-val-'+p.id+'">Resultado alcanzado</label>'+
-          '<input type="number" min="0" step="any" class="tc-goal-report-input" id="tc-emp-goal-val-'+p.id+'" data-target-snapshot="'+String(p.targetSnapshot)+'" placeholder="Resultado" aria-label="Resultado alcanzado" oninput="tcEmpGoalUpdatePreview(this)" />'+
-          '<span class="tc-goal-card-meta" id="tc-emp-goal-preview-'+p.id+'">Objetivo: '+tcEsc(String(p.targetSnapshot))+(g.unit?(' '+g.unit):'')+'</span>'+
-          '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" />'+
-          '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportQuantitative(\''+p.id+'\')">Registrar resultado</button>'+
-          '</div>';
-      }
-    }
-    return '<article class="tc-goal-card">'+
-      '<div class="tc-goal-card-head">'+
-      '<h4 class="tc-goal-card-title">'+tcEsc(g.title)+'</h4>'+
-      '<span class="tc-goal-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_LABELS[st]||st)+'</span></div>'+
-      '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · Periodo: '+tcEsc(tcGoalFmtPeriodRange(p,tz))+'</p>'+
-      '<p class="tc-goal-card-meta">'+tcEsc(tcGoalResultSummary(g,p))+' · '+tcEsc(pct)+'</p>'+
-      prog+form+
-      '</article>';
+  let filtered=[];
+  if(tcEmpGoalsView==='todo'){
+    filtered=rows.filter(function(r){ return !tcGoalPeriodHasReport(r.period); });
+    filtered.sort(function(a,b){
+      const ra=tcEmpGoalSortRank(a.st); const rb=tcEmpGoalSortRank(b.st);
+      if(ra!==rb) return ra-rb;
+      return String(b.sortKey).localeCompare(String(a.sortKey));
+    });
+  }else if(tcEmpGoalsView==='done'){
+    filtered=rows.filter(function(r){ return tcGoalPeriodHasReport(r.period); });
+    filtered.sort(function(a,b){ return String(b.submitted).localeCompare(String(a.submitted)); });
+    filtered=filtered.slice(0,12);
+  }else{
+    filtered=rows.filter(function(r){ return tcGoalPeriodHasReport(r.period); });
+    filtered.sort(function(a,b){
+      const tg=String(a.goal.title||'').localeCompare(String(b.goal.title||''));
+      if(tg!==0) return tg;
+      return String(b.sortKey).localeCompare(String(a.sortKey));
+    });
+    filtered=filtered.slice(0,40);
+  }
+  if(!filtered.length){
+    body.innerHTML='<p class="tc-goal-empty">'+(tcEmpGoalsView==='todo'?'No tienes metas pendientes por cumplir.':'Sin registros en esta vista.')+'</p>';
+    return;
+  }
+  body.innerHTML=filtered.map(function(row){
+    const canReport=!row.goal.archivedAt&&!tcGoalPeriodHasReport(row.period);
+    const showForm=tcEmpGoalsView==='todo'&&canReport;
+    return tcEmpBuildGoalCardHtml(row.goal,row.period,tz,showForm);
   }).join('');
+  tcEmpGoalsBindDirtyListeners();
 }
 function tcEmpGoalUpdatePreview(inputEl){
   if(!inputEl||!inputEl.id) return;
@@ -14463,9 +14761,12 @@ async function tcEmpGoalReportBinary(periodId,binaryResult){
   tcEmpGoalReportInFlight[periodId]=true;
   try{
     await tcPublicReportGoalPeriod(periodId,{ binaryResult:binaryResult, employeeComment:(commentEl&&commentEl.value||'').trim()||null });
-    await tcEmpLoadGoals(false);
+    tcEmpWorkspaceClearFormDirty();
   }catch(e){ alert(e.message||'No se pudo registrar el resultado.'); }
-  finally{ delete tcEmpGoalReportInFlight[periodId]; }
+  finally{
+    delete tcEmpGoalReportInFlight[periodId];
+    tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+  }
 }
 async function tcEmpGoalReportQuantitative(periodId){
   if(tcEmpGoalReportInFlight[periodId]) return;
@@ -14479,9 +14780,12 @@ async function tcEmpGoalReportQuantitative(periodId){
   tcEmpGoalReportInFlight[periodId]=true;
   try{
     await tcPublicReportGoalPeriod(periodId,{ achievedValue:achievedValue, employeeComment:(commentEl&&commentEl.value||'').trim()||null });
-    await tcEmpLoadGoals(false);
+    tcEmpWorkspaceClearFormDirty();
   }catch(e){ alert(e.message||'No se pudo registrar el resultado.'); }
-  finally{ delete tcEmpGoalReportInFlight[periodId]; }
+  finally{
+    delete tcEmpGoalReportInFlight[periodId];
+    tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+  }
 }
 function tcCloseJornada(){
   tcCloseHistoryDialog(false);
@@ -14491,6 +14795,7 @@ function tcCloseJornada(){
   tcKanbanEmpId=null;
   tcGoalsAdminList=[];
   tcGoalHistoryOpenId=null;
+  tcGoalsAdminShowArchived=false;
   tcKanbanCloseAssign();
   tcKanbanCloseEdit();
   tcGoalCloseAssign();
@@ -14755,7 +15060,10 @@ async function tcEmpTaskAction(taskId, status){
   }catch(e){
     tcEmpSetError(e.message||'No se pudo actualizar la actividad.');
     await tcEmpLoadTasks();
-  }finally{ tcEmpBusy=false; }
+  }finally{
+    tcEmpBusy=false;
+    tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+  }
 }
 async function tcEmpLoadMe(){
   const me=await tcPublicJson('/api/timeclock/public/me');
@@ -14765,7 +15073,9 @@ async function tcEmpLoadMe(){
   tcEmpShowApp();
   tcEmpRender();
   tcEmpNovedadesStartPolling();
+  tcEmpStartWsPolling();
   await tcEmpLoadTasks();
+  if(tcEmpWorkspaceTab==='goals') await tcEmpLoadGoals(false);
   await tcEmpLoadMyCandidates(false);
 }
 function tcEmpHashToken(){
@@ -14820,7 +15130,10 @@ async function tcEmpPrimaryAction(){
     }catch(e){
       tcEmpSetError(e.message||'No se pudo registrar la salida.');
       if(btn){ btn.disabled=false; btn.textContent='Registrar salida'; }
-    }finally{ tcEmpBusy=false; }
+    }finally{
+      tcEmpBusy=false;
+      tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+    }
     return;
   }
   tcEmpBusy=true;
@@ -14832,7 +15145,10 @@ async function tcEmpPrimaryAction(){
   }catch(e){
     tcEmpSetError(e.message||'No se pudo registrar la entrada.');
     if(btn){ btn.disabled=false; btn.textContent='Registrar entrada'; }
-  }finally{ tcEmpBusy=false; }
+  }finally{
+    tcEmpBusy=false;
+    tcEmpRefreshActiveWorkspaceTabAfterInteraction();
+  }
 }
 async function tcAdminFetchEmployeeTasks(employeeId, status){
   const q=status?'?status='+encodeURIComponent(status):'';
@@ -14929,7 +15245,11 @@ window.tcGoalCloseAssign=tcGoalCloseAssign;
 window.tcGoalSubmitAssign=tcGoalSubmitAssign;
 window.tcGoalSyncAssignTypeFields=tcGoalSyncAssignTypeFields;
 window.tcGoalToggleHistory=tcGoalToggleHistory;
-window.tcGoalArchive=tcGoalArchive;
+window.tcGoalDelete=tcGoalDelete;
+window.tcGoalSyncAssignPeriodHint=tcGoalSyncAssignPeriodHint;
+window.tcGoalSyncAssignEndToggle=tcGoalSyncAssignEndToggle;
+window.tcEmpGoalsSetView=tcEmpGoalsSetView;
+window.tcGoalsToggleArchivedView=tcGoalsToggleArchivedView;
 window.tcEmpQuickGoGoals=tcEmpQuickGoGoals;
 window.tcEmpLoadGoals=tcEmpLoadGoals;
 window.tcEmpGoalReportBinary=tcEmpGoalReportBinary;

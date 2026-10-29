@@ -107,6 +107,31 @@ check(/\/employees\/:id\/goals/.test(orgRoutes), 'rutas admin goals');
 check(/router\.get\('\/goals'/.test(publicRoutes), 'GET public goals');
 check(/goals\/periods\/:periodId\/report/.test(publicRoutes), 'POST report periodo');
 check(/tcJornadaSetOpTab/.test(indexHtml) && /tc-jornada-op-tab/.test(indexHtml), 'tabs Actividades/Metas admin');
+check(/tcEmpStartWsPolling/.test(indexHtml) && /TC_EMP_WS_POLL_MS=20000/.test(indexHtml), 'polling workspace 20s');
+check(/tcEmpWorkspaceHasBlockingInteraction/.test(indexHtml), 'polling guard centralizado workspace');
+check(/tcEmpRefreshActiveWorkspaceTabAfterInteraction/.test(indexHtml), 'refresh silencioso tras interacción bloqueante');
+check(!/Ocultar completadas/.test(indexHtml), 'sin control Ocultar completadas');
+check(!/tcEmpGoalsHideDoneVisual/.test(indexHtml), 'sin estado ocultar completadas');
+check(/tcEmpWorkspaceMarkFormDirty/.test(indexHtml), 'polling respeta formulario sucio');
+check(/tcEmpStopWsPolling[\s\S]*tcEmpWsPollInFlight=false/.test(indexHtml), 'polling libera inFlight al cerrar');
+check(/tcEmpStartWsPolling[\s\S]*tcEmpStopWsPolling/.test(indexHtml), 'polling reinicia sin duplicar intervalo');
+check(/tcGoalPeriodHasReport/.test(indexHtml), 'clasificación por periodo reportado');
+check(
+  /tcEmpGoalsView==='done'[\s\S]*tcGoalPeriodHasReport/.test(indexHtml),
+  'Completadas incluye periodos reportados (MET/PARTIAL/NOT_MET)',
+);
+check(!/tcEmpGoalsView==='done'[\s\S]*r\.st==='MET'/.test(indexHtml), 'Completadas no limitada solo a MET');
+check(/tcGoalsToggleArchivedView/.test(indexHtml) && /tcGoalsAdminShowArchived/.test(indexHtml), 'Ver eliminadas admin');
+check(!/\/goals\/.*archive/.test(publicRoutes), 'portal sin archivar metas');
+check(
+  !/Eliminar meta/.test(indexHtml.match(/id="tc-ws-panel-goals"[\s\S]*?id="tc-ws-panel-candidates"/)?.[0] || ''),
+  'colaborador sin eliminar meta en panel',
+);
+check(!/tcEmp.*[Aa]rchive/.test(indexHtml), 'colaborador sin acción archive en JS');
+check(/tc-goals-kanban/.test(indexHtml) && /Eliminar meta/.test(indexHtml), 'tablero admin metas y eliminar');
+check(/tc-emp-goals-subtab/.test(indexHtml) && /Por cumplir/.test(indexHtml), 'subnav colaborador metas');
+check(/tc-goal-card-v2/.test(indexHtml), 'cards metas unificadas colaborador');
+check(/tcGoalSyncAssignPeriodHint/.test(indexHtml), 'formulario recurrencia dinámica');
 check(/tc-op-icon-btn/.test(indexHtml) && /Asignar meta/.test(indexHtml), 'botón asignar meta outline');
 check(!/tc-kanban-add-btn[\s\S]*Asignar actividad/.test(indexHtml.match(/function tcViewJornada[\s\S]*?^async function /m)?.[0] || ''), 'sin botón morado + en jornada');
 check(/tcEmpLoadGoals/.test(indexHtml) && /tc-ws-panel-goals/.test(indexHtml), 'panel Metas colaborador');
@@ -410,8 +435,21 @@ if (dbOk) {
       body: {},
     });
     check(archive.res.status === 200 && archive.data.goal?.archivedAt, 'archivar meta');
+    const archiveAgain = await jsonFetch(base, `/api/org/timeclock/goals/${goalQId}/archive`, {
+      method: 'POST',
+      cookie: adminCookie,
+      body: {},
+    });
+    check(archiveAgain.res.status === 200, 'archivar idempotente');
     const histCount = await prisma.workforceGoalPeriod.count({ where: { goalId: goalQId } });
     check(histCount >= 1, 'archivada conserva historial');
+    const listAdmin = await jsonFetch(base, `/api/org/timeclock/employees/${empA.id}/goals`, {
+      cookie: adminCookie,
+    });
+    const archivedRow = listAdmin.data.goals?.find((g) => g.id === goalQId);
+    check(!!archivedRow?.archivedAt, 'list admin incluye meta archivada para Ver eliminadas');
+    const goalBinAfterReport = await prisma.workforceGoal.findUnique({ where: { id: goalBinId } });
+    check(!goalBinAfterReport?.archivedAt, 'reportar periodo no archiva definición de meta');
 
     const endedGoal = await jsonFetch(base, `/api/org/timeclock/employees/${empA.id}/goals`, {
       method: 'POST',
