@@ -1249,6 +1249,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-my-cand-list{display:flex;flex-direction:column;gap:10px;}
 .tc-emp-my-cand-card{width:100%;text-align:left;border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.04);cursor:default;}
 .tc-emp-my-cand-card--archived{opacity:.88;background:var(--slate-50);}
+.tc-emp-my-cand-card--flash{animation:tcEmpCandFlash 2.2s ease-out;}
+@keyframes tcEmpCandFlash{0%,25%{box-shadow:0 0 0 3px rgba(124,58,237,.4);border-color:rgba(124,58,237,.35);}100%{box-shadow:0 1px 2px rgba(15,23,42,.04);border-color:var(--slate-200);}}
 .tc-emp-my-cand-name{margin:0;font-size:15px;font-weight:700;color:var(--slate-900);line-height:1.25;}
 .tc-emp-my-cand-prof{margin:3px 0 0;font-size:12px;font-weight:600;color:var(--slate-600);}
 .tc-emp-my-cand-process{margin-top:8px;}
@@ -12197,18 +12199,39 @@ function tcEmpQuickRegisterCandidate(){
   tcEmpNovedadesClose(false);
   tcEmpOpenRegisterCandidate();
 }
-function tcEmpQuickGoCandidates(filter){
+function tcEmpQuickGoCandidates(filter, highlightCandidateId){
   tcEmpNovedadesClose(false);
   const next=filter||'in_process';
   if(tcEmpWorkspaceTab!=='candidates') tcEmpWorkspaceSetTab('candidates');
-  if(tcEmpMyCandFilter!==next){
+  const filterChanged=tcEmpMyCandFilter!==next;
+  if(filterChanged){
     tcEmpMyCandFilterUserPicked=true;
     tcEmpMyCandFilter=next;
     tcEmpMyCandSyncFilterUi();
     tcEmpWorkspaceResetPanelScroll('candidates');
-    tcEmpLoadMyCandidates(false);
-  }else tcEmpWorkspaceResetPanelScroll('candidates');
+    tcEmpLoadMyCandidates(false).then(function(){
+      if(highlightCandidateId) tcEmpMyCandHighlightCandidate(highlightCandidateId);
+    });
+  }else{
+    tcEmpWorkspaceResetPanelScroll('candidates');
+    if(highlightCandidateId) tcEmpMyCandHighlightCandidate(highlightCandidateId);
+  }
   tcEmpWorkspaceSyncQuickActions();
+}
+function tcEmpMyCandHighlightCandidate(candidateId){
+  if(!candidateId) return;
+  const id=String(candidateId);
+  const cards=document.querySelectorAll('.tc-emp-my-cand-card[data-candidate-id]');
+  let target=null;
+  cards.forEach(function(el){
+    if(el.getAttribute('data-candidate-id')===id) target=el;
+  });
+  if(!target) return;
+  target.classList.remove('tc-emp-my-cand-card--flash');
+  void target.offsetWidth;
+  target.classList.add('tc-emp-my-cand-card--flash');
+  target.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  setTimeout(function(){ target.classList.remove('tc-emp-my-cand-card--flash'); }, 2400);
 }
 function tcEmpWorkspaceSyncQuickActions(){
   const act=document.getElementById('tc-ws-quick-activities');
@@ -12286,14 +12309,18 @@ function tcEmpWorkspaceInitChrome(){
   tcEmpMyCandSyncFilterUi();
   tcEmpWorkspaceSyncQuickActions();
   tcEmpWorkspaceUpdateTabBadges();
-  tcEmpNovedadesRefreshFromData();
+  tcEmpNovedadesStartPolling();
 }
 let tcEmpNovedadesOpen=false;
 let tcEmpNovedadesBound=false;
 let tcEmpNovedadesItems=[];
 let tcEmpNovedadesAnchorBtn=null;
-let tcEmpNovedadesMemState=null;
-const TC_EMP_NOVEDADES_STORE_MAX=150;
+let tcEmpNovedadesPollTimer=null;
+let tcEmpNovedadesPollInFlight=false;
+let tcEmpNovedadesListInFlight=false;
+let tcEmpNovedadesLastUnreadCount=0;
+let tcEmpNovedadesVisibilityBound=false;
+const TC_EMP_NOVEDADES_POLL_MS=20000;
 function tcEmpPortalStorageIdentity(){
   const me=tcEmpMe||{};
   if(!me.employeeId||!me.organizationId) return null;
@@ -12302,165 +12329,86 @@ function tcEmpPortalStorageIdentity(){
     employeeId: String(me.employeeId),
   };
 }
-function tcEmpNovedadesResetSessionState(){
-  tcEmpNovedadesMemState=null;
-  tcEmpNovedadesItems=[];
-}
-function tcEmpNovedadesStorageKey(){
+function tcEmpNovedadesLegacyStorageKey(){
   const id=tcEmpPortalStorageIdentity();
   if(!id) return null;
   return 'tc_ws_novedades_v1:'+location.hostname+':'+id.orgId+':'+id.employeeId;
 }
-function tcEmpNovedadesTrimState(state){
-  if(!state) return;
-  let readIds=state.readIds||{};
-  const readKeys=Object.keys(readIds);
-  if(readKeys.length>TC_EMP_NOVEDADES_STORE_MAX){
-    readKeys.sort(function(a,b){
-      return String(readIds[b]||'').localeCompare(String(readIds[a]||''));
-    });
-    const next={};
-    readKeys.slice(0, TC_EMP_NOVEDADES_STORE_MAX).forEach(function(k){ next[k]=readIds[k]; });
-    state.readIds=next;
-    readIds=next;
-  }
-  let candSnap=state.candSnap||{};
-  const snapKeys=Object.keys(candSnap);
-  if(snapKeys.length>TC_EMP_NOVEDADES_STORE_MAX){
-    const protect=new Set((tcEmpMyCandItems||[]).map(function(c){ return c.id; }));
-    const drop=snapKeys.filter(function(k){ return !protect.has(k); });
-    while(Object.keys(candSnap).length>TC_EMP_NOVEDADES_STORE_MAX&&drop.length){
-      delete candSnap[drop.pop()];
-    }
-    const rest=Object.keys(candSnap);
-    while(rest.length>TC_EMP_NOVEDADES_STORE_MAX){
-      delete candSnap[rest.shift()];
-    }
-    state.candSnap=candSnap;
-  }
+function tcEmpNovedadesPurgeLegacyStorage(){
+  const key=tcEmpNovedadesLegacyStorageKey();
+  if(!key) return;
+  try{ localStorage.removeItem(key); }catch(_){}
 }
-function tcEmpNovedadesLoadState(){
-  const key=tcEmpNovedadesStorageKey();
-  const empty={ readIds:{}, firstSeenAt:null, candSnap:{} };
-  if(!key){
-    if(!tcEmpNovedadesMemState) tcEmpNovedadesMemState=Object.assign({}, empty);
-    return tcEmpNovedadesMemState;
-  }
-  try{
-    const raw=localStorage.getItem(key);
-    if(!raw) return { readIds:{}, firstSeenAt:null, candSnap:{} };
-    const j=JSON.parse(raw);
-    return {
-      readIds:(j&&j.readIds)||{},
-      firstSeenAt:(j&&j.firstSeenAt)||null,
-      candSnap:(j&&j.candSnap)||{},
-    };
-  }catch(_){ return { readIds:{}, firstSeenAt:null, candSnap:{} }; }
-}
-function tcEmpNovedadesSaveState(state){
-  if(!state) return;
-  const key=tcEmpNovedadesStorageKey();
-  tcEmpNovedadesTrimState(state);
-  if(!key){
-    tcEmpNovedadesMemState=state;
-    return;
-  }
-  try{
-    localStorage.setItem(key, JSON.stringify({
-      readIds:state.readIds||{},
-      firstSeenAt:state.firstSeenAt||null,
-      candSnap:state.candSnap||{},
-    }));
-  }catch(_){}
+function tcEmpNovedadesResetSessionState(){
+  tcEmpNovedadesStopPolling();
+  tcEmpNovedadesItems=[];
+  tcEmpNovedadesLastUnreadCount=0;
+  tcEmpNovedadesUpdateBadge(0);
 }
 function tcEmpNovedadesFmtTime(iso){
   return mind24NotifFmtTime(iso);
 }
-function tcEmpNovedadesCandidateSnap(c){
-  const proc=c.primaryActiveProcess;
-  const kind=proc&&proc.listPreviewKind?String(proc.listPreviewKind):'none';
-  const stage=proc&&proc.stageName?String(proc.stageName):'';
-  return kind+'|'+stage;
+function tcEmpNovedadesFilterForEventType(eventType){
+  if(eventType==='HIRED') return 'hired';
+  if(eventType==='REJECTED') return 'rejected';
+  return 'in_process';
 }
-function tcEmpNovedadesBuildFeed(){
-  const state=tcEmpNovedadesLoadState();
-  if(!state.firstSeenAt){
-    state.firstSeenAt=new Date().toISOString();
-    tcEmpNovedadesSaveState(state);
-  }
-  const firstSeenMs=new Date(state.firstSeenAt).getTime();
-  const now=Date.now();
-  const items=[];
-  (tcEmpTasks||[]).forEach(function(t){
-    if(t.dueAt){
-      const dueMs=new Date(t.dueAt).getTime();
-      if(!Number.isNaN(dueMs)&&dueMs<now){
-        items.push({
-          id:'task_overdue:'+t.id,
-          kind:'task_overdue',
-          message:'Actividad vencida: '+String(t.title||'Sin título'),
-          at:t.dueAt,
-          taskId:t.id,
-        });
-      }
-    }
-    const createdMs=t.createdAt?new Date(t.createdAt).getTime():NaN;
-    if(t.status==='PENDING'&&!Number.isNaN(createdMs)&&createdMs>firstSeenMs){
-      items.push({
-        id:'task_new:'+t.id,
-        kind:'task_new',
-        message:'Nueva actividad: '+String(t.title||'Sin título'),
-        at:t.createdAt,
-        taskId:t.id,
-      });
-    }
-  });
-  const nextSnap=Object.assign({}, state.candSnap||{});
-  (tcEmpMyCandItems||[]).forEach(function(c){
-    const snap=tcEmpNovedadesCandidateSnap(c);
-    const prev=state.candSnap&&state.candSnap[c.id];
-    if(prev&&prev!==snap){
-      const proc=c.primaryActiveProcess;
-      const kind=proc&&proc.listPreviewKind;
-      let msg='Actualización de candidato: '+String(c.fullName||'—');
-      if(kind==='hired') msg=String(c.fullName||'Candidato')+' fue contratado';
-      else if(kind==='rejected') msg='Proceso cerrado para '+String(c.fullName||'candidato');
-      else if(proc&&proc.stageName) msg=String(c.fullName||'Candidato')+': '+String(proc.stageName);
-      items.push({
-        id:'cand_update:'+c.id+':'+snap,
-        kind:'cand_update',
-        message:msg,
-        at:c.createdAt,
-        candidateId:c.id,
-        filter:kind==='hired'?'hired':(kind==='rejected'?'rejected':'in_process'),
-      });
-    }
-    nextSnap[c.id]=snap;
-  });
-  state.candSnap=nextSnap;
-  tcEmpNovedadesSaveState(state);
-  items.sort(function(a,b){
-    const ta=new Date(a.at||0).getTime();
-    const tb=new Date(b.at||0).getTime();
-    return tb-ta;
-  });
-  const readIds=state.readIds||{};
-  return items.map(function(it){
-    return Object.assign({}, it, { read: !!readIds[it.id] });
-  });
-}
-function tcEmpNovedadesUnreadCount(items){
-  return (items||tcEmpNovedadesItems).filter(function(n){ return !n.read; }).length;
-}
-function tcEmpNovedadesUpdateBadge(){
-  const n=tcEmpNovedadesUnreadCount();
+function tcEmpNovedadesUpdateBadge(count){
+  const n=count!=null?count:tcEmpNovedadesLastUnreadCount;
+  tcEmpNovedadesLastUnreadCount=n;
   const badge=document.getElementById('tc-ws-quick-badge-novedades');
   if(badge) badge.textContent=n>0?(n>99?'99+':String(n)):'';
 }
-function tcEmpNovedadesRefreshFromData(){
-  tcEmpNovedadesItems=tcEmpNovedadesBuildFeed();
-  tcEmpNovedadesUpdateBadge();
-  if(tcEmpNovedadesOpen) tcEmpNovedadesRenderList();
+async function tcEmpNovedadesFetchList(){
+  if(tcEmpNovedadesListInFlight) return;
+  tcEmpNovedadesListInFlight=true;
+  try{
+    const j=await tcPublicJson('/api/timeclock/public/novedades?limit=30');
+    tcEmpNovedadesItems=(j&&j.novedades)||[];
+    tcEmpNovedadesRenderList();
+  }catch(_){
+    /* polling / popover: errores temporales sin alertas invasivas */
+  }finally{
+    tcEmpNovedadesListInFlight=false;
+  }
+}
+async function tcEmpNovedadesPollUnreadCount(){
+  if(document.hidden) return;
+  if(tcEmpNovedadesPollInFlight) return;
+  if(!(tcEmpMe&&tcEmpMe.employeeId)) return;
+  tcEmpNovedadesPollInFlight=true;
+  try{
+    const j=await tcPublicJson('/api/timeclock/public/novedades/unread-count');
+    const next=Number(j&&j.unreadCount)||0;
+    const prev=tcEmpNovedadesLastUnreadCount;
+    tcEmpNovedadesUpdateBadge(next);
+    if(tcEmpNovedadesOpen&&next>prev) await tcEmpNovedadesFetchList();
+  }catch(e){
+    if(e&&e.httpStatus===401) return;
+  }finally{
+    tcEmpNovedadesPollInFlight=false;
+  }
+}
+function tcEmpNovedadesStopPolling(){
+  if(tcEmpNovedadesPollTimer){ clearInterval(tcEmpNovedadesPollTimer); tcEmpNovedadesPollTimer=null; }
+  if(tcEmpNovedadesVisibilityBound){
+    document.removeEventListener('visibilitychange', tcEmpNovedadesOnVisibility);
+    tcEmpNovedadesVisibilityBound=false;
+  }
+}
+function tcEmpNovedadesOnVisibility(){
+  if(!document.hidden) tcEmpNovedadesPollUnreadCount();
+}
+function tcEmpNovedadesStartPolling(){
+  tcEmpNovedadesStopPolling();
+  if(!(tcEmpMe&&tcEmpMe.employeeId)) return;
+  tcEmpNovedadesPurgeLegacyStorage();
+  tcEmpNovedadesPollUnreadCount();
+  tcEmpNovedadesPollTimer=setInterval(tcEmpNovedadesPollUnreadCount, TC_EMP_NOVEDADES_POLL_MS);
+  if(!tcEmpNovedadesVisibilityBound){
+    document.addEventListener('visibilitychange', tcEmpNovedadesOnVisibility);
+    tcEmpNovedadesVisibilityBound=true;
+  }
 }
 function tcEmpNovedadesRenderList(){
   const body=document.getElementById('tc-ws-novedades-body');
@@ -12474,30 +12422,35 @@ function tcEmpNovedadesRenderList(){
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(\''+n.id+'\')">'+
       '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>'+
       '<span class="tc-ws-novedades-item-body"><p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>'+
-      '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.at))+'</p></span></button>';
+      '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.createdAt))+'</p></span></button>';
   }).join('');
 }
-function tcEmpNovedadesMarkRead(id){
-  const state=tcEmpNovedadesLoadState();
-  state.readIds=state.readIds||{};
-  state.readIds[id]=new Date().toISOString();
-  tcEmpNovedadesSaveState(state);
-  tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){
-    return n.id===id?Object.assign({},n,{read:true}):n;
+async function tcEmpNovedadesMarkRead(id){
+  const prevItems=tcEmpNovedadesItems;
+  const prevUnread=tcEmpNovedadesLastUnreadCount;
+  const target=prevItems.find(function(n){ return n.id===id; });
+  if(!target||target.read) return;
+  tcEmpNovedadesItems=prevItems.map(function(n){
+    return n.id===id?Object.assign({},n,{read:true,readAt:new Date().toISOString()}):n;
   });
-  tcEmpNovedadesUpdateBadge();
+  tcEmpNovedadesUpdateBadge(Math.max(0, prevUnread-1));
   tcEmpNovedadesRenderList();
+  try{
+    await tcPublicJson('/api/timeclock/public/novedades/'+encodeURIComponent(id)+'/read',{ method:'POST', body:JSON.stringify({}) });
+    await tcEmpNovedadesPollUnreadCount();
+  }catch(_){
+    tcEmpNovedadesItems=prevItems;
+    tcEmpNovedadesUpdateBadge(prevUnread);
+    tcEmpNovedadesRenderList();
+  }
 }
-function tcEmpNovedadesMarkAllRead(){
-  const state=tcEmpNovedadesLoadState();
-  state.readIds=state.readIds||{};
-  tcEmpNovedadesItems.forEach(function(n){
-    state.readIds[n.id]=new Date().toISOString();
-  });
-  tcEmpNovedadesSaveState(state);
-  tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){ return Object.assign({},n,{read:true}); });
-  tcEmpNovedadesUpdateBadge();
-  tcEmpNovedadesRenderList();
+async function tcEmpNovedadesMarkAllRead(){
+  try{
+    await tcPublicJson('/api/timeclock/public/novedades/read-all',{ method:'POST', body:JSON.stringify({}) });
+    tcEmpNovedadesItems=tcEmpNovedadesItems.map(function(n){ return Object.assign({},n,{read:true}); });
+    tcEmpNovedadesUpdateBadge(0);
+    tcEmpNovedadesRenderList();
+  }catch(_){}
 }
 function tcEmpNovedadesPosition(){
   const pop=document.getElementById('tc-ws-novedades-popover');
@@ -12526,12 +12479,12 @@ async function tcEmpNovedadesOpenPopover(btn){
   if(!pop||!body) return;
   tcEmpCloseJornadaInfoTip();
   tcEmpCloseQuickTip();
-  tcEmpNovedadesRefreshFromData();
   tcEmpNovedadesOpen=true;
   pop.classList.remove('hidden');
   pop.setAttribute('aria-hidden','false');
   if(tcEmpNovedadesAnchorBtn) tcEmpNovedadesAnchorBtn.setAttribute('aria-expanded','true');
-  tcEmpNovedadesRenderList();
+  body.innerHTML='<p class="tc-ws-novedades-empty">Cargando…</p>';
+  await tcEmpNovedadesFetchList();
   tcEmpNovedadesPosition();
 }
 function tcEmpNovedadesToggle(ev){
@@ -12544,8 +12497,8 @@ function tcEmpNovedadesOpenItem(id){
   if(!item) return;
   tcEmpNovedadesMarkRead(id);
   tcEmpNovedadesClose(false);
-  if(item.kind==='task_new'||item.kind==='task_overdue') tcEmpQuickGoActivities();
-  else if(item.kind==='cand_update') tcEmpQuickGoCandidates(item.filter||'in_process');
+  const filter=tcEmpNovedadesFilterForEventType(item.eventType);
+  tcEmpQuickGoCandidates(filter, item.candidateId||null);
 }
 function tcEmpNovedadesEnsureListeners(){
   if(tcEmpNovedadesBound) return;
@@ -12655,7 +12608,7 @@ function tcEmpMyCandInterviewHtml(c){
 function tcEmpMyCandBuildCardHtml(c){
   const arch=c.archivedAt?' tc-emp-my-cand-card--archived':'';
   const proc=c.primaryActiveProcess;
-  return '<article class="tc-emp-my-cand-card'+arch+'" role="listitem">'+
+  return '<article class="tc-emp-my-cand-card'+arch+'" role="listitem" data-candidate-id="'+tcEsc(c.id)+'">'+
     '<div class="tc-emp-my-cand-card-inner">'+
     '<div class="tc-emp-my-cand-card-left">'+
     '<p class="tc-emp-my-cand-name">'+tcEsc(c.fullName||'—')+'</p>'+
@@ -12725,7 +12678,6 @@ async function tcEmpLoadMyCandidates(append){
     else tcEmpMyCandItems=rows;
     tcEmpMyCandNextCursor=j.nextCursor||null;
     tcEmpMyCandRenderList();
-    tcEmpNovedadesRefreshFromData();
   }catch(e){
     if(e&&e.name==='AbortError') return;
     if(fetchSeq!==tcEmpMyCandFetchSeq) return;
@@ -14064,6 +14016,7 @@ function tcEmpStopTimers(){
   if(tcClockTimer){ clearInterval(tcClockTimer); tcClockTimer=null; }
   if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
   if(tcHeartbeatTimer){ clearInterval(tcHeartbeatTimer); tcHeartbeatTimer=null; }
+  tcEmpNovedadesStopPolling();
   document.removeEventListener('visibilitychange', tcEmpOnVisibility);
 }
 function tcEmpTickClock(){
@@ -14254,7 +14207,6 @@ function tcEmpRenderTasks(){
   }
   body.innerHTML=html;
   tcEmpWorkspaceUpdateTabBadges();
-  tcEmpNovedadesRefreshFromData();
 }
 async function tcEmpLoadTasks(){
   const body=document.getElementById('tc-emp-tasks-body');
@@ -14296,7 +14248,7 @@ async function tcEmpLoadMe(){
   else tcEmpStartHeartbeat();
   tcEmpShowApp();
   tcEmpRender();
-  tcEmpNovedadesRefreshFromData();
+  tcEmpNovedadesStartPolling();
   await tcEmpLoadTasks();
   await tcEmpLoadMyCandidates(false);
 }

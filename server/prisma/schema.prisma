@@ -76,6 +76,13 @@ model Organization {
   recruitmentVacancyNotes RecruitmentVacancyNote[]
   recruitmentCandidateTags RecruitmentCandidateTag[]
   recruitmentCandidateTagAssignments RecruitmentCandidateTagAssignment[]
+  workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
+}
+
+enum WorkforceRecruitmentNovedadEventType {
+  STAGE_CHANGED
+  HIRED
+  REJECTED
 }
 
 enum OrgNotificationType {
@@ -137,6 +144,7 @@ model WorkforceEmployee {
   recruitmentCandidatesRegistered RecruitmentCandidate[] @relation("RecruitmentCandidateRegisteredBy")
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteWorkforceAuthor")
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[] @relation("RecruitmentCandidateResumeWorkforceUploader")
+  workforceRecruitmentNovedadesReceived WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadRecipient")
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -536,6 +544,7 @@ model RecruitmentCandidate {
   resume       RecruitmentCandidateResume?
   notesRows    RecruitmentCandidateNote[]
   tagAssignments RecruitmentCandidateTagAssignment[]
+  workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
   @@index([organizationId])
   @@index([organizationId, fullName])
@@ -676,6 +685,7 @@ model RecruitmentVacancy {
   documents    RecruitmentVacancyDocument[]
   vacancyStages RecruitmentVacancyStage[]
   notesRows    RecruitmentVacancyNote[]
+  workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -761,6 +771,8 @@ model RecruitmentStage {
   stageEventsFrom     RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventFrom")
   stageEventsTo       RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventTo")
   interviewEvents     RecruitmentApplicationInterviewEvent[]
+  workforceRecruitmentNovedadesFrom WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadFromStage")
+  workforceRecruitmentNovedadesTo   WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadToStage")
 
   @@unique([organizationId, key])
   @@index([organizationId, position])
@@ -789,6 +801,7 @@ model RecruitmentApplication {
 
   stageEvents RecruitmentApplicationStageEvent[]
   interviewEvents RecruitmentApplicationInterviewEvent[]
+  workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
   @@unique([candidateId, vacancyId])
   @@index([organizationId])
@@ -843,4 +856,33 @@ model RecruitmentApplicationStageEvent {
 
   @@index([applicationId, createdAt])
   @@index([organizationId])
+}
+
+/// Novedad de reclutamiento para el colaborador que registró al candidato (portal checador).
+model WorkforceRecruitmentNovedad {
+  id                            String   @id @default(cuid())
+  organizationId                String
+  organization                  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  recipientWorkforceEmployeeId  String
+  recipientWorkforceEmployee    WorkforceEmployee @relation("WorkforceRecruitmentNovedadRecipient", fields: [recipientWorkforceEmployeeId], references: [id], onDelete: Cascade)
+  candidateId                   String
+  candidate                     RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  applicationId                 String
+  application                   RecruitmentApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  vacancyId                     String
+  vacancy                       RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  eventType                     WorkforceRecruitmentNovedadEventType
+  fromStageId                   String?
+  fromStage                     RecruitmentStage? @relation("WorkforceRecruitmentNovedadFromStage", fields: [fromStageId], references: [id], onDelete: SetNull)
+  toStageId                     String
+  toStage                       RecruitmentStage @relation("WorkforceRecruitmentNovedadToStage", fields: [toStageId], references: [id], onDelete: Restrict)
+  message                       String
+  metadata                      Json
+  dedupeKey                     String
+  createdAt                     DateTime @default(now())
+  readAt                        DateTime? @db.Timestamptz(6)
+
+  @@unique([organizationId, dedupeKey])
+  @@index([organizationId, recipientWorkforceEmployeeId, createdAt], map: "WrNovedad_org_recipient_created")
+  @@index([organizationId, recipientWorkforceEmployeeId, readAt], map: "WrNovedad_org_recipient_readAt")
 }

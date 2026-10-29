@@ -8,6 +8,7 @@ import {
   ensureVacancyRecruitmentStages,
 } from './recruitmentVacancyStage.service.js';
 import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
+import { emitWorkforceRecruitmentNovedadForStageEvent } from './workforceRecruitmentNovedad.service.js';
 
 const POSITION_GAP = 1000;
 
@@ -40,7 +41,7 @@ function serializeApplication(row) {
 }
 
 async function recordStageEvent(tx, { organizationId, applicationId, fromStageId, toStageId, changedByUserId }) {
-  return tx.recruitmentApplicationStageEvent.create({
+  const stageEvent = await tx.recruitmentApplicationStageEvent.create({
     data: {
       organizationId,
       applicationId,
@@ -49,6 +50,12 @@ async function recordStageEvent(tx, { organizationId, applicationId, fromStageId
       changedByUserId: changedByUserId ?? null,
     },
   });
+  await emitWorkforceRecruitmentNovedadForStageEvent(tx, {
+    stageEvent,
+    applicationId,
+    organizationId,
+  });
+  return stageEvent;
 }
 
 export async function assertRecruitmentApplicationInOrg(applicationId, organizationId) {
