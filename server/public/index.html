@@ -1072,21 +1072,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-member-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--purple-light);color:var(--purple-dark);}
 .tc-member-badge--inactive{background:var(--slate-100);color:var(--slate-600);}
 .tc-member-badge--inactive .tc-status-dot--member{background:var(--slate-400);}
-#tc-jornada-body{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:20px;row-gap:12px;align-items:start;}
-.tc-jornada-top-row{display:contents;}
-.tc-jornada-split{display:contents;}
-.tc-jornada-main{grid-column:1;min-width:200px;max-width:min(320px,34vw);width:max-content;}
-.tc-jornada-aside{grid-column:2;min-width:0;display:flex;flex-direction:column;}
-.tc-jornada-card-header--compact{padding:10px 22px 0!important;margin-bottom:0!important;justify-content:flex-end!important;}
-.tc-jornada-top-left{grid-column:1;min-width:200px;max-width:min(320px,34vw);width:max-content;}
-.tc-jornada-top-right{grid-column:2;min-width:0;display:flex;align-items:flex-start;justify-content:flex-start;gap:12px;flex-wrap:wrap;}
+#tc-jornada-body{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:20px;align-items:start;padding-top:4px;}
+.tc-jornada-left-col{grid-column:1;display:flex;flex-direction:column;gap:12px;min-width:200px;max-width:min(320px,34vw);width:max-content;}
+.tc-jornada-right-col{grid-column:2;min-width:0;display:flex;flex-direction:column;gap:4px;align-self:stretch;}
+.tc-jornada-main{min-width:0;}
+.tc-jornada-aside{min-width:0;display:flex;flex-direction:column;flex:0 1 auto;min-height:0;}
+.tc-jornada-card-header--compact{display:none!important;}
+.tc-jornada-top-left{min-width:0;}
 .tc-jornada-act-head{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
 .tc-op-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid rgba(124,58,237,.18);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;font-family:inherit;}
 .tc-op-icon-btn svg{width:18px;height:18px;display:block;pointer-events:none;}
 .tc-op-icon-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.32);color:var(--purple-dark);}
 .tc-op-icon-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-op-icon-btn[disabled]{opacity:.45;cursor:not-allowed;}
-.tc-jornada-op-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;width:100%;}
+.tc-jornada-op-head{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:10px;width:100%;flex-shrink:0;}
+.tc-jornada-op-trailing{display:inline-flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;margin-left:auto;}
+.tc-jornada-op-toolbar{display:inline-flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap;}
 .tc-jornada-op-tabs{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--slate-200);border-radius:9px;padding:2px;background:var(--slate-50);}
 .tc-jornada-op-tab{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-500);padding:6px 12px;border-radius:7px;cursor:pointer;transition:background .15s,color .15s;}
 .tc-jornada-op-tab--on{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.06);}
@@ -1116,14 +1117,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-goal-report-btn:hover{background:var(--purple-light);}
 .tc-goal-report-btn--ghost{color:var(--slate-600);border-color:var(--slate-200);}
 .tc-goal-type-fields.hidden{display:none!important;}
-.tc-jornada-aside-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px;flex-shrink:0;}
+.tc-jornada-aside-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;}
 .tc-jornada-aside-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
 .tc-jornada-aside-head-actions{display:inline-flex;align-items:center;gap:8px;}
-.tc-goals-kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:140px;max-width:100%;}
-@media(max-width:900px){.tc-goals-kanban{grid-template-columns:1fr;max-height:min(420px,55vh);overflow-y:auto;overflow-x:hidden;}}
-.tc-goals-kanban-col{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-width:0;}
-.tc-goals-kanban-col-head{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);padding:2px 4px;}
-.tc-goals-kanban-col-body{display:flex;flex-direction:column;gap:8px;min-height:48px;}
+.tc-goals-board-wrap{display:flex;flex-direction:column;gap:4px;flex:0 1 auto;min-height:0;min-width:0;}
+.tc-goals-kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:200px;height:min(360px,48vh);max-height:min(360px,48vh);max-width:100%;align-items:stretch;flex-shrink:0;}
+@media(max-width:900px){.tc-goals-kanban{grid-template-columns:1fr;max-height:min(320px,50vh);}}
+.tc-goals-kanban-col{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0;max-height:100%;overflow:hidden;}
+.tc-goals-kanban-col-head{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);padding:2px 4px;flex-shrink:0;}
+.tc-goals-kanban-col-body{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow-y:auto;padding-right:2px;}
+.tc-goals-kanban-col-body::-webkit-scrollbar{width:5px;}
+.tc-goals-kanban-col-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px;}
+.tc-goals-kanban-col-body:hover::-webkit-scrollbar-thumb{background:rgba(124,58,237,.35);}
 .tc-goals-kanban-card{border:1px solid var(--slate-200);border-radius:10px;padding:8px 10px;background:#fff;display:flex;flex-direction:column;gap:4px;min-width:0;}
 .tc-goals-kanban-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0;}
 .tc-goals-kanban-card-title{margin:0;font-size:13px;font-weight:700;color:var(--primary);line-height:1.25;flex:1;min-width:0;}
@@ -1215,14 +1220,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
 .tc-jornada-dl dd{margin:0;font-size:14px;font-weight:600;color:var(--primary);line-height:1.45;}
-.tc-kanban-wrap{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;min-height:200px;}
+.tc-kanban-wrap{display:flex;flex-direction:column;gap:4px;min-width:0;flex:0 1 auto;min-height:0;}
 .tc-kanban-assign-btn{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--assess-gradient);color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,.25);transition:var(--tr-fast);white-space:nowrap;}
 .tc-kanban-assign-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
 .tc-kanban-assign-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-kanban-msg{font-size:12px;color:#b45309;margin:0;padding:6px 8px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;}
 .tc-kanban-msg.hidden{display:none!important;}
-.tc-kanban-board{display:flex;gap:10px;flex:1;max-height:min(360px,48vh);min-height:220px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;}
-.tc-kanban-col{flex:1 1 0;min-width:168px;max-width:100%;display:flex;flex-direction:column;background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;}
+.tc-kanban-board{display:flex;gap:10px;align-items:stretch;height:min(360px,48vh);min-height:200px;max-height:min(360px,48vh);overflow-x:auto;overflow-y:hidden;padding-bottom:4px;flex-shrink:0;}
+.tc-kanban-col{flex:1 1 0;min-width:168px;max-width:100%;min-height:0;display:flex;flex-direction:column;background:rgba(248,250,252,.85);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;}
 .tc-kanban-col-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px;border-bottom:1px solid var(--slate-200);background:rgba(255,255,255,.7);}
 .tc-kanban-col-label{display:inline-flex;align-items:center;gap:0;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-600);}
 .tc-kanban-status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;}
@@ -1232,7 +1237,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-kanban-col-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);line-height:1.3;}
 .tc-task-card-status-dot{position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;}
 .tc-task-card-title{padding-left:12px;}
-.tc-kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;transition:background 160ms ease,border-color 160ms ease;}
+.tc-kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;transition:background 160ms ease,border-color 160ms ease;}
 .tc-kanban-col-body.tc-kanban-col--over{background:rgba(237,233,254,.45);outline:2px dashed rgba(124,58,237,.35);outline-offset:-2px;border-radius:0 0 10px 10px;}
 .tc-kanban-col-body::-webkit-scrollbar{width:5px;}
 .tc-kanban-col-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px;}
@@ -1277,7 +1282,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-emp-task-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-emp-tasks-empty{font-size:13px;color:var(--slate-500);line-height:1.5;}
 .tc-emp-tasks-toast{font-size:12px;font-weight:600;color:#15803d;margin:8px 0 0;}
-@media(max-width:900px){#tc-jornada-body{display:flex;flex-direction:column;gap:14px;}.tc-jornada-top-row{display:flex;flex-direction:column;gap:12px;}.tc-jornada-split{display:flex;flex-direction:column;gap:18px;}.tc-jornada-top-left,.tc-jornada-top-right,.tc-jornada-main,.tc-jornada-aside{grid-column:auto;max-width:none;width:100%;}.tc-kanban-board{max-height:280px;}}
+@media(max-width:900px){#tc-jornada-body{display:flex;flex-direction:column;gap:14px;}.tc-jornada-left-col,.tc-jornada-right-col{grid-column:auto;max-width:none;width:100%;min-height:0;}.tc-jornada-op-head{flex-wrap:wrap;}.tc-kanban-board{max-height:280px;}.tc-goals-kanban{max-height:280px;}}
 .tc-emp-title{font-size:22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin:0 0 4px;line-height:1.2;}
 .tc-link-banner{margin:12px 0 18px;padding:12px 14px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;font-size:13px;color:#1e3a8a;}
 .tc-link-banner code{display:block;margin:8px 0;font-size:12px;word-break:break-all;color:#1e40af;}
@@ -13568,18 +13573,11 @@ async function tcViewJornada(id){
           '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>';
       }
       body.innerHTML=
-        '<div class="tc-jornada-top-row">'+
+        '<div class="tc-jornada-left-col">'+
         '<div class="tc-jornada-top-left">'+
         '<div class="tc-jornada-top-title">Jornada</div>'+
         '<div class="card-subtitle tc-jornada-sub-row" id="tc-jornada-sub">'+tcEmpAvatarInnerHtml(emp)+'<span>'+tcEsc(emp.fullName||'—')+'</span></div>'+
         '</div>'+
-        '<div class="tc-jornada-top-right">'+
-        '<div class="tc-jornada-op-head">'+
-        '<div class="tc-jornada-op-tabs" role="tablist" aria-label="Operaciones del colaborador">'+
-        '<button type="button" role="tab" class="tc-jornada-op-tab tc-jornada-op-tab--on" id="tc-jornada-tab-activities" aria-selected="true" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'activities\')">Actividades</button>'+
-        '<button type="button" role="tab" class="tc-jornada-op-tab" id="tc-jornada-tab-goals" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'goals\')">Metas</button>'+
-        '</div></div></div></div>'+
-        '<div class="tc-jornada-split">'+
         '<div class="tc-jornada-main">'+
         '<dl class="tc-jornada-dl">'+
         dlHtml+
@@ -13587,8 +13585,17 @@ async function tcViewJornada(id){
         '<div class="tc-jornada-meta">'+
         '<button type="button" class="tc-history-toggle tc-history-toggle--inline" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">'+tcSvgCalendarHistory()+' Historial de jornadas</button>'+
         '<div class="tc-jornada-alta">Alta: '+tcEsc(altaFmt)+'</div>'+
+        '</div></div></div>'+
+        '<div class="tc-jornada-right-col">'+
+        '<div class="tc-jornada-op-head">'+
+        '<div class="tc-jornada-op-tabs" role="tablist" aria-label="Operaciones del colaborador">'+
+        '<button type="button" role="tab" class="tc-jornada-op-tab tc-jornada-op-tab--on" id="tc-jornada-tab-activities" aria-selected="true" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'activities\')">Actividades</button>'+
+        '<button type="button" role="tab" class="tc-jornada-op-tab" id="tc-jornada-tab-goals" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'goals\')">Metas</button>'+
         '</div>'+
-        '</div>'+
+        '<div class="tc-jornada-op-trailing">'+
+        '<div id="tc-jornada-op-toolbar" class="tc-jornada-op-toolbar"></div>'+
+        '<button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+
+        '</div></div>'+
         '<div class="tc-jornada-aside" id="tc-jornada-aside"></div>'+
         '</div>';
     }
@@ -14029,10 +14036,20 @@ const TC_KANBAN_EMPTY={PENDING:'Sin pendientes',IN_PROGRESS:'Sin actividades en 
 const TC_KANBAN_COMPLETED_CAP=8;
 function tcKanbanShellHtml(){
   return '<div class="tc-kanban-wrap">'+
-    '<div class="tc-jornada-aside-toolbar">'+
-    '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlusOutline()+'</button></div>'+
     '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
     '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
+}
+function tcJornadaOpToolbarHtml(){
+  if(tcJornadaOpTab==='goals'){
+    const archLabel=tcGoalsAdminShowArchived?'Ver activas':'Ver eliminadas';
+    return '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalsToggleArchivedView()">'+archLabel+'</button>'+
+      '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcSvgPlusOutline()+'</button>';
+  }
+  return '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlusOutline()+'</button>';
+}
+function tcJornadaSyncOpToolbar(){
+  const el=document.getElementById('tc-jornada-op-toolbar');
+  if(el) el.innerHTML=tcJornadaOpToolbarHtml();
 }
 function tcKanbanTaskDotClass(status){
   return TC_KANBAN_DOT_CLASS[status]||TC_KANBAN_DOT_CLASS.PENDING;
@@ -14349,20 +14366,17 @@ function tcJornadaSetOpTab(tab){
   const onAct=tab==='activities';
   if(tAct){ tAct.classList.toggle('tc-jornada-op-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
   if(tGoals){ tGoals.classList.toggle('tc-jornada-op-tab--on',!onAct); tGoals.setAttribute('aria-selected',!onAct?'true':'false'); }
+  tcJornadaSyncOpToolbar();
   tcJornadaRenderAside();
 }
 function tcGoalsBoardShellHtml(){
-  const archLabel=tcGoalsAdminShowArchived?'Ver activas':'Ver eliminadas';
   return '<div class="tc-goals-board-wrap">'+
-    '<div class="tc-jornada-aside-toolbar">'+
-    '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalsToggleArchivedView()">'+archLabel+'</button>'+
-    '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcSvgPlusOutline()+'</button>'+
-    '</div>'+
     '<p class="tc-goal-toast hidden" id="tc-goals-admin-toast" role="status"></p>'+
     '<div class="tc-goals-kanban" id="tc-jornada-goals-list"><p class="tc-goal-empty">Cargando…</p></div></div>';
 }
 function tcGoalsToggleArchivedView(){
   tcGoalsAdminShowArchived=!tcGoalsAdminShowArchived;
+  tcJornadaSyncOpToolbar();
   tcJornadaRenderAside();
 }
 function tcGoalShowAdminToast(msg){
@@ -14396,6 +14410,7 @@ function tcGoalProgressHtml(st,pctNum){
 function tcJornadaRenderAside(){
   const aside=document.getElementById('tc-jornada-aside');
   if(!aside||!tcJornadaEmpId) return;
+  tcJornadaSyncOpToolbar();
   if(tcJornadaOpTab==='goals'){
     aside.innerHTML=tcGoalsBoardShellHtml();
     tcGoalsLoad();
