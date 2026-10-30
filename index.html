@@ -12448,6 +12448,7 @@ function tcEmpQuickGoActivities(){
   tcEmpNovedadesClose(false);
   if(tcEmpWorkspaceTab==='activities') tcEmpWorkspaceResetPanelScroll('activities');
   else tcEmpWorkspaceSetTab('activities');
+  void tcEmpLoadTasksSilent(true);
 }
 function tcEmpQuickGoGoals(){
   tcEmpNovedadesClose(false);
@@ -12599,6 +12600,8 @@ const TC_EMP_NOVEDADES_POLL_MS=20000;
 const TC_EMP_WS_POLL_MS=20000;
 const tcEmpGoalReportInFlight={};
 let tcEmpGoalsLoadInFlight=false;
+let tcEmpTasksLoadInFlight=false;
+let tcEmpTasksLoadSeq=0;
 let tcEmpWsPollTimer=null;
 let tcEmpWsPollInFlight=false;
 let tcEmpWsPollDebounce=null;
@@ -12653,13 +12656,20 @@ function tcEmpWsTasksFingerprint(tasks){
 }
 async function tcEmpLoadTasksSilent(force){
   if(!force&&tcEmpWorkspaceHasBlockingInteraction()) return;
+  if(tcEmpTasksLoadInFlight&&!force) return;
+  const seq=++tcEmpTasksLoadSeq;
+  tcEmpTasksLoadInFlight=true;
   try{
     const out=await tcPublicFetchTasks();
+    if(seq!==tcEmpTasksLoadSeq) return;
     const next=(out&&out.tasks)||[];
-    if(tcEmpWsTasksFingerprint(next)===tcEmpWsTasksFingerprint(tcEmpTasks)) return;
+    if(!force&&tcEmpWsTasksFingerprint(next)===tcEmpWsTasksFingerprint(tcEmpTasks)) return;
     tcEmpTasks=next;
     tcEmpRenderTasks();
   }catch(_){}
+  finally{
+    if(seq===tcEmpTasksLoadSeq) tcEmpTasksLoadInFlight=false;
+  }
 }
 async function tcEmpWsPollTick(){
   if(tcEmpWorkspaceHasBlockingInteraction()) return;

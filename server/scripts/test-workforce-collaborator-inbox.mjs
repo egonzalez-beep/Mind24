@@ -52,6 +52,19 @@ check(/authLogout[\s\S]*mind24NotifStopPolling/.test(indexHtml), 'stop polling a
 check(/superadminLogout[\s\S]*mind24NotifStopPolling/.test(indexHtml), 'stop polling superadminLogout');
 check(/tcEmpStopWsPolling/.test(indexHtml.match(/function tcEmpStopTimers[\s\S]*?^}/m)?.[0] || ''), 'gate detiene ws poll');
 
+const quickGoAct = indexHtml.match(/function tcEmpQuickGoActivities\(\)\{[\s\S]*?\n\}/)?.[0] || '';
+const novedadesOpen = indexHtml.match(/function tcEmpNovedadesOpenItem\([\s\S]*?\n\}/)?.[0] || '';
+check(/TASK_ASSIGNED[\s\S]*tcEmpQuickGoActivities/.test(novedadesOpen), 'TASK_ASSIGNED navega a Actividades');
+check(/void tcEmpLoadTasksSilent\(true\)/.test(quickGoAct), 'Actividades carga inmediata forzada');
+check(!/TC_EMP_WS_POLL_MS|20000/.test(quickGoAct), 'navegación actividades no espera tick 20s');
+check(!/location\.reload|window\.reload/.test(quickGoAct), 'navegación actividades sin reload página');
+check(!/setInterval/.test(quickGoAct), 'navegación actividades sin nuevo polling');
+check(/GOAL_ASSIGNED[\s\S]*tcEmpQuickGoGoals/.test(novedadesOpen), 'GOAL_ASSIGNED sigue yendo a Metas');
+check(/tcEmpQuickGoCandidates/.test(novedadesOpen), 'Reclutamiento sigue yendo a Candidatos');
+check(!/tcEmpNovedadesMarkRead|novedades.*\/read/i.test(novedadesOpen), 'clic novedad no marca leída individual');
+const publicHtml = fs.readFileSync(path.join(serverDir, 'public/index.html'), 'utf8');
+check(publicHtml === indexHtml, 'index.html idéntico a server/public/index.html');
+
 function cookieHeaderFromResponse(res, name) {
   const raw = res.headers.getSetCookie?.() || [];
   const list = raw.length ? raw : res.headers.get('set-cookie') ? [res.headers.get('set-cookie')] : [];
