@@ -5598,7 +5598,11 @@ async function mind24LogoutApi(reason){
   try{ await apiJson('/api/auth/logout',{method:'POST'}); }catch{}
 }
 
+function mind24NotifStopPolling(){
+  if(mind24NotifPollTimer){ clearInterval(mind24NotifPollTimer); mind24NotifPollTimer=null; }
+}
 async function authLogout(){
+  mind24NotifStopPolling();
   await mind24LogoutApi({reason:'authLogout'});
   mind24ClearAspenPasswordCache();
   window.__MIND24_USER=null;
@@ -6053,6 +6057,7 @@ async function loginSuperAdmin(e){
 }
 
 async function superadminLogout(){
+  mind24NotifStopPolling();
   await mind24LogoutApi({reason:'superadminLogout'});
   window.__MIND24_USER=null;
   mind24ClearPersistedSession();
@@ -12820,30 +12825,11 @@ function tcEmpNovedadesRenderList(){
   }
   body.innerHTML=tcEmpNovedadesItems.map(function(n){
     const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread');
-    return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(\''+n.id+'\')">'+
+    return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
       '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>'+
       '<span class="tc-ws-novedades-item-body"><p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>'+
       '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.createdAt))+'</p></span></button>';
   }).join('');
-}
-async function tcEmpNovedadesMarkRead(id){
-  const prevItems=tcEmpNovedadesItems;
-  const prevUnread=tcEmpNovedadesLastUnreadCount;
-  const target=prevItems.find(function(n){ return n.id===id; });
-  if(!target||target.read) return;
-  tcEmpNovedadesItems=prevItems.map(function(n){
-    return n.id===id?Object.assign({},n,{read:true,readAt:new Date().toISOString()}):n;
-  });
-  tcEmpNovedadesUpdateBadge(Math.max(0, prevUnread-1));
-  tcEmpNovedadesRenderList();
-  try{
-    await tcPublicJson('/api/timeclock/public/novedades/'+encodeURIComponent(id)+'/read',{ method:'POST', body:JSON.stringify({}) });
-    await tcEmpNovedadesPollUnreadCount();
-  }catch(_){
-    tcEmpNovedadesItems=prevItems;
-    tcEmpNovedadesUpdateBadge(prevUnread);
-    tcEmpNovedadesRenderList();
-  }
 }
 async function tcEmpNovedadesMarkAllRead(){
   if(tcEmpNovedadesMarkAllInFlight) return;
@@ -12902,11 +12888,23 @@ function tcEmpNovedadesToggle(ev){
   if(tcEmpNovedadesOpen) tcEmpNovedadesClose(false);
   else tcEmpNovedadesOpenPopover(btn);
 }
+function tcEmpNovedadesParseCompositeId(compositeId){
+  const s=String(compositeId||'');
+  if(s.indexOf('workplace:')===0) return { source:'workplace', rawId:s.slice('workplace:'.length) };
+  if(s.indexOf('recruitment:')===0) return { source:'recruitment', rawId:s.slice('recruitment:'.length) };
+  return null;
+}
 function tcEmpNovedadesOpenItem(id){
   const item=tcEmpNovedadesItems.find(function(n){ return n.id===id; });
   if(!item) return;
-  tcEmpNovedadesMarkRead(id);
+  const parsed=tcEmpNovedadesParseCompositeId(item.id);
+  const source=(parsed&&parsed.source)||item.source;
   tcEmpNovedadesClose(false);
+  if(source==='workplace'){
+    if(item.eventType==='TASK_ASSIGNED') tcEmpQuickGoActivities();
+    else if(item.eventType==='GOAL_ASSIGNED') tcEmpQuickGoGoals();
+    return;
+  }
   const filter=tcEmpNovedadesFilterForEventType(item.eventType);
   tcEmpQuickGoCandidates(filter, item.candidateId||null);
 }
@@ -13297,6 +13295,7 @@ function mind24NotifDotClass(type){
   if(type==='SHIFT_CHECK_OUT') return 'mind24-notif-item-dot--out';
   if(type==='TASK_COMPLETED') return 'mind24-notif-item-dot--done';
   if(type==='TASK_OVERDUE') return 'mind24-notif-item-dot--overdue';
+  if(type==='GOAL_PERIOD_REPORTED') return 'mind24-notif-item-dot--done';
   return 'mind24-notif-item-dot--out';
 }
 function mind24NotifFmtTime(iso){
@@ -15237,6 +15236,7 @@ function tcEmpStopTimers(){
   if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
   if(tcHeartbeatTimer){ clearInterval(tcHeartbeatTimer); tcHeartbeatTimer=null; }
   tcEmpNovedadesStopPolling();
+  tcEmpStopWsPolling();
   document.removeEventListener('visibilitychange', tcEmpOnVisibility);
 }
 function tcEmpTickClock(){

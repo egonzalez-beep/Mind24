@@ -44,11 +44,10 @@ import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service
 import { notifyShiftCheckIn, notifyShiftCheckOut } from '../services/orgNotification.service.js';
 import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
 import {
-  countUnreadWorkforceRecruitmentNovedades,
-  listWorkforceRecruitmentNovedades,
-  markAllWorkforceRecruitmentNovedadesRead,
-  markWorkforceRecruitmentNovedadRead,
-} from '../services/workforceRecruitmentNovedad.service.js';
+  countUnreadCollaboratorNovedades,
+  listCollaboratorNovedadesFeed,
+  markAllCollaboratorNovedadesRead,
+} from '../services/workforceCollaboratorNovedadesFeed.service.js';
 import {
   listWorkforceGoalPeriodsForEmployee,
   listWorkforceGoalsForEmployee,
@@ -489,7 +488,7 @@ router.get('/novedades', requireTimeclockSession, async (req, res, next) => {
       })
       .parse(req.query ?? {});
     const emp = req.timeclockEmployee;
-    const result = await listWorkforceRecruitmentNovedades({
+    const result = await listCollaboratorNovedadesFeed({
       organizationId: emp.organizationId,
       recipientWorkforceEmployeeId: emp.id,
       limit: query.limit,
@@ -504,35 +503,12 @@ router.get('/novedades', requireTimeclockSession, async (req, res, next) => {
 router.get('/novedades/unread-count', requireTimeclockSession, async (req, res, next) => {
   try {
     const emp = req.timeclockEmployee;
-    const unreadCount = await countUnreadWorkforceRecruitmentNovedades(
-      emp.organizationId,
-      emp.id,
-    );
+    const unreadCount = await countUnreadCollaboratorNovedades(emp.organizationId, emp.id);
     res.json({ unreadCount });
   } catch (e) {
     next(e);
   }
 });
-
-router.post(
-  '/novedades/:id/read',
-  requireTimeclockSession,
-  requireTimeclockMutationOrigin,
-  async (req, res, next) => {
-    try {
-      const novedadId = z.string().min(1).parse(req.params.id);
-      const emp = req.timeclockEmployee;
-      const result = await markWorkforceRecruitmentNovedadRead(
-        emp.organizationId,
-        emp.id,
-        novedadId,
-      );
-      res.json(result);
-    } catch (e) {
-      next(e);
-    }
-  },
-);
 
 router.post(
   '/novedades/read-all',
@@ -541,10 +517,7 @@ router.post(
   async (req, res, next) => {
     try {
       const emp = req.timeclockEmployee;
-      const result = await markAllWorkforceRecruitmentNovedadesRead(
-        emp.organizationId,
-        emp.id,
-      );
+      const result = await markAllCollaboratorNovedadesRead(emp.organizationId, emp.id);
       res.json(result);
     } catch (e) {
       next(e);

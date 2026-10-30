@@ -50,8 +50,11 @@ check(/dedupeKey = stageEvent\.id/.test(novedadSvc) || /dedupeKey = stageEvent.i
 check(/P2002/.test(novedadSvc), 'idempotente unique violation');
 check(/router\.get\('\/novedades'/.test(publicRoutes), 'GET listado');
 check(/\/novedades\/unread-count/.test(publicRoutes), 'GET unread-count');
-check(/\/novedades\/:id\/read/.test(publicRoutes), 'POST read');
+check(!/\/novedades\/:id\/read/.test(publicRoutes), 'sin POST read individual');
 check(/\/novedades\/read-all/.test(publicRoutes), 'POST read-all');
+check(/listCollaboratorNovedadesFeed/.test(publicRoutes), 'feed combinado en rutas');
+check(!/tcEmpNovedadesMarkRead/.test(indexHtml), 'sin lectura individual en UI');
+check(/tcEmpNovedadesParseCompositeId/.test(indexHtml) && /source==='workplace'/.test(indexHtml), 'navegación workplace');
 check(!/req\.query\.organizationId/.test(publicRoutes.match(/router\.get\('\/novedades'[\s\S]*?}\);/)?.[0] || ''), 'no orgId en query');
 check(/TC_EMP_NOVEDADES_POLL_MS=20000/.test(indexHtml), 'polling 20s');
 check(/tcEmpNovedadesStopPolling[\s\S]*clearInterval/.test(indexHtml), 'un solo intervalo');
@@ -384,22 +387,7 @@ if (dbOk) {
     const u0 = unreadBefore.data.unreadCount;
     check(u0 > 0, 'unread inicial > 0');
 
-    await jsonFetch(base, `/api/timeclock/public/novedades/${firstId}/read`, {
-      method: 'POST',
-      cookie: tcReg,
-      body: {},
-    });
-    const unreadAfter = await jsonFetch(base, '/api/timeclock/public/novedades/unread-count', {
-      cookie: tcReg,
-    });
-    check(unreadAfter.data.unreadCount === u0 - 1, '12 marcar leída reduce contador');
-
-    const crossRead = await jsonFetch(base, `/api/timeclock/public/novedades/${firstId}/read`, {
-      method: 'POST',
-      cookie: tcOther,
-      body: {},
-    });
-    check(crossRead.res.status === 404, '11 otro empleado no marca ajena');
+    check(firstId && String(firstId).includes(':'), '12 id compuesto en feed');
 
     await jsonFetch(base, '/api/timeclock/public/novedades/read-all', {
       method: 'POST',

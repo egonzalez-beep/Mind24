@@ -1,5 +1,7 @@
 import { prisma } from '../db/client.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
+import { notifyGoalPeriodReportedByEmployee } from './orgNotification.service.js';
+import { emitWorkplaceInboxGoalAssigned } from './workforceWorkplaceInbox.service.js';
 import {
   anchorYmdFromPeriodStart,
   countPeriodAnchorsInclusive,
@@ -267,6 +269,12 @@ export async function createWorkforceGoalForEmployee({
     });
     const anchors = listPeriodAnchorsBetween(startDate, limitAnchor, periodicity);
     await materializeGoalPeriodAnchors(tx, row, employee, anchors);
+    await emitWorkplaceInboxGoalAssigned(tx, {
+      organizationId,
+      recipientWorkforceEmployeeId: employeeId,
+      goalId: row.id,
+      goalTitle: row.title,
+    });
     return row;
   });
 
@@ -493,15 +501,48 @@ export async function reportWorkforceGoalPeriod({
     binaryResult: patch.binaryResult,
   });
 
-  const submittedAt = period.submittedAt ?? now;
-  const updated = await prisma.workforceGoalPeriod.update({
-    where: { id: period.id },
-    data: {
-      ...patch,
-      completionPercent,
-      employeeComment: employeeComment?.trim() || null,
-      submittedAt,
-    },
+  const updated = await prisma.$transaction(async (tx) => {
+    const comment = employeeComment?.trim() || null;
+    const firstWrite = await tx.workforceGoalPeriod.updateMany({
+      where: { id: period.id, submittedAt: null },
+      data: {
+        ...patch,
+        completionPercent,
+        employeeComment: comment,
+        submittedAt: now,
+      },
+    });
+    let row;
+    if (firstWrite.count === 1) {
+      row = await tx.workforceGoalPeriod.findFirst({ where: { id: period.id } });
+      const emp = await tx.workforceEmployee.findFirst({
+        where: { id: employee.id, organizationId: employee.organizationId },
+        select: { id: true, fullName: true },
+      });
+      await notifyGoalPeriodReportedByEmployee(tx, {
+        organizationId: employee.organizationId,
+        employeeId: employee.id,
+        employeeName: emp?.fullName,
+        goalId: goal.id,
+        goalTitle: goal.title,
+        goalType: goal.goalType,
+        periodId: period.id,
+        targetSnapshot: period.targetSnapshot,
+        achievedValue: patch.achievedValue,
+        binaryResult: patch.binaryResult,
+        completionPercent,
+      });
+    } else {
+      row = await tx.workforceGoalPeriod.update({
+        where: { id: period.id },
+        data: {
+          ...patch,
+          completionPercent,
+          employeeComment: comment,
+        },
+      });
+    }
+    return row;
   });
   return serializePeriod(updated, goal, now);
 }

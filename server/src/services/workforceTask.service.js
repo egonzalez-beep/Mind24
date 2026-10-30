@@ -1,5 +1,6 @@
 import { prisma } from '../db/client.js';
 import { notifyTaskCompletedByEmployee } from './orgNotification.service.js';
+import { emitWorkplaceInboxTaskAssigned } from './workforceWorkplaceInbox.service.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
 
 export const WORKFORCE_TASK_STATUSES = ['PENDING', 'IN_PROGRESS', 'COMPLETED'];
@@ -114,6 +115,12 @@ export async function createWorkforceTaskForEmployee({
       actorEmployeeId: null,
       fromStatus: null,
       toStatus: 'PENDING',
+    });
+    await emitWorkplaceInboxTaskAssigned(tx, {
+      organizationId,
+      recipientWorkforceEmployeeId: employeeId,
+      taskId: task.id,
+      taskTitle: task.title,
     });
     return serializeWorkforceTask(task);
   });

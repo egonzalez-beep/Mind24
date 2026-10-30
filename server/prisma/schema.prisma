@@ -77,6 +77,7 @@ model Organization {
   recruitmentCandidateTags RecruitmentCandidateTag[]
   recruitmentCandidateTagAssignments RecruitmentCandidateTagAssignment[]
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
+  workforceWorkplaceInboxItems WorkforceWorkplaceInbox[]
   workforceGoals              WorkforceGoal[]
   workforceGoalPeriods        WorkforceGoalPeriod[]
 }
@@ -92,7 +93,13 @@ enum OrgNotificationType {
   SHIFT_CHECK_OUT
   TASK_COMPLETED
   TASK_OVERDUE
+  GOAL_PERIOD_REPORTED
   PLATFORM_ANNOUNCEMENT
+}
+
+enum WorkforceWorkplaceInboxEventType {
+  TASK_ASSIGNED
+  GOAL_ASSIGNED
 }
 
 enum RemoteWorkSessionStatus {
@@ -147,6 +154,7 @@ model WorkforceEmployee {
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteWorkforceAuthor")
   recruitmentCandidateResumesUploaded RecruitmentCandidateResume[] @relation("RecruitmentCandidateResumeWorkforceUploader")
   workforceRecruitmentNovedadesReceived WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadRecipient")
+  workforceWorkplaceInboxReceived     WorkforceWorkplaceInbox[] @relation("WorkforceWorkplaceInboxRecipient")
   workforceGoals                      WorkforceGoal[]
   workforceGoalPeriods                WorkforceGoalPeriod[]
 
@@ -282,7 +290,8 @@ model WorkforceGoal {
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
-  periods WorkforceGoalPeriod[]
+  periods           WorkforceGoalPeriod[]
+  orgNotifications  OrgNotification[]
 
   @@index([organizationId, employeeId])
   @@index([employeeId, archivedAt])
@@ -308,6 +317,8 @@ model WorkforceGoalPeriod {
   submittedAt       DateTime?                  @db.Timestamptz(6)
   createdAt         DateTime                   @default(now())
   updatedAt         DateTime                   @updatedAt
+
+  orgNotifications OrgNotification[]
 
   @@unique([goalId, periodStart])
   @@index([organizationId, employeeId])
@@ -358,6 +369,10 @@ model OrgNotification {
   task                WorkforceTask?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
   remoteWorkSessionId String?
   remoteWorkSession   RemoteWorkSession?  @relation(fields: [remoteWorkSessionId], references: [id], onDelete: SetNull)
+  goalId              String?
+  goal                WorkforceGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  goalPeriodId        String?
+  goalPeriod          WorkforceGoalPeriod? @relation(fields: [goalPeriodId], references: [id], onDelete: SetNull)
   dedupeKey           String
   createdAt           DateTime            @default(now())
 
@@ -960,4 +975,23 @@ model WorkforceRecruitmentNovedad {
   @@unique([organizationId, dedupeKey])
   @@index([organizationId, recipientWorkforceEmployeeId, createdAt], map: "WrNovedad_org_recipient_created")
   @@index([organizationId, recipientWorkforceEmployeeId, readAt], map: "WrNovedad_org_recipient_readAt")
+}
+
+/// Inbox laboral del colaborador (actividades, metas; distinto de reclutamiento).
+model WorkforceWorkplaceInbox {
+  id                           String                           @id @default(cuid())
+  organizationId               String
+  organization                 Organization                     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  recipientWorkforceEmployeeId String
+  recipientWorkforceEmployee   WorkforceEmployee                @relation("WorkforceWorkplaceInboxRecipient", fields: [recipientWorkforceEmployeeId], references: [id], onDelete: Cascade)
+  eventType                    WorkforceWorkplaceInboxEventType
+  message                      String
+  metadata                     Json
+  dedupeKey                    String
+  readAt                       DateTime?                        @db.Timestamptz(6)
+  createdAt                    DateTime                         @default(now())
+
+  @@unique([organizationId, dedupeKey])
+  @@index([organizationId, recipientWorkforceEmployeeId, createdAt], map: "WwInbox_org_recipient_created")
+  @@index([organizationId, recipientWorkforceEmployeeId, readAt], map: "WwInbox_org_recipient_readAt")
 }

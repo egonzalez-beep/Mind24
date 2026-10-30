@@ -38,7 +38,17 @@ function check(cond, msg) {
 console.log('\n=== Notificaciones — estático ===\n');
 
 check(/model OrgNotification/.test(schema) && /model OrgNotificationRead/.test(schema), 'modelos Notification + Read');
-check(/OrgNotificationType/.test(schema) && /PLATFORM_ANNOUNCEMENT/.test(schema), 'enum tipos incl. futuro');
+check(/OrgNotificationType/.test(schema) && /GOAL_PERIOD_REPORTED/.test(schema), 'enum meta reportada');
+check(/PLATFORM_ANNOUNCEMENT/.test(schema), 'enum plataforma reservado');
+check(/notifyGoalPeriodReportedByEmployee/.test(notifSvc), 'notify meta reportada');
+check(/goal_period_reported:/.test(notifSvc), 'dedupe meta periodo');
+check(/export function buildGoalPeriodReportedMessage/.test(notifSvc), 'mensaje meta exportable');
+check(
+  /notifyGoalPeriodReportedByEmployee[\s\S]*upsertOrgNotification/.test(notifSvc),
+  'meta reportada usa upsertOrgNotification',
+);
+check(!/notifyGoalPeriodReportedByEmployee[\s\S]*P2002/.test(notifSvc), 'meta sin catch P2002');
+check(/model WorkforceWorkplaceInbox/.test(schema), 'inbox laboral colaborador');
 check(/@@unique\(\[organizationId, dedupeKey\]\)/.test(schema), 'dedupe por org');
 check(/@@id\(\[notificationId, userId\]\)/.test(schema), 'read por usuario');
 check(/router\.get\('\/notifications'/.test(orgRoutes), 'GET listado');

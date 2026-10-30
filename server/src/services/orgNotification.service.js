@@ -5,6 +5,7 @@ export const ORG_NOTIFICATION_TYPES = [
   'SHIFT_CHECK_OUT',
   'TASK_COMPLETED',
   'TASK_OVERDUE',
+  'GOAL_PERIOD_REPORTED',
   'PLATFORM_ANNOUNCEMENT',
 ];
 
@@ -17,7 +18,17 @@ function quoteTitle(title) {
 }
 
 async function upsertOrgNotification(client, data) {
-  const { organizationId, dedupeKey, type, message, employeeId, taskId, remoteWorkSessionId } = data;
+  const {
+    organizationId,
+    dedupeKey,
+    type,
+    message,
+    employeeId,
+    taskId,
+    remoteWorkSessionId,
+    goalId,
+    goalPeriodId,
+  } = data;
   return client.orgNotification.upsert({
     where: {
       organizationId_dedupeKey: { organizationId, dedupeKey },
@@ -30,8 +41,75 @@ async function upsertOrgNotification(client, data) {
       employeeId: employeeId ?? null,
       taskId: taskId ?? null,
       remoteWorkSessionId: remoteWorkSessionId ?? null,
+      goalId: goalId ?? null,
+      goalPeriodId: goalPeriodId ?? null,
     },
     update: {},
+  });
+}
+
+function quoteGoalTitle(title) {
+  const t = String(title || '').trim();
+  return t ? `“${t}”` : 'meta';
+}
+
+export function buildGoalPeriodReportedMessage(
+  employeeName,
+  goalTitle,
+  goalType,
+  { targetSnapshot, achievedValue, binaryResult, completionPercent },
+) {
+  const name = employeeName || 'Colaborador';
+  const meta = quoteGoalTitle(goalTitle);
+  if (goalType === 'COMPLIANCE') {
+    if (binaryResult === 'MET') return `${name} cumplió la meta ${meta}.`;
+    return `${name} no cumplió la meta ${meta}.`;
+  }
+  const achieved = Number(achievedValue);
+  const target = Number(targetSnapshot);
+  if (Number.isFinite(achieved) && Number.isFinite(target) && achieved >= target) {
+    return `${name} cumplió la meta ${meta}.`;
+  }
+  const pct =
+    completionPercent != null && Number.isFinite(Number(completionPercent))
+      ? Math.round(Number(completionPercent))
+      : target > 0 && Number.isFinite(achieved)
+        ? Math.round((achieved / target) * 100)
+        : 0;
+  return `${name} reportó parcialmente la meta ${meta} (${pct}%).`;
+}
+
+export async function notifyGoalPeriodReportedByEmployee(
+  tx,
+  {
+    organizationId,
+    employeeId,
+    employeeName,
+    goalId,
+    goalTitle,
+    goalType,
+    periodId,
+    targetSnapshot,
+    achievedValue,
+    binaryResult,
+    completionPercent,
+  },
+) {
+  if (!organizationId || !periodId) return;
+  const message = buildGoalPeriodReportedMessage(employeeName, goalTitle, goalType, {
+    targetSnapshot,
+    achievedValue,
+    binaryResult,
+    completionPercent,
+  });
+  await upsertOrgNotification(tx, {
+    organizationId,
+    type: 'GOAL_PERIOD_REPORTED',
+    message,
+    employeeId,
+    goalId,
+    goalPeriodId: periodId,
+    dedupeKey: `goal_period_reported:${periodId}`,
   });
 }
 
