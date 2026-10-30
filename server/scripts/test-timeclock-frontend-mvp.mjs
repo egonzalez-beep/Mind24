@@ -78,7 +78,7 @@ check(/tcDirJornadaStatusHtml/.test(indexHtml) && /Deshabilitado/.test(indexHtml
 check(/Sin jornada asignada/.test(indexHtml), 'directorio sin jornada asignada');
 check(/tcEmpOpenRegisterCandidate/.test(indexHtml), 'portal registrar candidato');
 check(/tc-jornada-dl/.test(indexHtml), 'jornada card dl layout');
-check(/tc-jornada-split/.test(indexHtml) && /tc-jornada-main/.test(indexHtml) && /tc-jornada-aside/.test(indexHtml), 'jornada two-column shell');
+check(/tc-jornada-left-col/.test(indexHtml) && /tc-jornada-right-col/.test(indexHtml) && /tc-jornada-aside/.test(indexHtml), 'jornada two-column shell');
 check(!/grid-template-columns:repeat\(auto-fill,minmax\(180px/.test(indexHtml), 'jornada not horizontal grid');
 check(/flex-direction:column/.test(indexHtml.match(/\.tc-jornada-dl\{[^}]+\}/)?.[0] || ''), 'jornada dl vertical stack');
 check(!/Eliminar colaborador/.test(indexHtml), 'no eliminar colaborador button');

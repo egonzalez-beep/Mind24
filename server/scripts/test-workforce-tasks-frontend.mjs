@@ -43,7 +43,7 @@ check(/No tienes actividades pendientes/.test(indexHtml), 'empty state colaborad
 check(/tcKanbanMoveTask/.test(indexHtml) && /Mover a/.test(indexHtml), 'fallback accesible mover estado');
 check(!/location\.reload\(/.test(indexHtml) || !/tcKanban.*reload/.test(indexHtml), 'kanban sin full-page reload');
 check(/tc-history-dialog/.test(indexHtml) && /tcKanbanLoad/.test(indexHtml), 'historial y actividades coexisten');
-check(/tc-jornada-top-row/.test(indexHtml) && /tc-jornada-top-left/.test(indexHtml) && /tc-jornada-top-right/.test(indexHtml), 'Jornada y Actividades misma fila superior');
+check(/tc-jornada-left-col/.test(indexHtml) && /tc-jornada-right-col/.test(indexHtml) && /tc-jornada-op-head/.test(indexHtml), 'Jornada y operaciones en columnas');
 check(/tc-jornada-main/.test(indexHtml) && /tc-jornada-meta/.test(indexHtml) && /tc-history-toggle--inline/.test(indexHtml), 'Historial en bloque Jornada');
 check(/#tc-jornada-body\{display:grid/.test(indexHtml) && /grid-template-columns:max-content/.test(indexHtml), 'Jornada ancho contenido y Actividades flex');
 check(/tc-jornada-alta/.test(indexHtml) && /tcFmtEmployeeAlta/.test(indexHtml) && /Alta:/.test(indexHtml), 'fecha de alta colaborador');

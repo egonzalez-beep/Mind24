@@ -38,6 +38,7 @@ import {
   WORKFORCE_GOAL_PERIODICITIES,
   WORKFORCE_GOAL_TYPES,
 } from '../services/workforceGoal.service.js';
+import { getWorkforceGoalMetricsForAdmin } from '../services/workforceGoalMetrics.service.js';
 import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
 import {
   createWorkforceDocument,
@@ -444,6 +445,21 @@ router.post('/employees/:id/goals', async (req, res, next) => {
       endDate: body.endDate ?? null,
     });
     res.status(201).json({ goal });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/goals/metrics', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { month } = z.object({ month: z.string().min(1).max(7) }).parse(req.query);
+    const metrics = await getWorkforceGoalMetricsForAdmin({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      month,
+    });
+    res.json(metrics);
   } catch (e) {
     next(e);
   }
