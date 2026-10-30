@@ -117,7 +117,7 @@ check(/tcEmpStopWsPolling[\s\S]*tcEmpWsPollInFlight=false/.test(indexHtml), 'pol
 check(/tcEmpStartWsPolling[\s\S]*tcEmpStopWsPolling/.test(indexHtml), 'polling reinicia sin duplicar intervalo');
 check(/tcGoalPeriodHasReport/.test(indexHtml), 'clasificación por periodo reportado');
 check(
-  /tcEmpGoalsView==='done'[\s\S]*tcGoalPeriodHasReport/.test(indexHtml),
+  /function tcEmpRenderGoals[\s\S]*else[\s\S]*tcGoalPeriodHasReport/.test(indexHtml),
   'Completadas incluye periodos reportados (MET/PARTIAL/NOT_MET)',
 );
 check(!/tcEmpGoalsView==='done'[\s\S]*r\.st==='MET'/.test(indexHtml), 'Completadas no limitada solo a MET');
@@ -130,6 +130,25 @@ check(
 check(!/tcEmp.*[Aa]rchive/.test(indexHtml), 'colaborador sin acción archive en JS');
 check(/tc-goals-kanban/.test(indexHtml) && /Eliminar meta/.test(indexHtml), 'tablero admin metas y eliminar');
 check(/tc-emp-goals-subtab/.test(indexHtml) && /Por cumplir/.test(indexHtml), 'subnav colaborador metas');
+check(/Completadas/.test(indexHtml) && !/tc-emp-goals-tab-history/.test(indexHtml), 'colaborador solo Por cumplir y Completadas');
+check(!/tcEmpGoalsSetView\('history'\)/.test(indexHtml), 'sin tab Historial colaborador');
+check(!/tcGoalToggleHistory/.test(indexHtml), 'admin sin botón Historial en cards');
+check(/focusPeriod/.test(goalServiceSrc), 'admin sigue usando focusPeriod');
+check(/goals\/:goalId\/periods/.test(orgRoutes), 'endpoint periodos históricos intacto');
+check(
+  /tcGoalOpenAssign/.test(indexHtml) && /tcKanbanOpenAssign/.test(indexHtml),
+  'acciones asignar meta y actividad',
+);
+check(
+  /Asignar meta[\s\S]*tcSvgPlusOutline\(\)/.test(indexHtml) && /Asignar actividad[\s\S]*tcSvgPlusOutline\(\)/.test(indexHtml),
+  'iconos plus SVG en actividades y metas',
+);
+check(!/tcSvgTargetPlusOutline/.test(indexHtml), 'sin icono diana en metas');
+check(/tcGoalsRenderAdminKanbanCard[\s\S]*focusPeriod/.test(indexHtml), 'una card por meta con focusPeriod');
+check(
+  /function tcEmpRenderGoals[\s\S]*slice\(0,40\)/.test(indexHtml),
+  'Completadas hasta 40 periodos reportados',
+);
 check(/tc-goal-card-v2/.test(indexHtml), 'cards metas unificadas colaborador');
 check(/tcGoalSyncAssignPeriodHint/.test(indexHtml), 'formulario recurrencia dinámica');
 check(/tc-op-icon-btn/.test(indexHtml) && /Asignar meta/.test(indexHtml), 'botón asignar meta outline');

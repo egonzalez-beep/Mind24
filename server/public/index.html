@@ -1116,7 +1116,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-goal-report-btn:hover{background:var(--purple-light);}
 .tc-goal-report-btn--ghost{color:var(--slate-600);border-color:var(--slate-200);}
 .tc-goal-type-fields.hidden{display:none!important;}
-.tc-jornada-aside-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-shrink:0;}
+.tc-jornada-aside-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px;flex-shrink:0;}
 .tc-jornada-aside-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
 .tc-jornada-aside-head-actions{display:inline-flex;align-items:center;gap:8px;}
 .tc-goals-kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:140px;max-width:100%;}
@@ -1124,8 +1124,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-goals-kanban-col{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-width:0;}
 .tc-goals-kanban-col-head{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);padding:2px 4px;}
 .tc-goals-kanban-col-body{display:flex;flex-direction:column;gap:8px;min-height:48px;}
-.tc-goals-kanban-card{border:1px solid var(--slate-200);border-radius:10px;padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:6px;min-width:0;}
-.tc-goals-kanban-card-title{margin:0;font-size:13px;font-weight:700;color:var(--primary);line-height:1.3;}
+.tc-goals-kanban-card{border:1px solid var(--slate-200);border-radius:10px;padding:8px 10px;background:#fff;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.tc-goals-kanban-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0;}
+.tc-goals-kanban-card-title{margin:0;font-size:13px;font-weight:700;color:var(--primary);line-height:1.25;flex:1;min-width:0;}
+.tc-goals-kanban-card-line{margin:0;font-size:11px;line-height:1.35;color:var(--slate-600);}
+.tc-goals-kanban-card .tc-goal-progress{margin:2px 0 0;}
+.tc-goals-kanban-card .tc-goal-card-meta{margin:0;font-size:11px;}
 .tc-goal-card-v2{border:1px solid var(--slate-200);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:10px;max-width:100%;box-sizing:border-box;}
 .tc-goal-card-v2-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
 .tc-goal-card-v2-head-left{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1;}
@@ -3718,7 +3722,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <div class="tc-emp-goals-subnav" role="tablist" aria-label="Vista de metas">
               <button type="button" role="tab" class="tc-emp-goals-subtab tc-emp-goals-subtab--on" id="tc-emp-goals-tab-todo" aria-selected="true" onclick="tcEmpGoalsSetView('todo')">Por cumplir</button>
               <button type="button" role="tab" class="tc-emp-goals-subtab" id="tc-emp-goals-tab-done" aria-selected="false" onclick="tcEmpGoalsSetView('done')">Completadas</button>
-              <button type="button" role="tab" class="tc-emp-goals-subtab" id="tc-emp-goals-tab-history" aria-selected="false" onclick="tcEmpGoalsSetView('history')">Historial</button>
             </div>
             <p class="tc-goal-toast hidden" id="tc-emp-goals-toast" role="status"></p>
             <div id="tc-emp-goals-body"></div>
@@ -12286,9 +12289,6 @@ function tcWsSvgTarget(){
 function tcSvgPlusOutline(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
 }
-function tcSvgTargetPlusOutline(){
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="6"/><circle cx="12" cy="10" r="2"/><path d="M12 16v6"/><path d="M9 19h6"/></svg>';
-}
 function tcSvgPlus(){
   return tcSvgPlusOutline();
 }
@@ -13539,7 +13539,6 @@ async function tcViewJornada(id){
   const body=document.getElementById('tc-jornada-body');
   tcHideCalPopover();
   tcGoalsAdminList=[];
-  tcGoalHistoryOpenId=null;
   tcJornadaOpTab='activities';
   const asidePre=document.getElementById('tc-jornada-aside');
   if(asidePre) asidePre.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
@@ -14030,8 +14029,7 @@ const TC_KANBAN_EMPTY={PENDING:'Sin pendientes',IN_PROGRESS:'Sin actividades en 
 const TC_KANBAN_COMPLETED_CAP=8;
 function tcKanbanShellHtml(){
   return '<div class="tc-kanban-wrap">'+
-    '<div class="tc-jornada-aside-head">'+
-    '<span class="tc-jornada-aside-title">Actividades</span>'+
+    '<div class="tc-jornada-aside-toolbar">'+
     '<button type="button" class="tc-op-icon-btn" title="Asignar actividad" aria-label="Asignar actividad" onclick="tcKanbanOpenAssign()">'+tcSvgPlusOutline()+'</button></div>'+
     '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
     '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
@@ -14306,7 +14304,6 @@ async function tcKanbanMoveTask(taskId, status){
 let tcJornadaOpTab='activities';
 let tcGoalsAdminList=[];
 let tcGoalAssignInFlight=false;
-let tcGoalHistoryOpenId=null;
 const TC_GOAL_TYPE_LABELS={ COMPLIANCE:'Cumplimiento', QUANTITATIVE:'Cuantitativa' };
 const TC_GOAL_PERIOD_LABELS={ DAILY:'Diaria', WEEKLY:'Semanal', MONTHLY:'Mensual' };
 const TC_GOAL_STATUS_LABELS={ PENDING:'Pendiente', MET:'Cumplida', NOT_MET:'No cumplida', PARTIAL:'Parcial', OVERDUE:'Vencida sin reporte', INACTIVE:'Inactiva' };
@@ -14357,12 +14354,10 @@ function tcJornadaSetOpTab(tab){
 function tcGoalsBoardShellHtml(){
   const archLabel=tcGoalsAdminShowArchived?'Ver activas':'Ver eliminadas';
   return '<div class="tc-goals-board-wrap">'+
-    '<div class="tc-jornada-aside-head">'+
-    '<span class="tc-jornada-aside-title">Metas</span>'+
-    '<div class="tc-jornada-aside-head-actions">'+
+    '<div class="tc-jornada-aside-toolbar">'+
     '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalsToggleArchivedView()">'+archLabel+'</button>'+
-    '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcSvgTargetPlusOutline()+'</button>'+
-    '</div></div>'+
+    '<button type="button" class="tc-op-icon-btn" title="Asignar meta" aria-label="Asignar meta" onclick="tcGoalOpenAssign()">'+tcSvgPlusOutline()+'</button>'+
+    '</div>'+
     '<p class="tc-goal-toast hidden" id="tc-goals-admin-toast" role="status"></p>'+
     '<div class="tc-goals-kanban" id="tc-jornada-goals-list"><p class="tc-goal-empty">Cargando…</p></div></div>';
 }
@@ -14425,16 +14420,17 @@ async function tcGoalsLoad(){
 }
 function tcGoalsRenderAdminKanbanCard(g,cp,tz){
   const st=cp?cp.displayStatus:(g.archivedAt?'INACTIVE':'PENDING');
-  const obj=g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento';
+  const obj=g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento binario';
   const pct=cp&&cp.completionPercent!=null?cp.completionPercent:null;
-  const histOpen=tcGoalHistoryOpenId===g.id;
-  return '<article class="tc-goals-kanban-card" data-goal-id="'+g.id+'">'+
+  const periodLine=cp?tcGoalFmtPeriodRange(cp,tz):'—';
+  const resultLine=cp?tcGoalResultSummary(g,cp):'Sin reporte';
+  return '<article class="tc-goals-kanban-card tc-goals-kanban-card--compact" data-goal-id="'+g.id+'">'+
+    '<div class="tc-goals-kanban-card-head">'+
     '<h4 class="tc-goals-kanban-card-title">'+tcEsc(g.title)+'</h4>'+
-    '<p class="tc-goal-card-meta">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · '+tcEsc(obj)+'</p>'+
-    (cp?('<p class="tc-goal-card-meta">'+tcEsc(tcGoalFmtPeriodRange(cp,tz))+' · '+tcEsc(tcGoalResultSummary(g,cp))+'</p>'):'')+
+    '<span class="tc-goal-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_UI[st]||st)+'</span></div>'+
+    '<p class="tc-goal-card-meta tc-goals-kanban-card-line">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+' · '+tcEsc(obj)+'</p>'+
+    '<p class="tc-goal-card-meta tc-goals-kanban-card-line">'+tcEsc(periodLine)+' · '+tcEsc(resultLine)+'</p>'+
     tcGoalProgressHtml(st,pct)+
-    '<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalToggleHistory(\''+g.id+'\')">'+(histOpen?'Ocultar historial':'Historial')+'</button>'+
-    (histOpen?('<div class="tc-goal-history" id="tc-goal-history-'+g.id+'"><p class="tc-goal-card-meta">Cargando…</p></div>'):'')+
     (!g.archivedAt?('<button type="button" class="tc-goal-report-btn tc-goal-report-btn--ghost" onclick="tcGoalDelete(\''+g.id+'\')">Eliminar meta</button>'):'')+
     '</article>';
 }
@@ -14460,36 +14456,11 @@ function tcGoalsRenderAdmin(){
     '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Pendientes</div><div class="tc-goals-kanban-col-body">'+(cols.pending.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>'+
     '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Parciales / No cumplidas</div><div class="tc-goals-kanban-col-body">'+(cols.partial.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>'+
     '<div class="tc-goals-kanban-col"><div class="tc-goals-kanban-col-head">Cumplidas</div><div class="tc-goals-kanban-col-body">'+(cols.met.join('')||'<p class="tc-goal-empty">—</p>')+'</div></div>';
-  if(tcGoalHistoryOpenId) tcGoalLoadHistory(tcGoalHistoryOpenId);
-}
-async function tcGoalToggleHistory(goalId){
-  tcGoalHistoryOpenId=tcGoalHistoryOpenId===goalId?null:goalId;
-  tcGoalsRenderAdmin();
-}
-async function tcGoalLoadHistory(goalId){
-  const box=document.getElementById('tc-goal-history-'+goalId);
-  if(!box) return;
-  try{
-    const out=await tcAdminFetchGoalPeriods(goalId);
-    const goal=out.goal||{};
-    const periods=(out.periods||[]).slice(0,24);
-    const tz=tcJornadaTz||'America/Mexico_City';
-    if(!periods.length){
-      box.innerHTML='<p class="tc-goal-card-meta">Sin periodos registrados.</p>';
-      return;
-    }
-    box.innerHTML='<ul class="tc-goal-history-list" style="margin:8px 0 0;padding:0;list-style:none;">'+periods.map(function(p){
-      return '<li class="tc-goal-card-meta" style="padding:4px 0;border-top:1px solid var(--slate-100);">'+tcEsc(tcGoalFmtPeriodRange(p,tz))+' · '+tcEsc(tcGoalResultSummary(goal,p))+' · '+tcEsc(tcGoalFmtPct(p.completionPercent))+' · '+tcEsc(TC_GOAL_STATUS_LABELS[p.displayStatus]||p.displayStatus)+'</li>';
-    }).join('')+'</ul>';
-  }catch(e){
-    box.innerHTML='<p class="tc-goal-card-meta">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p>';
-  }
 }
 async function tcGoalDelete(goalId){
   if(!goalId||!window.confirm('La meta dejará de renovarse y se ocultará de las metas activas. Su historial se conservará.')) return;
   try{
     await tcAdminArchiveGoal(goalId);
-    tcGoalHistoryOpenId=null;
     tcGoalShowAdminToast('Meta eliminada. El historial se conserva.');
     await tcGoalsLoad();
   }catch(e){ alert(e.message||'No se pudo eliminar la meta.'); }
@@ -14647,8 +14618,8 @@ function tcEmpGoalsBindDirtyListeners(){
   });
 }
 function tcEmpGoalsSetView(view){
-  tcEmpGoalsView=view||'todo';
-  ['todo','done','history'].forEach(function(v){
+  tcEmpGoalsView=(view==='done'?'done':'todo');
+  ['todo','done'].forEach(function(v){
     const btn=document.getElementById('tc-emp-goals-tab-'+v);
     const on=tcEmpGoalsView===v;
     if(btn){ btn.classList.toggle('tc-emp-goals-subtab--on',on); btn.setAttribute('aria-selected',on?'true':'false'); }
@@ -14721,17 +14692,9 @@ function tcEmpRenderGoals(){
       if(ra!==rb) return ra-rb;
       return String(b.sortKey).localeCompare(String(a.sortKey));
     });
-  }else if(tcEmpGoalsView==='done'){
-    filtered=rows.filter(function(r){ return tcGoalPeriodHasReport(r.period); });
-    filtered.sort(function(a,b){ return String(b.submitted).localeCompare(String(a.submitted)); });
-    filtered=filtered.slice(0,12);
   }else{
     filtered=rows.filter(function(r){ return tcGoalPeriodHasReport(r.period); });
-    filtered.sort(function(a,b){
-      const tg=String(a.goal.title||'').localeCompare(String(b.goal.title||''));
-      if(tg!==0) return tg;
-      return String(b.sortKey).localeCompare(String(a.sortKey));
-    });
+    filtered.sort(function(a,b){ return String(b.submitted).localeCompare(String(a.submitted)); });
     filtered=filtered.slice(0,40);
   }
   if(!filtered.length){
@@ -14794,7 +14757,6 @@ function tcCloseJornada(){
   tcKanbanTasks=[];
   tcKanbanEmpId=null;
   tcGoalsAdminList=[];
-  tcGoalHistoryOpenId=null;
   tcGoalsAdminShowArchived=false;
   tcKanbanCloseAssign();
   tcKanbanCloseEdit();
@@ -15244,7 +15206,6 @@ window.tcGoalOpenAssign=tcGoalOpenAssign;
 window.tcGoalCloseAssign=tcGoalCloseAssign;
 window.tcGoalSubmitAssign=tcGoalSubmitAssign;
 window.tcGoalSyncAssignTypeFields=tcGoalSyncAssignTypeFields;
-window.tcGoalToggleHistory=tcGoalToggleHistory;
 window.tcGoalDelete=tcGoalDelete;
 window.tcGoalSyncAssignPeriodHint=tcGoalSyncAssignPeriodHint;
 window.tcGoalSyncAssignEndToggle=tcGoalSyncAssignEndToggle;
