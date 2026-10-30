@@ -108,7 +108,15 @@ check(/organizationId,\s*employeeId/.test(metricsSrc), 'filtro org+empleado en p
 check(/archivedAt: null/.test(metricsSrc), 'ensure solo metas no archivadas');
 check(/materializeCurrentMonth/.test(metricsSrc), 'materialización condicionada por mes');
 check(/AbortController/.test(indexHtml), 'abort en carga métricas');
-check(/tcMetricsCompareHtml\(data\.comparison,evalN\)/.test(indexHtml), 'comparación solo con evaluables');
+check(/tcMetricsCompareInlineHtml\(data\.comparison,evalN\)/.test(indexHtml), 'comparación integrada en KPI promedio');
+check(/tc-metrics-kpi--tone-/.test(indexHtml) && /tc-metrics-kpi-accent/.test(indexHtml), 'KPIs con acento semántico');
+check(/tcMetricsChartLegendHtml/.test(indexHtml) && /tc-metrics-chart-legend/.test(indexHtml), 'leyenda de estados en gráfica');
+check(/tcMetricsKpiInfoHtml/.test(indexHtml) && /TC_METRICS_AVG_HELP/.test(indexHtml), 'tooltip informativo cumplimiento');
+check(/tc-metrics-chart-point--single/.test(indexHtml) && /Primer periodo registrado del mes/.test(indexHtml), 'gráfica un solo punto');
+check(/tc-metrics-stat-chip/.test(indexHtml) && /tcMetricsGoalStatsHtml/.test(indexHtml), 'microchips desempeño por meta');
+check(/tc-metrics-goal-select-wrap/.test(indexHtml) && /tc-metrics-goal-select:focus-visible/.test(indexHtml), 'selector de meta refinado');
+check(/tcSvgChevronLeft/.test(indexHtml) && /aria-label="Mes anterior"/.test(indexHtml), 'selector mensual SVG');
+check(!/tcMetricsCompareHtml\(data\.comparison/.test(indexHtml), 'sin comparación flotante entre KPIs y gráfica');
 check(/tcEsc\(g\.title\)/.test(indexHtml) && /tcEsc\(tip\)/.test(indexHtml), 'escape título y tooltips');
 const xssTitle = '<img src=x onerror=alert(1)>';
 check(
