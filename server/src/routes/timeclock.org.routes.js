@@ -38,7 +38,10 @@ import {
   WORKFORCE_GOAL_PERIODICITIES,
   WORKFORCE_GOAL_TYPES,
 } from '../services/workforceGoal.service.js';
-import { getWorkforceGoalMetricsForAdmin } from '../services/workforceGoalMetrics.service.js';
+import {
+  getWorkforceGoalMetricsForAdmin,
+  getWorkforceGoalMetricsTrendForAdmin,
+} from '../services/workforceGoalMetrics.service.js';
 import { getTeamPulseForOrganization } from '../services/teamPulse.service.js';
 import {
   createWorkforceDocument,
@@ -460,6 +463,29 @@ router.get('/employees/:id/goals/metrics', async (req, res, next) => {
       month,
     });
     res.json(metrics);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/goals/metrics/trend', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { view, anchor, goalId } = z
+      .object({
+        view: z.enum(['weekly', 'monthly']),
+        anchor: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        goalId: z.string().min(1).max(128),
+      })
+      .parse(req.query);
+    const trend = await getWorkforceGoalMetricsTrendForAdmin({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      view,
+      anchor,
+      goalId,
+    });
+    res.json(trend);
   } catch (e) {
     next(e);
   }

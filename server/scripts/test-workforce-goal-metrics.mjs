@@ -29,18 +29,27 @@ const metricsSrc = fs.readFileSync(
 const {
   assertMetricsMonthNotFuture,
   assertMetricsPeriodVolume,
+  assertWeekNotFuture,
   averageAchievementRawForRows,
+  buildMonthlyTrendPoints,
+  buildTrendPointFromRows,
+  buildWeeklyTrendPoints,
   classifyPeriodForMetrics,
+  currentWeekStartYmd,
   goalMetricsPeriodLimitError,
   isMetricsPeriodEnded,
+  monthWindowFromEndYm,
   normalizePercentForKpi,
   parseMetricsMonthParam,
+  parseTrendAnchorYmd,
   periodEndForLocalDay,
   periodHasReport,
   completionPercentRaw,
   currentMonthYmInTimeZone,
   monthBoundsInTimeZone,
   summarizeClassifiedPeriodRows,
+  weekBoundsFromAnchorYmd,
+  weekRangeLabelEs,
   MAX_METRICS_PERIODS_PER_MONTH,
 } = await import('../src/services/workforceGoalMetrics.service.js');
 const errorMiddlewareSrc = fs.readFileSync(
@@ -106,13 +115,39 @@ check(/take:\s*MAX_METRICS_PERIODS_PER_MONTH\s*\+\s*1/.test(metricsSrc), 'consul
 check(/GOAL_METRICS_PERIOD_LIMIT/.test(errorMiddlewareSrc), 'HTTP 409 límite periodos');
 check(/organizationId,\s*employeeId/.test(metricsSrc), 'filtro org+empleado en periodos');
 check(/archivedAt: null/.test(metricsSrc), 'ensure solo metas no archivadas');
+check(/goal:\s*\{\s*archivedAt:\s*null\s*\}/.test(metricsSrc), 'periodos exigen goal no archivada');
+check(
+  (metricsSrc.match(/archivedAt:\s*null/g) || []).length >= 2,
+  'filtro archivedAt en consulta y materialización',
+);
+check(/resolveTrendGoal[\s\S]*archivedAt:\s*null/.test(metricsSrc), 'tendencia por goalId exige no archivada');
+check(/getWorkforceGoalMetricsTrendForAdmin/.test(metricsSrc), 'servicio tendencia exportado');
+check(/buildWeeklyTrendPoints/.test(metricsSrc) && /buildMonthlyTrendPoints/.test(metricsSrc), 'builders tendencia');
+check(/summarizeClassifiedPeriodRows/.test(metricsSrc) && !/averageCompliance\s*=.*\/\s*points\.length/.test(metricsSrc), 'tendencia sin segunda fórmula');
 check(/materializeCurrentMonth/.test(metricsSrc), 'materialización condicionada por mes');
 check(/AbortController/.test(indexHtml), 'abort en carga métricas');
 check(/tcMetricsCompareInlineHtml\(data\.comparison,evalN\)/.test(indexHtml), 'comparación integrada en KPI promedio');
 check(/tc-metrics-kpi--tone-/.test(indexHtml) && /tc-metrics-kpi-accent/.test(indexHtml), 'KPIs con acento semántico');
 check(/tcMetricsChartLegendHtml/.test(indexHtml) && /tc-metrics-chart-legend/.test(indexHtml), 'leyenda de estados en gráfica');
 check(/tcMetricsKpiInfoHtml/.test(indexHtml) && /TC_METRICS_AVG_HELP/.test(indexHtml), 'tooltip informativo cumplimiento');
-check(/tc-metrics-chart-point--single/.test(indexHtml) && /Primer periodo registrado del mes/.test(indexHtml), 'gráfica un solo punto');
+check(/Evaluaciones de metas/.test(indexHtml) && !/Periodos evaluados/.test(indexHtml), 'leyenda Evaluaciones de metas');
+check(/TC_METRICS_EVAL_HELP/.test(indexHtml) && /tcMetricsEvaluationsKpiInfoHtml/.test(indexHtml), 'tooltip evaluaciones periodicidad');
+check(!/Primer periodo registrado del mes/.test(indexHtml), 'sin microcopy primer periodo');
+check(/tc-metrics-panel--chart/.test(indexHtml) && /tc-metrics-panel--goals/.test(indexHtml), 'paneles homologados');
+check(/tc-metrics-trend-seg/.test(indexHtml) && /tcMetricsSetTrendView/.test(indexHtml), 'selector Semanal|Mensual');
+check(/Cumplimiento general/.test(indexHtml) && /value="general"/.test(indexHtml), 'selector cumplimiento general');
+check(/tcAdminFetchEmployeeGoalMetricsTrend/.test(indexHtml), 'fetch tendencia frontend');
+check(/tcJornadaMetricsTrendLoadGen/.test(indexHtml) && /tcJornadaMetricsTrendAbort/.test(indexHtml), 'abort y gen tendencia');
+check(/tcMetricsTrendChartSvg/.test(indexHtml) && !/tcMetricsChartSvg\(/.test(indexHtml), 'gráfica usa tendencia');
+check(/No hay datos para graficar en esta semana/.test(indexHtml), 'semana vacía sin 0%');
+check(/Esta meta se evalúa mensualmente/.test(indexHtml), 'hint meta mensual');
+check(/tcMetricsGoalStatsHtml[\s\S]*COMPLIANCE[\s\S]*No cumplidas/.test(indexHtml), 'chips binaria con No cumplidas');
+check(/tcMetricsGoalStatsHtml[\s\S]*Parciales/.test(indexHtml) && /goalType==='COMPLIANCE'/.test(indexHtml), 'chips contextuales por tipo');
+check(/tcJornadaMetricsChartGoalId='general'/.test(indexHtml), 'archivar seleccionada vuelve a general');
+check(
+  /router\.get\('\/employees\/:id\/goals\/metrics\/trend'/.test(orgRoutes),
+  'ruta GET goals/metrics/trend',
+);
 check(/tc-metrics-stat-chip/.test(indexHtml) && /tcMetricsGoalStatsHtml/.test(indexHtml), 'microchips desempeño por meta');
 check(/tc-metrics-goal-select-wrap/.test(indexHtml) && /tc-metrics-goal-select:focus-visible/.test(indexHtml), 'selector de meta refinado');
 check(/tcSvgChevronLeft/.test(indexHtml) && /aria-label="Mes anterior"/.test(indexHtml), 'selector mensual SVG');
@@ -137,7 +172,7 @@ check(/tc-jornada-tab-indicators/.test(indexHtml), 'tercer tab Indicadores admin
 check(/id="tc-jornada-tab-indicators"/.test(indexHtml) && /tcJornadaSetOpTab\([^)]*indicators/.test(indexHtml), 'handler tab Indicadores');
 check(/tcAdminFetchEmployeeGoalMetrics/.test(indexHtml), 'fetch métricas frontend');
 check(/tc-metrics-wrap/.test(indexHtml), 'layout métricas CSS');
-check(/tcMetricsChartSvg/.test(indexHtml), 'gráfica SVG métricas');
+check(/tcMetricsTrendChartSvg/.test(indexHtml), 'gráfica SVG métricas');
 check(/tc-jornada-tab-indicators/.test(publicIndex), 'public index tab Indicadores');
 check(
   crypto.createHash('sha256').update(indexHtml).digest('hex') ===
@@ -326,7 +361,51 @@ const zeroReport = {
   targetSnapshot: 8,
   submittedAt: new Date(),
 };
-check(classifyPeriodForMetrics(qGoal, zeroReport, now) === 'NOT_MET', 'cuantitativo 0% no cumplido');
+check(classifyPeriodForMetrics(qGoal, zeroReport, now) === 'PARTIAL', 'cuantitativo 0% reportado → PARTIAL');
+const q140 = {
+  periodEnd: new Date('2026-10-05T23:59:59.999Z'),
+  completionPercent: 140,
+  achievedValue: 11.2,
+  targetSnapshot: 8,
+  submittedAt: new Date(),
+};
+check(classifyPeriodForMetrics(qGoal, q140, now) === 'MET', 'cuantitativa 140% → MET');
+const q60 = { ...zeroReport, completionPercent: 60, achievedValue: 4.8 };
+check(classifyPeriodForMetrics(qGoal, q60, now) === 'PARTIAL', 'cuantitativa 60% → PARTIAL');
+const rows140 = [
+  {
+    status: 'MET',
+    reported: true,
+    completionRaw: 140,
+    goalType: 'QUANTITATIVE',
+  },
+];
+check(normalizePercentForKpi(140) === 100 && summarizeClassifiedPeriodRows(rows140).averageCompliance === 100, '140% aporte normalizado 100');
+const rows60 = [{ status: 'PARTIAL', reported: true, completionRaw: 60, goalType: 'QUANTITATIVE' }];
+check(summarizeClassifiedPeriodRows(rows60).averageCompliance === 60, '60% aporte 60');
+const rows0 = [{ status: 'PARTIAL', reported: true, completionRaw: 0, goalType: 'QUANTITATIVE' }];
+check(summarizeClassifiedPeriodRows(rows0).averageCompliance === 0, '0% aporte 0');
+const rowsOver = [{ status: 'OVERDUE_UNREPORTED', reported: false, completionRaw: null, goalType: 'QUANTITATIVE' }];
+check(summarizeClassifiedPeriodRows(rowsOver).averageCompliance === 0, 'vencida aporte 0');
+const qInv = summarizeClassifiedPeriodRows([
+  { status: 'MET', reported: true, completionRaw: 100, goalType: 'QUANTITATIVE' },
+  { status: 'PARTIAL', reported: true, completionRaw: 40, goalType: 'QUANTITATIVE' },
+  { status: 'OVERDUE_UNREPORTED', reported: false, completionRaw: null, goalType: 'QUANTITATIVE' },
+]);
+check(
+  qInv.evaluablePeriods === qInv.met + qInv.partial + qInv.overdueUnreported,
+  'invariante cuantitativa Evaluadas = Cumplidas + Parciales + Vencidas',
+);
+const bInv = summarizeClassifiedPeriodRows([
+  { status: 'MET', reported: true, completionRaw: 100, goalType: 'COMPLIANCE' },
+  { status: 'NOT_MET', reported: true, completionRaw: 0, goalType: 'COMPLIANCE' },
+  { status: 'OVERDUE_UNREPORTED', reported: false, completionRaw: null, goalType: 'COMPLIANCE' },
+]);
+check(
+  bInv.evaluablePeriods === bInv.met + bInv.notMet + bInv.overdueUnreported,
+  'invariante binaria Evaluadas = Cumplidas + No cumplidas + Vencidas',
+);
+check(summarizeClassifiedPeriodRows([{ status: 'PENDING', reported: false, completionRaw: null }]).evaluablePeriods === 0, 'pendiente excluida');
 
 const tz = 'America/Mexico_City';
 const bounds = monthBoundsInTimeZone('2026-10', tz);
@@ -389,6 +468,167 @@ check(
 );
 
 check(goalMetricsPeriodLimitError().code === 'GOAL_METRICS_PERIOD_LIMIT', 'error límite periodos');
+
+const tzTrend = 'America/Mexico_City';
+const weekB = weekBoundsFromAnchorYmd('2026-10-28', tzTrend);
+check(weekB.weekStart === '2026-10-26' && weekB.weekEnd === '2026-11-01', 'semana lun–dom TZ');
+check(parseTrendAnchorYmd('2026-10-28') === '2026-10-28', 'anchor válido');
+let badAnchor = false;
+try {
+  parseTrendAnchorYmd('2026-13-01');
+} catch (e) {
+  badAnchor = e.code === 'VALIDATION_ERROR';
+}
+check(badAnchor, 'anchor inválido rechazado');
+const curWeek = currentWeekStartYmd(new Date('2026-10-30T12:00:00Z'), tzTrend);
+check(curWeek === '2026-10-26', 'semana actual por default (oct 30)');
+let futureWeek = false;
+try {
+  assertWeekNotFuture('2099-01-04', tzTrend, new Date('2026-10-15T12:00:00Z'));
+} catch (e) {
+  futureWeek = e.code === 'VALIDATION_ERROR';
+}
+check(futureWeek, 'no semana futura');
+
+const dailyRows = [];
+for (let d = 1; d <= 20; d += 1) {
+  dailyRows.push({
+    goalId: 'g1',
+    periodicity: 'DAILY',
+    goalType: 'QUANTITATIVE',
+    status: 'MET',
+    reported: true,
+    completionRaw: 100,
+    periodStart: new Date(`2026-10-${String(d).padStart(2, '0')}T12:00:00Z`),
+  });
+}
+check(summarizeClassifiedPeriodRows(dailyRows).evaluablePeriods === 20, '20 evaluaciones meta diaria');
+
+const wkPts = buildWeeklyTrendPoints(
+  [
+    {
+      goalId: 'g1',
+      periodicity: 'DAILY',
+      goalType: 'QUANTITATIVE',
+      status: 'MET',
+      reported: true,
+      completionRaw: 100,
+      periodStart: new Date('2026-10-26T12:00:00Z'),
+    },
+    {
+      goalId: 'g2',
+      periodicity: 'WEEKLY',
+      goalType: 'QUANTITATIVE',
+      status: 'PARTIAL',
+      reported: true,
+      completionRaw: 50,
+      periodStart: new Date('2026-10-26T12:00:00Z'),
+    },
+    {
+      goalId: 'g3',
+      periodicity: 'MONTHLY',
+      goalType: 'QUANTITATIVE',
+      status: 'MET',
+      reported: true,
+      completionRaw: 100,
+      periodStart: new Date('2026-10-01T12:00:00Z'),
+    },
+  ],
+  '2026-10-26',
+  '2026-11-01',
+  tzTrend,
+  { goalId: 'general' },
+);
+check(wkPts.length === 7, 'weekly 7 slots');
+check(wkPts[0].hasData && wkPts[0].evaluablePeriods === 2, 'general semanal excluye monthly');
+check(!wkPts.some((p) => p.hasData && p.averageCompliance === 0 && p.evaluablePeriods === 0), 'sin 0% ficticio');
+const emptyWeek = buildWeeklyTrendPoints([], '2026-10-26', '2026-11-01', tzTrend, { goalId: 'general' });
+check(emptyWeek.every((p) => !p.hasData && p.averageCompliance == null), 'semana vacía hasData false');
+const crossYear = weekBoundsFromAnchorYmd('2025-12-31', tzTrend);
+check(crossYear.weekStart === '2025-12-29' && crossYear.weekEnd === '2026-01-04', 'semana cruza año en MX');
+const crossMonth = weekBoundsFromAnchorYmd('2026-10-30', tzTrend);
+check(crossMonth.weekStart === '2026-10-26' && crossMonth.weekEnd === '2026-11-01', 'semana cruza mes');
+const weeklyOnce = buildWeeklyTrendPoints(
+  [
+    {
+      goalId: 'gw',
+      periodicity: 'WEEKLY',
+      goalType: 'QUANTITATIVE',
+      status: 'MET',
+      reported: true,
+      completionRaw: 100,
+      periodStart: new Date('2026-10-27T12:00:00Z'),
+    },
+  ],
+  '2026-10-26',
+  '2026-11-01',
+  tzTrend,
+  { goalId: 'gw', goalPeriodicity: 'WEEKLY' },
+);
+check(weeklyOnce.filter((p) => p.hasData).length === 1, 'semanal una sola posición (periodStart)');
+check(weeklyOnce[1].hasData && weeklyOnce[1].evaluablePeriods === 1, 'semanal anclada en YMD periodStart');
+const partialWeek = buildWeeklyTrendPoints(
+  [
+    {
+      goalId: 'gd',
+      periodicity: 'DAILY',
+      goalType: 'QUANTITATIVE',
+      status: 'MET',
+      reported: true,
+      completionRaw: 100,
+      periodStart: new Date('2026-10-26T12:00:00Z'),
+    },
+    {
+      goalId: 'gd',
+      periodicity: 'DAILY',
+      goalType: 'QUANTITATIVE',
+      status: 'PENDING',
+      reported: false,
+      completionRaw: null,
+      periodStart: new Date('2026-10-31T12:00:00Z'),
+    },
+    {
+      goalId: 'gd',
+      periodicity: 'DAILY',
+      goalType: 'QUANTITATIVE',
+      status: 'OVERDUE_UNREPORTED',
+      reported: false,
+      completionRaw: null,
+      periodStart: new Date('2026-10-28T12:00:00Z'),
+    },
+  ],
+  '2026-10-26',
+  '2026-11-01',
+  tzTrend,
+  { goalId: 'gd', goalPeriodicity: 'DAILY' },
+);
+check(!partialWeek[5].hasData, 'pendiente vigente ausencia de dato');
+check(partialWeek[2].hasData && partialWeek[2].averageCompliance === 0, 'vencida sin reporte → 0%');
+
+const moPts = buildMonthlyTrendPoints(
+  dailyRows.map((r) => ({ ...r, periodStart: new Date('2026-10-15T12:00:00Z') })),
+  monthWindowFromEndYm('2026-10', 6),
+  tzTrend,
+  { goalId: 'general' },
+);
+const moWindow = monthWindowFromEndYm('2026-02', 6);
+check(moWindow.length === 6 && moWindow[0] === '2025-09' && moWindow[5] === '2026-02', '6 meses contiguos con cambio de año');
+check(moPts.length === 6, 'ventana 6 meses');
+check(moPts.filter((p) => p.hasData).length >= 1, 'general mensual con datos');
+check(moPts.every((p, i) => i === 0 || moPts[i - 1].key < p.key), 'meses orden cronológico');
+check(moPts.some((p) => !p.hasData && p.averageCompliance == null), 'mes sin evaluaciones null');
+let futureMonth = false;
+try {
+  assertMetricsMonthNotFuture('2099-12', tzTrend, new Date('2026-10-15T12:00:00Z'));
+} catch (e) {
+  futureMonth = e.code === 'VALIDATION_ERROR';
+}
+check(futureMonth, 'mes futuro rechazado tendencia');
+check(/blockWeekly/.test(indexHtml) && /cadence==='MONTHLY'/.test(indexHtml), 'Semanal bloqueado solo con meta mensual');
+check(/TC_METRICS_EVAL_HELP/.test(indexHtml) && indexHtml.includes('Evaluaciones de metas'), 'UX leyenda y tooltip evaluaciones');
+
+const trendPt = buildTrendPointFromRows(mixRows.filter((r) => r.status !== 'PENDING'));
+check(trendPt.hasData && trendPt.averageCompliance === 53.3, 'tendencia reutiliza summarize');
 
 console.log('\n=== Workforce goal metrics — integration (DB) ===\n');
 

@@ -9,7 +9,21 @@ import {
   endOfCalendarDayInTimeZone,
   startOfCalendarDayInTimeZone,
 } from '../utils/workforceDueDate.js';
-import { ymdFromDateField } from '../utils/workforceGoalPeriod.util.js';
+import {
+  weekStartYmd,
+  ymdFromDateField,
+  periodAnchorYmd,
+  monthEndYmd,
+} from '../utils/workforceGoalPeriod.util.js';
+
+const ANCHOR_YMD_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+const DAY_LABELS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function addDaysYmd(ymd, days) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
 
 /** Máximo de periodos por mes; si hay más, no se calculan KPIs parciales. */
 export const MAX_METRICS_PERIODS_PER_MONTH = 500;
@@ -176,8 +190,8 @@ export function classifyPeriodForMetrics(goal, period, now = new Date()) {
   const pct = completionPercentRaw(goal, period);
   if (pct == null) return ended ? 'OVERDUE_UNREPORTED' : 'PENDING';
   if (pct >= 100) return 'MET';
-  if (pct > 0) return 'PARTIAL';
-  return 'NOT_MET';
+  /* Reportado por debajo del objetivo (incl. 0 %) → PARTIAL en indicadores; el aporte KPI sigue siendo pct. */
+  return 'PARTIAL';
 }
 
 export function normalizePercentForKpi(pct) {
@@ -326,18 +340,16 @@ function buildGoalBuckets(classifiedRows) {
  * - Por cada mes consultado: 1× findMany periodos (take MAX+1) con include goal
  * Total típico mes histórico: ~3 queries. Mes actual con G metas activas: ~3 + G×(2–3).
  */
-async function loadClassifiedPeriodsForMonth({
+async function loadClassifiedPeriodsForRange({
   organizationId,
   employeeId,
-  monthYm,
+  start,
+  endExclusive,
   employee,
   now,
-  materializeCurrentMonth,
+  materializeActiveGoals,
 }) {
-  const tz = employee.timezone;
-  const { start, endExclusive } = monthBoundsInTimeZone(monthYm, tz);
-
-  if (materializeCurrentMonth) {
+  if (materializeActiveGoals) {
     const activeGoals = await prisma.workforceGoal.findMany({
       where: { organizationId, employeeId, archivedAt: null },
     });
@@ -354,6 +366,7 @@ async function loadClassifiedPeriodsForMonth({
       organizationId,
       employeeId,
       periodStart: { gte: start, lt: endExclusive },
+      goal: { archivedAt: null },
     },
     include: {
       goal: {
@@ -377,7 +390,7 @@ async function loadClassifiedPeriodsForMonth({
   const classified = [];
   for (const period of periods) {
     const goal = period.goal;
-    if (!goal) continue;
+    if (!goal || goal.archivedAt != null) continue;
     try {
       const status = classifyPeriodForMetrics(goal, period, now);
       const reported = periodHasReport(period);
@@ -401,6 +414,300 @@ async function loadClassifiedPeriodsForMonth({
     }
   }
   return classified;
+}
+
+async function loadClassifiedPeriodsForMonth({
+  organizationId,
+  employeeId,
+  monthYm,
+  employee,
+  now,
+  materializeCurrentMonth,
+}) {
+  const tz = employee.timezone;
+  const { start, endExclusive } = monthBoundsInTimeZone(monthYm, tz);
+  return loadClassifiedPeriodsForRange({
+    organizationId,
+    employeeId,
+    start,
+    endExclusive,
+    employee,
+    now,
+    materializeActiveGoals: materializeCurrentMonth,
+  });
+}
+
+export function parseTrendAnchorYmd(anchor) {
+  if (typeof anchor !== 'string' || anchor !== anchor.trim() || /\s/.test(anchor)) {
+    throw validationError('El parámetro anchor debe ser YYYY-MM-DD.');
+  }
+  if (!ANCHOR_YMD_RE.test(anchor)) {
+    throw validationError('El parámetro anchor debe ser YYYY-MM-DD.');
+  }
+  return anchor;
+}
+
+export function parseTrendViewParam(view) {
+  if (view !== 'weekly' && view !== 'monthly') {
+    throw validationError('El parámetro view debe ser weekly o monthly.');
+  }
+  return view;
+}
+
+export function weekBoundsFromAnchorYmd(anchorYmd, timeZone) {
+  parseTrendAnchorYmd(anchorYmd);
+  const weekStart = weekStartYmd(anchorYmd);
+  const weekEnd = addDaysYmd(weekStart, 6);
+  const start = startOfCalendarDayInTimeZone(weekStart, timeZone);
+  const endExclusive = startOfCalendarDayInTimeZone(addDaysYmd(weekEnd, 1), timeZone);
+  if (!start || !endExclusive) {
+    throw validationError('Semana o zona horaria inválidos.');
+  }
+  return { weekStart, weekEnd, start, endExclusive };
+}
+
+export function currentWeekStartYmd(now, timeZone) {
+  return weekStartYmd(calendarYmdInTimeZone(now, timeZone));
+}
+
+export function assertWeekNotFuture(weekStartYmdValue, timeZone, now = new Date()) {
+  const curWeek = currentWeekStartYmd(now, timeZone);
+  if (weekStartYmdValue > curWeek) {
+    throw validationError('No se pueden consultar semanas futuras.');
+  }
+}
+
+function shortDateLabelEs(ymd, timeZone) {
+  const start = startOfCalendarDayInTimeZone(ymd, timeZone);
+  if (!start) return ymd;
+  const parts = new Intl.DateTimeFormat('es-MX', {
+    timeZone,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).formatToParts(start);
+  const day = parts.find((p) => p.type === 'day')?.value || '';
+  const month = parts.find((p) => p.type === 'month')?.value || '';
+  const year = parts.find((p) => p.type === 'year')?.value || '';
+  return `${day} ${month}${year ? ` ${year}` : ''}`.trim();
+}
+
+export function weekRangeLabelEs(weekStart, weekEnd, timeZone) {
+  const start = startOfCalendarDayInTimeZone(weekStart, timeZone);
+  let weekNum = '';
+  if (start) {
+    weekNum = new Intl.DateTimeFormat('en-US', { timeZone, week: 'numeric' }).format(start);
+  }
+  const endParts = shortDateLabelEs(weekEnd, timeZone);
+  const startParts = shortDateLabelEs(weekStart, timeZone);
+  const endYear = weekEnd.slice(0, 4);
+  return `Semana ${weekNum} · ${startParts.replace(/\s+\d{4}$/, '')} – ${endParts.includes(endYear) ? endParts : `${endParts} ${endYear}`}`;
+}
+
+export function monthWindowFromEndYm(endYm, count = 6) {
+  parseMetricsMonthParam(endYm);
+  const months = [];
+  for (let i = count - 1; i >= 0; i -= 1) {
+    months.push(addMonthsYm(endYm, -i));
+  }
+  return months;
+}
+
+export function monthRangeLabelEs(startYm, endYm, timeZone) {
+  const startLabel = monthLabelEs(startYm, timeZone).replace(/\s+\d{4}$/, '');
+  const endLabel = monthLabelEs(endYm, timeZone);
+  return `${startLabel.charAt(0).toUpperCase() + startLabel.slice(1)} – ${endLabel.charAt(0).toUpperCase() + endLabel.slice(1)}`;
+}
+
+export function assertMonthAnchorNotFuture(endYm, timeZone, now = new Date()) {
+  const cur = currentMonthYmInTimeZone(now, timeZone);
+  if (endYm > cur) {
+    throw validationError('No se pueden consultar meses futuros.');
+  }
+}
+
+/**
+ * Ubicación temporal en tendencias (TZ colaborador):
+ * - DAILY: YMD de periodStart en el día correspondiente.
+ * - WEEKLY: YMD de periodStart (ancla del periodo, típicamente lunes) en un solo slot semanal.
+ * - MONTHLY (vista mensual): mes calendario de periodStart (YYYY-MM).
+ */
+function rowTrendBucketKey(row, timeZone) {
+  const ymd = ymdFromDateField(row.periodStart);
+  if (!ymd) return null;
+  if (row.periodicity === 'DAILY') return ymd;
+  if (row.periodicity === 'WEEKLY') return ymd;
+  if (row.periodicity === 'MONTHLY') return periodAnchorYmd('MONTHLY', ymd).slice(0, 7);
+  return ymd;
+}
+
+function filterRowsForTrend(rows, { goalId, view, goalPeriodicity }) {
+  let filtered = rows.filter((r) => r.status !== 'PENDING');
+  if (goalId && goalId !== 'general') {
+    filtered = filtered.filter((r) => r.goalId === goalId);
+  }
+  if (view === 'weekly') {
+    if (goalId === 'general') {
+      filtered = filtered.filter((r) => r.periodicity === 'DAILY' || r.periodicity === 'WEEKLY');
+    } else if (goalPeriodicity === 'MONTHLY') {
+      filtered = [];
+    }
+  }
+  return filtered;
+}
+
+/** Agrupa evaluaciones originales y aplica summarizeClassifiedPeriodRows (sin segunda fórmula). */
+export function buildTrendPointFromRows(rows) {
+  if (!rows.length) {
+    return { averageCompliance: null, evaluablePeriods: 0, hasData: false };
+  }
+  const summary = summarizeClassifiedPeriodRows(rows);
+  return {
+    averageCompliance: summary.averageCompliance,
+    evaluablePeriods: summary.evaluablePeriods,
+    hasData: summary.evaluablePeriods > 0,
+  };
+}
+
+export function buildWeeklyTrendPoints(rows, weekStart, weekEnd, timeZone, options = {}) {
+  const { goalId = 'general', goalPeriodicity = null } = options;
+  const filtered = filterRowsForTrend(rows, { goalId, view: 'weekly', goalPeriodicity });
+  const points = [];
+  for (let i = 0; i < 7; i += 1) {
+    const key = addDaysYmd(weekStart, i);
+    const bucketRows = filtered.filter((r) => {
+      const anchor = rowTrendBucketKey(r, timeZone);
+      if (r.periodicity === 'DAILY' || r.periodicity === 'WEEKLY') return anchor === key;
+      return false;
+    });
+    const pt = buildTrendPointFromRows(bucketRows);
+    points.push({
+      key,
+      label: `${DAY_LABELS_ES[i]} ${key.slice(8)}`,
+      ...pt,
+    });
+  }
+  return points;
+}
+
+export function buildMonthlyTrendPoints(rows, monthYms, timeZone, options = {}) {
+  const { goalId = 'general' } = options;
+  const filtered = filterRowsForTrend(rows, { goalId, view: 'monthly', goalPeriodicity: null });
+  return monthYms.map((ym) => {
+    const bucketRows = filtered.filter((r) => {
+      const bucket = rowTrendBucketKey(r, timeZone);
+      if (r.periodicity === 'MONTHLY') return bucket === ym;
+      return bucket && bucket.slice(0, 7) === ym;
+    });
+    const start = startOfCalendarDayInTimeZone(`${ym}-01`, timeZone);
+    const label = start
+      ? new Intl.DateTimeFormat('es-MX', { timeZone, month: 'short' }).format(start)
+      : ym;
+    const pt = buildTrendPointFromRows(bucketRows);
+    return {
+      key: ym,
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      ...pt,
+    };
+  });
+}
+
+async function resolveTrendGoal(organizationId, employeeId, goalId) {
+  if (goalId === 'general') return { goalId: 'general', periodicity: null };
+  const goal = await prisma.workforceGoal.findFirst({
+    where: { id: goalId, organizationId, employeeId, archivedAt: null },
+    select: { id: true, periodicity: true },
+  });
+  if (!goal) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    err.message = 'Meta no encontrada.';
+    throw err;
+  }
+  return { goalId: goal.id, periodicity: goal.periodicity };
+}
+
+export async function getWorkforceGoalMetricsTrendForAdmin({
+  organizationId,
+  employeeId,
+  view,
+  anchor,
+  goalId,
+}) {
+  const viewNorm = parseTrendViewParam(view);
+  const anchorYmd = parseTrendAnchorYmd(anchor);
+  const goalKey = typeof goalId === 'string' && goalId.trim() ? goalId.trim() : 'general';
+  const employee = await assertWorkforceEmployeeInOrg(employeeId, organizationId);
+  const tz = employee.timezone;
+  const now = new Date();
+  const resolvedGoal = await resolveTrendGoal(organizationId, employeeId, goalKey);
+
+  if (viewNorm === 'weekly') {
+    const { weekStart, weekEnd, start, endExclusive } = weekBoundsFromAnchorYmd(anchorYmd, tz);
+    assertWeekNotFuture(weekStart, tz, now);
+    const currentYm = currentMonthYmInTimeZone(now, tz);
+    const materialize =
+      weekStart.slice(0, 7) === currentYm || addDaysYmd(weekStart, 6).slice(0, 7) === currentYm;
+    const rows = await loadClassifiedPeriodsForRange({
+      organizationId,
+      employeeId,
+      start,
+      endExclusive,
+      employee,
+      now,
+      materializeActiveGoals: materialize,
+    });
+    const points = buildWeeklyTrendPoints(rows, weekStart, weekEnd, tz, {
+      goalId: resolvedGoal.goalId,
+      goalPeriodicity: resolvedGoal.periodicity,
+    });
+    return {
+      view: 'weekly',
+      goalId: resolvedGoal.goalId,
+      goalPeriodicity: resolvedGoal.periodicity,
+      range: {
+        start: weekStart,
+        end: weekEnd,
+        label: weekRangeLabelEs(weekStart, weekEnd, tz),
+        anchor: anchorYmd,
+      },
+      points,
+    };
+  }
+
+  const endYm = anchorYmd.slice(0, 7);
+  parseMetricsMonthParam(endYm);
+  assertMonthAnchorNotFuture(endYm, tz, now);
+  const monthYms = monthWindowFromEndYm(endYm, 6);
+  const startYm = monthYms[0];
+  const currentYm = currentMonthYmInTimeZone(now, tz);
+  /* Tendencia mensual: hasta 6× findMany periodos (MAX+1 c/u), sin N+1 por meta; 1 HTTP desde cliente. */
+  let rows = [];
+  for (const ym of monthYms) {
+    const chunk = await loadClassifiedPeriodsForMonth({
+      organizationId,
+      employeeId,
+      monthYm: ym,
+      employee,
+      now,
+      materializeCurrentMonth: ym === currentYm,
+    });
+    rows = rows.concat(chunk);
+  }
+  const points = buildMonthlyTrendPoints(rows, monthYms, tz, { goalId: resolvedGoal.goalId });
+  return {
+    view: 'monthly',
+    goalId: resolvedGoal.goalId,
+    goalPeriodicity: resolvedGoal.periodicity,
+    range: {
+      start: `${startYm}-01`,
+      end: monthEndYmd(`${endYm}-01`),
+      label: monthRangeLabelEs(startYm, endYm, tz),
+      anchor: anchorYmd,
+      months: monthYms,
+    },
+    points,
+  };
 }
 
 function buildComparison(currentSummary, previousSummary, previousMonthYm, timeZone) {
