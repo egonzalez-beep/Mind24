@@ -92,7 +92,9 @@ check(/assertWorkforceEmployeeInOrg/.test(
 ), 'historial valida empleado en org');
 check(/\/employees\/.*\/sessions/.test(indexHtml), 'frontend fetch sessions');
 check(/Duración de jornada/.test(indexHtml), 'wording duración de jornada');
-check(!/Tiempo de conexión/.test(indexHtml), 'no tiempo de conexión');
+check(!/Tiempo de conexión/.test(indexHtml), 'no label redundante Tiempo de conexión');
+check(/Tiempo con señal/.test(indexHtml), 'historial muestra tiempo con señal');
+check(/connectionSummary|tcRenderConnectionSummary/.test(indexHtml), 'resumen de conexión en historial');
 check(/tc-cal-prev/.test(indexHtml) && /tc-cal-next/.test(indexHtml), 'navegación mes');
 check(/aria-label.*Mes anterior/.test(indexHtml), 'aria mes anterior');
 check(/tc-cal-popover/.test(indexHtml), 'popover hover desktop');

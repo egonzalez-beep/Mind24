@@ -1324,6 +1324,30 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-cal-popover strong{display:block;font-size:13px;color:var(--primary);margin-bottom:6px;font-weight:700;}
 .tc-history-pinned{position:absolute;z-index:5;left:8px;right:8px;bottom:8px;font-size:12px;color:var(--slate-600);line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.98);border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);}
 .tc-history-pinned.hidden{display:none!important;}
+.tc-conn-summary{border:1px solid var(--slate-200);border-radius:10px;padding:0;background:var(--slate-50);}
+.tc-conn-summary>summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--purple-dark);padding:10px 12px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tc-conn-summary>summary::-webkit-details-marker{display:none;}
+.tc-conn-summary-body{padding:0 12px 12px;font-size:12px;color:var(--slate-600);line-height:1.5;}
+.tc-conn-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 12px;margin-bottom:10px;}
+.tc-conn-summary-grid dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin:0 0 2px;}
+.tc-conn-summary-grid dd{margin:0;font-size:13px;font-weight:600;color:var(--primary);}
+.tc-conn-chart-tabs{display:inline-flex;gap:4px;margin-bottom:8px;border:1px solid var(--slate-200);border-radius:8px;padding:2px;background:#fff;}
+.tc-conn-chart-tab{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;color:var(--slate-500);}
+.tc-conn-chart-tab--on{background:var(--purple-light);color:var(--purple-dark);}
+.tc-conn-chart{display:flex;flex-direction:column;gap:6px;max-width:100%;}
+.tc-conn-chart-row{display:grid;grid-template-columns:minmax(0,52px) minmax(0,1fr);gap:8px;align-items:center;font-size:10px;color:var(--slate-500);}
+.tc-conn-chart-bars{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tc-conn-chart-bar{height:6px;border-radius:3px;min-width:2px;max-width:100%;}
+.tc-conn-chart-bar--dur{background:rgba(124,58,237,.35);}
+.tc-conn-chart-bar--sig{background:rgba(34,197,94,.55);}
+.tc-conn-chart-empty{font-size:12px;color:var(--slate-500);padding:8px 0;}
+.tc-conn-level-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+.tc-conn-level-dot--green{background:#22c55e;}
+.tc-conn-level-dot--amber{background:#f59e0b;}
+.tc-conn-level-dot--coral{background:#f97316;}
+.tc-jornada-signal-time{display:block;font-size:12px;font-weight:600;color:var(--slate-600);margin-top:4px;}
+.tc-history-signal-partial{font-size:11px;color:var(--slate-500);font-weight:500;margin-top:4px;}
+.tc-signal-help-inline{font-size:11px;color:var(--slate-500);font-weight:500;margin-top:6px;line-height:1.4;}
 .tc-history-pinned h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--primary);}
 .tc-history-session{margin-top:10px;padding-top:10px;border-top:1px solid var(--slate-200);}
 .tc-history-session:first-of-type{margin-top:0;padding-top:0;border-top:none;}
@@ -3641,6 +3665,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="tc-history-dialog-body">
           <div class="tc-week-summary" id="tc-week-summary"></div>
+          <details class="tc-conn-summary" id="tc-conn-summary">
+            <summary>Resumen de conexión <span id="tc-conn-summary-chevron" aria-hidden="true">▾</span></summary>
+            <div class="tc-conn-summary-body" id="tc-conn-summary-body"></div>
+          </details>
           <div class="tc-history-cal-wrap">
             <div id="tc-cal-root"></div>
             <div id="tc-history-pinned" class="tc-history-pinned hidden" role="region" aria-live="polite"></div>
@@ -7656,6 +7684,55 @@ function tcSignalDotHtml(code, withInfo){
   const kind=tcSignalKind(code);
   const label=tcSignalLabel(code);
   return '<span class="tc-signal-line"><span class="tc-status-dot tc-status-dot--'+kind+'" aria-hidden="true"></span><span>'+tcEsc(label)+'</span>'+(withInfo?tcSignalInfoIcon():'')+'</span>';
+}
+var TC_SIGNAL_CONN_HELP='La señal indica que la página de Mind24 mantuvo comunicación con el servidor; no mide movimiento ni actividad dentro de otras aplicaciones.';
+function tcFmtSignalTimeLocal(iso,tz){
+  if(!iso) return '';
+  try{
+    return new Date(iso).toLocaleTimeString('es-MX',{timeZone:tz||undefined,hour:'numeric',minute:'2-digit'});
+  }catch(_){ return ''; }
+}
+function tcFmtSignalDurationOrNone(sec){
+  if(sec==null) return 'Sin datos';
+  return tcFmtDurationHuman(sec);
+}
+function tcFmtConnectionPct(pct){
+  if(pct==null) return '—';
+  return String(pct)+' %';
+}
+function tcConnectionLevelDotHtml(level){
+  if(!level) return '';
+  const cls=level==='green'?'green':level==='amber'?'amber':level==='coral'?'coral':'';
+  if(!cls) return '';
+  return '<span class="tc-conn-level-dot tc-conn-level-dot--'+cls+'" aria-hidden="true"></span>';
+}
+function tcJornadaLastSignalSubHtml(lastSignalAt,tz,hasOpen){
+  if(!lastSignalAt){
+    if(hasOpen) return '<span class="tc-jornada-signal-time">Sin señal registrada en esta jornada</span>';
+    return '';
+  }
+  const t=tcFmtSignalTimeLocal(lastSignalAt,tz);
+  return t?('<span class="tc-jornada-signal-time">Última señal: '+tcEsc(t)+'</span>'):'';
+}
+function tcHistorySignalExtraHtml(s,tz){
+  let html='';
+  html+='<div style="margin-top:8px;">Tiempo con señal: '+tcEsc(tcFmtSignalDurationOrNone(s.signalDurationSeconds))+'</div>';
+  if(s.signalTelemetryStatus==='partial'&&s.signalTrackingStartedAt){
+    const from=tcFmtSignalTimeLocal(s.signalTrackingStartedAt,tz);
+    if(from) html+='<div class="tc-history-signal-partial">Medición disponible desde las '+tcEsc(from)+'</div>';
+  }
+  if(s.signalTelemetryStatus==='full'&&s.signalDurationSeconds!=null){
+    html+='<div>Conexión efectiva: '+tcConnectionLevelDotHtml(s.connectionVisualLevel)+tcEsc(tcFmtConnectionPct(s.connectionEffectivePercent))+'</div>';
+  }else{
+    html+='<div>Conexión efectiva: —</div>';
+  }
+  if(s.lastSignalAt){
+    html+='<div>Última señal: '+tcEsc(tcFmtSignalTimeLocal(s.lastSignalAt,tz))+'</div>';
+  }else{
+    html+='<div>Última señal: —</div>';
+  }
+  html+='<p class="tc-signal-help-inline" role="note">'+tcEsc(TC_SIGNAL_CONN_HELP)+'</p>';
+  return html;
 }
 function tcSvgEye(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -12964,9 +13041,11 @@ function tcEmpSyncAttendanceLiveIndicator(live){
   if(dot) dot.classList.toggle('tc-ws-attendance-dot--live',!!live);
   if(stateEl) stateEl.classList.toggle('tc-ws-attendance-state--live',!!live);
 }
-function tcEmpJornadaSignalHtml(code){
+function tcEmpJornadaSignalHtml(code, lastAt, tz){
   if(!code) return '<span class="tc-ws-jornada-signal-muted">Señal de conexión: —</span>';
-  return '<strong>Señal de conexión:</strong> '+tcSignalDotHtml(code,false);
+  let html='<strong>Señal de conexión:</strong> '+tcSignalDotHtml(code,false);
+  html+=tcJornadaLastSignalSubHtml(lastAt,tz,true);
+  return html;
 }
 var TC_JORNADA_INFO_PRIVACY='Mind24 no monitorea otras aplicaciones ni la actividad de tu equipo fuera de esta página.';
 function tcEmpJornadaInfoTipHtml(mode, signalCode){
@@ -13675,7 +13754,10 @@ async function tcViewJornada(id){
     const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
     const emp=out.employee||{};
     tcResetHistoryState(emp);
+    tcJornadaStopLivePoll();
+    tcJornadaLastLivePayload=out;
     const j=out.jornada||{};
+    const tz=emp.timezone||'America/Mexico_City';
     const sess=j.session||j.openSession||null;
     const jornadaOpen=!!(sess&&!sess.checkOutAt);
     if(body){
@@ -13688,9 +13770,10 @@ async function tcViewJornada(id){
         '<div><dt>Estado</dt><dd>'+tcJornadaDetailEstadoHtml(emp,jornadaOpen)+'</dd></div>'+
         '<div><dt>Entrada</dt><dd>'+tcEsc(entFmt)+'</dd></div>';
       if(jornadaOpen){
+        const sigSub=tcJornadaLastSignalSubHtml(sess&&sess.lastSignalAt,tz, true);
         dlHtml+=
           '<div><dt>Duración</dt><dd>'+tcEsc(dur)+'</dd></div>'+
-          '<div><dt>Última señal web</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+'</dd></div>';
+          '<div id="tc-jornada-live-signal-block"><dt>Última señal web</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+sigSub+'</dd></div>';
       }else{
         dlHtml+=
           '<div><dt>Salida</dt><dd>'+tcEsc(outFmt)+'</dd></div>'+
@@ -13728,7 +13811,56 @@ async function tcViewJornada(id){
     tcJornadaRenderAside();
     if(card) card.classList.remove('hidden');
     if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    tcJornadaStartLivePoll();
   }catch(e){ alert(e.message||'No se pudo consultar la jornada.'); }
+}
+const TC_JORNADA_LIVE_POLL_MS=60000;
+let tcJornadaLivePollTimer=null;
+let tcJornadaLivePollInFlight=false;
+let tcJornadaLivePollBound=false;
+let tcJornadaLastLivePayload=null;
+function tcJornadaStopLivePoll(){
+  if(tcJornadaLivePollTimer){ clearInterval(tcJornadaLivePollTimer); tcJornadaLivePollTimer=null; }
+  if(tcJornadaLivePollBound){
+    document.removeEventListener('visibilitychange', tcJornadaOnVisibilityForPoll);
+    tcJornadaLivePollBound=false;
+  }
+  tcJornadaLivePollInFlight=false;
+}
+function tcJornadaOnVisibilityForPoll(){
+  if(document.hidden) return;
+  tcJornadaLivePollTick();
+}
+function tcJornadaStartLivePoll(){
+  tcJornadaStopLivePoll();
+  if(!tcJornadaEmpId) return;
+  const card=document.getElementById('tc-jornada-card');
+  if(!card||card.classList.contains('hidden')) return;
+  if(!tcJornadaLivePollBound){
+    document.addEventListener('visibilitychange', tcJornadaOnVisibilityForPoll);
+    tcJornadaLivePollBound=true;
+  }
+  tcJornadaLivePollTimer=setInterval(tcJornadaLivePollTick, TC_JORNADA_LIVE_POLL_MS);
+}
+async function tcJornadaLivePollTick(){
+  if(document.hidden) return;
+  if(!tcJornadaEmpId||tcJornadaLivePollInFlight) return;
+  const card=document.getElementById('tc-jornada-card');
+  if(!card||card.classList.contains('hidden')) return;
+  tcJornadaLivePollInFlight=true;
+  try{
+    const out=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId));
+    tcJornadaLastLivePayload=out;
+    const j=out.jornada||{};
+    const emp=out.employee||{};
+    const tz=emp.timezone||tcJornadaTz;
+    const sess=j.session||null;
+    const jornadaOpen=!!(sess&&!sess.checkOutAt);
+    const block=document.getElementById('tc-jornada-live-signal-block');
+    if(jornadaOpen&&block){
+      block.innerHTML='<dt>Última señal web</dt><dd>'+tcSignalDotHtml(j.webSignal,true)+tcJornadaLastSignalSubHtml(sess&&sess.lastSignalAt,tz,true)+'</dd>';
+    }
+  }catch(_){}finally{ tcJornadaLivePollInFlight=false; }
 }
 let tcJornadaEmpId=null;
 let tcJornadaTz='America/Mexico_City';
@@ -13951,6 +14083,7 @@ async function tcLoadHistoryMonth(){
     const q='from='+encodeURIComponent(r.from)+'&to='+encodeURIComponent(r.to);
     tcHistoryPayload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions?'+q);
     tcRenderWeekSummary();
+    tcRenderConnectionSummary();
     tcRenderCalendar();
     tcRenderHistoryPinned();
   }catch(e){
@@ -13974,6 +14107,71 @@ function tcRenderWeekSummary(){
     html+='<div style="margin-top:2px;">Promedio por jornada: '+tcEsc(tcFmtDurationHuman(w.averageDurationSec))+'</div>';
   }
   el.innerHTML=html;
+}
+let tcConnChartMode='daily';
+function tcRenderConnectionSummary(){
+  const body=document.getElementById('tc-conn-summary-body');
+  const c=tcHistoryPayload&&tcHistoryPayload.connectionSummary;
+  if(!body) return;
+  if(!c||!c.sessionCountTotal){
+    body.innerHTML='<p class="tc-conn-chart-empty">No hay jornadas en este periodo.</p>';
+    return;
+  }
+  const exp=tcHistoryPayload.expectedWorkMinutes;
+  const fullN=c.sessionCountWithFullTelemetry!=null?c.sessionCountWithFullTelemetry:(c.sessionCountWithTelemetry||0);
+  let html='<p style="margin:0 0 8px;font-size:12px;color:var(--slate-600);">Jornadas con medición completa: <strong>'+tcEsc(String(fullN))+'</strong> de '+tcEsc(String(c.sessionCountTotal))+'</p>';
+  html+='<dl class="tc-conn-summary-grid">'+
+    '<div><dt>Total jornadas</dt><dd>'+tcEsc(String(c.sessionCountTotal))+'</dd></div>'+
+    '<div><dt>Duración total</dt><dd>'+tcEsc(tcFmtDurationHuman(c.totalDurationSec))+'</dd></div>'+
+    '<div><dt>Tiempo con señal</dt><dd>'+tcEsc(c.totalSignalDurationSec!=null?tcFmtDurationHuman(c.totalSignalDurationSec):'Sin datos')+'</dd></div>'+
+    '<div><dt>Promedio diario jornada</dt><dd>'+tcEsc(c.avgDailyDurationSec!=null?tcFmtDurationHuman(c.avgDailyDurationSec):'—')+'</dd></div>'+
+    '<div><dt>Promedio diario señal</dt><dd>'+tcEsc(c.avgDailySignalSec!=null?tcFmtDurationHuman(c.avgDailySignalSec):'—')+'</dd></div>'+
+    '<div><dt>Conexión efectiva</dt><dd>'+tcEsc(tcFmtConnectionPct(c.overallConnectionEffectivePercent))+'</dd></div>'+
+    '<div><dt>Brecha alta</dt><dd>'+tcEsc(String(c.highGapSessionCount||0))+' jornada'+(c.highGapSessionCount===1?'':'s')+'</dd></div>'+
+    '</dl>';
+  if(exp!=null&&exp>0&&c.totalSignalDurationSec!=null&&fullN>0){
+    const cov=Math.min(100, Math.round((c.totalSignalDurationSec/(exp*60*fullN))*1000)/10);
+    html+='<p style="margin:0 0 10px;font-size:12px;">Cobertura de conexión vs. jornada esperada (solo medición completa): <strong>'+tcEsc(String(cov))+' %</strong></p>';
+  }
+  html+='<div class="tc-conn-chart-tabs" role="tablist" aria-label="Gráfica de conexión">'+
+    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='daily'?' tc-conn-chart-tab--on':'')+'" onclick="tcConnChartSetMode(\'daily\')">Diario</button>'+
+    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='weekly'?' tc-conn-chart-tab--on':'')+'" onclick="tcConnChartSetMode(\'weekly\')">Semanal</button>'+
+    '</div><div id="tc-conn-chart-root"></div>';
+  body.innerHTML=html;
+  tcConnChartRender();
+}
+function tcConnChartSetMode(mode){
+  tcConnChartMode=mode==='weekly'?'weekly':'daily';
+  tcRenderConnectionSummary();
+}
+function tcConnChartRender(){
+  const root=document.getElementById('tc-conn-chart-root');
+  const c=tcHistoryPayload&&tcHistoryPayload.connectionSummary;
+  if(!root||!c) return;
+  const rows=tcConnChartMode==='weekly'?(c.chartWeekly||[]):(c.chartDaily||[]);
+  const withData=rows.filter(function(r){ return r.durationSec>0||(r.signalSec!=null&&r.signalSec>0); });
+  if(!withData.length){
+    root.innerHTML='<p class="tc-conn-chart-empty">Sin datos suficientes de telemetría en este mes.</p>';
+    return;
+  }
+  let maxSec=0;
+  withData.forEach(function(r){
+    maxSec=Math.max(maxSec, r.durationSec||0, r.signalSec||0);
+  });
+  if(maxSec<=0) maxSec=1;
+  let html='<div class="tc-conn-chart" role="img" aria-label="Comparativa duración de jornada y tiempo con señal">';
+  withData.slice(-14).forEach(function(r){
+    const label=tcConnChartMode==='weekly'?('Sem '+String(r.weekStart||'').slice(5)):String(r.date||'').slice(8);
+    const durPct=Math.round(((r.durationSec||0)/maxSec)*100);
+    const sigPct=r.signalSec!=null?Math.round((r.signalSec/maxSec)*100):0;
+    const par=r.partialOnly?' (parcial)':'';
+    html+='<div class="tc-conn-chart-row"><span title="'+tcEsc(label+par)+'">'+tcEsc(label+par)+'</span><div class="tc-conn-chart-bars">'+
+      '<div class="tc-conn-chart-bar tc-conn-chart-bar--dur" style="width:'+durPct+'%;" title="Jornada"></div>'+
+      (r.signalSec!=null?('<div class="tc-conn-chart-bar tc-conn-chart-bar--sig" style="width:'+sigPct+'%;" title="Señal (medición completa)"></div>'):'')+
+      '</div></div>';
+  });
+  html+='</div>';
+  root.innerHTML=html;
 }
 function tcBuildCalendarHtml(){
   const y=tcHistoryYear;
@@ -14115,11 +14313,13 @@ function tcDayDetailHtml(dayKey){
       html+='<div style="color:#b45309;font-weight:600;margin-bottom:4px;">Jornada abierta</div>'+
         'Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
         'Salida: —<br>'+
-        'Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+        'Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec))+'<br>'+
+        tcHistorySignalExtraHtml(s, tcJornadaTz);
     }else{
       html+='Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
         'Salida: '+tcEsc(tcFmtTimeLocal(s.checkOutAt, tcJornadaTz))+'<br>'+
-        'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec));
+        'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec))+'<br>'+
+        tcHistorySignalExtraHtml(s, tcJornadaTz);
     }
     html+='</div>';
   });
@@ -15376,6 +15576,7 @@ async function tcEmpGoalReportQuantitative(periodId){
   }
 }
 function tcCloseJornada(){
+  tcJornadaStopLivePoll();
   tcCloseHistoryDialog(false);
   tcJornadaEmpId=null;
   tcHistoryPayload=null;
@@ -15520,7 +15721,7 @@ function tcEmpRender(){
     if(state) state.textContent='En curso';
     if(attIn) attIn.textContent=tcFmtHm(open.checkInAt);
     if(elapsedEl) elapsedEl.textContent=tcEmpElapsed();
-    if(sigRow) sigRow.innerHTML='';
+    if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(me.webSignal, open.lastHeartbeatAt, me.timezone);
     if(btnLive){
       btnLive.classList.remove('hidden');
       btnLive.textContent='Registrar salida';
@@ -15825,6 +16026,7 @@ window.tcCloseJornada=tcCloseJornada;
 window.tcToggleHistoryPanel=tcToggleHistoryPanel;
 window.tcHistoryChangeMonth=tcHistoryChangeMonth;
 window.tcSelectHistoryDay=tcSelectHistoryDay;
+window.tcConnChartSetMode=tcConnChartSetMode;
 window.tcEmpPrimaryAction=tcEmpPrimaryAction;
 window.tcEmployeeBoot=tcEmployeeBoot;
 window.tcIsChecadorPath=tcIsChecadorPath;

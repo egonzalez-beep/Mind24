@@ -114,6 +114,12 @@ enum WebSignal {
   no_signal
 }
 
+enum SignalTelemetryStatus {
+  no_data
+  partial
+  full
+}
+
 enum RemoteWorkEventType {
   CHECK_IN
   CHECK_OUT
@@ -347,6 +353,14 @@ model RemoteWorkSession {
   adjustedBy        User?                     @relation("RemoteWorkSessionAdjustedBy", fields: [adjustedByUserId], references: [id], onDelete: SetNull)
   adjustedAt        DateTime?                 @db.Timestamptz(6)
   adjustmentReason  String?
+  /// Segundos acreditados con heartbeats válidos (acumulador).
+  signalDurationSeconds Int                   @default(0)
+  /// Inicio de ventana de telemetría (check-in o primer HB en sesión legacy).
+  signalTrackingStartedAt DateTime?           @db.Timestamptz(6)
+  /// Fin del último intervalo acreditado (ancla atómica anti-duplicado).
+  signalLastCreditedAt DateTime?              @db.Timestamptz(6)
+  signalSampleCount Int                       @default(0)
+  signalTelemetryStatus SignalTelemetryStatus @default(no_data)
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 

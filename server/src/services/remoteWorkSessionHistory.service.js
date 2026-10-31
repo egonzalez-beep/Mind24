@@ -1,6 +1,13 @@
 import { prisma } from '../db/client.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
 import { workedDurationSec } from './remoteWorkSession.service.js';
+import {
+  connectionEffectivePercent,
+  enrichSessionSignalMetrics,
+  isOfficialFullSignalSession,
+  resolveSignalTelemetryStatus,
+  SIGNAL_TELEMETRY,
+} from './remoteWorkSignalDuration.service.js';
 
 const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -48,22 +55,149 @@ export function utcRangeForLocalDateInclusive(fromKey, toKey, timeZone) {
   return { start, end };
 }
 
-export function sanitizeSessionRow(session, now = new Date()) {
+export function sanitizeSessionRow(session, now = new Date(), opts = {}) {
   const isOpen = !session.checkOutAt;
+  const metrics = enrichSessionSignalMetrics(session, now, opts);
   return {
     id: session.id,
     checkInAt: session.checkInAt,
     checkOutAt: session.checkOutAt,
     status: session.status,
     isOpen,
-    durationSec: workedDurationSec(session, now),
+    durationSec: metrics.durationSec,
+    signalDurationSeconds: metrics.signalDurationSeconds,
+    connectionEffectivePercent: metrics.connectionEffectivePercent,
+    lastSignalAt: metrics.lastSignalAt,
+    signalTelemetryStatus: metrics.signalTelemetryStatus,
+    connectionVisualLevel: metrics.connectionVisualLevel,
+    signalTrackingStartedAt: metrics.signalTrackingStartedAt,
+    expectedCoveragePercent: metrics.expectedCoveragePercent,
   };
 }
 
-export function groupSessionsByLocalDay(sessions, timeZone, now = new Date()) {
+export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, toKey, now = new Date()) {
+  const enriched = sessions.map((s) => enrichSessionSignalMetrics(s, now));
+  const officialFull = sessions.filter((s) => isOfficialFullSignalSession(s, now));
+
+  let totalDurationTelemetry = 0;
+  let totalSignalSec = 0;
+  let highGapCount = 0;
+  for (let i = 0; i < sessions.length; i += 1) {
+    if (!isOfficialFullSignalSession(sessions[i], now)) continue;
+    const e = enriched[i];
+    totalDurationTelemetry += e.durationSec ?? 0;
+    totalSignalSec += e.signalDurationSeconds ?? 0;
+    const gap = (e.durationSec ?? 0) - (e.signalDurationSeconds ?? 0);
+    if (gap > 3 * 3600) highGapCount += 1;
+  }
+
+  const daysWithSessions = new Set();
+  const daysWithFullTelemetry = new Set();
+  for (let i = 0; i < sessions.length; i += 1) {
+    const s = sessions[i];
+    const dayKey = localDateKey(s.checkInAt, timeZone);
+    daysWithSessions.add(dayKey);
+    if (isOfficialFullSignalSession(s, now) && enriched[i].signalDurationSeconds != null) {
+      daysWithFullTelemetry.add(dayKey);
+    }
+  }
+
+  const totalDurationAll = enriched.reduce((acc, e) => acc + (e.durationSec ?? 0), 0);
+
+  const overallConnectionEffectivePercent = connectionEffectivePercent(
+    totalSignalSec,
+    totalDurationTelemetry,
+  );
+
+  const avgDailyDurationSec =
+    daysWithSessions.size > 0 ? Math.round(totalDurationAll / daysWithSessions.size) : null;
+
+  const avgDailySignalSec =
+    daysWithFullTelemetry.size > 0 ? Math.round(totalSignalSec / daysWithFullTelemetry.size) : null;
+
+  const dailyMap = {};
+  for (let i = 0; i < sessions.length; i += 1) {
+    const s = sessions[i];
+    const e = enriched[i];
+    const dayKey = localDateKey(s.checkInAt, timeZone);
+    if (!dailyMap[dayKey]) {
+      dailyMap[dayKey] = {
+        date: dayKey,
+        durationSec: 0,
+        signalSec: 0,
+        hasFullTelemetry: false,
+        hasPartialOnly: false,
+      };
+    }
+    dailyMap[dayKey].durationSec += e.durationSec ?? 0;
+    if (isOfficialFullSignalSession(s, now) && e.signalDurationSeconds != null) {
+      dailyMap[dayKey].signalSec += e.signalDurationSeconds;
+      dailyMap[dayKey].hasFullTelemetry = true;
+    } else if (
+      resolveSignalTelemetryStatus(s) === SIGNAL_TELEMETRY.PARTIAL &&
+      (s.signalSampleCount ?? 0) > 0
+    ) {
+      dailyMap[dayKey].hasPartialOnly = true;
+    }
+  }
+
+  const chartDaily = Object.keys(dailyMap)
+    .sort()
+    .filter((k) => k >= fromKey && k <= toKey)
+    .map((k) => ({
+      date: k,
+      durationSec: dailyMap[k].durationSec,
+      signalSec: dailyMap[k].hasFullTelemetry ? dailyMap[k].signalSec : null,
+      partialOnly: dailyMap[k].hasPartialOnly && !dailyMap[k].hasFullTelemetry,
+    }));
+
+  const weeklyMap = {};
+  for (const row of chartDaily) {
+    const { weekStart } = weekRangeMonday(row.date, timeZone);
+    if (!weeklyMap[weekStart]) {
+      weeklyMap[weekStart] = {
+        weekStart,
+        durationSec: 0,
+        signalSec: 0,
+        hasFullTelemetry: false,
+        partialOnly: false,
+      };
+    }
+    weeklyMap[weekStart].durationSec += row.durationSec;
+    if (row.signalSec != null) {
+      weeklyMap[weekStart].signalSec += row.signalSec;
+      weeklyMap[weekStart].hasFullTelemetry = true;
+    }
+    if (row.partialOnly) weeklyMap[weekStart].partialOnly = true;
+  }
+
+  const chartWeekly = Object.keys(weeklyMap)
+    .sort()
+    .map((k) => ({
+      weekStart: k,
+      durationSec: weeklyMap[k].durationSec,
+      signalSec: weeklyMap[k].hasFullTelemetry ? weeklyMap[k].signalSec : null,
+      partialOnly: weeklyMap[k].partialOnly && !weeklyMap[k].hasFullTelemetry,
+    }));
+
+  return {
+    sessionCountTotal: sessions.length,
+    sessionCountWithFullTelemetry: officialFull.length,
+    totalDurationSec: totalDurationAll,
+    totalSignalDurationSec: officialFull.length > 0 ? totalSignalSec : null,
+    avgDailyDurationSec,
+    avgDailySignalSec,
+    overallConnectionEffectivePercent,
+    highGapSessionCount: highGapCount,
+    chartDaily,
+    chartWeekly,
+  };
+}
+
+export function groupSessionsByLocalDay(sessions, timeZone, now = new Date(), enrichOpts = {}) {
   const days = {};
   for (const raw of sessions) {
-    const row = sanitizeSessionRow(raw, now);
+    const row = sanitizeSessionRow(raw, now, enrichOpts);
     const dayKey = localDateKey(row.checkInAt, timeZone);
     if (!days[dayKey]) {
       days[dayKey] = {
@@ -170,11 +304,27 @@ export async function listEmployeeSessionsHistory({
       checkInAt: true,
       checkOutAt: true,
       status: true,
+      lastHeartbeatAt: true,
+      lastWebSignal: true,
+      lastVisibilityState: true,
+      signalDurationSeconds: true,
+      signalTrackingStartedAt: true,
+      signalLastCreditedAt: true,
+      signalSampleCount: true,
+      signalTelemetryStatus: true,
     },
   });
 
-  const sanitized = sessions.map((s) => sanitizeSessionRow(s, now));
-  const days = groupSessionsByLocalDay(sessions, timeZone, now);
+  const enrichOpts = { expectedWorkMinutes: emp.expectedWorkMinutes };
+  const sanitized = sessions.map((s) => sanitizeSessionRow(s, now, enrichOpts));
+  const days = groupSessionsByLocalDay(sessions, timeZone, now, enrichOpts);
+  const connectionSummary = buildConnectionSummaryForSessions(
+    sessions,
+    timeZone,
+    fromKey,
+    toKey,
+    now,
+  );
   const todayKey = localDateKey(now, timeZone);
   const { weekStart, weekEnd } = weekRangeMonday(todayKey, timeZone);
   const weekUtc = utcRangeForLocalDateInclusive(weekStart, weekEnd, timeZone);
@@ -189,6 +339,14 @@ export async function listEmployeeSessionsHistory({
       checkInAt: true,
       checkOutAt: true,
       status: true,
+      lastHeartbeatAt: true,
+      lastWebSignal: true,
+      lastVisibilityState: true,
+      signalDurationSeconds: true,
+      signalTrackingStartedAt: true,
+      signalLastCreditedAt: true,
+      signalSampleCount: true,
+      signalTelemetryStatus: true,
     },
   });
   const weekSummary = buildWeekSummary(weekSessions, timeZone, todayKey, now);
@@ -196,10 +354,12 @@ export async function listEmployeeSessionsHistory({
   return {
     employeeId: emp.id,
     timezone: timeZone,
+    expectedWorkMinutes: emp.expectedWorkMinutes ?? null,
     from: fromKey,
     to: toKey,
     sessions: sanitized,
     days,
     weekSummary,
+    connectionSummary,
   };
 }

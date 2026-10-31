@@ -4,6 +4,21 @@ import {
   webSignalFromVisibility,
   webSignalLabel,
 } from './timeclockWebSignal.service.js';
+import {
+  enrichSessionSignalMetrics,
+  planCloseSignalCredit,
+  planHeartbeatSignalCredit,
+  signalTrackingFieldsAtCheckIn,
+} from './remoteWorkSignalDuration.service.js';
+
+async function lockOpenSessionRow(tx, sessionId) {
+  await tx.$executeRaw`
+    SELECT 1 FROM "RemoteWorkSession"
+    WHERE id = ${sessionId} AND "checkOutAt" IS NULL
+    FOR UPDATE
+  `;
+  return tx.remoteWorkSession.findUnique({ where: { id: sessionId } });
+}
 
 export function resolveShiftLifecycle(openSession) {
   if (!openSession) return 'OFF_DUTY';
@@ -73,6 +88,7 @@ export function buildAdminJornadaPayload(openSession, latestSession, now = new D
   const webSignal = open
     ? resolveCurrentWebSignal(open, now)
     : session.lastWebSignal || 'no_signal';
+  const signalMetrics = enrichSessionSignalMetrics(session, now);
   return {
     shiftLifecycle,
     webSignal,
@@ -83,9 +99,15 @@ export function buildAdminJornadaPayload(openSession, latestSession, now = new D
       checkOutAt: session.checkOutAt || null,
       status: session.status,
       lastHeartbeatAt: session.lastHeartbeatAt,
-      durationSec: workedDurationSec(session, now),
+      durationSec: signalMetrics.durationSec,
       webSignal,
       webSignalLabel: webSignalLabel(webSignal),
+      signalDurationSeconds: signalMetrics.signalDurationSeconds,
+      connectionEffectivePercent: signalMetrics.connectionEffectivePercent,
+      lastSignalAt: signalMetrics.lastSignalAt,
+      signalTelemetryStatus: signalMetrics.signalTelemetryStatus,
+      connectionVisualLevel: signalMetrics.connectionVisualLevel,
+      signalTrackingStartedAt: signalMetrics.signalTrackingStartedAt,
     },
   };
 }
@@ -106,6 +128,7 @@ export async function checkInRemoteWorkSession({ employeeId, userAgent, clientMe
           lastWebSignal: 'no_signal',
           userAgent: userAgent?.slice(0, 512) || null,
           clientMetadata: clientMetadata ?? undefined,
+          ...signalTrackingFieldsAtCheckIn(now),
         },
       });
       await tx.remoteWorkEvent.create({
@@ -148,9 +171,17 @@ export async function checkOutRemoteWorkSession(employeeId) {
     if (open.status !== 'open') {
       return { session: open, alreadyClosed: true };
     }
+    const locked = await lockOpenSessionRow(tx, open.id);
+    if (!locked) {
+      const err = new Error('INVALID_STATE');
+      err.code = 'INVALID_STATE';
+      throw err;
+    }
+    const closeCredit = planCloseSignalCredit(locked, now);
     const updated = await tx.remoteWorkSession.update({
       where: { id: open.id },
       data: {
+        ...closeCredit.patch,
         checkOutAt: now,
         status: 'completed',
       },
@@ -180,14 +211,22 @@ export async function recordRemoteWorkHeartbeat({
     if (!open) {
       return { noop: true, reason: 'no_open_session' };
     }
-    const previousEffective = resolveCurrentWebSignal(open, now);
+    const locked = await lockOpenSessionRow(tx, open.id);
+    if (!locked) {
+      return { noop: true, reason: 'no_open_session' };
+    }
+    const previousEffective = resolveCurrentWebSignal(locked, now);
     const immediateSignal = webSignalFromVisibility(vis);
+
+    const { patch: signalPatch, activationPatch } = planHeartbeatSignalCredit(locked, now);
 
     const data = {
       lastHeartbeatAt: now,
       lastWebSignal: immediateSignal,
       lastVisibilityState: vis,
       ...(clientMetadata != null ? { clientMetadata } : {}),
+      ...(activationPatch ?? {}),
+      ...signalPatch,
     };
 
     const updated = await tx.remoteWorkSession.update({
@@ -195,7 +234,7 @@ export async function recordRemoteWorkHeartbeat({
       data,
     });
 
-    if (open.lastVisibilityState !== vis) {
+    if (locked.lastVisibilityState !== vis) {
       const tabEventType = vis === 'hidden' ? 'TAB_BACKGROUND' : 'TAB_VISIBLE';
       await tx.remoteWorkEvent.create({
         data: {
@@ -255,9 +294,17 @@ export async function adminCloseRemoteWorkSession({
     if (session.checkOutAt) {
       return { session, alreadyClosed: true };
     }
+    await tx.$executeRaw`
+      SELECT 1 FROM "RemoteWorkSession"
+      WHERE id = ${sessionId} AND "checkOutAt" IS NULL
+      FOR UPDATE
+    `;
+    const locked = await tx.remoteWorkSession.findUnique({ where: { id: sessionId } });
+    const closeCredit = planCloseSignalCredit(locked, now);
     const updated = await tx.remoteWorkSession.update({
       where: { id: sessionId },
       data: {
+        ...closeCredit.patch,
         checkOutAt: now,
         status: 'admin_closed',
         closedByUserId,
