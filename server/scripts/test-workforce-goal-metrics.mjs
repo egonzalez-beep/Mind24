@@ -50,6 +50,9 @@ const {
   summarizeClassifiedPeriodRows,
   weekBoundsFromAnchorYmd,
   weekRangeLabelEs,
+  weekTrendNavLabelEs,
+  isoWeekYearFromYmd,
+  computeQuantitativeAccumulated,
   MAX_METRICS_PERIODS_PER_MONTH,
 } = await import('../src/services/workforceGoalMetrics.service.js');
 const errorMiddlewareSrc = fs.readFileSync(
@@ -188,6 +191,29 @@ check(/tc-metrics-retry/.test(indexHtml), 'estado error con Reintentar');
 check(/overflow-x:hidden|max-width:100%/.test(indexHtml), 'responsive sin scroll horizontal (métricas/chart)');
 check(/tcJornadaSetOpTab/.test(indexHtml) && /tc-jornada-tab-goals/.test(indexHtml), 'regresión tabs Metas');
 check(!/tcAdminFetchEmployeeGoalMetrics/.test(publicIndex) || /tcAdminFetchEmployeeGoalMetrics/.test(indexHtml), 'fetch métricas solo en bundle admin');
+check(/id="tc-jornada-op-center"/.test(indexHtml) && /tcJornadaSyncOpChrome/.test(indexHtml), 'navegador mensual integrado en encabezado jornada');
+check(/tcMetricsMonthNavHtml\(true\)/.test(indexHtml) && /tc-jornada-op-center/.test(indexHtml), 'mes en op-center en Indicadores');
+check(
+  /function tcMetricsShellHtml\(\)\s*\{\s*return '<div class="tc-metrics-wrap"><div class="tc-metrics-body" id="tc-metrics-body"/.test(
+    indexHtml,
+  ),
+  'shell métricas sin fila mensual redundante',
+);
+check(/Semana anterior/.test(indexHtml) && /Semana siguiente/.test(indexHtml), 'aria semana anterior/siguiente');
+check(/range\.navLabel/.test(indexHtml) && /tc-metrics-trend-range-label/.test(indexHtml), 'etiqueta semanal compacta navLabel');
+check(/tc-metrics-trend-range--monthly/.test(indexHtml) && /visually-hidden/.test(indexHtml), 'vista mensual sin rango visible duplicado');
+check(/Cumplida ≥100 %/.test(indexHtml) && /Parcial 1–99\.9 %/.test(indexHtml) && /Pendiente<\/span>/.test(indexHtml), 'leyenda compacta');
+check(/tc-metrics-chart-legend/.test(indexHtml) && /grid-template-columns:repeat\(4/.test(indexHtml), 'leyenda en fila (grid 4) en escritorio');
+check(/tcMetricsQuantAccumHtml/.test(indexHtml) && /quantitativeAccumulated/.test(indexHtml) && /tc-metrics-goal-row-accum/.test(indexHtml), 'acumulado cuantitativo en desempeño');
+check(/tcMetricsBindChartResize/.test(indexHtml) && /ResizeObserver/.test(indexHtml) && /viewBox="0 0/.test(indexHtml), 'gráfica responsive viewBox + ResizeObserver');
+check(/tcMetricsChartSvgHeight/.test(indexHtml) && /Math\.min\(220,\s*Math\.max\(168/.test(indexHtml), 'altura SVG acotada 168–220');
+check(/tcCloseJornada[\s\S]*tcMetricsDisconnectChartResize/.test(indexHtml), 'ResizeObserver desconectado al cerrar jornada');
+check(/tcJornadaResetMetricsState[\s\S]*tcMetricsDisconnectChartResize/.test(indexHtml), 'ResizeObserver desconectado al resetear métricas');
+check(/width="100%"/.test(indexHtml) && /tcMetricsDisconnectChartResize/.test(indexHtml), 'SVG ancho 100% y desconexión observer');
+check(/tc-metrics-main-grid/.test(indexHtml) && /1\.16fr/.test(indexHtml), 'grid paneles ~58/42');
+check(/tc-metrics-kpi-label-row/.test(indexHtml), 'KPI título e icono alineados');
+check(/computeQuantitativeAccumulated/.test(metricsSrc) && /weekTrendNavLabelEs/.test(metricsSrc), 'servicio acumulado y navLabel semanal');
+check(/quantitativeAccumulated/.test(metricsSrc) && /buildGoalBuckets/.test(metricsSrc), 'buckets incluyen quantitativeAccumulated');
 
 console.log('\n=== Workforce goal metrics — unit ===\n');
 
@@ -629,6 +655,39 @@ check(/TC_METRICS_EVAL_HELP/.test(indexHtml) && indexHtml.includes('Evaluaciones
 
 const trendPt = buildTrendPointFromRows(mixRows.filter((r) => r.status !== 'PENDING'));
 check(trendPt.hasData && trendPt.averageCompliance === 53.3, 'tendencia reutiliza summarize');
+
+const navWeek = weekTrendNavLabelEs('2026-11-02', tzTrend);
+check(navWeek === 'Semana 45 · 2026', `navLabel semanal compacto: ${navWeek}`);
+check(isoWeekYearFromYmd('2026-11-02').weekNum === 45, 'ISO semana 45 para 2026-11-02');
+
+const accumRows = [
+  {
+    status: 'PARTIAL',
+    reported: true,
+    targetSnapshot: 50,
+    achievedValue: 30,
+  },
+  {
+    status: 'MET',
+    reported: true,
+    targetSnapshot: 100,
+    achievedValue: 70,
+  },
+  {
+    status: 'PENDING',
+    reported: false,
+    targetSnapshot: 200,
+    achievedValue: null,
+  },
+];
+const accum = computeQuantitativeAccumulated(accumRows, 'QUANTITATIVE');
+check(accum && accum.achievedTotal === 100 && accum.targetTotal === 150, 'acumulado 30/50+70/100=100/150');
+check(computeQuantitativeAccumulated(accumRows, 'COMPLIANCE') === null, 'binaria sin acumulado');
+check(
+  computeQuantitativeAccumulated([{ status: 'PENDING', reported: false, targetSnapshot: 10, achievedValue: 5 }], 'QUANTITATIVE') ===
+    null,
+  'pendientes excluidos del acumulado',
+);
 
 console.log('\n=== Workforce goal metrics — integration (DB) ===\n');
 

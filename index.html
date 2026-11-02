@@ -1085,8 +1085,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-op-icon-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.32);color:var(--purple-dark);}
 .tc-op-icon-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-op-icon-btn[disabled]{opacity:.45;cursor:not-allowed;}
-.tc-jornada-op-head{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:10px;width:100%;flex-shrink:0;}
-.tc-jornada-op-trailing{display:inline-flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;margin-left:auto;}
+.tc-jornada-op-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 10px;width:100%;flex-shrink:0;}
+.tc-jornada-op-center{display:flex;align-items:center;justify-content:center;flex:1 1 auto;min-width:0;order:2;}
+.tc-jornada-op-trailing{display:inline-flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;margin-left:auto;order:3;}
+@media(max-width:900px){.tc-jornada-op-tabs{order:1;flex:1 1 100%;}.tc-jornada-op-center{order:2;flex:1 1 100%;justify-content:center;}.tc-jornada-op-trailing{order:3;margin-left:0;}}
 .tc-jornada-op-toolbar{display:inline-flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap;}
 .tc-jornada-op-tabs{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--slate-200);border-radius:9px;padding:2px;background:var(--slate-50);}
 .tc-jornada-op-tab{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-500);padding:6px 12px;border-radius:7px;cursor:pointer;transition:background .15s,color .15s;}
@@ -1132,19 +1134,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-op-tab--indicators{display:inline-flex;align-items:center;gap:5px;}
 .tc-jornada-op-tab--indicators svg{width:14px;height:14px;flex-shrink:0;}
 .tc-metrics-wrap{display:flex;flex-direction:column;gap:12px;flex:0 1 auto;min-width:0;min-height:0;}
-.tc-metrics-month-nav{display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;margin-bottom:2px;}
+.tc-metrics-month-nav{display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;}
+.tc-metrics-month-nav--inline{gap:4px;}
 .tc-metrics-month-btn{border:1px solid var(--slate-200);background:#fff;width:34px;height:34px;border-radius:9px;cursor:pointer;color:var(--slate-600);display:inline-flex;align-items:center;justify-content:center;font-family:inherit;transition:var(--tr-fast);flex-shrink:0;}
 .tc-metrics-month-btn svg{width:18px;height:18px;display:block;pointer-events:none;}
 .tc-metrics-month-btn:hover:not([disabled]){background:var(--purple-light);border-color:rgba(124,58,237,.28);color:var(--purple-dark);}
 .tc-metrics-month-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-metrics-month-btn[disabled]{opacity:.45;cursor:not-allowed;color:var(--slate-400);background:var(--slate-50);}
-.tc-metrics-month-label{font-size:13px;font-weight:700;color:var(--primary);min-width:9rem;text-align:center;line-height:1.3;}
+.tc-metrics-month-label{font-size:12px;font-weight:700;color:var(--primary);min-width:7.5rem;text-align:center;line-height:1.25;}
+.tc-metrics-month-nav--inline .tc-metrics-month-btn{width:30px;height:30px;}
+.tc-metrics-month-nav--inline .tc-metrics-month-label{font-size:12px;min-width:6.5rem;}
 .tc-metrics-body{min-width:0;display:flex;flex-direction:column;gap:12px;}
 .tc-metrics-kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:stretch;}
 @media(max-width:900px){.tc-metrics-kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:640px){.tc-metrics-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:420px){.tc-metrics-kpi-row{grid-template-columns:1fr;}}
-.tc-metrics-kpi{position:relative;border:1px solid var(--slate-200);border-radius:11px;padding:10px 12px 10px 14px;background:rgba(255,255,255,.98);min-width:0;min-height:88px;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;}
+.tc-metrics-kpi{position:relative;border:1px solid var(--slate-200);border-radius:11px;padding:8px 10px 8px 12px;background:rgba(255,255,255,.98);min-width:0;min-height:84px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
 .tc-metrics-kpi-accent{position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--slate-300);}
 .tc-metrics-kpi--tone-good .tc-metrics-kpi-accent{background:#22c55e;}
 .tc-metrics-kpi--tone-warn .tc-metrics-kpi-accent{background:#f59e0b;}
@@ -1154,8 +1159,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-metrics-kpi--tone-green .tc-metrics-kpi-accent{background:#22c55e;}
 .tc-metrics-kpi--tone-amber .tc-metrics-kpi-accent{background:#f59e0b;}
 .tc-metrics-kpi--tone-coral .tc-metrics-kpi-accent{background:#fb7185;}
-.tc-metrics-kpi-label-row{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 4px;}
-.tc-metrics-kpi-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-500);margin:0;line-height:1.25;}
+.tc-metrics-kpi-label-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin:0 0 4px;min-width:0;}
+.tc-metrics-kpi-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-500);margin:0;line-height:1.25;min-width:0;flex:1 1 auto;}
 .tc-metrics-kpi-info{display:inline-flex;align-items:center;color:var(--slate-400);cursor:help;line-height:0;vertical-align:middle;}
 .tc-metrics-kpi-info:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:4px;}
 .tc-metrics-kpi-info svg{width:14px;height:14px;display:block;}
@@ -1174,25 +1179,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-metrics-kpi-compare--down{color:#e11d48;font-weight:600;}
 .tc-metrics-kpi-compare--flat{color:var(--slate-500);}
 .tc-metrics-kpi-compare--muted{color:var(--slate-400);}
-.tc-metrics-main-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px;align-items:stretch;}
+.tc-metrics-main-grid{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(0,0.84fr);gap:10px;align-items:stretch;}
 @media(max-width:900px){.tc-metrics-main-grid{grid-template-columns:1fr;align-items:start;}}
 .tc-metrics-panel{border:1px solid var(--slate-200);border-radius:12px;padding:12px 14px 14px;background:rgba(248,250,252,.65);min-width:0;overflow:hidden;display:flex;flex-direction:column;}
 @media(min-width:901px){.tc-metrics-panel--chart,.tc-metrics-panel--goals{min-height:340px;}}
 .tc-metrics-chart-area{flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-height:160px;padding-bottom:2px;}
-.tc-metrics-trend-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 10px;}
+.tc-metrics-trend-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 10px;margin:0 0 8px;}
 .tc-metrics-trend-seg{display:inline-flex;border:1px solid rgba(124,58,237,.18);border-radius:9px;padding:2px;background:#fff;}
 .tc-metrics-trend-seg-btn{border:0;background:transparent;font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border-radius:7px;color:var(--slate-600);cursor:pointer;line-height:1.2;}
 .tc-metrics-trend-seg-btn--on{background:rgba(124,58,237,.12);color:var(--purple-dark);}
 .tc-metrics-trend-seg-btn:focus-visible{outline:2px solid rgba(124,58,237,.35);outline-offset:1px;}
-.tc-metrics-trend-range{display:inline-flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto;}
-.tc-metrics-trend-range-label{font-size:11px;font-weight:700;color:var(--primary);line-height:1.3;min-width:0;}
+.tc-metrics-trend-range{display:inline-flex;align-items:center;gap:4px;min-width:0;margin-left:auto;}
+.tc-metrics-trend-range--monthly{gap:2px;}
+.tc-metrics-trend-range-label{font-size:11px;font-weight:700;color:var(--primary);line-height:1.3;min-width:0;white-space:nowrap;}
 .tc-metrics-trend-nav-btn{border:1px solid var(--slate-200);background:#fff;border-radius:8px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--slate-600);cursor:pointer;padding:0;flex-shrink:0;}
 .tc-metrics-trend-nav-btn:disabled{opacity:.4;cursor:not-allowed;}
 .tc-metrics-trend-nav-btn svg{width:16px;height:16px;}
 .tc-metrics-trend-hint{font-size:10px;color:var(--slate-500);margin:0 0 8px;line-height:1.35;}
 .tc-metrics-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
 .tc-metrics-panel-title{margin:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);}
-.tc-metrics-chart-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 10px;font-size:10px;color:var(--slate-600);line-height:1.35;}
+.tc-metrics-chart-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 8px;margin:0 0 8px;font-size:10px;color:var(--slate-600);line-height:1.3;}
+@media(max-width:720px){.tc-metrics-chart-legend{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .tc-metrics-legend-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .tc-metrics-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;}
 .tc-metrics-legend-dot--met{background:#22c55e;}
@@ -1206,7 +1213,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-metrics-goal-select:focus-visible{outline:none;border-color:rgba(124,58,237,.45);box-shadow:0 0 0 3px rgba(124,58,237,.12);}
 .tc-metrics-goal-select-chevron{position:absolute;right:10px;pointer-events:none;color:var(--slate-400);display:inline-flex;}
 .tc-metrics-goal-select-chevron svg{width:14px;height:14px;display:block;}
-.tc-metrics-chart{width:100%;max-width:100%;height:auto;display:block;overflow:visible;}
+.tc-metrics-chart{width:100%;max-width:100%;height:auto;display:block;overflow:visible;vertical-align:top;}
+.tc-metrics-chart-pct{font-size:9px;font-weight:700;fill:var(--primary);pointer-events:none;}
 .tc-metrics-chart-ref{stroke:rgba(148,163,184,.55);stroke-width:1;stroke-dasharray:4 3;}
 .tc-metrics-chart-axis{stroke:var(--slate-200);stroke-width:1;}
 .tc-metrics-chart-point{stroke:#fff;stroke-width:1.5;cursor:default;}
@@ -1227,6 +1235,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-metrics-goal-row-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0;}
 .tc-metrics-goal-row-title{margin:0;font-size:13px;font-weight:700;color:var(--primary);line-height:1.25;flex:1;min-width:0;}
 .tc-metrics-goal-row-meta{font-size:10px;color:var(--slate-500);margin:0;line-height:1.4;}
+.tc-metrics-goal-row-accum{font-size:10px;color:var(--slate-600);margin:2px 0 0;line-height:1.35;font-weight:600;}
 .tc-metrics-goal-row-stats{display:flex;flex-wrap:wrap;gap:5px;}
 .tc-metrics-stat-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--slate-600);padding:2px 7px;border-radius:999px;background:var(--slate-50);border:1px solid var(--slate-100);line-height:1.3;}
 .tc-metrics-stat-chip strong{font-weight:800;color:var(--primary);}
@@ -13842,6 +13851,7 @@ async function tcViewJornada(id){
         '<button type="button" role="tab" class="tc-jornada-op-tab" id="tc-jornada-tab-goals" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'goals\')">Metas</button>'+
         '<button type="button" role="tab" class="tc-jornada-op-tab tc-jornada-op-tab--indicators" id="tc-jornada-tab-indicators" aria-selected="false" aria-controls="tc-jornada-aside" onclick="tcJornadaSetOpTab(\'indicators\')">'+tcSvgChartBars()+' Indicadores</button>'+
         '</div>'+
+        '<div class="tc-jornada-op-center" id="tc-jornada-op-center"></div>'+
         '<div class="tc-jornada-op-trailing">'+
         '<div id="tc-jornada-op-toolbar" class="tc-jornada-op-toolbar"></div>'+
         '<button type="button" class="tc-icon-btn tc-icon-btn--close" onclick="tcCloseJornada()" title="Cerrar detalle" aria-label="Cerrar detalle de jornada"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+
@@ -14604,6 +14614,11 @@ function tcJornadaSyncOpToolbar(){
   const el=document.getElementById('tc-jornada-op-toolbar');
   if(el) el.innerHTML=tcJornadaOpToolbarHtml();
 }
+function tcJornadaSyncOpChrome(){
+  tcJornadaSyncOpToolbar();
+  const center=document.getElementById('tc-jornada-op-center');
+  if(center) center.innerHTML=tcJornadaOpTab==='indicators'?tcMetricsMonthNavHtml(true):'';
+}
 function tcKanbanTaskDotClass(status){
   return TC_KANBAN_DOT_CLASS[status]||TC_KANBAN_DOT_CLASS.PENDING;
 }
@@ -14923,7 +14938,7 @@ function tcJornadaSetOpTab(tab){
   if(tAct){ tAct.classList.toggle('tc-jornada-op-tab--on',onAct); tAct.setAttribute('aria-selected',onAct?'true':'false'); }
   if(tGoals){ tGoals.classList.toggle('tc-jornada-op-tab--on',onGoals); tGoals.setAttribute('aria-selected',onGoals?'true':'false'); }
   if(tInd){ tInd.classList.toggle('tc-jornada-op-tab--on',onInd); tInd.setAttribute('aria-selected',onInd?'true':'false'); }
-  tcJornadaSyncOpToolbar();
+  tcJornadaSyncOpChrome();
   tcJornadaRenderAside();
 }
 let tcJornadaMetricsMonth=null;
@@ -14939,6 +14954,7 @@ let tcJornadaMetricsTrendData=null;
 let tcJornadaMetricsTrendLoadGen=0;
 let tcJornadaMetricsTrendAbort=null;
 let tcJornadaMetricsTrendLoading=false;
+let tcMetricsChartRo=null;
 function tcJornadaCurrentMonthYm(tz){
   const t=tcLocalTodayParts(tz||'America/Mexico_City');
   return t.y+'-'+String(t.m).padStart(2,'0');
@@ -14959,6 +14975,7 @@ function tcMetricsWeekStartYmd(ymd){
   return tcMetricsAddDaysYmd(ymd,-mon);
 }
 function tcJornadaResetMetricsState(){
+  tcMetricsDisconnectChartResize();
   tcJornadaMetricsMonth=null;
   tcJornadaMetricsData=null;
   tcJornadaMetricsChartGoalId='general';
@@ -15010,10 +15027,32 @@ function tcMetricsEvaluationsKpiInfoHtml(){
 }
 function tcMetricsChartLegendHtml(){
   return '<div class="tc-metrics-chart-legend">'+
-    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--met" aria-hidden="true"></span>Cumplida, 100% o más</span>'+
-    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--partial" aria-hidden="true"></span>Parcial, 1–99.9%</span>'+
-    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--bad" aria-hidden="true"></span>No cumplida o vencida</span>'+
-    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--pending" aria-hidden="true"></span>Pendiente vigente</span></div>';
+    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--met" aria-hidden="true"></span>Cumplida ≥100 %</span>'+
+    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--partial" aria-hidden="true"></span>Parcial 1–99.9 %</span>'+
+    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--bad" aria-hidden="true"></span>No cumplida / vencida</span>'+
+    '<span class="tc-metrics-legend-item"><span class="tc-metrics-legend-dot tc-metrics-legend-dot--pending" aria-hidden="true"></span>Pendiente</span></div>';
+}
+function tcMetricsQuantAccumHtml(g){
+  const q=g&&g.quantitativeAccumulated;
+  if(!q||g.goalType==='COMPLIANCE') return '';
+  const ach=Number(q.achievedTotal);
+  const tgt=Number(q.targetTotal);
+  if(!Number.isFinite(ach)||!Number.isFinite(tgt)||tgt<=0) return '';
+  const u=g.unit?(' '+tcEsc(g.unit)):'';
+  return '<p class="tc-metrics-goal-row-accum">Acumulado: '+tcEsc(String(ach))+' de '+tcEsc(String(tgt))+u+'</p>';
+}
+function tcMetricsMonthNavHtml(inline){
+  const tz=tcJornadaTz||'America/Mexico_City';
+  if(!tcJornadaMetricsMonth) tcJornadaMetricsMonth=tcJornadaCurrentMonthYm(tz);
+  const curYm=tcJornadaCurrentMonthYm(tz);
+  const canNext=tcJornadaMetricsMonth<curYm;
+  const label=tcJornadaMetricsData&&tcJornadaMetricsData.period?tcJornadaMetricsData.period.label:tcJornadaMetricsMonth;
+  const cls=inline?' tc-metrics-month-nav--inline':'';
+  return '<div class="tc-metrics-month-nav'+cls+'" role="group" aria-label="Periodo de indicadores">'+
+    '<button type="button" class="tc-metrics-month-btn" aria-label="Mes anterior" onclick="tcJornadaMetricsShiftMonth(-1)">'+tcSvgChevronLeft()+'</button>'+
+    '<span class="tc-metrics-month-label" id="tc-metrics-month-label">'+tcEsc(label)+'</span>'+
+    '<button type="button" class="tc-metrics-month-btn" aria-label="Mes siguiente" onclick="tcJornadaMetricsShiftMonth(1)"'+(canNext?'':' disabled')+'>'+tcSvgChevronRight()+'</button>'+
+    '</div>';
 }
 function tcMetricsCompareInlineHtml(cmp,evaluableNow){
   if(!evaluableNow||evaluableNow<=0) return '';
@@ -15057,28 +15096,44 @@ function tcMetricsTrendToolbarHtml(){
   const view=tcJornadaMetricsTrendView;
   const wOn=view==='weekly'?' tc-metrics-trend-seg-btn--on':'';
   const mOn=view==='monthly'?' tc-metrics-trend-seg-btn--on':'';
-  const label=(tcJornadaMetricsTrendData&&tcJornadaMetricsTrendData.range&&tcJornadaMetricsTrendData.range.label)||'';
+  const range=tcJornadaMetricsTrendData&&tcJornadaMetricsTrendData.range;
+  const weeklyLabel=(range&&range.navLabel)||'';
+  const a11yLabel=(range&&range.label)||'';
   let canNext=false;
+  let prevAria='Periodo anterior';
+  let nextAria='Periodo siguiente';
   if(view==='weekly'){
+    prevAria='Semana anterior';
+    nextAria='Semana siguiente';
     const curWeek=tcMetricsWeekStartYmd(tcMetricsTodayYmd(tz));
-    const ws=tcJornadaMetricsTrendData&&tcJornadaMetricsTrendData.range?tcJornadaMetricsTrendData.range.start:curWeek;
+    const ws=range?range.start:curWeek;
     canNext=ws<curWeek;
   }else{
     const curYm=tcJornadaCurrentMonthYm(tz);
-    const endYm=tcJornadaMetricsTrendData&&tcJornadaMetricsTrendData.range?String(tcJornadaMetricsTrendData.range.end||'').slice(0,7):curYm;
+    const endYm=range?String(range.end||'').slice(0,7):curYm;
     canNext=endYm<curYm;
   }
   const selGoal=tcMetricsSelectedGoalMeta();
   const blockWeekly=!!(selGoal&&selGoal.cadence==='MONTHLY');
+  let rangeHtml='';
+  if(view==='weekly'){
+    rangeHtml='<div class="tc-metrics-trend-range">'+
+      '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="'+tcEsc(prevAria)+'" title="'+tcEsc(prevAria)+'" onclick="tcMetricsShiftTrend(-1)">'+tcSvgChevronLeft()+'</button>'+
+      '<span class="tc-metrics-trend-range-label" id="tc-metrics-trend-range-label">'+tcEsc(weeklyLabel)+'</span>'+
+      '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="'+tcEsc(nextAria)+'" title="'+tcEsc(nextAria)+'" onclick="tcMetricsShiftTrend(1)"'+(canNext?'':' disabled')+'>'+tcSvgChevronRight()+'</button>'+
+      '</div>';
+  }else{
+    rangeHtml='<div class="tc-metrics-trend-range tc-metrics-trend-range--monthly" role="group" aria-label="'+tcEsc(a11yLabel||'Navegación de periodo')+'">'+
+      (a11yLabel?('<span class="visually-hidden" id="tc-metrics-trend-range-label">'+tcEsc(a11yLabel)+'</span>'):'')+
+      '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="'+tcEsc(prevAria)+'" title="'+tcEsc(prevAria)+'" onclick="tcMetricsShiftTrend(-1)">'+tcSvgChevronLeft()+'</button>'+
+      '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="'+tcEsc(nextAria)+'" title="'+tcEsc(nextAria)+'" onclick="tcMetricsShiftTrend(1)"'+(canNext?'':' disabled')+'>'+tcSvgChevronRight()+'</button>'+
+      '</div>';
+  }
   return '<div class="tc-metrics-trend-toolbar">'+
     '<div class="tc-metrics-trend-seg" role="group" aria-label="Vista de evolución">'+
     '<button type="button" class="tc-metrics-trend-seg-btn'+wOn+'" aria-pressed="'+(view==='weekly'?'true':'false')+'"'+(blockWeekly?' disabled':'')+' onclick="tcMetricsSetTrendView(\'weekly\')">Semanal</button>'+
     '<button type="button" class="tc-metrics-trend-seg-btn'+mOn+'" aria-pressed="'+(view==='monthly'?'true':'false')+'" onclick="tcMetricsSetTrendView(\'monthly\')">Mensual</button></div>'+
-    '<div class="tc-metrics-trend-range">'+
-    '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="Periodo anterior" onclick="tcMetricsShiftTrend(-1)">'+tcSvgChevronLeft()+'</button>'+
-    '<span class="tc-metrics-trend-range-label" id="tc-metrics-trend-range-label">'+tcEsc(label)+'</span>'+
-    '<button type="button" class="tc-metrics-trend-nav-btn" aria-label="Periodo siguiente" onclick="tcMetricsShiftTrend(1)"'+(canNext?'':' disabled')+'>'+tcSvgChevronRight()+'</button>'+
-    '</div></div>';
+    rangeHtml+'</div>';
 }
 function tcMetricsMonthlyGoalHintHtml(){
   const g=tcMetricsSelectedGoalMeta();
@@ -15087,18 +15142,7 @@ function tcMetricsMonthlyGoalHintHtml(){
   return '<p class="tc-metrics-trend-hint" id="tc-metrics-monthly-hint">Esta meta se evalúa mensualmente. Mostrando vista mensual.</p>';
 }
 function tcMetricsShellHtml(){
-  const tz=tcJornadaTz||'America/Mexico_City';
-  if(!tcJornadaMetricsMonth) tcJornadaMetricsMonth=tcJornadaCurrentMonthYm(tz);
-  const curYm=tcJornadaCurrentMonthYm(tz);
-  const canNext=tcJornadaMetricsMonth<curYm;
-  const label=tcJornadaMetricsData&&tcJornadaMetricsData.period?tcJornadaMetricsData.period.label:tcJornadaMetricsMonth;
-  return '<div class="tc-metrics-wrap">'+
-    '<div class="tc-metrics-month-nav" role="group" aria-label="Periodo de indicadores">'+
-    '<button type="button" class="tc-metrics-month-btn" aria-label="Mes anterior" onclick="tcJornadaMetricsShiftMonth(-1)">'+tcSvgChevronLeft()+'</button>'+
-    '<span class="tc-metrics-month-label" id="tc-metrics-month-label">'+tcEsc(label)+'</span>'+
-    '<button type="button" class="tc-metrics-month-btn" aria-label="Mes siguiente" onclick="tcJornadaMetricsShiftMonth(1)"'+(canNext?'':' disabled')+'>'+tcSvgChevronRight()+'</button>'+
-    '</div>'+
-    '<div class="tc-metrics-body" id="tc-metrics-body" aria-live="polite"></div></div>';
+  return '<div class="tc-metrics-wrap"><div class="tc-metrics-body" id="tc-metrics-body" aria-live="polite"></div></div>';
 }
 function tcMetricsShowSkeleton(){
   const body=document.getElementById('tc-metrics-body');
@@ -15122,7 +15166,11 @@ function tcMetricsChartPointClass(st){
   if(st==='PENDING') return 'tc-metrics-chart-point--pending';
   return 'tc-metrics-chart-point--bad';
 }
-function tcMetricsTrendChartSvg(trend){
+function tcMetricsChartSvgHeight(layoutWidth){
+  const raw=Math.round(150+(Number(layoutWidth)||0)*0.02);
+  return Math.min(220, Math.max(168, raw));
+}
+function tcMetricsTrendChartSvg(trend,containerWidth){
   const pts=(trend&&trend.points)||[];
   const withData=pts.filter(function(p){ return p.hasData&&p.averageCompliance!=null; });
   if(!pts.length) return '<p class="tc-metrics-chart-empty">Sin datos.</p>';
@@ -15130,7 +15178,9 @@ function tcMetricsTrendChartSvg(trend){
     const msg=tcJornadaMetricsTrendView==='weekly'?'No hay datos para graficar en esta semana.':'No hay datos para graficar en este periodo.';
     return '<p class="tc-metrics-chart-empty">'+tcEsc(msg)+'</p>';
   }
-  const W=400, H=160, padL=36, padR=12, padT=14, padB=28;
+  const W=Math.max(280, Math.round(Number(containerWidth)||400));
+  const H=tcMetricsChartSvgHeight(W);
+  const padL=40, padR=18, padT=22, padB=30;
   const innerW=W-padL-padR, innerH=H-padT-padB;
   let yMax=100;
   withData.forEach(function(p){
@@ -15140,23 +15190,30 @@ function tcMetricsTrendChartSvg(trend){
   yMax=Math.ceil(yMax/10)*10;
   if(yMax<100) yMax=100;
   const y100=padT+innerH-(100/yMax)*innerH;
-  let circles='', labels='', line='';
+  let circles='', labels='', pctLabels='', line='';
   const n=pts.length;
   function xAt(i){ return padL+(n===1?innerW/2:(i/(Math.max(1,n-1)))*innerW); }
   function yAtPercent(v){ return padT+innerH-(v/yMax)*innerH; }
   const lineIdx=[];
+  const pctPlaced=[];
   pts.forEach(function(p,i){
     const x=xAt(i);
-    labels+='<text x="'+x.toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="#64748b">'+tcEsc(p.label||'')+'</text>';
+    labels+='<text x="'+x.toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#64748b">'+tcEsc(p.label||'')+'</text>';
     if(!p.hasData||p.averageCompliance==null) return;
     const v=Number(p.averageCompliance);
     const y=yAtPercent(Number.isFinite(v)?v:0);
     const cls=v>=100?'tc-metrics-chart-point--met':v>0?'tc-metrics-chart-point--partial':'tc-metrics-chart-point--bad';
     const tip=(p.label||p.key||'')+': '+tcGoalFmtPct(v);
-    const single=withData.length===1;
-    const r=single?8:5;
-    circles+='<circle class="tc-metrics-chart-point '+cls+(single?' tc-metrics-chart-point--single':'')+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" tabindex="0" role="img" aria-label="'+tcEsc(tip)+'"><title>'+tcEsc(tip)+'</title></circle>';
-    if(single) labels+='<text class="tc-metrics-chart-single-label" x="'+x.toFixed(1)+'" y="'+(y-10).toFixed(1)+'" text-anchor="middle">'+tcEsc(tcGoalFmtPct(v))+'</text>';
+    const r=withData.length===1?7:5;
+    circles+='<circle class="tc-metrics-chart-point '+cls+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" tabindex="0" role="img" aria-label="'+tcEsc(tip)+'"><title>'+tcEsc(tip)+'</title></circle>';
+    let labelY=y-10;
+    if(labelY<padT+8) labelY=y+14;
+    if(pctPlaced.some(function(o){ return Math.abs(o.y-labelY)<11&&Math.abs(o.x-x)<40; })){
+      labelY=y-16;
+      if(labelY<padT+8) labelY=y+18;
+    }
+    pctPlaced.push({ x:x, y:labelY });
+    pctLabels+='<text class="tc-metrics-chart-pct" x="'+x.toFixed(1)+'" y="'+labelY.toFixed(1)+'" text-anchor="middle">'+tcEsc(tcGoalFmtPct(v))+'</text>';
     lineIdx.push({ i:i, v:v });
   });
   if(lineIdx.length>1){
@@ -15170,12 +15227,36 @@ function tcMetricsTrendChartSvg(trend){
     }
     line='<path d="'+d+'" fill="none" stroke="rgba(124,58,237,.45)" stroke-width="2"/>';
   }
-  return '<svg class="tc-metrics-chart" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolución de cumplimiento">'+
+  return '<svg class="tc-metrics-chart" viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolución de cumplimiento">'+
     '<line class="tc-metrics-chart-axis" x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+innerH)+'"/>'+
     '<line class="tc-metrics-chart-axis" x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(padL+innerW)+'" y2="'+(padT+innerH)+'"/>'+
     '<line class="tc-metrics-chart-ref" x1="'+padL+'" y1="'+y100.toFixed(1)+'" x2="'+(padL+innerW)+'" y2="'+y100.toFixed(1)+'"/>'+
-    '<text x="'+(padL-4)+'" y="'+(y100+3)+'" text-anchor="end" font-size="9" fill="#94a3b8">100%</text>'+
-    line+circles+labels+'</svg>';
+    '<text x="'+(padL-6)+'" y="'+(y100+3)+'" text-anchor="end" font-size="9" fill="#94a3b8">100%</text>'+
+    line+circles+pctLabels+labels+'</svg>';
+}
+function tcMetricsDisconnectChartResize(){
+  if(tcMetricsChartRo){ try{ tcMetricsChartRo.disconnect(); }catch(_){} tcMetricsChartRo=null; }
+}
+function tcMetricsPaintTrendChart(){
+  const wrap=document.getElementById('tc-metrics-trend-chart-wrap');
+  if(!wrap) return;
+  if(tcJornadaMetricsTrendLoading&&!tcJornadaMetricsTrendData){
+    tcMetricsDisconnectChartResize();
+    wrap.innerHTML='<p class="tc-metrics-chart-empty">Cargando…</p>';
+    return;
+  }
+  const w=wrap.clientWidth||wrap.offsetWidth||400;
+  wrap.innerHTML=tcMetricsTrendChartSvg(tcJornadaMetricsTrendData,w);
+}
+function tcMetricsBindChartResize(){
+  const wrap=document.getElementById('tc-metrics-trend-chart-wrap');
+  if(!wrap||typeof ResizeObserver==='undefined'){ tcMetricsPaintTrendChart(); return; }
+  tcMetricsDisconnectChartResize();
+  tcMetricsPaintTrendChart();
+  tcMetricsChartRo=new ResizeObserver(function(){
+    if(!tcJornadaMetricsTrendLoading) tcMetricsPaintTrendChart();
+  });
+  tcMetricsChartRo.observe(wrap);
 }
 function tcMetricsRenderTrendSection(){
   const wrap=document.getElementById('tc-metrics-trend-chart-wrap');
@@ -15185,9 +15266,10 @@ function tcMetricsRenderTrendSection(){
   if(hint) hint.innerHTML=tcMetricsMonthlyGoalHintHtml();
   if(wrap){
     if(tcJornadaMetricsTrendLoading&&!tcJornadaMetricsTrendData){
+      tcMetricsDisconnectChartResize();
       wrap.innerHTML='<p class="tc-metrics-chart-empty">Cargando…</p>';
     }else{
-      wrap.innerHTML=tcMetricsTrendChartSvg(tcJornadaMetricsTrendData);
+      tcMetricsBindChartResize();
     }
   }
 }
@@ -15295,6 +15377,7 @@ function tcMetricsRenderBody(data){
       '<div class="tc-metrics-goal-row-head"><h4 class="tc-metrics-goal-row-title">'+tcEsc(g.title)+'</h4>'+
       '<span class="tc-goal-card-meta" title="Promedio del mes">'+tcEsc(pctLabel)+'</span></div>'+
       '<p class="tc-metrics-goal-row-meta">'+tcMetricsGoalObjective(g)+'</p>'+
+      tcMetricsQuantAccumHtml(g)+
       '<div class="tc-goal-progress tc-goal-progress--'+progMod+'" aria-hidden="true"><div class="tc-goal-progress-bar" style="width:'+barW+'%"></div></div>'+
       tcMetricsGoalStatsHtml(g)+
       '</article>';
@@ -15310,13 +15393,16 @@ function tcMetricsRenderBody(data){
     '<p class="tc-metrics-kpi-value tc-metrics-kpi-value--violet">'+evalN+'</p>'+
     '<p class="tc-metrics-kpi-sub">Reportados: '+(s.reportedPeriods||0)+'</p></div>'+
     '<div class="tc-metrics-kpi tc-metrics-kpi--tone-green"><span class="tc-metrics-kpi-accent" aria-hidden="true"></span>'+
-    '<p class="tc-metrics-kpi-label">Cumplidos</p><p class="tc-metrics-kpi-value tc-metrics-kpi-value--green">'+s.met+'</p>'+
+    '<div class="tc-metrics-kpi-label-row"><p class="tc-metrics-kpi-label">Cumplidos</p></div>'+
+    '<p class="tc-metrics-kpi-value tc-metrics-kpi-value--green">'+s.met+'</p>'+
     '<p class="tc-metrics-kpi-sub">'+metPct+'% del total evaluado</p></div>'+
     '<div class="tc-metrics-kpi tc-metrics-kpi--tone-amber"><span class="tc-metrics-kpi-accent" aria-hidden="true"></span>'+
-    '<p class="tc-metrics-kpi-label">Parciales / no cumplidos</p><p class="tc-metrics-kpi-value tc-metrics-kpi-value--amber">'+partialNot+'</p>'+
+    '<div class="tc-metrics-kpi-label-row"><p class="tc-metrics-kpi-label">Parciales / no cumplidos</p></div>'+
+    '<p class="tc-metrics-kpi-value tc-metrics-kpi-value--amber">'+partialNot+'</p>'+
     '<p class="tc-metrics-kpi-sub">Parc. '+s.partial+' · No '+s.notMet+'</p></div>'+
     '<div class="tc-metrics-kpi tc-metrics-kpi--tone-'+overdueTone+'"><span class="tc-metrics-kpi-accent" aria-hidden="true"></span>'+
-    '<p class="tc-metrics-kpi-label">Vencidos sin reporte</p><p class="tc-metrics-kpi-value'+overdueValCls+'">'+(s.overdueUnreported||0)+'</p></div>'+
+    '<div class="tc-metrics-kpi-label-row"><p class="tc-metrics-kpi-label">Vencidos sin reporte</p></div>'+
+    '<p class="tc-metrics-kpi-value'+overdueValCls+'">'+(s.overdueUnreported||0)+'</p></div>'+
     '</div>'+
     '<div class="tc-metrics-main-grid">'+
     '<section class="tc-metrics-panel tc-metrics-panel--chart" aria-labelledby="tc-metrics-chart-title">'+
@@ -15366,10 +15452,13 @@ async function tcJornadaMetricsLoad(force){
     const lbl=document.getElementById('tc-metrics-month-label');
     if(lbl&&data.period) lbl.textContent=data.period.label;
     const curYm=tcJornadaCurrentMonthYm(tz);
-    const nav=document.querySelector('.tc-metrics-month-nav');
-    if(nav){
+    document.querySelectorAll('.tc-metrics-month-nav').forEach(function(nav){
       const nextBtn=nav.querySelector('.tc-metrics-month-btn:last-child');
       if(nextBtn) nextBtn.disabled=!(tcJornadaMetricsMonth<curYm);
+    });
+    if(tcJornadaOpTab==='indicators'){
+      const center=document.getElementById('tc-jornada-op-center');
+      if(center&&!center.querySelector('.tc-metrics-month-nav')) center.innerHTML=tcMetricsMonthNavHtml(true);
     }
     tcMetricsRenderBody(data);
   }catch(e){
@@ -15400,7 +15489,7 @@ function tcGoalsBoardShellHtml(){
 }
 function tcGoalsToggleArchivedView(){
   tcGoalsAdminShowArchived=!tcGoalsAdminShowArchived;
-  tcJornadaSyncOpToolbar();
+  tcJornadaSyncOpChrome();
   tcJornadaRenderAside();
 }
 function tcGoalShowAdminToast(msg){
@@ -15434,7 +15523,7 @@ function tcGoalProgressHtml(st,pctNum){
 function tcJornadaRenderAside(){
   const aside=document.getElementById('tc-jornada-aside');
   if(!aside||!tcJornadaEmpId) return;
-  tcJornadaSyncOpToolbar();
+  tcJornadaSyncOpChrome();
   if(tcJornadaOpTab==='indicators'){
     aside.innerHTML=tcMetricsShellHtml();
     tcJornadaMetricsLoad(false);
@@ -15804,6 +15893,7 @@ async function tcEmpGoalReportQuantitative(periodId){
 }
 function tcCloseJornada(){
   tcJornadaStopLivePoll();
+  tcMetricsDisconnectChartResize();
   tcCloseHistoryDialog(false);
   tcJornadaEmpId=null;
   tcHistoryPayload=null;

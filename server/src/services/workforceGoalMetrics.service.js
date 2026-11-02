@@ -285,6 +285,7 @@ function buildGoalBuckets(classifiedRows) {
   for (const g of byGoal.values()) {
     const summary = summarizeClassifiedPeriodRows(g.rows);
     const averageAchievementRaw = averageAchievementRawForRows(g.rows);
+    const quantitativeAccumulated = computeQuantitativeAccumulated(g.rows, g.goalType);
 
     const points = g.rows
       .slice()
@@ -312,6 +313,7 @@ function buildGoalBuckets(classifiedRows) {
       unit: g.unit,
       averageCompliance: summary.averageCompliance,
       averageAchievementRaw,
+      quantitativeAccumulated,
       evaluablePeriods: summary.evaluablePeriods,
       met: summary.met,
       partial: summary.partial,
@@ -408,6 +410,8 @@ async function loadClassifiedPeriodsForRange({
         status,
         reported,
         completionRaw,
+        targetSnapshot: period.targetSnapshot,
+        achievedValue: period.achievedValue,
       });
     } catch {
       /* omit anómalo */
@@ -502,6 +506,51 @@ export function weekRangeLabelEs(weekStart, weekEnd, timeZone) {
   const startParts = shortDateLabelEs(weekStart, timeZone);
   const endYear = weekEnd.slice(0, 4);
   return `Semana ${weekNum} · ${startParts.replace(/\s+\d{4}$/, '')} – ${endParts.includes(endYear) ? endParts : `${endParts} ${endYear}`}`;
+}
+
+/** Número de semana ISO y año ISO a partir de YMD calendario (ancla lunes). */
+export function isoWeekYearFromYmd(ymd) {
+  parseTrendAnchorYmd(ymd);
+  const [y, m, d] = ymd.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const isoYear = date.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+  const weekNum = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
+  return { weekNum, isoYear };
+}
+
+/** Etiqueta compacta de navegación semanal (ISO week number + año de la semana). */
+export function weekTrendNavLabelEs(weekStartYmd, timeZone) {
+  parseTrendAnchorYmd(weekStartYmd);
+  const start = startOfCalendarDayInTimeZone(weekStartYmd, timeZone);
+  if (!start) {
+    const fb = isoWeekYearFromYmd(weekStartYmd);
+    return `Semana ${fb.weekNum} · ${fb.isoYear}`;
+  }
+  const { weekNum, isoYear } = isoWeekYearFromYmd(weekStartYmd);
+  return `Semana ${weekNum} · ${isoYear}`;
+}
+
+/** Suma lograda/objetivo de periodos cuantitativos evaluados (excluye pendientes). */
+export function computeQuantitativeAccumulated(classifiedRows, goalType) {
+  if (goalType === 'COMPLIANCE') return null;
+  let achievedTotal = 0;
+  let targetTotal = 0;
+  let count = 0;
+  for (const r of classifiedRows) {
+    if (r.status === 'PENDING' || !r.reported) continue;
+    const target = r.targetSnapshot != null ? Number(r.targetSnapshot) : null;
+    const achieved = r.achievedValue != null ? Number(r.achievedValue) : null;
+    if (!Number.isFinite(target) || target <= 0) continue;
+    if (!Number.isFinite(achieved)) continue;
+    targetTotal += target;
+    achievedTotal += achieved;
+    count += 1;
+  }
+  if (count === 0) return null;
+  return { achievedTotal, targetTotal };
 }
 
 export function monthWindowFromEndYm(endYm, count = 6) {
@@ -669,6 +718,7 @@ export async function getWorkforceGoalMetricsTrendForAdmin({
         start: weekStart,
         end: weekEnd,
         label: weekRangeLabelEs(weekStart, weekEnd, tz),
+        navLabel: weekTrendNavLabelEs(weekStart, tz),
         anchor: anchorYmd,
       },
       points,
@@ -703,6 +753,7 @@ export async function getWorkforceGoalMetricsTrendForAdmin({
       start: `${startYm}-01`,
       end: monthEndYmd(`${endYm}-01`),
       label: monthRangeLabelEs(startYm, endYm, tz),
+      navLabel: null,
       anchor: anchorYmd,
       months: monthYms,
     },
