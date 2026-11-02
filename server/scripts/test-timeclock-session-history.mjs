@@ -18,6 +18,8 @@ const {
   weekRangeMonday,
   formatWeekRangeLabel,
   sessionsWithCheckInInLocalWeek,
+  buildConnectionTrendCharts,
+  CONNECTION_TREND_LOOKBACK_DAYS,
 } = await import('../src/services/remoteWorkSessionHistory.service.js');
 
 const indexHtml = fs.readFileSync(path.join(root, '..', 'index.html'), 'utf8');
@@ -217,6 +219,71 @@ check(
   'muestra completa → X === Y',
 );
 
+console.log('\n=== Timeclock — tendencia histórica (unit) ===\n');
+
+const trendSessions = [
+  {
+    checkInAt: new Date('2026-10-30T15:00:00.000Z'),
+    checkOutAt: new Date('2026-10-30T23:00:00.000Z'),
+    signalTelemetryStatus: 'no_data',
+    signalSampleCount: 0,
+  },
+  {
+    checkInAt: new Date('2026-11-01T15:00:00.000Z'),
+    checkOutAt: new Date('2026-11-01T23:00:00.000Z'),
+    signalTelemetryStatus: 'full',
+    signalTrackingStartedAt: new Date('2026-11-01T15:00:00.000Z'),
+    signalDurationSeconds: 3600,
+    signalSampleCount: 5,
+    lastHeartbeatAt: new Date('2026-11-01T22:00:00.000Z'),
+    lastVisibilityState: 'visible',
+  },
+  {
+    checkInAt: new Date('2026-11-02T15:00:00.000Z'),
+    checkOutAt: new Date('2026-11-02T23:00:00.000Z'),
+    signalTelemetryStatus: 'full',
+    signalTrackingStartedAt: new Date('2026-11-02T15:00:00.000Z'),
+    signalDurationSeconds: 7200,
+    signalSampleCount: 8,
+    lastHeartbeatAt: new Date('2026-11-02T22:00:00.000Z'),
+    lastVisibilityState: 'visible',
+  },
+];
+const trend = buildConnectionTrendCharts(trendSessions, tz, '2026-11-02', now);
+check(trend.chartDaily.length === 3, 'tendencia diaria: días disponibles sin rellenar a 4');
+check(
+  trend.chartDaily.some((r) => r.date === '2026-10-30') && trend.chartDaily.some((r) => r.date === '2026-11-02'),
+  'tendencia diaria cruza mes (oct → nov)',
+);
+check(trend.chartDaily.every((r) => r.signalSec == null || r.signalSec > 0), 'sin señal inventada como 0');
+check(CONNECTION_TREND_LOOKBACK_DAYS === 84, 'lookback acotado 84 días');
+check(trend.trendFromKey < trend.refEndKey, 'rango tendencia from < end');
+
+const weekTrendSessions = [
+  {
+    checkInAt: new Date('2025-12-29T15:00:00.000Z'),
+    checkOutAt: new Date('2025-12-29T23:00:00.000Z'),
+    signalTelemetryStatus: 'no_data',
+    signalSampleCount: 0,
+  },
+  {
+    checkInAt: new Date('2026-01-02T15:00:00.000Z'),
+    checkOutAt: new Date('2026-01-02T23:00:00.000Z'),
+    signalTelemetryStatus: 'full',
+    signalTrackingStartedAt: new Date('2026-01-02T15:00:00.000Z'),
+    signalDurationSeconds: 3600,
+    signalSampleCount: 4,
+    lastHeartbeatAt: new Date('2026-01-02T22:00:00.000Z'),
+    lastVisibilityState: 'visible',
+  },
+];
+const weekTrend = buildConnectionTrendCharts(weekTrendSessions, tz, '2026-01-05', now);
+check(weekTrend.chartWeekly.length >= 1, 'tendencia semanal con semanas disponibles');
+check(
+  weekTrend.chartWeekly.some((w) => w.weekStart <= '2026-01-02' && w.durationSec > 0),
+  'tendencia semanal incluye semana con jornada',
+);
+
 console.log('\n=== Timeclock — etiquetas semana (unit) ===\n');
 
 const crossMonthLbl = formatWeekRangeLabel('2025-11-25', tz);
@@ -233,7 +300,11 @@ check(/listEmployeeSessionsHistory/.test(routesJs), 'route usa listEmployeeSessi
 check(/weekConnectionSummary/.test(historySvc), 'payload incluye weekConnectionSummary');
 check(/weekConnectionSummary/.test(indexHtml), 'frontend usa weekConnectionSummary');
 check(/weekConnectionSummary[\s\S]*tcRenderHistoryKpiStrip|tcRenderHistoryKpiStrip[\s\S]*weekConnectionSummary/.test(indexHtml), 'KPI strip desde resumen semanal');
-check(/connectionSummary[\s\S]*tcConnChartRender|tcRenderConnectionTrend[\s\S]*connectionSummary/.test(indexHtml), 'gráfica mensual conservada');
+check(/connectionTrend/.test(historySvc), 'payload incluye connectionTrend');
+check(/connectionTrend[\s\S]*tcConnChartRender|tcConnChartRender[\s\S]*connectionTrend/.test(indexHtml), 'gráfica usa tendencia histórica');
+check(!/function tcRenderWeekSummary[\s\S]{0,400}Promedio por jornada/.test(indexHtml), 'sin Promedio por jornada en resumen Esta semana');
+check(/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/.test(indexHtml), 'ficha KPI cinco columnas escritorio');
+check(/tc-history-session-dl[\s\S]*max-content/.test(indexHtml), 'detalle diario alineación compacta izquierda');
 check(/Historial de jornadas/.test(indexHtml), 'toggle historial copy');
 check(/tcToggleHistoryPanel/.test(indexHtml), 'abrir/cerrar historial flotante');
 check(/tc-history-dialog hidden/.test(indexHtml), 'dialog colapsado por defecto');
@@ -278,8 +349,7 @@ check(/tc-history-dialog-body[\s\S]*overflow-y:auto/.test(indexHtml), 'scroll ú
 check(!/tc-history-day-panel[\s\S]{0,200}overflow-y:auto/.test(indexHtml), 'sin scroll anidado en panel día');
 check(/tcConnChartRows/.test(indexHtml) && /tcConnChartShowTip/.test(indexHtml), 'tooltips gráfica');
 check(/tcFmtWeekRangeLabel/.test(indexHtml), 'etiquetas semana legibles');
-check(/limit=tcConnChartMode/.test(indexHtml), 'límite barras diario/semanal');
-check(/Promedio por jornada/.test(indexHtml), 'promedio por jornada en resumen semanal');
+check(/\.slice\(-4\)/.test(historySvc), 'backend limita tendencia a 4 periodos');
 check(/Promedio diario jornada/.test(indexHtml), 'promedio diario jornada en KPI');
 check(/tc-cal-prev/.test(indexHtml) && /tc-cal-next/.test(indexHtml), 'navegación mes');
 check(/aria-label.*Mes anterior/.test(indexHtml), 'aria mes anterior');

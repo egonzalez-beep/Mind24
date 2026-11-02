@@ -218,6 +218,47 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
   };
 }
 
+/** Lookback window for trend charts (covers 4+ weeks with gaps). */
+export const CONNECTION_TREND_LOOKBACK_DAYS = 84;
+
+const SESSION_HISTORY_SELECT = {
+  id: true,
+  checkInAt: true,
+  checkOutAt: true,
+  status: true,
+  lastHeartbeatAt: true,
+  lastWebSignal: true,
+  lastVisibilityState: true,
+  signalDurationSeconds: true,
+  signalTrackingStartedAt: true,
+  signalLastCreditedAt: true,
+  signalSampleCount: true,
+  signalTelemetryStatus: true,
+};
+
+/**
+ * Last up to 4 days/weeks with jornada ending at refEndKey (inclusive), crossing month/year.
+ * Reuses buildConnectionSummaryForSessions aggregation; presentation slice only.
+ */
+export function buildConnectionTrendCharts(sessions, timeZone, refEndKey, now = new Date()) {
+  const trendFromKey = addDaysToDateKey(refEndKey, -CONNECTION_TREND_LOOKBACK_DAYS);
+  const summary = buildConnectionSummaryForSessions(
+    sessions,
+    timeZone,
+    trendFromKey,
+    refEndKey,
+    now,
+  );
+  const chartDaily = summary.chartDaily.filter((r) => (r.durationSec || 0) > 0).slice(-4);
+  const chartWeekly = summary.chartWeekly.filter((r) => (r.durationSec || 0) > 0).slice(-4);
+  return {
+    refEndKey,
+    trendFromKey,
+    chartDaily,
+    chartWeekly,
+  };
+}
+
 export function groupSessionsByLocalDay(sessions, timeZone, now = new Date(), enrichOpts = {}) {
   const days = {};
   for (const raw of sessions) {
@@ -345,20 +386,7 @@ export async function listEmployeeSessionsHistory({
       checkInAt: { gte: start, lt: end },
     },
     orderBy: { checkInAt: 'asc' },
-    select: {
-      id: true,
-      checkInAt: true,
-      checkOutAt: true,
-      status: true,
-      lastHeartbeatAt: true,
-      lastWebSignal: true,
-      lastVisibilityState: true,
-      signalDurationSeconds: true,
-      signalTrackingStartedAt: true,
-      signalLastCreditedAt: true,
-      signalSampleCount: true,
-      signalTelemetryStatus: true,
-    },
+    select: SESSION_HISTORY_SELECT,
   });
 
   const enrichOpts = { expectedWorkMinutes: emp.expectedWorkMinutes };
@@ -380,20 +408,7 @@ export async function listEmployeeSessionsHistory({
       checkInAt: { gte: weekUtc.start, lt: weekUtc.end },
     },
     orderBy: { checkInAt: 'asc' },
-    select: {
-      id: true,
-      checkInAt: true,
-      checkOutAt: true,
-      status: true,
-      lastHeartbeatAt: true,
-      lastWebSignal: true,
-      lastVisibilityState: true,
-      signalDurationSeconds: true,
-      signalTrackingStartedAt: true,
-      signalLastCreditedAt: true,
-      signalSampleCount: true,
-      signalTelemetryStatus: true,
-    },
+    select: SESSION_HISTORY_SELECT,
   });
   const weekSummary = buildWeekSummary(weekSessions, timeZone, todayKey, now);
   const weekForConnection = sessionsWithCheckInInLocalWeek(weekSessions, timeZone, todayKey);
@@ -402,6 +417,24 @@ export async function listEmployeeSessionsHistory({
     timeZone,
     weekSummary.weekStart,
     weekSummary.weekEnd,
+    now,
+  );
+
+  const trendRefEndKey = toKey < todayKey ? toKey : todayKey;
+  const trendFromKey = addDaysToDateKey(trendRefEndKey, -CONNECTION_TREND_LOOKBACK_DAYS);
+  const trendUtc = utcRangeForLocalDateInclusive(trendFromKey, trendRefEndKey, timeZone);
+  const trendSessions = await prisma.remoteWorkSession.findMany({
+    where: {
+      employeeId: emp.id,
+      checkInAt: { gte: trendUtc.start, lt: trendUtc.end },
+    },
+    orderBy: { checkInAt: 'asc' },
+    select: SESSION_HISTORY_SELECT,
+  });
+  const connectionTrend = buildConnectionTrendCharts(
+    trendSessions,
+    timeZone,
+    trendRefEndKey,
     now,
   );
 
@@ -416,5 +449,6 @@ export async function listEmployeeSessionsHistory({
     weekSummary,
     weekConnectionSummary,
     connectionSummary,
+    connectionTrend,
   };
 }
