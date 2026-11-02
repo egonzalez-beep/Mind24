@@ -93,10 +93,13 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
 
   const daysWithSessions = new Set();
   const daysWithFullTelemetry = new Set();
+  let sessionCountEligible = 0;
   for (let i = 0; i < sessions.length; i += 1) {
     const s = sessions[i];
+    const e = enriched[i];
+    if ((e.durationSec ?? 0) > 0) sessionCountEligible += 1;
     const dayKey = localDateKey(s.checkInAt, timeZone);
-    daysWithSessions.add(dayKey);
+    if ((e.durationSec ?? 0) > 0) daysWithSessions.add(dayKey);
     if (isOfficialFullSignalSession(s, now) && enriched[i].signalDurationSeconds != null) {
       daysWithFullTelemetry.add(dayKey);
     }
@@ -127,6 +130,7 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
         signalSec: 0,
         hasFullTelemetry: false,
         hasPartialOnly: false,
+        hasNoDataTelemetry: false,
       };
     }
     dailyMap[dayKey].durationSec += e.durationSec ?? 0;
@@ -138,18 +142,28 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
       (s.signalSampleCount ?? 0) > 0
     ) {
       dailyMap[dayKey].hasPartialOnly = true;
+    } else if (!isOfficialFullSignalSession(s, now)) {
+      dailyMap[dayKey].hasNoDataTelemetry = true;
     }
   }
 
   const chartDaily = Object.keys(dailyMap)
     .sort()
     .filter((k) => k >= fromKey && k <= toKey)
-    .map((k) => ({
-      date: k,
-      durationSec: dailyMap[k].durationSec,
-      signalSec: dailyMap[k].hasFullTelemetry ? dailyMap[k].signalSec : null,
-      partialOnly: dailyMap[k].hasPartialOnly && !dailyMap[k].hasFullTelemetry,
-    }));
+    .map((k) => {
+      const bucket = dailyMap[k];
+      const hasFull = bucket.hasFullTelemetry;
+      const partialOnly = bucket.hasPartialOnly && !hasFull;
+      const noSignalData =
+        !hasFull && !partialOnly && bucket.durationSec > 0 && bucket.hasNoDataTelemetry;
+      return {
+        date: k,
+        durationSec: bucket.durationSec,
+        signalSec: hasFull ? bucket.signalSec : null,
+        partialOnly,
+        noSignalData,
+      };
+    });
 
   const weeklyMap = {};
   for (const row of chartDaily) {
@@ -161,6 +175,7 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
         signalSec: 0,
         hasFullTelemetry: false,
         partialOnly: false,
+        noSignalData: false,
       };
     }
     weeklyMap[weekStart].durationSec += row.durationSec;
@@ -169,19 +184,28 @@ export function buildConnectionSummaryForSessions(sessions, timeZone, fromKey, t
       weeklyMap[weekStart].hasFullTelemetry = true;
     }
     if (row.partialOnly) weeklyMap[weekStart].partialOnly = true;
+    if (row.noSignalData) weeklyMap[weekStart].noSignalData = true;
   }
 
   const chartWeekly = Object.keys(weeklyMap)
     .sort()
-    .map((k) => ({
-      weekStart: k,
-      durationSec: weeklyMap[k].durationSec,
-      signalSec: weeklyMap[k].hasFullTelemetry ? weeklyMap[k].signalSec : null,
-      partialOnly: weeklyMap[k].partialOnly && !weeklyMap[k].hasFullTelemetry,
-    }));
+    .map((k) => {
+      const bucket = weeklyMap[k];
+      const hasFull = bucket.hasFullTelemetry;
+      const partialOnly = bucket.partialOnly && !hasFull;
+      const noSignalData =
+        !hasFull && !partialOnly && bucket.durationSec > 0 && bucket.noSignalData;
+      return {
+        weekStart: k,
+        durationSec: bucket.durationSec,
+        signalSec: hasFull ? bucket.signalSec : null,
+        partialOnly,
+        noSignalData,
+      };
+    });
 
   return {
-    sessionCountTotal: sessions.length,
+    sessionCountTotal: sessionCountEligible,
     sessionCountWithFullTelemetry: officialFull.length,
     totalDurationSec: totalDurationAll,
     totalSignalDurationSec: officialFull.length > 0 ? totalSignalSec : null,
@@ -232,6 +256,28 @@ export function weekRangeMonday(refDateKey, timeZone) {
     cursor = addDaysToDateKey(cursor, -1);
   }
   return { weekStart: cursor, weekEnd: addDaysToDateKey(cursor, 6) };
+}
+
+/** Display label for Mon–Sun range in employee TZ (presentation only). */
+export function formatWeekRangeLabel(weekStartYmd, timeZone) {
+  if (!weekStartYmd || !DATE_KEY_RE.test(weekStartYmd)) return weekStartYmd || '';
+  const weekEnd = addDaysToDateKey(weekStartYmd, 6);
+  const fmt = (key, opts) =>
+    new Date(`${key}T12:00:00`).toLocaleDateString('es-MX', { timeZone, ...opts });
+  const dMon = fmt(weekStartYmd, { day: 'numeric' });
+  const dSun = fmt(weekEnd, { day: 'numeric' });
+  const monMonth = fmt(weekStartYmd, { month: 'short' });
+  const sunMonth = fmt(weekEnd, { month: 'short' });
+  if (monMonth === sunMonth) return `${dMon}–${dSun} ${monMonth}`;
+  return `${dMon} ${monMonth}–${dSun} ${sunMonth}`;
+}
+
+export function sessionsWithCheckInInLocalWeek(sessions, timeZone, refDateKey) {
+  const { weekStart, weekEnd } = weekRangeMonday(refDateKey, timeZone);
+  return sessions.filter((s) => {
+    const key = localDateKey(s.checkInAt, timeZone);
+    return key >= weekStart && key <= weekEnd;
+  });
 }
 
 export function buildWeekSummary(sessions, timeZone, refDateKey, now = new Date()) {
@@ -350,6 +396,14 @@ export async function listEmployeeSessionsHistory({
     },
   });
   const weekSummary = buildWeekSummary(weekSessions, timeZone, todayKey, now);
+  const weekForConnection = sessionsWithCheckInInLocalWeek(weekSessions, timeZone, todayKey);
+  const weekConnectionSummary = buildConnectionSummaryForSessions(
+    weekForConnection,
+    timeZone,
+    weekSummary.weekStart,
+    weekSummary.weekEnd,
+    now,
+  );
 
   return {
     employeeId: emp.id,
@@ -360,6 +414,7 @@ export async function listEmployeeSessionsHistory({
     sessions: sanitized,
     days,
     weekSummary,
+    weekConnectionSummary,
     connectionSummary,
   };
 }

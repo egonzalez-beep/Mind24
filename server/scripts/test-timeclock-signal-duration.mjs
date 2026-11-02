@@ -236,7 +236,7 @@ check(/signalTelemetryStatus/.test(schema), 'schema telemetry enum');
 check(/lockOpenSessionRow/.test(sessionSvc), 'FOR UPDATE lock on heartbeat');
 check(/planHeartbeatSignalCredit/.test(sessionSvc), 'heartbeat accumulation wired');
 check(/planCloseSignalCredit/.test(sessionSvc), 'checkout accumulation wired');
-check(/Resumen de conexión/.test(indexHtml), 'UI connection summary');
+check(/Tendencia de conexión/.test(indexHtml), 'UI tendencia de conexión');
 check(/TC_JORNADA_LIVE_POLL_MS=60000/.test(indexHtml), 'admin live poll 60s');
 check(/tcJornadaStopLivePoll/.test(indexHtml), 'poll cleanup');
 check(

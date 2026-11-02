@@ -1287,7 +1287,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-history-dialog--mobile{left:50%!important;top:auto!important;bottom:16px!important;transform:translateX(-50%);width:calc(100vw - 24px);max-height:85vh;border-radius:18px 18px 14px 14px;}
 .tc-history-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--slate-100);}
 .tc-history-dialog-head h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
-.tc-history-dialog-body{padding:12px 16px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.tc-history-dialog-body{flex:1 1 auto;min-height:0;padding:12px 16px 16px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
 .tc-history-cal-wrap{position:relative;}
 .tc-cal-viewport{position:relative;overflow:hidden;min-height:268px;}
 .tc-cal-stage{position:relative;display:grid;grid-template:1fr/1fr;}
@@ -1322,8 +1322,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-cal-dot--open{background:#f59e0b;}
 .tc-cal-popover{position:fixed;z-index:1200;max-width:240px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);font-size:12px;color:var(--slate-600);line-height:1.45;pointer-events:none;}
 .tc-cal-popover strong{display:block;font-size:13px;color:var(--primary);margin-bottom:6px;font-weight:700;}
-.tc-history-pinned{position:absolute;z-index:5;left:8px;right:8px;bottom:8px;font-size:12px;color:var(--slate-600);line-height:1.5;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.98);border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);}
-.tc-history-pinned.hidden{display:none!important;}
+.tc-history-kpi-strip{display:flex;flex-wrap:wrap;gap:8px 10px;padding:8px 10px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;font-size:12px;line-height:1.35;}
+.tc-history-kpi-strip.hidden{display:none!important;}
+.tc-history-kpi-item{flex:1 1 calc(33.333% - 10px);min-width:0;}
+.tc-history-kpi-item--wide{flex:1 1 100%;}
+@media (min-width:520px){.tc-history-kpi-item{flex:1 1 calc(20% - 10px);min-width:88px;}.tc-history-kpi-item--wide{flex:2 1 calc(40% - 10px);}}
+.tc-history-kpi-label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:2px;}
+.tc-history-kpi-value{font-size:13px;font-weight:600;color:var(--primary);}
+.tc-history-kpi-note{display:block;margin-top:3px;font-size:10px;font-weight:500;color:var(--slate-500);line-height:1.35;}
+.tc-history-day-panel{font-size:12px;color:var(--slate-600);line-height:1.45;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);}
+.tc-history-day-panel.hidden{display:none!important;}
+.tc-history-day-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.tc-history-day-head h4{margin:0;font-size:13px;font-weight:700;color:var(--primary);flex:1;min-width:0;}
+.tc-history-refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex-shrink:0;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);}
+.tc-history-refresh-btn:hover:not(:disabled){background:var(--purple-light);border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
+.tc-history-refresh-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-refresh-btn:disabled{opacity:.55;cursor:not-allowed;}
+.tc-history-refresh-btn--spin svg{animation:m24SpinAnim .7s linear infinite;}
+.tc-history-refresh-err{font-size:11px;color:#b91c1c;margin:0 0 8px;line-height:1.4;}
+.tc-history-refresh-err.hidden{display:none!important;}
+.tc-history-refresh-retry{margin-left:6px;border:none;background:none;padding:0;font:inherit;font-weight:700;color:var(--purple-dark);cursor:pointer;text-decoration:underline;}
+.tc-history-day-summary{margin:0 0 8px;font-size:11px;color:var(--slate-500);}
+.tc-history-session{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);}
+.tc-history-session:first-child{margin-top:0;padding-top:0;border-top:none;}
+.tc-history-session-label{font-size:11px;font-weight:700;color:var(--slate-600);margin-bottom:4px;}
+.tc-history-session-dl{margin:0;display:grid;gap:4px 8px;}
+.tc-history-session-dl>div{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:4px 8px;align-items:baseline;}
+.tc-history-session-dl dt{margin:0;font-size:10px;font-weight:600;color:var(--slate-500);}
+.tc-history-session-dl dd{margin:0;font-size:12px;font-weight:600;color:var(--primary);}
 .tc-conn-summary{border:1px solid var(--slate-200);border-radius:10px;padding:0;background:var(--slate-50);}
 .tc-conn-summary>summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--purple-dark);padding:10px 12px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .tc-conn-summary>summary::-webkit-details-marker{display:none;}
@@ -1341,6 +1367,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-conn-chart-bar--dur{background:rgba(124,58,237,.35);}
 .tc-conn-chart-bar--sig{background:rgba(34,197,94,.55);}
 .tc-conn-chart-empty{font-size:12px;color:var(--slate-500);padding:8px 0;}
+.tc-conn-chart-legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-size:10px;font-weight:600;color:var(--slate-500);}
+.tc-conn-legend-swatch{display:inline-block;width:14px;height:6px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+.tc-conn-legend-swatch--dur{background:rgba(124,58,237,.35);}
+.tc-conn-legend-swatch--sig{background:rgba(34,197,94,.55);}
+.tc-conn-chart-focus{width:100%;border:none;background:transparent;padding:2px 0;margin:0;cursor:pointer;display:flex;flex-direction:column;gap:3px;border-radius:4px;font:inherit;text-align:left;}
+.tc-conn-chart-focus:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
+.tc-conn-chart-nodata{font-size:9px;color:var(--slate-400);font-weight:600;padding:1px 0;}
+.tc-conn-chart-tip{position:fixed;z-index:1215;max-width:min(240px,calc(100vw - 24px));padding:8px 10px;border-radius:8px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.14);font-size:11px;color:var(--slate-600);line-height:1.45;pointer-events:none;}
+.tc-conn-chart-tip.hidden{display:none!important;}
+.tc-conn-chart-tip strong{display:block;font-size:12px;color:var(--primary);margin-bottom:4px;font-weight:700;}
 .tc-conn-level-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
 .tc-conn-level-dot--green{background:#22c55e;}
 .tc-conn-level-dot--amber{background:#f59e0b;}
@@ -1348,9 +1384,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-jornada-signal-time{display:block;font-size:12px;font-weight:600;color:var(--slate-600);margin-top:4px;}
 .tc-history-signal-partial{font-size:11px;color:var(--slate-500);font-weight:500;margin-top:4px;}
 .tc-signal-help-inline{font-size:11px;color:var(--slate-500);font-weight:500;margin-top:6px;line-height:1.4;}
-.tc-history-pinned h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--primary);}
-.tc-history-session{margin-top:10px;padding-top:10px;border-top:1px solid var(--slate-200);}
-.tc-history-session:first-of-type{margin-top:0;padding-top:0;border-top:none;}
 .tc-jornada-dl{display:flex;flex-direction:column;gap:14px;margin:0;}
 .tc-jornada-dl>div{margin:0;}
 .tc-jornada-dl dt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin-bottom:4px;}
@@ -3665,14 +3698,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="tc-history-dialog-body">
           <div class="tc-week-summary" id="tc-week-summary"></div>
-          <details class="tc-conn-summary" id="tc-conn-summary">
-            <summary>Resumen de conexión <span id="tc-conn-summary-chevron" aria-hidden="true">▾</span></summary>
-            <div class="tc-conn-summary-body" id="tc-conn-summary-body"></div>
+          <div class="tc-history-kpi-strip hidden" id="tc-history-kpi-strip" aria-live="polite"></div>
+          <details class="tc-conn-summary" id="tc-conn-trend">
+            <summary>Tendencia de conexión <span aria-hidden="true">▾</span></summary>
+            <div class="tc-conn-summary-body" id="tc-conn-trend-body"></div>
           </details>
           <div class="tc-history-cal-wrap">
             <div id="tc-cal-root"></div>
-            <div id="tc-history-pinned" class="tc-history-pinned hidden" role="region" aria-live="polite"></div>
             <div id="tc-cal-popover" class="tc-cal-popover hidden" role="tooltip"></div>
+          </div>
+          <div id="tc-history-day-panel" class="tc-history-day-panel hidden" role="region" aria-live="polite">
+            <div class="tc-history-day-head">
+              <h4 id="tc-history-day-title"></h4>
+              <button type="button" class="tc-history-refresh-btn" id="tc-history-refresh-btn" aria-label="Actualizar historial" onclick="tcRefreshHistory()" title="Actualizar historial"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+            </div>
+            <p class="tc-history-refresh-err hidden" id="tc-history-refresh-err"></p>
+            <div id="tc-history-day-body"></div>
           </div>
         </div>
       </div>
@@ -7714,24 +7755,26 @@ function tcJornadaLastSignalSubHtml(lastSignalAt,tz,hasOpen){
   const t=tcFmtSignalTimeLocal(lastSignalAt,tz);
   return t?('<span class="tc-jornada-signal-time">Última señal: '+tcEsc(t)+'</span>'):'';
 }
-function tcHistorySignalExtraHtml(s,tz){
-  let html='';
-  html+='<div style="margin-top:8px;">Tiempo con señal: '+tcEsc(tcFmtSignalDurationOrNone(s.signalDurationSeconds))+'</div>';
+function tcHistorySessionMetricsHtml(s,tz){
+  let html='<dl class="tc-history-session-dl">';
+  if(s.isOpen){
+    html+='<div><dt>Estado</dt><dd style="color:#b45309;">Jornada abierta</dd></div>';
+  }
+  html+='<div><dt>Entrada</dt><dd>'+tcEsc(tcFmtTimeLocal(s.checkInAt,tz))+'</dd></div>';
+  html+='<div><dt>Salida</dt><dd>'+(s.isOpen?'—':tcEsc(tcFmtTimeLocal(s.checkOutAt,tz)))+'</dd></div>';
+  html+='<div><dt>Duración de jornada</dt><dd>'+tcEsc(tcFmtDurationHuman(s.durationSec))+'</dd></div>';
+  html+='<div><dt>Tiempo con señal</dt><dd>'+tcEsc(tcFmtSignalDurationOrNone(s.signalDurationSeconds))+'</dd></div>';
+  if(s.signalTelemetryStatus==='full'&&s.signalDurationSeconds!=null){
+    html+='<div><dt>Conexión efectiva</dt><dd>'+tcConnectionLevelDotHtml(s.connectionVisualLevel)+tcEsc(tcFmtConnectionPct(s.connectionEffectivePercent))+'</dd></div>';
+  }else{
+    html+='<div><dt>Conexión efectiva</dt><dd>—</dd></div>';
+  }
+  html+='<div><dt>Última señal</dt><dd>'+(s.lastSignalAt?tcEsc(tcFmtSignalTimeLocal(s.lastSignalAt,tz)):'—')+'</dd></div>';
+  html+='</dl>';
   if(s.signalTelemetryStatus==='partial'&&s.signalTrackingStartedAt){
     const from=tcFmtSignalTimeLocal(s.signalTrackingStartedAt,tz);
     if(from) html+='<div class="tc-history-signal-partial">Medición disponible desde las '+tcEsc(from)+'</div>';
   }
-  if(s.signalTelemetryStatus==='full'&&s.signalDurationSeconds!=null){
-    html+='<div>Conexión efectiva: '+tcConnectionLevelDotHtml(s.connectionVisualLevel)+tcEsc(tcFmtConnectionPct(s.connectionEffectivePercent))+'</div>';
-  }else{
-    html+='<div>Conexión efectiva: —</div>';
-  }
-  if(s.lastSignalAt){
-    html+='<div>Última señal: '+tcEsc(tcFmtSignalTimeLocal(s.lastSignalAt,tz))+'</div>';
-  }else{
-    html+='<div>Última señal: —</div>';
-  }
-  html+='<p class="tc-signal-help-inline" role="note">'+tcEsc(TC_SIGNAL_CONN_HELP)+'</p>';
   return html;
 }
 function tcSvgEye(){
@@ -13870,7 +13913,11 @@ let tcHistoryMonth=null;
 let tcHistoryPinnedDay=null;
 let tcHistoryPayload=null;
 let tcHistoryLoading=false;
+let tcHistoryLoadSeq=0;
+let tcHistoryFetchAbort=null;
+let tcHistoryRefreshInFlight=false;
 let tcHistorySlideDir=0;
+let tcConnChartRows=[];
 let tcCalAnimating=false;
 let tcCalLoadingTimer=null;
 let tcHistoryKeyHandler=null;
@@ -13905,6 +13952,44 @@ function tcFmtDayTitle(dayKey,tz){
     const noon=dayKey+'T12:00:00';
     return new Date(noon).toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'long',year:'numeric'});
   }catch(_){ return dayKey; }
+}
+function tcYmdAddDays(dayKey,delta){
+  const p=String(dayKey||'').split('-').map(Number);
+  if(p.length<3) return dayKey;
+  const dt=new Date(Date.UTC(p[0],p[1]-1,p[2]+delta,12,0,0));
+  return dt.toISOString().slice(0,10);
+}
+function tcFmtChartDayLabel(dayKey,tz){
+  try{
+    return new Date(dayKey+'T12:00:00').toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'short'});
+  }catch(_){ return dayKey.slice(8)+'/'+dayKey.slice(5,7); }
+}
+function tcFmtWeekRangeLabel(weekStartYmd,tz){
+  if(!weekStartYmd) return '';
+  const weekEnd=tcYmdAddDays(weekStartYmd,6);
+  try{
+    const fmt=function(k,opts){
+      return new Date(k+'T12:00:00').toLocaleDateString('es-MX',Object.assign({timeZone:tz},opts));
+    };
+    const dMon=fmt(weekStartYmd,{day:'numeric'});
+    const dSun=fmt(weekEnd,{day:'numeric'});
+    const monMonth=fmt(weekStartYmd,{month:'short'});
+    const sunMonth=fmt(weekEnd,{month:'short'});
+    if(monMonth===sunMonth) return dMon+'–'+dSun+' '+monMonth;
+    return dMon+' '+monMonth+'–'+dSun+' '+sunMonth;
+  }catch(_){ return weekStartYmd; }
+}
+function tcConnChartSignalGapLabel(row){
+  if(!row||row.signalSec!=null) return '';
+  if(row.partialOnly) return 'Datos parciales de señal';
+  if(row.noSignalData) return 'Sin datos de señal';
+  if((row.durationSec||0)>0) return 'Sin datos de señal';
+  return '';
+}
+function tcConnPctFromDurSig(durationSec,signalSec){
+  const dur=Number(durationSec)||0;
+  if(signalSec==null||dur<=0) return null;
+  return Math.min(100, Math.round((Number(signalSec)/dur)*1000)/10);
 }
 function tcResetHistoryState(emp){
   tcJornadaEmpId=emp.id||null;
@@ -13942,7 +14027,7 @@ function tcHistoryOnKeydown(e){
   if(e.key!=='Escape') return;
   if(tcHistoryPinnedDay){
     tcHistoryPinnedDay=null;
-    tcRenderHistoryPinned();
+    tcRenderHistoryDayPanel();
     tcRenderCalendar();
     e.preventDefault();
     return;
@@ -13953,7 +14038,7 @@ function tcHistoryOnBackdropClick(e){
   if(e.target!==e.currentTarget) return;
   if(tcHistoryPinnedDay){
     tcHistoryPinnedDay=null;
-    tcRenderHistoryPinned();
+    tcRenderHistoryDayPanel();
     tcRenderCalendar();
     return;
   }
@@ -14002,8 +14087,12 @@ function tcCloseHistoryDialog(restoreFocus){
     document.removeEventListener('keydown', tcHistoryKeyHandler);
     tcHistoryKeyHandler=null;
   }
-  const pinned=document.getElementById('tc-history-pinned');
-  if(pinned){ pinned.classList.add('hidden'); pinned.innerHTML=''; }
+  if(tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
+  tcHistoryRefreshInFlight=false;
+  const panel=document.getElementById('tc-history-day-panel');
+  if(panel) panel.classList.add('hidden');
+  const tip=document.getElementById('tc-conn-chart-tip');
+  if(tip) tip.classList.add('hidden');
   if(restoreFocus&&toggle) toggle.focus();
 }
 async function tcToggleHistoryPanel(){
@@ -14023,7 +14112,7 @@ async function tcHistoryChangeMonth(delta){
   if(tcHistoryMonth>11){ tcHistoryMonth=0; tcHistoryYear+=1; }
   tcHistorySlideDir=delta>0?1:delta<0?-1:0;
   tcHistoryPinnedDay=null;
-  tcRenderHistoryPinned();
+  tcRenderHistoryDayPanel();
   tcHideCalPopover();
   await tcLoadHistoryMonth();
 }
@@ -14072,6 +14161,70 @@ function tcSyncCalViewportHeight(stage){
   });
   if(maxH>0) vp.style.minHeight=maxH+'px';
 }
+async function tcFetchHistoryPayload(){
+  const r=tcMonthRangeKeys(tcHistoryYear, tcHistoryMonth);
+  const q='from='+encodeURIComponent(r.from)+'&to='+encodeURIComponent(r.to);
+  const seq=++tcHistoryLoadSeq;
+  if(tcHistoryFetchAbort) tcHistoryFetchAbort.abort();
+  tcHistoryFetchAbort=new AbortController();
+  const payload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions?'+q,{signal:tcHistoryFetchAbort.signal});
+  if(seq!==tcHistoryLoadSeq) return null;
+  return payload;
+}
+function tcApplyHistoryPayload(payload, opts){
+  opts=opts||{};
+  if(!payload) return;
+  tcHistoryPayload=payload;
+  tcRenderWeekSummary();
+  tcRenderHistoryKpiStrip();
+  tcRenderConnectionTrend();
+  tcRenderCalendar();
+  tcRenderHistoryDayPanel();
+  if(opts.scrollTop!=null){
+    const bodyEl=document.getElementById('tc-history-dialog-body');
+    if(bodyEl) bodyEl.scrollTop=opts.scrollTop;
+  }
+  if(opts.trendOpen!=null){
+    const trend=document.getElementById('tc-conn-trend');
+    if(trend) trend.open=!!opts.trendOpen;
+  }
+}
+function tcHideHistoryRefreshErr(){
+  const el=document.getElementById('tc-history-refresh-err');
+  if(el){ el.classList.add('hidden'); el.innerHTML=''; }
+}
+function tcShowHistoryRefreshErr(msg){
+  const el=document.getElementById('tc-history-refresh-err');
+  if(!el) return;
+  el.innerHTML=tcEsc(msg||'No se pudo actualizar.')+' <button type="button" class="tc-history-refresh-retry" onclick="tcRefreshHistory()">Reintentar</button>';
+  el.classList.remove('hidden');
+}
+async function tcRefreshHistory(){
+  if(!tcJornadaEmpId||tcHistoryRefreshInFlight) return;
+  tcHistoryRefreshInFlight=true;
+  tcHideHistoryRefreshErr();
+  const btn=document.getElementById('tc-history-refresh-btn');
+  if(btn) btn.disabled=true;
+  if(btn) btn.classList.add('tc-history-refresh-btn--spin');
+  const bodyEl=document.getElementById('tc-history-dialog-body');
+  const scrollTop=bodyEl?bodyEl.scrollTop:0;
+  const trend=document.getElementById('tc-conn-trend');
+  const trendOpen=trend?trend.open:false;
+  try{
+    const payload=await tcFetchHistoryPayload();
+    if(payload===null) return;
+    tcApplyHistoryPayload(payload,{scrollTop:scrollTop,trendOpen:trendOpen});
+  }catch(e){
+    if(e&&e.name==='AbortError') return;
+    tcShowHistoryRefreshErr(e&&e.message);
+  }finally{
+    tcHistoryRefreshInFlight=false;
+    if(btn){
+      btn.disabled=false;
+      btn.classList.remove('tc-history-refresh-btn--spin');
+    }
+  }
+}
 async function tcLoadHistoryMonth(){
   if(!tcJornadaEmpId||tcHistoryLoading) return;
   tcHistoryLoading=true;
@@ -14079,14 +14232,12 @@ async function tcLoadHistoryMonth(){
   tcEnsureCalViewport(root);
   tcShowCalLoadingDelayed();
   try{
-    const r=tcMonthRangeKeys(tcHistoryYear, tcHistoryMonth);
-    const q='from='+encodeURIComponent(r.from)+'&to='+encodeURIComponent(r.to);
-    tcHistoryPayload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions?'+q);
-    tcRenderWeekSummary();
-    tcRenderConnectionSummary();
-    tcRenderCalendar();
-    tcRenderHistoryPinned();
+    const payload=await tcFetchHistoryPayload();
+    if(payload===null) return;
+    tcApplyHistoryPayload(payload);
+    tcHideHistoryRefreshErr();
   }catch(e){
+    if(e&&e.name==='AbortError') return;
     tcHistorySlideDir=0;
     if(root){
       tcEnsureCalViewport(root);
@@ -14109,69 +14260,151 @@ function tcRenderWeekSummary(){
   el.innerHTML=html;
 }
 let tcConnChartMode='daily';
-function tcRenderConnectionSummary(){
-  const body=document.getElementById('tc-conn-summary-body');
+function tcRenderHistoryKpiStrip(){
+  const el=document.getElementById('tc-history-kpi-strip');
+  const w=tcHistoryPayload&&tcHistoryPayload.weekSummary;
+  const c=tcHistoryPayload&&tcHistoryPayload.weekConnectionSummary;
+  if(!el) return;
+  if(!w||!w.sessionCount||!c){
+    el.innerHTML='';
+    el.classList.add('hidden');
+    return;
+  }
+  el.classList.remove('hidden');
+  const fullN=c.sessionCountWithFullTelemetry!=null?c.sessionCountWithFullTelemetry:0;
+  const totalN=c.sessionCountTotal||0;
+  const connNote=(totalN>0&&fullN<totalN)?('<span class="tc-history-kpi-note">Basado en '+tcEsc(String(fullN))+' de '+tcEsc(String(totalN))+' jornadas con datos de conexión</span>'):'';
+  const connPct=fullN>0?c.overallConnectionEffectivePercent:null;
+  const gapN=c.highGapSessionCount||0;
+  el.innerHTML=
+    '<div class="tc-history-kpi-item"><span class="tc-history-kpi-label">Tiempo con señal</span><span class="tc-history-kpi-value">'+tcEsc(c.totalSignalDurationSec!=null?tcFmtDurationHuman(c.totalSignalDurationSec):'Sin datos')+'</span></div>'+
+    '<div class="tc-history-kpi-item"><span class="tc-history-kpi-label">Promedio diario jornada</span><span class="tc-history-kpi-value">'+tcEsc(c.avgDailyDurationSec!=null?tcFmtDurationHuman(c.avgDailyDurationSec):'—')+'</span></div>'+
+    '<div class="tc-history-kpi-item"><span class="tc-history-kpi-label">Promedio diario señal</span><span class="tc-history-kpi-value">'+tcEsc(c.avgDailySignalSec!=null?tcFmtDurationHuman(c.avgDailySignalSec):'—')+'</span></div>'+
+    '<div class="tc-history-kpi-item tc-history-kpi-item--wide"><span class="tc-history-kpi-label">Conexión efectiva</span><span class="tc-history-kpi-value">'+tcEsc(tcFmtConnectionPct(connPct))+'</span>'+connNote+'</div>'+
+    '<div class="tc-history-kpi-item"><span class="tc-history-kpi-label">Brecha alta</span><span class="tc-history-kpi-value">'+tcEsc(String(gapN))+' jornada'+(gapN===1?'':'s')+'</span></div>';
+}
+function tcRenderConnectionTrend(){
+  const body=document.getElementById('tc-conn-trend-body');
   const c=tcHistoryPayload&&tcHistoryPayload.connectionSummary;
   if(!body) return;
   if(!c||!c.sessionCountTotal){
     body.innerHTML='<p class="tc-conn-chart-empty">No hay jornadas en este periodo.</p>';
     return;
   }
-  const exp=tcHistoryPayload.expectedWorkMinutes;
-  const fullN=c.sessionCountWithFullTelemetry!=null?c.sessionCountWithFullTelemetry:(c.sessionCountWithTelemetry||0);
-  let html='<p style="margin:0 0 8px;font-size:12px;color:var(--slate-600);">Jornadas con medición completa: <strong>'+tcEsc(String(fullN))+'</strong> de '+tcEsc(String(c.sessionCountTotal))+'</p>';
-  html+='<dl class="tc-conn-summary-grid">'+
-    '<div><dt>Total jornadas</dt><dd>'+tcEsc(String(c.sessionCountTotal))+'</dd></div>'+
-    '<div><dt>Duración total</dt><dd>'+tcEsc(tcFmtDurationHuman(c.totalDurationSec))+'</dd></div>'+
-    '<div><dt>Tiempo con señal</dt><dd>'+tcEsc(c.totalSignalDurationSec!=null?tcFmtDurationHuman(c.totalSignalDurationSec):'Sin datos')+'</dd></div>'+
-    '<div><dt>Promedio diario jornada</dt><dd>'+tcEsc(c.avgDailyDurationSec!=null?tcFmtDurationHuman(c.avgDailyDurationSec):'—')+'</dd></div>'+
-    '<div><dt>Promedio diario señal</dt><dd>'+tcEsc(c.avgDailySignalSec!=null?tcFmtDurationHuman(c.avgDailySignalSec):'—')+'</dd></div>'+
-    '<div><dt>Conexión efectiva</dt><dd>'+tcEsc(tcFmtConnectionPct(c.overallConnectionEffectivePercent))+'</dd></div>'+
-    '<div><dt>Brecha alta</dt><dd>'+tcEsc(String(c.highGapSessionCount||0))+' jornada'+(c.highGapSessionCount===1?'':'s')+'</dd></div>'+
-    '</dl>';
-  if(exp!=null&&exp>0&&c.totalSignalDurationSec!=null&&fullN>0){
-    const cov=Math.min(100, Math.round((c.totalSignalDurationSec/(exp*60*fullN))*1000)/10);
-    html+='<p style="margin:0 0 10px;font-size:12px;">Cobertura de conexión vs. jornada esperada (solo medición completa): <strong>'+tcEsc(String(cov))+' %</strong></p>';
-  }
-  html+='<div class="tc-conn-chart-tabs" role="tablist" aria-label="Gráfica de conexión">'+
-    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='daily'?' tc-conn-chart-tab--on':'')+'" onclick="tcConnChartSetMode(\'daily\')">Diario</button>'+
-    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='weekly'?' tc-conn-chart-tab--on':'')+'" onclick="tcConnChartSetMode(\'weekly\')">Semanal</button>'+
-    '</div><div id="tc-conn-chart-root"></div>';
+  let html='<div class="tc-conn-chart-tabs" role="tablist" aria-label="Tendencia de conexión">'+
+    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='daily'?' tc-conn-chart-tab--on':'')+'" data-conn-mode="daily" onclick="tcConnChartSetMode(\'daily\')">Diario</button>'+
+    '<button type="button" class="tc-conn-chart-tab'+(tcConnChartMode==='weekly'?' tc-conn-chart-tab--on':'')+'" data-conn-mode="weekly" onclick="tcConnChartSetMode(\'weekly\')">Semanal</button>'+
+    '</div><div id="tc-conn-chart-root"></div>'+
+    '<div class="tc-conn-chart-legend"><span><span class="tc-conn-legend-swatch tc-conn-legend-swatch--dur" aria-hidden="true"></span>Jornada</span><span><span class="tc-conn-legend-swatch tc-conn-legend-swatch--sig" aria-hidden="true"></span>Señal</span></div>';
   body.innerHTML=html;
   tcConnChartRender();
 }
 function tcConnChartSetMode(mode){
   tcConnChartMode=mode==='weekly'?'weekly':'daily';
-  tcRenderConnectionSummary();
+  const tabs=document.querySelectorAll('#tc-conn-trend-body .tc-conn-chart-tab');
+  tabs.forEach(function(btn){
+    btn.classList.toggle('tc-conn-chart-tab--on',btn.getAttribute('data-conn-mode')===tcConnChartMode);
+  });
+  tcConnChartRender();
+}
+function tcConnChartEnsureTip(){
+  let tip=document.getElementById('tc-conn-chart-tip');
+  const dlg=document.getElementById('tc-history-dialog');
+  if(!tip&&dlg){
+    tip=document.createElement('div');
+    tip.id='tc-conn-chart-tip';
+    tip.className='tc-conn-chart-tip hidden';
+    tip.setAttribute('role','tooltip');
+    dlg.appendChild(tip);
+  }
+  return tip;
+}
+function tcConnChartHideTip(){
+  const tip=document.getElementById('tc-conn-chart-tip');
+  if(tip) tip.classList.add('hidden');
+}
+function tcConnChartShowTip(anchorEl,idx){
+  const tip=tcConnChartEnsureTip();
+  const row=tcConnChartRows[idx];
+  if(!tip||!row||!anchorEl) return;
+  let bodyHtml='<strong>'+tcEsc(row.title)+'</strong>'+
+    'Jornada: '+tcEsc(tcFmtDurationHuman(row.durationSec))+'<br>';
+  if(row.signalSec!=null){
+    bodyHtml+='Señal: '+tcEsc(tcFmtDurationHuman(row.signalSec))+'<br>';
+    const pct=tcConnPctFromDurSig(row.durationSec,row.signalSec);
+    if(pct!=null) bodyHtml+='Conexión efectiva: '+tcEsc(tcFmtConnectionPct(pct));
+  }else{
+    const gap=tcConnChartSignalGapLabel(row);
+    bodyHtml+='Señal: '+tcEsc(gap||'—');
+  }
+  tip.innerHTML=bodyHtml;
+  tip.classList.remove('hidden');
+  const ar=anchorEl.getBoundingClientRect();
+  const tr=tip.getBoundingClientRect();
+  const dlg=document.getElementById('tc-history-dialog');
+  const bounds=dlg?dlg.getBoundingClientRect():{left:8,top:8,right:window.innerWidth-8,bottom:window.innerHeight-8};
+  let left=ar.left+ar.width/2-tr.width/2;
+  let top=ar.top-tr.height-8;
+  if(top<bounds.top+4) top=ar.bottom+8;
+  left=Math.max(bounds.left+4, Math.min(left, bounds.right-tr.width-4));
+  top=Math.max(bounds.top+4, Math.min(top, bounds.bottom-tr.height-4));
+  tip.style.left=left+'px';
+  tip.style.top=top+'px';
+}
+function tcConnChartAttachInteractions(root){
+  if(!root) return;
+  root.querySelectorAll('.tc-conn-chart-focus').forEach(function(btn){
+    const idx=Number(btn.getAttribute('data-conn-chart-idx'));
+    btn.onmouseenter=function(){ tcConnChartShowTip(btn,idx); };
+    btn.onmouseleave=function(){ tcConnChartHideTip(); };
+    btn.onfocus=function(){ tcConnChartShowTip(btn,idx); };
+    btn.onblur=function(){ tcConnChartHideTip(); };
+  });
 }
 function tcConnChartRender(){
   const root=document.getElementById('tc-conn-chart-root');
   const c=tcHistoryPayload&&tcHistoryPayload.connectionSummary;
   if(!root||!c) return;
   const rows=tcConnChartMode==='weekly'?(c.chartWeekly||[]):(c.chartDaily||[]);
-  const withData=rows.filter(function(r){ return r.durationSec>0||(r.signalSec!=null&&r.signalSec>0); });
-  if(!withData.length){
+  const withJornada=rows.filter(function(r){ return (r.durationSec||0)>0; });
+  const limit=tcConnChartMode==='weekly'?4:5;
+  const slice=withJornada.slice(-limit);
+  if(!slice.length){
     root.innerHTML='<p class="tc-conn-chart-empty">Sin datos suficientes de telemetría en este mes.</p>';
+    tcConnChartRows=[];
     return;
   }
   let maxSec=0;
-  withData.forEach(function(r){
-    maxSec=Math.max(maxSec, r.durationSec||0, r.signalSec||0);
+  slice.forEach(function(r){
+    maxSec=Math.max(maxSec, r.durationSec||0, r.signalSec!=null?r.signalSec:0);
   });
   if(maxSec<=0) maxSec=1;
-  let html='<div class="tc-conn-chart" role="img" aria-label="Comparativa duración de jornada y tiempo con señal">';
-  withData.slice(-14).forEach(function(r){
-    const label=tcConnChartMode==='weekly'?('Sem '+String(r.weekStart||'').slice(5)):String(r.date||'').slice(8);
+  tcConnChartRows=slice.map(function(r){
+    const title=tcConnChartMode==='weekly'?tcFmtWeekRangeLabel(r.weekStart,tcJornadaTz):tcFmtChartDayLabel(r.date,tcJornadaTz);
+    return {title:title,durationSec:r.durationSec||0,signalSec:r.signalSec,partialOnly:!!r.partialOnly,noSignalData:!!r.noSignalData};
+  });
+  let html='<div class="tc-conn-chart" role="group" aria-label="Comparativa duración de jornada y tiempo con señal">';
+  slice.forEach(function(r,i){
+    const meta=tcConnChartRows[i];
+    const label=meta.title;
     const durPct=Math.round(((r.durationSec||0)/maxSec)*100);
     const sigPct=r.signalSec!=null?Math.round((r.signalSec/maxSec)*100):0;
-    const par=r.partialOnly?' (parcial)':'';
-    html+='<div class="tc-conn-chart-row"><span title="'+tcEsc(label+par)+'">'+tcEsc(label+par)+'</span><div class="tc-conn-chart-bars">'+
-      '<div class="tc-conn-chart-bar tc-conn-chart-bar--dur" style="width:'+durPct+'%;" title="Jornada"></div>'+
-      (r.signalSec!=null?('<div class="tc-conn-chart-bar tc-conn-chart-bar--sig" style="width:'+sigPct+'%;" title="Señal (medición completa)"></div>'):'')+
-      '</div></div>';
+    let sigHtml='';
+    if(r.signalSec!=null){
+      sigHtml='<span class="tc-conn-chart-bar tc-conn-chart-bar--sig" style="width:'+sigPct+'%;" aria-hidden="true"></span>';
+    }else{
+      const gapLbl=tcConnChartSignalGapLabel(r);
+      if(gapLbl) sigHtml='<span class="tc-conn-chart-nodata">'+tcEsc(gapLbl)+'</span>';
+    }
+    const ariaLabel='Jornada '+label+', duración '+tcFmtDurationHuman(r.durationSec||0);
+    html+='<div class="tc-conn-chart-row"><span class="tc-conn-chart-label">'+tcEsc(label)+'</span><div class="tc-conn-chart-bars">'+
+      '<button type="button" class="tc-conn-chart-focus" data-conn-chart-idx="'+i+'" aria-label="'+tcEsc(ariaLabel)+'">'+
+      '<span class="tc-conn-chart-bar tc-conn-chart-bar--dur" style="width:'+durPct+'%;" aria-hidden="true"></span>'+sigHtml+
+      '</button></div></div>';
   });
   html+='</div>';
   root.innerHTML=html;
+  tcConnChartAttachInteractions(root);
 }
 function tcBuildCalendarHtml(){
   const y=tcHistoryYear;
@@ -14294,52 +14527,51 @@ function tcHideCalPopover(){
 function tcSelectHistoryDay(dayKey){
   tcHistoryPinnedDay=tcHistoryPinnedDay===dayKey?null:dayKey;
   tcRenderCalendar();
-  tcRenderHistoryPinned();
+  tcRenderHistoryDayPanel();
   tcHideCalPopover();
+  if(tcHistoryPinnedDay){
+    requestAnimationFrame(function(){
+      const p=document.getElementById('tc-history-day-panel');
+      if(p) p.scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+  }
 }
-function tcDayDetailHtml(dayKey){
+function tcDayDetailBodyHtml(dayKey){
   if(!dayKey||!tcHistoryPayload||!tcHistoryPayload.days) return '';
   const bucket=tcHistoryPayload.days[dayKey];
   if(!bucket) return '';
-  const title=tcFmtDayTitle(dayKey, tcJornadaTz);
-  let html='<h4>'+tcEsc(title)+'</h4>';
+  let html='';
   if(bucket.sessionCount>1){
-    html+='<p>'+bucket.sessionCount+' jornadas · Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+'</p>';
+    html+='<p class="tc-history-day-summary">'+bucket.sessionCount+' jornadas · Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+'</p>';
   }
   bucket.sessions.forEach(function(s,idx){
     html+='<div class="tc-history-session">';
-    if(bucket.sessionCount>1) html+='<div style="font-weight:700;margin-bottom:4px;">Jornada '+(idx+1)+'</div>';
-    if(s.isOpen){
-      html+='<div style="color:#b45309;font-weight:600;margin-bottom:4px;">Jornada abierta</div>'+
-        'Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
-        'Salida: —<br>'+
-        'Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec))+'<br>'+
-        tcHistorySignalExtraHtml(s, tcJornadaTz);
-    }else{
-      html+='Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
-        'Salida: '+tcEsc(tcFmtTimeLocal(s.checkOutAt, tcJornadaTz))+'<br>'+
-        'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec))+'<br>'+
-        tcHistorySignalExtraHtml(s, tcJornadaTz);
-    }
+    if(bucket.sessionCount>1) html+='<div class="tc-history-session-label">Jornada '+(idx+1)+'</div>';
+    html+=tcHistorySessionMetricsHtml(s, tcJornadaTz);
     html+='</div>';
   });
   return html;
 }
-function tcRenderHistoryPinned(){
-  const el=document.getElementById('tc-history-pinned');
-  if(!el) return;
+function tcRenderHistoryDayPanel(){
+  const panel=document.getElementById('tc-history-day-panel');
+  const titleEl=document.getElementById('tc-history-day-title');
+  const bodyEl=document.getElementById('tc-history-day-body');
+  if(!panel||!bodyEl) return;
   if(!tcHistoryPinnedDay){
-    el.classList.add('hidden');
-    el.innerHTML='';
+    panel.classList.add('hidden');
+    if(titleEl) titleEl.textContent='';
+    bodyEl.innerHTML='';
     return;
   }
-  const html=tcDayDetailHtml(tcHistoryPinnedDay);
-  if(!html){
-    el.classList.add('hidden');
+  const title=tcFmtDayTitle(tcHistoryPinnedDay, tcJornadaTz);
+  const body=tcDayDetailBodyHtml(tcHistoryPinnedDay);
+  if(!body){
+    panel.classList.add('hidden');
     return;
   }
-  el.classList.remove('hidden');
-  el.innerHTML=html;
+  if(titleEl) titleEl.textContent=title;
+  bodyEl.innerHTML=body;
+  panel.classList.remove('hidden');
 }
 let tcKanbanTasks=[];
 let tcKanbanEmpId=null;
