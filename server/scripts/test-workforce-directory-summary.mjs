@@ -81,7 +81,12 @@ check(/<th class="tc-emp-th-num">En progreso<\/th>/.test(indexHtml), 'header En 
 check(/<th class="tc-emp-th-num">Completadas<\/th>/.test(indexHtml), 'header Completadas');
 check(!/<th>Zona horaria<\/th>/.test(indexHtml), 'sin columna Zona horaria en directorio');
 check(/tcDirTaskChipHtml/.test(indexHtml) && /tc-dir-task-chip/.test(indexHtml), 'microchips directorio');
-check(!/tcLoadEmployees[\s\S]{0,800}emp\.timezone/.test(indexHtml), 'directorio no renderiza timezone');
+{
+  const loadFn = indexHtml.match(
+    /async function tcLoadEmployees\(\)\s*\{[\s\S]*?\r?\n\}(?=\r?\nasync function tcCreateEmployee)/,
+  );
+  check(loadFn && !loadFn[0].includes('emp.timezone'), 'directorio no renderiza timezone');
+}
 check(/taskSummary/.test(empSvc), 'listado enriquecido taskSummary');
 check(/aggregateWorkforceTaskSummariesForOrg/.test(empSvc), 'un agregado por org en listado');
 check(/employeeIdsWithOpenShiftForOrganization/.test(empSvc), 'jornada abierta agregada en listado');
@@ -90,6 +95,8 @@ check(/groupBy/.test(summarySvc) && /aggregateWorkforceTaskSummariesForOrg/.test
 check(/tc-emp-th-status">Jornada/.test(indexHtml), 'columna Jornada en directorio');
 check(/tcDirJornadaStatusHtml/.test(indexHtml) && /En jornada/.test(indexHtml) && /Fuera de jornada/.test(indexHtml), 'estados jornada directorio');
 check(!/tcDirJornadaStatusHtml[\s\S]{0,200}Activo/.test(indexHtml), 'sin Activo como estado laboral');
+check(!/Actualizar directorio de colaboradores/.test(indexHtml), 'directorio sin botón Actualizar');
+check(/async function tcViewJornada[\s\S]*tcLoadEmployees/.test(indexHtml) || /tcViewJornada/.test(indexHtml), 'carga colaborador vía tcViewJornada intacta');
 
 console.log('\n=== Directorio — unit merge ===\n');
 

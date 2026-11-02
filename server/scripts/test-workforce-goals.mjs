@@ -157,6 +157,20 @@ check(/tcEmpLoadGoals/.test(indexHtml) && /tc-ws-panel-goals/.test(indexHtml), '
 check(/tcEmpQuickGoGoals/.test(indexHtml), 'quick action Metas');
 check(!/id="tc-ws-quick-goals"[^>]*aria-disabled/.test(indexHtml), 'Metas quick action habilitada');
 check(/tc-goal-assign-modal/.test(indexHtml), 'modal asignar meta');
+check(!/aria-label="Actualizar directorio de colaboradores"/.test(indexHtml), 'sin botón Actualizar en directorio');
+check(!/tc-refresh-btn/.test(indexHtml), 'sin clase tc-refresh-btn huérfana');
+check(/tc-history-refresh-btn/.test(indexHtml) && /aria-label="Actualizar historial"/.test(indexHtml), 'Actualizar historial de jornadas intacto');
+check(/function tcEmpGoalDescHtml/.test(indexHtml), 'helper descripción colaborador');
+check(
+  /function tcEmpBuildGoalCardHtml[\s\S]*tcEmpGoalDescHtml\(g\)/.test(indexHtml) &&
+    /function tcEmpRenderGoals[\s\S]*tcEmpBuildGoalCardHtml/.test(indexHtml),
+  'descripción en Por cumplir y Completadas (misma tarjeta)',
+);
+check(/tc-goal-card-desc/.test(indexHtml) && /-webkit-line-clamp:2/.test(indexHtml), 'descripción limitada a 2 líneas');
+check(/function tcEmpGoalDescHtml[\s\S]*title="'\s*\+\s*tcEsc\(t\)/.test(indexHtml), 'texto completo en title con tcEsc');
+check(!/Sin descripción/.test(indexHtml.match(/function tcEmpGoalDescHtml[\s\S]*?function tcEmpBuildGoalCardHtml/)?.[0] || ''), 'sin placeholder si falta descripción');
+check(/description:\s*goal\.description/.test(goalServiceSrc), 'serializeGoal ya expone description');
+check(!/tcEmpFetchGoalDescription|\/goals\/[^'"]+\/description/.test(indexHtml), 'sin petición adicional por descripción');
 check(indexHtml === publicIndex, 'index.html idéntico a server/public/index.html');
 check(/tcGoalsAdminList=\[\]/.test(indexHtml.match(/async function tcViewJornada[\s\S]*?^async function /m)?.[0] || ''), 'cambio colaborador limpia metas admin');
 check(/function isGoalPeriodUniqueViolation/.test(goalServiceSrc), 'P2002 acotado a goalId+periodStart');
