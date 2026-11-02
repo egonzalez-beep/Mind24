@@ -202,8 +202,14 @@ check(
 check(/Semana anterior/.test(indexHtml) && /Semana siguiente/.test(indexHtml), 'aria semana anterior/siguiente');
 check(/range\.navLabel/.test(indexHtml) && /tc-metrics-trend-range-label/.test(indexHtml), 'etiqueta semanal compacta navLabel');
 check(/tc-metrics-trend-range--monthly/.test(indexHtml) && /visually-hidden/.test(indexHtml), 'vista mensual sin rango visible duplicado');
-check(/Cumplida ≥100 %/.test(indexHtml) && /Parcial 1–99\.9 %/.test(indexHtml) && /Pendiente<\/span>/.test(indexHtml), 'leyenda compacta');
-check(/tc-metrics-chart-legend/.test(indexHtml) && /grid-template-columns:repeat\(4/.test(indexHtml), 'leyenda en fila (grid 4) en escritorio');
+check(/Cumplida ≥100 %/.test(indexHtml) && /Parcial 1–99\.9 %/.test(indexHtml) && /No cumplida \/ vencida/.test(indexHtml), 'leyenda compacta (3 estados)');
+check(
+  !indexHtml.includes('tc-metrics-legend-dot--pending" aria-hidden="true"></span>Pendiente'),
+  'leyenda sin Pendiente en evolución',
+);
+check(/tc-metrics-chart-legend/.test(indexHtml) && /grid-template-columns:repeat\(3/.test(indexHtml), 'leyenda en fila (grid 3) en escritorio');
+check(/tc-metrics-panel--goals[\s\S]*max-height:min\(400px/.test(indexHtml), 'panel metas altura acotada en laptop');
+check(/\.tc-metrics-goal-list\{[^}]*overflow-y:auto/.test(indexHtml) && /height:min\(400px,52vh\)/.test(indexHtml), 'listado metas con scroll interno en desktop');
 check(/tcMetricsQuantAccumHtml/.test(indexHtml) && /quantitativeAccumulated/.test(indexHtml) && /tc-metrics-goal-row-accum/.test(indexHtml), 'acumulado cuantitativo en desempeño');
 check(/tcMetricsBindChartResize/.test(indexHtml) && /ResizeObserver/.test(indexHtml) && /viewBox="0 0/.test(indexHtml), 'gráfica responsive viewBox + ResizeObserver');
 check(/tcMetricsChartSvgHeight/.test(indexHtml) && /Math\.min\(220,\s*Math\.max\(168/.test(indexHtml), 'altura SVG acotada 168–220');
