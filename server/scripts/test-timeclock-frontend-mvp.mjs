@@ -127,6 +127,11 @@ check(/tc-emp-attendance-active/.test(indexHtml), 'attendance panel wrapper');
 const mePublicFn = tcPublicRoutes.match(/function sessionToPublicMe[\s\S]*?^}/m)?.[0] || '';
 check(/employeeId: emp\.id/.test(mePublicFn) && /organizationId: emp\.organizationId/.test(mePublicFn), 'portal /me incluye ids para storage aislado');
 check(/tcEmpPortalStorageIdentity/.test(indexHtml), 'helper identidad portal en frontend');
+check(/id="tc-emp-work-log-btn"/.test(indexHtml) && /tc-ws-jornada-top-actions/.test(indexHtml), 'bitácora icon en tarjeta sin toolbar nueva');
+check(/\/api\/timeclock\/public\/session\/work-log/.test(indexHtml), 'endpoint envío bitácora');
+check(/tcEmpSyncWorkLogBtn/.test(indexHtml) && /Registrar bitácora/.test(indexHtml), 'estados tooltip bitácora');
+check(/Bitácora de jornada/.test(indexHtml) && /Enviar bitácora/.test(indexHtml), 'modal colaborador');
+check(/openSession\.workLog/.test(indexHtml), 'estado local workLog tras enviar');
 
 console.log(failed === 0 ? '\n✓ Timeclock 1C frontend tests OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);

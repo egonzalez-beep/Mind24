@@ -31,6 +31,7 @@ import {
   resolveShiftLifecycle,
   summarizeOpenSession,
 } from '../services/remoteWorkSession.service.js';
+import { submitWorkLogForOpenSession } from '../services/remoteWorkSessionWorkLog.service.js';
 import {
   resolveCurrentWebSignal,
   webSignalLabel,
@@ -194,6 +195,28 @@ router.post(
           status: session.status,
         },
         created,
+        serverTime: new Date().toISOString(),
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.post(
+  '/session/work-log',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  async (req, res, next) => {
+    try {
+      const body = z.object({ text: z.string() }).strict().parse(req.body ?? {});
+      const { workLog } = await submitWorkLogForOpenSession({
+        employeeId: req.timeclockEmployee.id,
+        text: body.text,
+      });
+      res.status(201).json({
+        workLog,
         serverTime: new Date().toISOString(),
       });
     } catch (e) {

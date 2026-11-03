@@ -1,6 +1,7 @@
 import { prisma } from '../db/client.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
 import { workedDurationSec } from './remoteWorkSession.service.js';
+import { sessionHasValidWorkLog } from './remoteWorkSessionWorkLog.service.js';
 import {
   connectionEffectivePercent,
   enrichSessionSignalMetrics,
@@ -72,6 +73,7 @@ export function sanitizeSessionRow(session, now = new Date(), opts = {}) {
     connectionVisualLevel: metrics.connectionVisualLevel,
     signalTrackingStartedAt: metrics.signalTrackingStartedAt,
     expectedCoveragePercent: metrics.expectedCoveragePercent,
+    hasWorkLog: sessionHasValidWorkLog(session),
   };
 }
 
@@ -234,6 +236,8 @@ const SESSION_HISTORY_SELECT = {
   signalLastCreditedAt: true,
   signalSampleCount: true,
   signalTelemetryStatus: true,
+  workLogText: true,
+  workLogSubmittedAt: true,
 };
 
 /**

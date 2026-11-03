@@ -265,12 +265,12 @@ try {
 }
 
 if (dbOk) {
-  console.log('  SKIP concurrent heartbeat (2 tabs) — not automated');
-  console.log('  SKIP checkout vs heartbeat race — not automated');
+  console.log('  SKIP concurrent heartbeat (2 tabs) — not automated, not a concurrency certification');
+  console.log('  SKIP checkout vs heartbeat race — not automated, not a concurrency certification');
   console.log('  SKIP multi-tenant isolation — use test-timeclock-schema-and-backend');
   await prisma.$disconnect();
 } else {
-  console.log('  SKIP all Postgres concurrency / FOR UPDATE certification');
+  console.log('  SKIP Postgres concurrency — this run is not a FOR UPDATE certification');
 }
 
 console.log(failed ? `\n${failed} failed\n` : '\nAll checks passed.\n');

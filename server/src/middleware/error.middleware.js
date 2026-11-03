@@ -40,6 +40,8 @@ const STATUS = {
   RATE_LIMIT: 429,
   PARTIAL_DELETE: 500,
   ATTENDANCE_NOT_CONFIGURED: 403,
+  WORK_SESSION_NOT_OPEN: 409,
+  WORK_LOG_ALREADY_SUBMITTED: 409,
 };
 
 export function errorHandler(err, req, res, next) {

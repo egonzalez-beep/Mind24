@@ -10,15 +10,8 @@ import {
   planHeartbeatSignalCredit,
   signalTrackingFieldsAtCheckIn,
 } from './remoteWorkSignalDuration.service.js';
-
-async function lockOpenSessionRow(tx, sessionId) {
-  await tx.$executeRaw`
-    SELECT 1 FROM "RemoteWorkSession"
-    WHERE id = ${sessionId} AND "checkOutAt" IS NULL
-    FOR UPDATE
-  `;
-  return tx.remoteWorkSession.findUnique({ where: { id: sessionId } });
-}
+import { workLogPayloadFromSession } from './remoteWorkSessionWorkLog.service.js';
+import { lockOpenSessionRow } from '../utils/remoteWorkSessionLock.util.js';
 
 export function resolveShiftLifecycle(openSession) {
   if (!openSession) return 'OFF_DUTY';
@@ -39,6 +32,7 @@ export function summarizeOpenSession(session, now = new Date()) {
     lastHeartbeatAt: session.lastHeartbeatAt,
     webSignal,
     webSignalLabel: webSignalLabel(webSignal),
+    workLog: workLogPayloadFromSession(session),
   };
 }
 
@@ -294,12 +288,7 @@ export async function adminCloseRemoteWorkSession({
     if (session.checkOutAt) {
       return { session, alreadyClosed: true };
     }
-    await tx.$executeRaw`
-      SELECT 1 FROM "RemoteWorkSession"
-      WHERE id = ${sessionId} AND "checkOutAt" IS NULL
-      FOR UPDATE
-    `;
-    const locked = await tx.remoteWorkSession.findUnique({ where: { id: sessionId } });
+    const locked = await lockOpenSessionRow(tx, sessionId);
     const closeCredit = planCloseSignalCredit(locked, now);
     const updated = await tx.remoteWorkSession.update({
       where: { id: sessionId },

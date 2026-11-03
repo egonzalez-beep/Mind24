@@ -1371,7 +1371,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-history-day-summary{margin:0 0 8px;font-size:11px;color:var(--slate-500);}
 .tc-history-session{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);}
 .tc-history-session:first-child{margin-top:0;padding-top:0;border-top:none;}
+.tc-history-session-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;min-height:0;}
+.tc-history-session-head .tc-history-session-label{margin:0;flex:1;min-width:0;}
 .tc-history-session-label{font-size:11px;font-weight:700;color:var(--slate-600);margin-bottom:4px;}
+.tc-work-log-modal{width:min(480px,calc(100vw - 32px));max-height:min(88vh,640px);display:flex;flex-direction:column;}
+.tc-work-log-modal-body{overflow:auto;flex:1;min-height:0;}
+.tc-work-log-modal-lead{font-size:13px;color:var(--slate-600);margin:0 0 12px;line-height:1.45;}
+.tc-work-log-modal-note{font-size:12px;color:var(--slate-500);margin:0 0 10px;line-height:1.4;}
+.tc-work-log-textarea{width:100%;box-sizing:border-box;min-height:140px;max-height:min(40vh,320px);resize:vertical;border:1px solid var(--slate-200);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:16px;line-height:1.45;margin:0 0 6px;}
+.tc-work-log-char-count{font-size:11px;color:var(--slate-500);text-align:right;margin:0 0 10px;}
+.tc-work-log-read{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;font-size:14px;line-height:1.5;color:var(--primary);margin:0;padding:10px 12px;border:1px solid var(--slate-100);border-radius:8px;background:var(--slate-50);max-height:min(50vh,360px);overflow:auto;}
+.tc-work-log-meta{font-size:12px;color:var(--slate-500);margin:10px 0 0;line-height:1.4;}
 .tc-history-session-dl{margin:0;display:grid;gap:6px 20px;max-width:100%;justify-items:start;}
 .tc-history-session-dl>div{display:grid;grid-template-columns:max-content minmax(0,max-content);gap:8px 20px;align-items:baseline;width:100%;max-width:360px;}
 .tc-history-session-dl dt{margin:0;font-size:11px;font-weight:600;color:var(--slate-500);text-align:left;white-space:nowrap;}
@@ -1603,6 +1613,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:rgba(148,163,184,.22);background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);}
 .tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-shrink:0;}
 .tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
+.tc-ws-jornada-top-actions{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;}
+.tc-ws-jornada-work-log-btn{width:36px;height:36px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;position:relative;transition:var(--tr-fast);}
+.tc-ws-jornada-work-log-btn:hover{border-color:var(--slate-300);background:var(--slate-50);}
+.tc-ws-jornada-work-log-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-ws-jornada-work-log-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.tc-ws-jornada-work-log-btn--done{color:#15803d;border-color:rgba(34,197,94,.35);}
+.tc-ws-jornada-work-log-btn--done::after{content:'';position:absolute;right:3px;bottom:3px;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 1px #fff;}
 .tc-ws-jornada-info-wrap{position:relative;flex-shrink:0;}
 .tc-ws-jornada-info{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:help;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
 .tc-ws-jornada-info svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
@@ -3729,6 +3746,20 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="card-body" id="tc-jornada-body"></div>
       </div>
+      <div id="tc-admin-work-log-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcAdminCloseWorkLogModal()">
+        <div class="tc-task-modal tc-work-log-modal" role="dialog" aria-labelledby="tc-admin-work-log-title" aria-modal="true" onclick="event.stopPropagation()">
+          <h3 id="tc-admin-work-log-title" style="margin:0 0 8px;font-size:17px;font-weight:800;color:var(--primary);">Bitácora de jornada</h3>
+          <p class="tc-work-log-modal-lead" id="tc-admin-work-log-sub">—</p>
+          <div class="tc-work-log-modal-body" id="tc-admin-work-log-body">
+            <p class="tc-goal-empty" id="tc-admin-work-log-loading">Cargando…</p>
+          </div>
+          <p class="tc-task-modal-err hidden" id="tc-admin-work-log-err"></p>
+          <div class="tc-task-modal-actions" style="margin-top:12px;">
+            <button type="button" class="card-action hidden" id="tc-admin-work-log-retry" onclick="tcAdminRetryWorkLog()">Reintentar</button>
+            <button type="button" class="card-action" onclick="tcAdminCloseWorkLogModal()">Cerrar</button>
+          </div>
+        </div>
+      </div>
       <div id="tc-history-backdrop" class="tc-history-backdrop hidden" aria-hidden="true"></div>
       <div id="tc-history-dialog" class="tc-history-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="tc-history-dialog-title" aria-hidden="true">
         <div class="tc-history-dialog-head">
@@ -3881,11 +3912,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <article class="tc-ws-jornada-mini" id="tc-emp-jornada-mini" aria-label="Jornada">
               <div class="tc-ws-jornada-mini-top">
                 <span class="tc-ws-jornada-label">Jornada</span>
-                <span class="tc-ws-jornada-info-wrap">
-                  <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-info-btn" aria-describedby="tc-ws-jornada-info-tip" title="Privacidad de asistencia" onmouseenter="tcEmpOpenJornadaInfoTip()" onfocus="tcEmpOpenJornadaInfoTip()" onmouseleave="tcEmpCloseJornadaInfoTip()" onblur="tcEmpCloseJornadaInfoTip()">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                  </button>
-                  <span class="tc-ws-jornada-info-tip" id="tc-ws-jornada-info-tip" role="tooltip"></span>
+                <span class="tc-ws-jornada-top-actions">
+                  <button type="button" class="tc-ws-jornada-work-log-btn hidden" id="tc-emp-work-log-btn" onclick="tcEmpOpenWorkLogModal()" title="Registrar bitácora" aria-label="Registrar bitácora de jornada"><span id="tc-emp-work-log-btn-icon" aria-hidden="true"></span></button>
+                  <span class="tc-ws-jornada-info-wrap">
+                    <button type="button" class="tc-ws-jornada-info" id="tc-ws-jornada-info-btn" aria-describedby="tc-ws-jornada-info-tip" title="Privacidad de asistencia" onmouseenter="tcEmpOpenJornadaInfoTip()" onfocus="tcEmpOpenJornadaInfoTip()" onmouseleave="tcEmpCloseJornadaInfoTip()" onblur="tcEmpCloseJornadaInfoTip()">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    </button>
+                    <span class="tc-ws-jornada-info-tip" id="tc-ws-jornada-info-tip" role="tooltip"></span>
+                  </span>
                 </span>
               </div>
               <div class="tc-ws-jornada-body">
@@ -4279,6 +4313,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 </div>
 
 <!-- Mind Fitness (fuera de vistas para que position:fixed no quede atrapado en .hidden) -->
+<div id="tc-emp-work-log-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcEmpCloseWorkLogModal()">
+  <div class="tc-task-modal tc-work-log-modal" role="dialog" aria-labelledby="tc-emp-work-log-title" aria-modal="true" onclick="event.stopPropagation()">
+    <h3 id="tc-emp-work-log-title" style="margin:0 0 8px;font-size:17px;font-weight:800;color:var(--primary);">Bitácora de jornada</h3>
+    <div id="tc-emp-work-log-compose">
+      <p class="tc-work-log-modal-lead">Registra de forma breve las actividades o avances de tu jornada.</p>
+      <p class="tc-work-log-modal-note">Después de enviarla no podrás editarla.</p>
+      <textarea id="tc-emp-work-log-input" class="tc-work-log-textarea" maxlength="4000" rows="6" aria-describedby="tc-emp-work-log-count tc-emp-work-log-err" placeholder="" oninput="tcEmpWorkLogUpdateCount()"></textarea>
+      <p class="tc-work-log-char-count" id="tc-emp-work-log-count" aria-live="polite">0 / 4000</p>
+      <p class="tc-task-modal-err hidden" id="tc-emp-work-log-err"></p>
+      <div class="tc-task-modal-actions">
+        <button type="button" class="card-action" onclick="tcEmpCloseWorkLogModal()">Cancelar</button>
+        <button type="button" class="tc-kanban-assign-btn" id="tc-emp-work-log-submit" onclick="tcEmpSubmitWorkLog()">Enviar bitácora</button>
+      </div>
+    </div>
+    <div id="tc-emp-work-log-read" class="hidden">
+      <div class="tc-work-log-read" id="tc-emp-work-log-read-text"></div>
+      <p class="tc-work-log-meta" id="tc-emp-work-log-read-meta"></p>
+      <div class="tc-task-modal-actions">
+        <button type="button" class="card-action" onclick="tcEmpCloseWorkLogModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="tc-ws-novedades-popover" class="tc-ws-novedades-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-ws-novedades-popover-title" aria-hidden="true">
   <div class="tc-ws-novedades-popover-head">
     <h3 id="tc-ws-novedades-popover-title">Novedades</h3>
@@ -7827,6 +7884,213 @@ function tcSvgEye(){
 }
 function tcSvgPencil(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+}
+function tcSvgClipboardLines(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>';
+}
+const TC_WORK_LOG_MAX_CHARS=4000;
+let tcEmpWorkLogSaving=false;
+let tcEmpWorkLogReturnFocus=null;
+let tcAdminWorkLogSessionId=null;
+let tcAdminWorkLogDayKey=null;
+let tcAdminWorkLogAbort=null;
+let tcAdminWorkLogSeq=0;
+let tcJornadaEmpName=null;
+function tcEmpWorkLogUpdateCount(){
+  const ta=document.getElementById('tc-emp-work-log-input');
+  const el=document.getElementById('tc-emp-work-log-count');
+  const len=ta?String(ta.value||'').length:0;
+  if(el) el.textContent=len+' / '+TC_WORK_LOG_MAX_CHARS;
+}
+function tcEmpSyncWorkLogBtn(){
+  const btn=document.getElementById('tc-emp-work-log-btn');
+  const icon=document.getElementById('tc-emp-work-log-btn-icon');
+  const me=tcEmpMe||{};
+  const open=me.openSession;
+  if(!btn||!icon) return;
+  if(!(open&&open.checkInAt)){
+    btn.classList.add('hidden');
+    return;
+  }
+  btn.classList.remove('hidden');
+  icon.innerHTML=tcSvgClipboardLines();
+  const wl=open.workLog||{submitted:false};
+  if(wl.submitted){
+    btn.classList.add('tc-ws-jornada-work-log-btn--done');
+    btn.title='Ver bitácora';
+    btn.setAttribute('aria-label','Ver bitácora de jornada');
+  }else{
+    btn.classList.remove('tc-ws-jornada-work-log-btn--done');
+    btn.title='Registrar bitácora';
+    btn.setAttribute('aria-label','Registrar bitácora de jornada');
+  }
+}
+function tcEmpWorkLogIsDirty(){
+  const compose=document.getElementById('tc-emp-work-log-compose');
+  if(!compose||compose.classList.contains('hidden')) return false;
+  const ta=document.getElementById('tc-emp-work-log-input');
+  return !!(ta&&String(ta.value||'').trim());
+}
+function tcEmpShowWorkLogRead(wl){
+  const textEl=document.getElementById('tc-emp-work-log-read-text');
+  const meta=document.getElementById('tc-emp-work-log-read-meta');
+  const tz=(tcEmpMe&&tcEmpMe.timezone)||'America/Mexico_City';
+  if(textEl) textEl.textContent=wl&&wl.text!=null?String(wl.text):'';
+  if(meta&&wl&&wl.submittedAt){
+    try{
+      meta.textContent='Enviada el '+new Date(wl.submittedAt).toLocaleString('es-MX',{timeZone:tz,dateStyle:'medium',timeStyle:'short'});
+    }catch(_){ meta.textContent=''; }
+  }else if(meta) meta.textContent='';
+}
+function tcEmpOpenWorkLogModal(){
+  const me=tcEmpMe||{};
+  const open=me.openSession;
+  if(!(open&&open.checkInAt)) return;
+  const wl=open.workLog||{submitted:false};
+  tcEmpWorkLogReturnFocus=document.getElementById('tc-emp-work-log-btn');
+  const bd=document.getElementById('tc-emp-work-log-backdrop');
+  const compose=document.getElementById('tc-emp-work-log-compose');
+  const read=document.getElementById('tc-emp-work-log-read');
+  const err=document.getElementById('tc-emp-work-log-err');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(wl.submitted){
+    if(compose) compose.classList.add('hidden');
+    if(read) read.classList.remove('hidden');
+    tcEmpShowWorkLogRead(wl);
+  }else{
+    if(read) read.classList.add('hidden');
+    if(compose) compose.classList.remove('hidden');
+    const ta=document.getElementById('tc-emp-work-log-input');
+    if(ta){ ta.value=''; tcEmpWorkLogUpdateCount(); }
+    requestAnimationFrame(function(){ if(ta) ta.focus(); });
+  }
+  if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+}
+function tcEmpCloseWorkLogModal(force){
+  if(!force&&tcEmpWorkLogIsDirty()){
+    if(!window.confirm('Tienes cambios sin guardar. ¿Deseas descartarlos?')) return;
+  }
+  const bd=document.getElementById('tc-emp-work-log-backdrop');
+  if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+  const focus=tcEmpWorkLogReturnFocus;
+  tcEmpWorkLogReturnFocus=null;
+  if(focus&&typeof focus.focus==='function') focus.focus();
+}
+async function tcEmpSubmitWorkLog(){
+  if(tcEmpWorkLogSaving) return;
+  const ta=document.getElementById('tc-emp-work-log-input');
+  const err=document.getElementById('tc-emp-work-log-err');
+  const submit=document.getElementById('tc-emp-work-log-submit');
+  const raw=ta?ta.value:'';
+  if(!String(raw).trim()){
+    if(err){ err.textContent='Escribe la bitácora antes de enviar.'; err.classList.remove('hidden'); }
+    return;
+  }
+  if(!window.confirm('Después de enviarla no podrás editarla.\n\n¿Enviar bitácora ahora?')) return;
+  tcEmpWorkLogSaving=true;
+  if(submit) submit.disabled=true;
+  if(err) err.classList.add('hidden');
+  try{
+    const j=await tcPublicJson('/api/timeclock/public/session/work-log',{method:'POST',body:JSON.stringify({text:raw})});
+    if(tcEmpMe&&tcEmpMe.openSession&&j&&j.workLog) tcEmpMe.openSession.workLog=j.workLog;
+    tcEmpSyncWorkLogBtn();
+    const compose=document.getElementById('tc-emp-work-log-compose');
+    const read=document.getElementById('tc-emp-work-log-read');
+    if(compose) compose.classList.add('hidden');
+    if(read) read.classList.remove('hidden');
+    tcEmpShowWorkLogRead(j.workLog||{});
+  }catch(e){
+    if(err){ err.textContent=e.message||'No se pudo enviar la bitácora.'; err.classList.remove('hidden'); }
+  }finally{
+    tcEmpWorkLogSaving=false;
+    if(submit) submit.disabled=false;
+  }
+}
+function tcHistorySessionWorkLogBtnHtml(s){
+  if(!s||!s.hasWorkLog) return '';
+  const sid=String(s.id||'').replace(/'/g,'');
+  const day=String(tcHistoryPinnedDay||'').replace(/'/g,'');
+  return '<button type="button" class="tc-icon-btn tc-icon-btn--view tc-work-log-history-btn" title="Ver bitácora" aria-label="Ver bitácora de esta jornada" onclick="tcAdminOpenWorkLog(\''+sid+'\',\''+day+'\')">'+tcSvgClipboardLines()+'</button>';
+}
+function tcAdminCloseWorkLogModal(){
+  if(tcAdminWorkLogAbort){ tcAdminWorkLogAbort.abort(); tcAdminWorkLogAbort=null; }
+  tcAdminWorkLogSeq+=1;
+  tcAdminWorkLogSessionId=null;
+  tcAdminWorkLogDayKey=null;
+  const bd=document.getElementById('tc-admin-work-log-backdrop');
+  if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+}
+function tcAdminRenderWorkLogLoading(){
+  const body=document.getElementById('tc-admin-work-log-body');
+  const err=document.getElementById('tc-admin-work-log-err');
+  const retry=document.getElementById('tc-admin-work-log-retry');
+  if(body) body.innerHTML='<p class="tc-goal-empty" id="tc-admin-work-log-loading">Cargando…</p>';
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(retry) retry.classList.add('hidden');
+}
+function tcAdminRenderWorkLogRead(j){
+  const body=document.getElementById('tc-admin-work-log-body');
+  const err=document.getElementById('tc-admin-work-log-err');
+  const retry=document.getElementById('tc-admin-work-log-retry');
+  const sub=document.getElementById('tc-admin-work-log-sub');
+  const tz=tcJornadaTz||'America/Mexico_City';
+  const name=tcJornadaEmpName||'—';
+  let dayLabel=tcAdminWorkLogDayKey?tcFmtDayTitle(tcAdminWorkLogDayKey,tz):'';
+  if(!dayLabel&&j&&j.checkInAt){
+    try{ dayLabel=tcFmtDayTitle(tcYmdInTimeZone(j.checkInAt,tz),tz); }catch(_){}
+  }
+  if(sub) sub.textContent=name+(dayLabel?' · '+dayLabel:'');
+  let sent='';
+  if(j&&j.submittedAt){
+    try{
+      sent='Enviada el '+new Date(j.submittedAt).toLocaleString('es-MX',{timeZone:tz,dateStyle:'medium',timeStyle:'short'});
+    }catch(_){}
+  }
+  if(body){
+    body.innerHTML=
+      '<div class="tc-work-log-read" id="tc-admin-work-log-text"></div>'+
+      (sent?'<p class="tc-work-log-meta">'+tcEsc(sent)+'</p>':'');
+    const textEl=document.getElementById('tc-admin-work-log-text');
+    if(textEl) textEl.textContent=j&&j.text!=null?String(j.text):'';
+  }
+  if(err) err.classList.add('hidden');
+  if(retry) retry.classList.add('hidden');
+}
+async function tcAdminFetchWorkLog(){
+  if(!tcJornadaEmpId||!tcAdminWorkLogSessionId) return;
+  const seq=++tcAdminWorkLogSeq;
+  if(tcAdminWorkLogAbort){ tcAdminWorkLogAbort.abort(); }
+  tcAdminWorkLogAbort=new AbortController();
+  tcAdminRenderWorkLogLoading();
+  try{
+    const j=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/sessions/'+encodeURIComponent(tcAdminWorkLogSessionId)+'/work-log',{signal:tcAdminWorkLogAbort.signal});
+    if(seq!==tcAdminWorkLogSeq) return;
+    tcAdminRenderWorkLogRead(j||{});
+  }catch(e){
+    if(e&&e.name==='AbortError') return;
+    if(seq!==tcAdminWorkLogSeq) return;
+    const body=document.getElementById('tc-admin-work-log-body');
+    if(body) body.innerHTML='';
+    const err=document.getElementById('tc-admin-work-log-err');
+    const retry=document.getElementById('tc-admin-work-log-retry');
+    if(err){ err.textContent=e.message||'No se pudo cargar la bitácora.'; err.classList.remove('hidden'); }
+    if(retry) retry.classList.remove('hidden');
+  }finally{
+    if(seq===tcAdminWorkLogSeq) tcAdminWorkLogAbort=null;
+  }
+}
+function tcAdminOpenWorkLog(sessionId,dayKey){
+  if(!tcJornadaEmpId||!sessionId) return;
+  tcAdminWorkLogSessionId=sessionId;
+  tcAdminWorkLogDayKey=dayKey||null;
+  const bd=document.getElementById('tc-admin-work-log-backdrop');
+  const sub=document.getElementById('tc-admin-work-log-sub');
+  if(sub) sub.textContent=tcJornadaEmpName||'—';
+  if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+  tcAdminFetchWorkLog();
+}
+function tcAdminRetryWorkLog(){
+  tcAdminFetchWorkLog();
 }
 function tcEmpPhotoUrl(emp){
   if(!emp||!emp.profilePhotoPath) return '';
@@ -14329,6 +14593,7 @@ function tcConnPctFromDurSig(durationSec,signalSec){
 }
 function tcResetHistoryState(emp){
   tcJornadaEmpId=emp.id||null;
+  tcJornadaEmpName=emp.fullName||null;
   tcJornadaTz=emp.timezone||'America/Mexico_City';
   tcCloseHistoryDialog(false);
   tcHistoryPinnedDay=null;
@@ -14878,7 +15143,11 @@ function tcDayDetailBodyHtml(dayKey){
   }
   bucket.sessions.forEach(function(s,idx){
     html+='<div class="tc-history-session">';
-    if(bucket.sessionCount>1) html+='<div class="tc-history-session-label">Jornada '+(idx+1)+'</div>';
+    if(bucket.sessionCount>1){
+      html+='<div class="tc-history-session-head"><div class="tc-history-session-label">Jornada '+(idx+1)+'</div>'+tcHistorySessionWorkLogBtnHtml(s)+'</div>';
+    }else if(s.hasWorkLog){
+      html+='<div class="tc-history-session-head">'+tcHistorySessionWorkLogBtnHtml(s)+'</div>';
+    }
     html+=tcHistorySessionMetricsHtml(s, tcJornadaTz);
     html+='</div>';
   });
@@ -16353,6 +16622,7 @@ function tcEmpRender(){
     if(!(open&&open.checkInAt)) tcEmpStopHeartbeat();
     tcEmpJornadaSetView('wait');
     tcEmpSyncJornadaInfoTip('idle');
+    tcEmpSyncWorkLogBtn();
     return;
   }
   if(completed&&completed.checkOutAt){
@@ -16364,6 +16634,7 @@ function tcEmpRender(){
     if(sigRow) sigRow.innerHTML=tcEmpJornadaSignalHtml(null);
     tcEmpSyncJornadaInfoTip('done');
     if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
+    tcEmpSyncWorkLogBtn();
     return;
   }
   if(open&&open.checkInAt){
@@ -16383,6 +16654,7 @@ function tcEmpRender(){
       const el=document.getElementById('tc-emp-elapsed');
       if(el) el.textContent=tcEmpElapsed();
     },1000);
+    tcEmpSyncWorkLogBtn();
     return;
   }
   tcEmpSyncAttendanceLiveIndicator(false);
@@ -16396,6 +16668,7 @@ function tcEmpRender(){
   }
   tcEmpSyncJornadaInfoTip('wait');
   if(tcCounterTimer){ clearInterval(tcCounterTimer); tcCounterTimer=null; }
+  tcEmpSyncWorkLogBtn();
 }
 function tcEmpStartHeartbeat(){
   if(tcHeartbeatTimer) return;
@@ -16708,6 +16981,13 @@ window.tcEmpQuickGoGoals=tcEmpQuickGoGoals;
 window.tcEmpLoadGoals=tcEmpLoadGoals;
 window.tcEmpGoalReportBinary=tcEmpGoalReportBinary;
 window.tcEmpGoalReportQuantitative=tcEmpGoalReportQuantitative;
+window.tcEmpOpenWorkLogModal=tcEmpOpenWorkLogModal;
+window.tcEmpCloseWorkLogModal=tcEmpCloseWorkLogModal;
+window.tcEmpSubmitWorkLog=tcEmpSubmitWorkLog;
+window.tcEmpWorkLogUpdateCount=tcEmpWorkLogUpdateCount;
+window.tcAdminOpenWorkLog=tcAdminOpenWorkLog;
+window.tcAdminCloseWorkLogModal=tcAdminCloseWorkLogModal;
+window.tcAdminRetryWorkLog=tcAdminRetryWorkLog;
 window.tcEmpGoalUpdatePreview=tcEmpGoalUpdatePreview;
 window.tcKanbanOpenAssign=tcKanbanOpenAssign;
 window.tcKanbanCloseAssign=tcKanbanCloseAssign;

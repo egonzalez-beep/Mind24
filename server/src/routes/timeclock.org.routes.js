@@ -6,6 +6,7 @@ import {
   adminCloseRemoteWorkSession,
 } from '../services/remoteWorkSession.service.js';
 import { listEmployeeSessionsHistory } from '../services/remoteWorkSessionHistory.service.js';
+import { getSessionWorkLogForAdmin } from '../services/remoteWorkSessionWorkLog.service.js';
 import {
   assertWorkforceEmployeeInOrg,
   createWorkforceEmployee,
@@ -149,6 +150,20 @@ router.get('/employees/:id/sessions', async (req, res, next) => {
       employeeId: req.params.id,
       fromKey: from,
       toKey: to,
+    });
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:employeeId/sessions/:sessionId/work-log', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const out = await getSessionWorkLogForAdmin({
+      organizationId: u.organizationId,
+      employeeId: req.params.employeeId,
+      sessionId: req.params.sessionId,
     });
     res.json(out);
   } catch (e) {

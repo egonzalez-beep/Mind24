@@ -336,6 +336,8 @@ check(/Sin datos de señal/.test(indexHtml), 'copy no_data en gráfica');
 check(/tcConnChartSignalGapLabel/.test(indexHtml), 'helper gap señal gráfica');
 check(/noSignalData/.test(indexHtml), 'frontend reconoce noSignalData');
 check(/tcHistorySessionMetricsHtml/.test(indexHtml), 'detalle sesión estructurado');
+check(/hasWorkLog/.test(indexHtml) || /tcHistorySessionWorkLogBtnHtml/.test(indexHtml), 'botón bitácora en historial');
+check(/tcAdminOpenWorkLog/.test(indexHtml), 'modal admin bitácora on-demand');
 check(!/tcHistorySignalExtraHtml/.test(indexHtml), 'sin helper detalle antiguo');
 check(!/function tcHistorySessionMetricsHtml[\s\S]*?TC_SIGNAL_CONN_HELP/.test(indexHtml), 'sin párrafo ayuda en detalle historial');
 check(/tcRefreshHistory/.test(indexHtml) && /aria-label="Actualizar historial"/.test(indexHtml), 'botón refresh historial');
