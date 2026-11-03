@@ -200,6 +200,36 @@ check(!/Actividad reciente/.test(indexHtml), 'sin activity feed');
 check(!/rec-cand-module-tab|Experiencia.*Formación.*Historial/.test(indexHtml.replace(/\s+/g,' ')), 'sin tabs falsas');
 check(/detailPrimaryApplication/.test(indexHtml), 'estado proceso principal');
 
+console.log('\n=== Recruitment — navegación anterior/siguiente en expediente (estático) ===\n');
+
+const navSnapFn = indexHtml.match(/function recCandBuildNavSnapshot[\s\S]*?^function /m)?.[0] || '';
+const navKanbanFn = indexHtml.match(/function recCandNavBuildKanbanSnapshot[\s\S]*?^function /m)?.[0] || '';
+check(/moduleTab==='candidates'/.test(navSnapFn) && /recCandNavBuildKanbanSnapshot/.test(navSnapFn), 'snapshot cartera y kanban');
+check(/recCandNavBuildPortfolioSnapshot/.test(navSnapFn), 'snapshot reutiliza candidates filtrados');
+check(/byStage\.get\(sid\)/.test(navKanbanFn), 'snapshot orden kanban por columnas');
+const navLoadFn = indexHtml.match(/function recCandLoadDetailCandidate[\s\S]*?^function /m)?.[0] || '';
+check(/recCandDetailFetchSeq/.test(navLoadFn) && /AbortController/.test(navLoadFn), 'secuencia y abort en carga');
+check(/httpStatus===404/.test(navLoadFn) && /recCandNavRemoveMissingId/.test(navLoadFn), '404 retira id del snapshot');
+check(/AbortError/.test(navLoadFn), 'ignora AbortError');
+const navUiFn = indexHtml.match(/function recCandNavigateDetail[\s\S]*?^function /m)?.[0] || '';
+check(/recCandDetailObsDirty/.test(navUiFn), 'bloqueo navegación con observación sin guardar');
+const navUiUpdate = indexHtml.match(/function recCandNavUpdateUi[\s\S]*?^function /m)?.[0] || '';
+const navPosFn = indexHtml.match(/function recCandNavComputePosition[\s\S]*?^function /m)?.[0] || '';
+const navBtnFn = indexHtml.match(/function recCandNavComputeButtonDisabled[\s\S]*?^function /m)?.[0] || '';
+check(/' de '\+total/.test(navPosFn) && /aria-disabled/.test(navUiUpdate), 'indicador N de total y aria-disabled');
+check(/index<=0/.test(navBtnFn) && /index>=total-1/.test(navBtnFn), 'extremos deshabilitados');
+check(/id="rec-cand-nav-prev"/.test(indexHtml) && /aria-label="Candidato anterior"/.test(indexHtml), 'botón anterior accesible');
+check(/id="rec-cand-nav-next"/.test(indexHtml) && /aria-label="Candidato siguiente"/.test(indexHtml), 'botón siguiente accesible');
+check(/recCandTryCloseDetailModal/.test(indexHtml) && /recCandOnDetailModalClosed/.test(indexHtml), 'cierre con dirty y cleanup');
+const navCloseFn = indexHtml.match(/function recCandOnDetailModalClosed[\s\S]*?^function /m)?.[0] || '';
+check(/recCandNavRestoreScroll/.test(navCloseFn) && /recCandNavRefreshPipelineIfDirty/.test(navCloseFn), 'scroll y refresh al cerrar');
+check(/recCandMarkPipelineDirty/.test(indexHtml) && /candNavPipelineDirty/.test(indexHtml), 'marca dirty pipeline');
+const openDetailFn = indexHtml.match(/async function recCandOpenDetail[\s\S]*?^async function /m)?.[0] || '';
+check(/recCandBuildNavSnapshot/.test(openDetailFn) && /fromNav/.test(openDetailFn), 'snapshot al abrir, no al navegar');
+check(!/recCandLoadList\(false\)[\s\S]{0,40}recCandFetchDetail/.test(navLoadFn), 'navegación no recarga listado completo');
+check(/recCandRetryDetailLoad/.test(indexHtml) && /recCandSetDetailLoadErr/.test(indexHtml), 'error recuperable con Reintentar');
+check(/REC_CAND_NAV_PURE_HELPERS_START/.test(indexHtml) && /REC_CAND_NAV_PURE_HELPERS_END/.test(indexHtml), 'helpers nav delimitados en index.html');
+
 console.log('\n=== Recruitment 1D.1 — integración (DB) ===\n');
 
 let dbOk = false;
@@ -567,6 +597,7 @@ function runRegression(script) {
 
 runRegression('test-recruitment-candidate-resume.mjs');
 runRegression('test-recruitment-vacancy-stages.mjs');
+runRegression('test-recruitment-candidate-nav.mjs');
 
 if (failed) {
   console.error(`\n✗ ${failed} fallo(s).\n`);
