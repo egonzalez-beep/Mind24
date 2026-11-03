@@ -1358,8 +1358,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-history-kpi-note{display:block;margin-top:2px;font-size:9px;font-weight:500;color:var(--slate-500);line-height:1.25;}
 .tc-history-day-panel{font-size:12px;color:var(--slate-600);line-height:1.45;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);}
 .tc-history-day-panel.hidden{display:none!important;}
-.tc-history-day-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.tc-history-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
 .tc-history-day-head h4{margin:0;font-size:13px;font-weight:700;color:var(--primary);flex:1;min-width:0;}
+.tc-history-day-actions{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;}
+.tc-history-day-log-slot{display:inline-flex;align-items:center;gap:8px;}
+.tc-history-day-log-slot:empty{display:none;}
+.tc-work-log-history-btn{width:32px;height:32px;}
+.tc-work-log-history-btn svg{width:16px;height:16px;}
 .tc-history-refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex-shrink:0;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);}
 .tc-history-refresh-btn:hover:not(:disabled){background:var(--purple-light);border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
 .tc-history-refresh-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
@@ -3780,7 +3785,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div id="tc-history-day-panel" class="tc-history-day-panel hidden" role="region" aria-live="polite">
             <div class="tc-history-day-head">
               <h4 id="tc-history-day-title"></h4>
-              <button type="button" class="tc-history-refresh-btn" id="tc-history-refresh-btn" aria-label="Actualizar historial" onclick="tcRefreshHistory()" title="Actualizar historial"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+              <div class="tc-history-day-actions">
+                <span id="tc-history-day-log-slot" class="tc-history-day-log-slot"></span>
+                <button type="button" class="tc-history-refresh-btn" id="tc-history-refresh-btn" aria-label="Actualizar historial" onclick="tcRefreshHistory()" title="Actualizar historial"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+              </div>
             </div>
             <p class="tc-history-refresh-err hidden" id="tc-history-refresh-err"></p>
             <div id="tc-history-day-body"></div>
@@ -8006,11 +8014,25 @@ async function tcEmpSubmitWorkLog(){
     if(submit) submit.disabled=false;
   }
 }
-function tcHistorySessionWorkLogBtnHtml(s){
+function tcHistorySessionWorkLogBtnHtml(s, jornadaN){
   if(!s||!s.hasWorkLog) return '';
   const sid=String(s.id||'').replace(/'/g,'');
   const day=String(tcHistoryPinnedDay||'').replace(/'/g,'');
-  return '<button type="button" class="tc-icon-btn tc-icon-btn--view tc-work-log-history-btn" title="Ver bitácora" aria-label="Ver bitácora de esta jornada" onclick="tcAdminOpenWorkLog(\''+sid+'\',\''+day+'\')">'+tcSvgClipboardLines()+'</button>';
+  const label=jornadaN?('Ver bitácora de la jornada '+jornadaN):'Ver bitácora de esta jornada';
+  return '<button type="button" class="tc-icon-btn tc-icon-btn--view tc-work-log-history-btn" title="'+tcEsc(label)+'" aria-label="'+tcEsc(label)+'" onclick="tcAdminOpenWorkLog(\''+sid+'\',\''+day+'\')">'+tcSvgClipboardLines()+'</button>';
+}
+function tcRenderHistoryDayLogSlot(dayKey){
+  const slot=document.getElementById('tc-history-day-log-slot');
+  if(!slot) return;
+  const bucket=dayKey&&tcHistoryPayload&&tcHistoryPayload.days?tcHistoryPayload.days[dayKey]:null;
+  if(!bucket||!bucket.sessions){
+    slot.innerHTML='';
+    return;
+  }
+  const multi=bucket.sessions.length>1;
+  slot.innerHTML=bucket.sessions.map(function(s,idx){
+    return tcHistorySessionWorkLogBtnHtml(s, multi?idx+1:0);
+  }).join('');
 }
 function tcAdminCloseWorkLogModal(){
   if(tcAdminWorkLogAbort){ tcAdminWorkLogAbort.abort(); tcAdminWorkLogAbort=null; }
@@ -15144,9 +15166,7 @@ function tcDayDetailBodyHtml(dayKey){
   bucket.sessions.forEach(function(s,idx){
     html+='<div class="tc-history-session">';
     if(bucket.sessionCount>1){
-      html+='<div class="tc-history-session-head"><div class="tc-history-session-label">Jornada '+(idx+1)+'</div>'+tcHistorySessionWorkLogBtnHtml(s)+'</div>';
-    }else if(s.hasWorkLog){
-      html+='<div class="tc-history-session-head">'+tcHistorySessionWorkLogBtnHtml(s)+'</div>';
+      html+='<div class="tc-history-session-head"><div class="tc-history-session-label">Jornada '+(idx+1)+'</div></div>';
     }
     html+=tcHistorySessionMetricsHtml(s, tcJornadaTz);
     html+='</div>';
@@ -15162,16 +15182,19 @@ function tcRenderHistoryDayPanel(){
     panel.classList.add('hidden');
     if(titleEl) titleEl.textContent='';
     bodyEl.innerHTML='';
+    tcRenderHistoryDayLogSlot(null);
     return;
   }
   const title=tcFmtDayTitle(tcHistoryPinnedDay, tcJornadaTz);
   const body=tcDayDetailBodyHtml(tcHistoryPinnedDay);
   if(!body){
     panel.classList.add('hidden');
+    tcRenderHistoryDayLogSlot(null);
     return;
   }
   if(titleEl) titleEl.textContent=title;
   bodyEl.innerHTML=body;
+  tcRenderHistoryDayLogSlot(tcHistoryPinnedDay);
   panel.classList.remove('hidden');
 }
 let tcKanbanTasks=[];

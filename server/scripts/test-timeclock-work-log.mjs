@@ -355,6 +355,12 @@ check(
   ui.tcHistorySessionWorkLogBtnHtml({ id: 's1', hasWorkLog: true }).includes('tcAdminOpenWorkLog'),
   'botón admin solo con hasWorkLog true',
 );
+check(/id="tc-history-day-log-slot"/.test(indexHtml) && /class="tc-history-day-actions"/.test(indexHtml), 'bitácora admin en la cabecera, junto a recargar');
+check(/\.tc-history-day-actions\{[^}]*gap:8px/.test(indexHtml), 'separación entre bitácora y recargar');
+check(/\.tc-work-log-history-btn\{[^}]*width:32px;height:32px/.test(indexHtml), 'botón de bitácora del mismo tamaño que recargar');
+const dayBodyFn = extractFunction(indexHtml, 'tcDayDetailBodyHtml');
+check(dayBodyFn && !dayBodyFn.includes('tcHistorySessionWorkLogBtnHtml'), 'el listado de la jornada ya no pinta la bitácora');
+check(extractFunction(indexHtml, 'tcRenderHistoryDayPanel').includes('tcRenderHistoryDayLogSlot'), 'el panel coloca la bitácora en la cabecera');
 check((indexHtml.match(/onclick="tcEmpOpenWorkLogModal\(\)"/g) || []).length === 1, 'un solo onclick de apertura colaborador');
 check((indexHtml.match(/onclick="tcEmpSubmitWorkLog\(\)"/g) || []).length === 1, 'un solo onclick de envío');
 check((indexHtml.match(/onclick="tcAdminOpenWorkLog\(/g) || []).length === 1, 'un solo onclick de apertura admin');
