@@ -339,7 +339,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @keyframes recCandShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
 .rec-cand-load-more-wrap{text-align:center;margin-top:14px;}
 .rec-cand-detail-modal{max-width:min(1180px,calc(100vw - 32px));padding:26px 28px 28px;max-height:min(92vh,900px);background:#FAFBFF;}
-.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:120px;padding-left:108px;margin-bottom:0;}
+.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:120px;margin-bottom:0;}
 .rec-cand-detail-header{display:flex;gap:14px;align-items:flex-start;margin-bottom:0;}
 .rec-cand-detail-kicker{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-500);margin:0 0 6px;}
 .rec-cand-badge-active{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.12);color:#047857;flex-shrink:0;}
@@ -580,7 +580,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 @media(max-width:960px){.rec-cand-row-sep{display:none;}.rec-cand-row-inner{gap:10px;}.rec-cand-row-block{flex:1 1 100%;max-width:none;}}
 @media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}}
 @media(max-width:640px){.rec-cand-toolbar-search{flex:1 1 100%;}.rec-cand-row-inner{flex-direction:column;align-items:stretch;}.rec-cand-avatar{align-self:flex-start;}}
-@media(max-width:520px){.rec-cand-detail-modal{max-width:calc(100vw - 24px);padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-left:0;padding-top:44px;}.rec-cand-detail-toolbar{flex-wrap:wrap;row-gap:8px;}.rec-cand-detail-nav-pos{min-width:3.5em;font-size:11px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid-row,.rec-cand-form-grid-row--3{grid-template-columns:1fr!important;}.rec-cand-form-header{padding-right:0;padding-top:40px;}.rec-cand-form-footer{flex-direction:column-reverse;align-items:stretch;}.rec-cand-form-footer .form-submit{width:100%;}}
+@media(max-width:520px){.rec-cand-detail-modal{max-width:100%;padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:44px;}.rec-cand-detail-center-col{max-width:calc(100vw - 96px);gap:8px;}.rec-cand-detail-side-nav{width:40px;height:40px;}.rec-cand-detail-side-nav svg{width:20px;height:20px;}#modal-rec-candidate-detail.rec-cand-detail-overlay{gap:6px;padding:12px 6px;}.rec-cand-detail-nav-pos{font-size:11px;min-width:3.5em;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid-row,.rec-cand-form-grid-row--3{grid-template-columns:1fr!important;}.rec-cand-form-header{padding-right:0;padding-top:40px;}.rec-cand-form-footer{flex-direction:column-reverse;align-items:stretch;}.rec-cand-form-footer .form-submit{width:100%;}}
 .rec-carousel-wrap{position:relative;margin-bottom:0;}
 .rec-carousel-wrap--nav{display:flex;align-items:stretch;gap:6px;}
 .rec-carousel-nav{flex-shrink:0;width:36px;border:1px solid var(--slate-200);background:rgba(255,255,255,.92);border-radius:999px;cursor:pointer;font-size:22px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;padding:0;align-self:center;transition:var(--tr-fast);box-shadow:0 1px 4px rgba(15,23,42,.04);}
@@ -704,14 +704,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-detail-modal{max-width:min(980px,calc(100vw - 32px));padding:24px 26px 28px;max-height:min(92vh,900px);background:#FAFBFF;}
 .rec-detail-modal .modal-close{position:static;width:34px;height:34px;top:auto;right:auto;margin:0;flex-shrink:0;}
 .rec-detail-toolbar{position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:8px;z-index:2;}
-.rec-cand-detail-toolbar{left:16px;right:16px;width:auto;justify-content:space-between;gap:10px;}
-.rec-cand-detail-nav{display:flex;align-items:center;gap:4px;flex-shrink:0;}
-.rec-cand-detail-nav-btn{width:34px;height:34px;border:1px solid var(--slate-200);background:#fff;border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-600);transition:var(--tr-fast);padding:0;flex-shrink:0;}
-.rec-cand-detail-nav-btn svg{width:16px;height:16px;}
-.rec-cand-detail-nav-btn:hover:not(:disabled){border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
-.rec-cand-detail-nav-btn:disabled{opacity:.45;cursor:default;}
-.rec-cand-detail-nav-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.rec-cand-detail-nav-pos{font-size:12px;font-weight:600;color:var(--slate-600);min-width:4.75em;text-align:center;white-space:nowrap;flex-shrink:0;}
+#modal-rec-candidate-detail.rec-cand-detail-overlay{flex-direction:row;align-items:center;justify-content:center;gap:clamp(8px,2vw,20px);padding:20px clamp(10px,2.5vw,28px);}
+.rec-cand-detail-center-col{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 1 auto;min-width:0;max-width:min(1180px,calc(100vw - 112px));}
+.rec-cand-detail-center-col > .rec-cand-detail-modal{width:100%;max-width:100%;}
+.rec-cand-detail-side-nav{flex-shrink:0;align-self:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.42);background:rgba(255,255,255,.2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .15s ease,border-color .15s ease,opacity .15s ease;box-shadow:0 2px 14px rgba(15,23,42,.14);}
+.rec-cand-detail-side-nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.rec-cand-detail-side-nav:hover:not(:disabled){background:rgba(255,255,255,.34);border-color:rgba(255,255,255,.58);}
+.rec-cand-detail-side-nav:disabled{opacity:.28;cursor:default;}
+.rec-cand-detail-side-nav:focus-visible{outline:2px solid rgba(255,255,255,.85);outline-offset:3px;}
+.rec-cand-detail-nav-pos{font-size:12px;font-weight:600;color:rgba(255,255,255,.94);text-shadow:0 1px 4px rgba(15,23,42,.4);margin:0;text-align:center;white-space:nowrap;min-width:4.75em;}
+.rec-cand-detail-toolbar{left:16px;right:16px;width:auto;justify-content:flex-end;gap:8px;}
 .rec-cand-detail-load-err{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(220,38,38,.25);background:rgba(254,242,242,.85);font-size:13px;color:#B91C1C;}
 .rec-cand-detail-load-err p{margin:0;flex:1;min-width:0;}
 .rec-cand-detail-toolbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:1;min-width:0;}
@@ -2733,14 +2735,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   </div>
 </div>
 
-<div id="modal-rec-candidate-detail" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-detail')">
-  <div class="modal-card rec-cand-detail-modal rec-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
+<div id="modal-rec-candidate-detail" class="modal-overlay rec-modal-glass rec-cand-detail-overlay hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-detail')">
+  <button type="button" class="rec-cand-detail-side-nav hidden" id="rec-cand-nav-prev" onclick="event.stopPropagation();recCandNavigateDetail(-1)" aria-label="Candidato anterior" title="Candidato anterior" disabled aria-disabled="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+  <div class="rec-cand-detail-center-col">
+    <p class="rec-cand-detail-nav-pos hidden" id="rec-cand-nav-pos" aria-live="polite" aria-label="Posición en la lista">—</p>
+    <div class="modal-card rec-cand-detail-modal rec-detail-modal rec-modal-scroll" onclick="event.stopPropagation()">
     <div class="rec-detail-toolbar rec-cand-detail-toolbar">
-      <div class="rec-cand-detail-nav" id="rec-cand-detail-nav">
-        <button type="button" class="rec-cand-detail-nav-btn" id="rec-cand-nav-prev" onclick="recCandNavigateDetail(-1)" aria-label="Candidato anterior" title="Candidato anterior" disabled aria-disabled="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
-        <span class="rec-cand-detail-nav-pos" id="rec-cand-nav-pos" aria-live="polite" aria-label="Posición en la lista">—</span>
-        <button type="button" class="rec-cand-detail-nav-btn" id="rec-cand-nav-next" onclick="recCandNavigateDetail(1)" aria-label="Candidato siguiente" title="Candidato siguiente" disabled aria-disabled="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
-      </div>
       <div class="rec-cand-detail-toolbar-actions">
       <button type="button" class="rec-detail-edit-btn rec-cand-toolbar-add" id="rec-cand-toolbar-add-vac" onclick="recCandOpenAddVacancyModal()" aria-label="Añadir a vacante" title="Añadir a vacante"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
       <button type="button" class="rec-detail-edit-btn" id="rec-cand-detail-edit-btn" onclick="recCandEditFromDetail()" aria-label="Editar candidato" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -2788,7 +2788,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       </div>
       <aside class="rec-cand-body-aside" id="rec-cand-body-aside"></aside>
     </div>
+    </div>
   </div>
+  <button type="button" class="rec-cand-detail-side-nav hidden" id="rec-cand-nav-next" onclick="event.stopPropagation();recCandNavigateDetail(1)" aria-label="Candidato siguiente" title="Candidato siguiente" disabled aria-disabled="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
 </div>
 
 <div id="modal-rec-candidate-form" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-form')">
