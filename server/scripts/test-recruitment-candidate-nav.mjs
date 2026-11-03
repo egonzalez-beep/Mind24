@@ -186,6 +186,18 @@ check(/recCandRetryDetailLoad/.test(indexHtml), 'UI Reintentar carga expediente'
 check(/rec-cand-detail-load-retry/.test(indexHtml), 'botón Reintentar en DOM');
 check(/recCandDetailObsDirty/.test(indexHtml) && /recCandConfirmDiscardDetailEdits/.test(indexHtml), 'guard observaciones con confirm');
 
+console.log('\n=== Recruitment — navegación (ubicación lateral viewport) ===\n');
+const hostIdx = indexHtml.indexOf('id="rec-cand-detail-nav-host"');
+const prevIdx = indexHtml.indexOf('id="rec-cand-nav-prev"');
+const modalIdx = indexHtml.indexOf('id="modal-rec-candidate-detail"');
+check(hostIdx >= 0 && prevIdx > hostIdx && modalIdx > prevIdx, 'flechas en #rec-cand-detail-nav-host antes del overlay modal');
+const modalSlice = indexHtml.slice(modalIdx, modalIdx + 12000);
+check(!modalSlice.includes('id="rec-cand-nav-prev"') && !modalSlice.includes('id="rec-cand-nav-next"'), 'Anterior/Siguiente no son hijos del overlay (evita fixed bajo backdrop-filter)');
+check(/\.rec-cand-detail-nav-host\{[^}]*position:fixed[^}]*inset:0/.test(indexHtml), 'capa nav anclada al viewport (fixed inset 0)');
+check(/#rec-cand-nav-prev\{[^}]*left:/.test(indexHtml) && /#rec-cand-nav-prev\{[^}]*right:auto/.test(indexHtml), 'Anterior anclado al borde izquierdo');
+check(/#rec-cand-nav-next\{[^}]*right:/.test(indexHtml) && /#rec-cand-nav-next\{[^}]*left:auto/.test(indexHtml), 'Siguiente anclado al borde derecho');
+check(/getElementById\('rec-cand-detail-nav-host'\)/.test(indexHtml), 'JS muestra/oculta capa nav con el expediente');
+
 if (failed) {
   console.error(`\n✗ ${failed} fallo(s)\n`);
   process.exit(1);
