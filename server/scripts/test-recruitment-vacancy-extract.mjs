@@ -43,7 +43,10 @@ const {
   buildRecruitmentVacancyExtractResponse,
   classifyRecruitmentVacancyExtractFile,
   extractRecruitmentVacancyDocText,
+  extractRecruitmentVacancyPdfSource,
+  joinRecruitmentVacancyPdfPages,
   parseRecruitmentVacancyText,
+  readRecruitmentVacancyPdfSource,
   raceWithRecruitmentVacancyExtractTimeout,
   recruitmentVacancyExtractUploadFailure,
 } = await import('../src/services/recruitmentVacancyExtract.service.js');
@@ -102,16 +105,33 @@ function zipStore(files) {
   return Buffer.concat([...locals, centralBuf, end]);
 }
 
-function buildPdf(text) {
-  const safe = String(text).replace(/[()\\]/g, '');
-  const content = `BT /F1 18 Tf 40 120 Td (${safe}) Tj ET`;
-  const objects = [
-    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
-    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
-    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 500 240] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n',
-    `4 0 obj\n<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream\nendobj\n`,
-    '5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n',
-  ];
+function escapePdfText(value) {
+  return String(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+}
+
+function buildPdfDocument(pages) {
+  const contents = pages.map((lines) => {
+    const commands = ['BT', '/F1 12 Tf'];
+    lines.forEach((line, index) => {
+      const y = 720 - index * 16;
+      commands.push(`1 0 0 1 48 ${y} Tm (${escapePdfText(line)}) Tj`);
+    });
+    commands.push('ET');
+    return commands.join('\n');
+  });
+  const fontObjNum = 3 + pages.length * 2;
+  const objects = ['1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'];
+  const kids = pages.map((_, index) => `${3 + index * 2} 0 R`).join(' ');
+  objects.push(`2 0 obj\n<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>\nendobj\n`);
+  contents.forEach((content, index) => {
+    const pageNum = 3 + index * 2;
+    const contentNum = pageNum + 1;
+    objects.push(
+      `${pageNum} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${contentNum} 0 R /Resources << /Font << /F1 ${fontObjNum} 0 R >> >> >>\nendobj\n`,
+    );
+    objects.push(`${contentNum} 0 obj\n<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream\nendobj\n`);
+  });
+  objects.push(`${fontObjNum} 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`);
   let body = '%PDF-1.4\n';
   const offsets = [0];
   for (const obj of objects) {
@@ -126,6 +146,10 @@ function buildPdf(text) {
   body += xref;
   body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF\n`;
   return Buffer.from(body);
+}
+
+function buildPdf(text) {
+  return buildPdfDocument([[String(text).replace(/[()\\]/g, '')]]);
 }
 
 const SAMPLE = [
@@ -324,7 +348,7 @@ const modal = indexHtml.match(/id="modal-rec-vacancy"[\s\S]*?id="modal-rec-vacan
 const ui = indexHtml.match(/function recVacExtractFieldIds[\s\S]*?async function recOpenVacancyModal/)?.[0] || '';
 check(/Arrastra aquí el archivo de tu vacante/.test(modal), 'texto principal de la zona');
 check(/También puedes seleccionarlo desde tu equipo/.test(modal), 'texto secundario');
-check(/Seleccionar archivo/.test(modal) && /Crear vacante manualmente/.test(modal), 'botón de archivo y captura manual');
+check(/Seleccionar archivo/.test(modal) && !/Crear vacante manualmente/.test(modal) && !/rec-vac-extract-manual"/.test(modal), 'botón de archivo sin atajo manual');
 check(/PDF, Word o TXT · máx\. 10 MB/.test(modal), 'formatos y límite visibles');
 check(/aria-label="Arrastra aquí el archivo de tu vacante/.test(modal), 'aria-label de la zona');
 check(/id="rec-vac-extract-drop"[\s\S]*tabindex="0"/.test(modal), 'la zona es enfocable');
@@ -630,6 +654,229 @@ const many = await requestOnce(uploadServer, {
 uploadServer.close();
 check(tooBig.status === 400 && tooBig.json?.message === RECRUITMENT_VACANCY_EXTRACT_MSG.size, 'Multer responde 400 si el archivo supera 10 MB');
 check(many.status === 400 && many.json?.message === RECRUITMENT_VACANCY_EXTRACT_MSG.format && many.status !== 500, 'más de un archivo no produce un 500');
+
+console.log('\n=== Tablas, título y fechas ===\n');
+
+const pdfTables = [
+  [
+    ['CLIENTE', 'UBICACIÓN', 'POSICIONES'],
+    ['Logística del Bajío, S.A. de C.V.', 'Parque Industrial Querétaro,\nQuerétaro', '4'],
+    ['FECHA DE APERTURA', 'FECHA DE COBERTURA', 'TIPO DE VACANTE'],
+    ['10 de noviembre de 2026', '30 de noviembre de 2026', 'Operativa - Supervisión'],
+  ],
+  [
+    ['HORARIO', 'SUELDO', 'PRESTACIONES'],
+    ['Turnos rotativos de 8 horas', '$18,500 a $21,000 mensuales\nbrutos', 'Ley, fondo de ahorro 8%, vales\n10% y transporte'],
+  ],
+];
+const pdfText = [
+  'VACANTE DE PRUEBA',
+  'Documento de prueba - Página 1',
+  'Supervisor de Almacén',
+  'Documento ficticio para probar la precarga de vacantes en Mind24',
+  'CLIENTE UBICACIÓN POSICIONES',
+  'Logística del Bajío, S.A. de C.V. Parque Industrial Querétaro,',
+  '4',
+  'Descripción',
+  'de la vacante',
+  'Buscamos a una persona con experiencia en operación de almacenes para coordinar al equipo.',
+  'Funciones',
+  'principales',
+  '• Coordinar la recepción, acomodo, surtido y embarque de materiales.',
+  'Requisitos',
+  'Escolaridad Bachillerato concluido o carrera técnica',
+  'Experiencia 2 años supervisando almacenes',
+  'Conocimientos Inventarios, PEPS y Excel',
+  'Disponibilidad Rolar turnos',
+  'PRUEBA DE',
+  'EXTRACCIÓN',
+  'Este documento es ficticio y fue creado únicamente para validar la carga automática.',
+  '-- 1 of 1 --',
+].join('\n');
+const pdfParsed = parseRecruitmentVacancyText(pdfText, { tables: pdfTables });
+check(pdfParsed.title?.value === 'Supervisor de Almacén', 'elige Supervisor de Almacén');
+check(!/vacante de prueba/i.test(pdfParsed.title?.value || ''), 'rechaza VACANTE DE PRUEBA');
+check(pdfParsed.clientName?.value === 'Logística del Bajío, S.A. de C.V.', 'extrae cliente de la tabla');
+check(pdfParsed.location?.value === 'Parque Industrial Querétaro, Querétaro', 'extrae ubicación de la tabla');
+check(pdfParsed.positionsTotal?.value === 4 && pdfParsed.positionsTotal.confidence === 'high', 'extrae 4 posiciones');
+check(pdfParsed.openedAt?.value === '2026-11-10' && pdfParsed.targetCoverageDate?.value === '2026-11-30', 'extrae ambas fechas');
+const pdfJd = pdfParsed.jobDescription?.value || '';
+check(/Buscamos a una persona/.test(pdfJd) && /Coordinar la recepción/.test(pdfJd), 'conserva descripción y funciones');
+check(/Requisitos/.test(pdfJd) && /Bachillerato/.test(pdfJd) && /supervisando/.test(pdfJd), 'conserva requisitos, escolaridad y experiencia');
+check(/Inventarios, PEPS/.test(pdfJd) && /Rolar turnos/.test(pdfJd), 'conserva conocimientos y disponibilidad');
+check(/Turnos rotativos/.test(pdfJd) && /18,500/.test(pdfJd) && /fondo de ahorro/.test(pdfJd), 'conserva horario, sueldo y prestaciones');
+check(!/PRUEBA DE EXTRACCIÓN/i.test(pdfJd) && !/documento es ficticio/i.test(pdfJd), 'elimina el bloque de prueba y el aviso ficticio');
+check(!/--\s*1 of 1\s*--/.test(pdfJd) && !/VACANTE DE PRUEBA/.test(pdfJd), 'elimina el marcador de página y el título genérico');
+
+const reordered = parseRecruitmentVacancyText('', {
+  tables: [[['POSICIONES', 'CLIENTE'], ['2', 'Bodega Norte']]],
+});
+check(reordered.positionsTotal?.value === 2 && reordered.clientName?.value === 'Bodega Norte', 'tabla con columnas en distinto orden');
+check(!parseRecruitmentVacancyText('Color azul y talla mediana para el uniforme del almacén.', {
+  tables: [[['COLOR', 'TALLA'], ['Azul', 'M']]],
+}).clientName, 'tabla sin encabezados reconocidos');
+const missing = parseRecruitmentVacancyText('', {
+  tables: [[['CLIENTE', 'UBICACIÓN'], ['Bodega Norte', '']]],
+});
+check(missing.clientName?.value === 'Bodega Norte' && !missing.location, 'tabla con valor faltante');
+const ambiguousTable = parseRecruitmentVacancyText('Descripción del puesto\nCoordinar el almacén durante todo el turno de la mañana.', {
+  tables: [[['CLIENTE', 'CLIENTE'], ['Uno', 'Dos']]],
+});
+check(!ambiguousTable.clientName, 'tabla ambigua no propone cliente');
+const earlyCoverage = parseRecruitmentVacancyText('', {
+  tables: [[['FECHA DE APERTURA', 'FECHA DE COBERTURA'], ['2026-12-15', '2026-12-01']]],
+});
+check(earlyCoverage.openedAt?.value === '2026-12-15' && !earlyCoverage.targetCoverageDate, 'tabla con cobertura anterior no propone esa fecha');
+
+const explicitTitle = parseRecruitmentVacancyText('Nombre del puesto: Supervisor de Almacén\nCliente: Logística del Bajío');
+check(explicitTitle.title?.value === 'Supervisor de Almacén' && explicitTitle.title.confidence === 'high', 'título por etiqueta explícita');
+const afterGeneric = parseRecruitmentVacancyText('VACANTE\nVACANTE DE PRUEBA\nDESCRIPCIÓN DE PUESTO\nSupervisor de Almacén\nDescripción del puesto\nCoordinar recepción y embarque del almacén durante el turno.');
+check(afterGeneric.title?.value === 'Supervisor de Almacén', 'encabezados genéricos y después el puesto');
+const noTitle = parseRecruitmentVacancyText('VACANTE DE PRUEBA\nOFERTA LABORAL\nEste documento es ficticio y fue creado únicamente para validar la carga automática.');
+check(!noTitle.title, 'sin título confiable queda vacío');
+const notClientTitle = parseRecruitmentVacancyText('Cliente: Logística del Bajío\nUbicación: Querétaro\nFecha de apertura: 10 de noviembre de 2026\nDescripción del puesto\nCoordinar el turno completo del almacén y el inventario.');
+check(!notClientTitle.title && notClientTitle.clientName?.value === 'Logística del Bajío', 'no toma cliente, fecha o ubicación como título');
+check(!parseRecruitmentVacancyText('Cliente Logística del Bajío\nHay suficiente texto narrativo para describir la vacante sin etiquetas claras.').clientName, 'sin separador no interpreta cliente');
+
+const spanishDates = parseRecruitmentVacancyText('Puesto: Analista de datos\nFecha de apertura: 10 de noviembre de 2026\nFecha de cobertura: 30 de noviembre de 2026');
+check(spanishDates.openedAt?.value === '2026-11-10' && spanishDates.targetCoverageDate?.value === '2026-11-30', 'fecha larga en español');
+const isoDates = parseRecruitmentVacancyText('Puesto: Analista de datos\nFecha de apertura: 2026-11-10\nFecha de cobertura: 2026-11-30');
+check(isoDates.openedAt?.value === '2026-11-10' && isoDates.targetCoverageDate?.value === '2026-11-30', 'fecha ISO');
+const halfPair = parseRecruitmentVacancyText('Puesto: Analista de datos\nFecha de apertura: 10/11/2026\nFecha de cobertura: 30/11/2026');
+check(!halfPair.openedAt && !halfPair.targetCoverageDate, 'pareja numérica ambigua no propone ninguna');
+check(parseRecruitmentVacancyText('Se requieren 4 posiciones para el turno de almacén y el control de inventarios.').positionsTotal == null, 'una línea numérica aislada no es posiciones');
+check(parseRecruitmentVacancyText('4 posiciones\nApoyo operativo en el almacén durante el turno completo de ocho horas.').positionsTotal?.value === 4, 'reconoce 4 posiciones');
+
+const narrative = parseRecruitmentVacancyText('Buscamos supervisor para un centro de distribución en el Bajío. La empresa opera tres turnos y necesita a alguien con experiencia en inventarios.');
+check(!narrative.title && !narrative.clientName && !narrative.location && !narrative.positionsTotal && !narrative.openedAt, 'narrativo no inventa campos');
+check(/centro de distribución/.test(narrative.jobDescription?.value || ''), 'narrativo conserva el texto');
+const marked = parseRecruitmentVacancyText('Descripción del puesto\nCoordinar el almacén.\n-- 2 of 3 --\nCoordinar el almacén.\nExperiencia en inventarios y embarques diarios.');
+check(!/--\s*2 of 3\s*--/.test(marked.jobDescription?.value || '') && /inventarios/.test(marked.jobDescription?.value || ''), 'elimina marcadores y conserva contenido');
+
+const generatedPdf = buildPdfDocument([[
+  'Puesto: Supervisor de Almacen',
+  'Cliente: Logistica del Bajio',
+  'Ubicacion: Parque Industrial Queretaro',
+  'Posiciones: 4',
+  'Fecha de apertura: 10 de noviembre de 2026',
+  'Fecha de cobertura: 30 de noviembre de 2026',
+  'Descripcion del puesto',
+  'Coordinar el almacen y el equipo de turno.',
+]]);
+const generated = await analyzeRecruitmentVacancyFile({
+  buffer: generatedPdf,
+  originalName: 'vacante-generada.pdf',
+  mimetype: 'application/pdf',
+});
+check(generated.suggestions.title?.value === 'Supervisor de Almacen', 'PDF generado: título');
+check(generated.suggestions.clientName?.value === 'Logistica del Bajio', 'PDF generado: cliente');
+check(generated.suggestions.location?.value === 'Parque Industrial Queretaro', 'PDF generado: ubicación');
+check(generated.suggestions.positionsTotal?.value === 4, 'PDF generado: posiciones');
+check(generated.suggestions.openedAt?.value === '2026-11-10' && generated.suggestions.targetCoverageDate?.value === '2026-11-30', 'PDF generado: fechas');
+check(/Coordinar el almacen/.test(generated.suggestions.jobDescription?.value || ''), 'PDF generado: descripción');
+check(!/--\s*\d+\s+of\s+\d+\s*--/.test(JSON.stringify(generated.suggestions)), 'PDF generado sin marcador de página');
+
+const multipage = buildPdfDocument([
+  ['Reporte interno', 'Puesto: Analista de datos', 'Cliente: Bodega Norte', 'Fecha de apertura: 2026-11-10', 'Almacen'],
+  ['Central', 'Reporte interno', 'Ubicacion: Monterrey', 'Numero de vacantes: 2', 'Fecha de cobertura: 2026-12-01', 'Descripcion del puesto', 'Coordinar recepcion y embarque del almacen.'],
+]);
+const multipageSource = await extractRecruitmentVacancyPdfSource(multipage);
+check(multipageSource.text.includes('Almacen\n\nCentral'), 'las páginas no fusionan la última y la primera palabra');
+check(!multipageSource.text.includes('AlmacenCentral') && !multipageSource.text.includes('Almacen Central'), 'el corte de página no forma una sola etiqueta');
+check(!/--\s*\d+\s+of\s+\d+\s*--/.test(multipageSource.text), 'varias páginas no reintroducen el marcador');
+const multipageResult = await analyzeRecruitmentVacancyFile({
+  buffer: multipage,
+  originalName: 'vacante-dos-paginas.pdf',
+  mimetype: 'application/pdf',
+});
+check(multipageResult.suggestions.title?.value === 'Analista de datos', 'el encabezado repetido no sustituye al puesto');
+check(multipageResult.suggestions.title?.value !== 'Reporte interno', 'el pie repetido no se sugiere como título');
+check(multipageResult.suggestions.clientName?.value === 'Bodega Norte' && multipageResult.suggestions.openedAt?.value === '2026-11-10', 'la primera página conserva sus campos');
+check(multipageResult.suggestions.location?.value === 'Monterrey' && multipageResult.suggestions.positionsTotal?.value === 2 && multipageResult.suggestions.targetCoverageDate?.value === '2026-12-01', 'la segunda página conserva sus campos');
+
+const joined = joinRecruitmentVacancyPdfPages({
+  pages: [{ num: 1, text: 'Almacen' }, { num: 2, text: 'Central' }],
+  text: 'Almacen\n-- 1 of 2 --\n\nCentral',
+});
+check(joined === 'Almacen\n\nCentral' && !joined.includes('of'), 'el separador propio ignora el marcador del texto concatenado');
+
+let tableFailuresDestroyed = false;
+const tableFailure = await extractRecruitmentVacancyPdfSource(Buffer.from('%PDF-1.4\n'), {
+  parser: {
+    async getText() {
+      return { pages: [{ num: 1, text: 'Puesto: Recepcionista de almacen' }] };
+    },
+    async getTable() {
+      throw new Error('tabla no disponible');
+    },
+    async destroy() {
+      tableFailuresDestroyed = true;
+    },
+  },
+});
+check(tableFailure.text.includes('Recepcionista de almacen') && tableFailure.tables.length === 0 && tableFailuresDestroyed, 'si la tabla falla se conserva el texto y se destruye el lector');
+
+let successDestroyed = false;
+const successSource = await extractRecruitmentVacancyPdfSource(Buffer.from('%PDF-1.4\n'), {
+  parser: {
+    async getText() {
+      return { pages: [{ num: 1, text: 'Cliente: Bodega Norte' }] };
+    },
+    async getTable() {
+      return { pages: [{ num: 1, tables: [] }] };
+    },
+    async destroy() {
+      successDestroyed = true;
+    },
+  },
+});
+check(successSource.text.includes('Bodega Norte') && successDestroyed, 'el lector se destruye tambien cuando la lectura termina bien');
+
+let lateDestroyed = false;
+let releaseLatePdf;
+const latePdf = new Promise((resolve) => {
+  releaseLatePdf = resolve;
+});
+let latePdfMessage = '';
+const unhandledPdf = [];
+const onUnhandledPdf = (err) => unhandledPdf.push(err);
+process.on('unhandledRejection', onUnhandledPdf);
+try {
+  await readRecruitmentVacancyPdfSource(Buffer.from('%PDF-1.4\n'), {
+    timeoutMs: 20,
+    parser: {
+      getText() {
+        return latePdf.then(() => ({ pages: [{ num: 1, text: 'Puesto: Tardio' }] }));
+      },
+      async getTable() {
+        return { pages: [] };
+      },
+      async destroy() {
+        lateDestroyed = true;
+      },
+    },
+  });
+} catch (err) {
+  latePdfMessage = err.message;
+}
+check(latePdfMessage === RECRUITMENT_VACANCY_EXTRACT_MSG.fail, 'el PDF que se pasa de tiempo devuelve error controlado');
+releaseLatePdf();
+await latePdf;
+await new Promise((resolve) => setTimeout(resolve, 30));
+check(lateDestroyed && unhandledPdf.length === 0 && latePdfMessage === RECRUITMENT_VACANCY_EXTRACT_MSG.fail, 'una respuesta tardia del PDF no cambia el error ni queda sin manejar');
+process.removeListener('unhandledRejection', onUnhandledPdf);
+
+const pdfReader = serviceSrc.slice(serviceSrc.indexOf('async function extractRecruitmentVacancyPdfSource'), serviceSrc.indexOf('async function readRecruitmentVacancyPdfSource'));
+check(pdfReader.split('new PDFParse').length === 2, 'cada archivo crea una sola instancia');
+check(pdfReader.includes('parser.getText({ pageJoiner:') && pdfReader.indexOf('parser.getText') < pdfReader.indexOf('parser.getTable'), 'getText y getTable usan la misma instancia');
+check(pdfReader.includes('finally') && pdfReader.includes('parser.destroy()'), 'destroy queda en finally');
+check(!resumeParseSrc.includes('getTable') && /parser\.getText\(\)/.test(resumeParseSrc), 'el analizador de CV no lee tablas de vacante');
+check(serviceSrc.includes('extractTextFromResumeBuffer') && serviceSrc.includes('getTable'), 'la vacante lee texto de CV y tablas propias');
+check(!indexHtml.includes('Crear vacante manualmente') && !indexHtml.includes('recVacExtractManual'), 'el atajo manual sigue eliminado');
+check(/rec-vac-extract-remove/.test(modal) && /rec-vac-extract-retry/.test(modal) && /rec-vac-extract-manual/.test(modal), 'quitar y reintentar conservan su estilo');
+const applyFn = ui.slice(ui.indexOf('function recVacExtractApplySuggestions'), ui.indexOf('function recVacExtractFocusField'));
+check(/keys\.forEach/.test(applyFn) && /recVacExtractMarkSuggested\(id\)/.test(applyFn), 'Sugerido solo marca valores que produjo el archivo');
+check(!/rec-form-opened'\)\.classList\.add\('rec-vac-form-field--suggested'\)/.test(ui), 'la fecha inicial no queda marcada por sí sola');
 
 if (failed) {
   console.error(`\n✗ ${failed} fallo(s).\n`);

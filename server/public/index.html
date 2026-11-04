@@ -2580,7 +2580,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         </div>
         <div class="rec-vac-extract-scan" aria-hidden="true"></div>
         <div class="rec-vac-extract-actions">
-          <button type="button" class="rec-vac-extract-manual" id="rec-vac-extract-manual">Crear vacante manualmente</button>
           <button type="button" class="rec-vac-extract-manual hidden" id="rec-vac-extract-remove">Quitar archivo</button>
           <button type="button" class="rec-vac-extract-manual hidden" id="rec-vac-extract-retry">Reintentar</button>
         </div>
@@ -10968,9 +10967,6 @@ function recVacExtractOnFileInput(ev){
   if(input) input.value='';
   if(file) recVacExtractHandleFile(file);
 }
-function recVacExtractManual(){
-  recVacExtractFocusField('rec-form-title');
-}
 function recVacExtractRemove(){
   recVacExtractBegin();
   recVacExtractBusy=false;
@@ -11053,8 +11049,6 @@ function recVacExtractBindOnce(){
   if(pick) pick.addEventListener('click', recVacExtractPick);
   const input=document.getElementById('rec-vac-extract-input');
   if(input) input.addEventListener('change', recVacExtractOnFileInput);
-  const manual=document.getElementById('rec-vac-extract-manual');
-  if(manual) manual.addEventListener('click', recVacExtractManual);
   const remove=document.getElementById('rec-vac-extract-remove');
   if(remove) remove.addEventListener('click', recVacExtractRemove);
   const retry=document.getElementById('rec-vac-extract-retry');

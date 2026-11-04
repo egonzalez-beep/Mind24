@@ -83,23 +83,106 @@ const MIME_BY_KIND = {
   txt: ['text/plain', 'text/txt', 'application/text'],
 };
 
-const FIELD_RES = [
-  ['title', /^(?:t[ií]tulo(?:\s+de\s+la\s+vacante)?|puesto|cargo|posici[oó]n)\s*[:\-–]\s*(.+)$/i],
-  ['clientName', /^(?:cliente|empresa(?:\s+contratante)?|compa[nñ][ií]a|raz[oó]n social)\s*[:\-–]\s*(.+)$/i],
-  ['location', /^(?:ubicaci[oó]n|lugar(?:\s+de\s+trabajo)?|ciudad|sede)\s*[:\-–]\s*(.+)$/i],
-  [
-    'positionsTotal',
-    /^(?:n[uú]mero\s+de\s+(?:posiciones|vacantes|plazas)|posiciones|vacantes|plazas)\s*[:\-–]\s*(\d{1,4})\b/i,
-  ],
-  ['openedAt', /^(?:fecha\s+de\s+(?:apertura|inicio))\s*[:\-–]\s*(.+)$/i],
-  [
-    'targetCoverageDate',
-    /^(?:fecha\s+(?:objetivo|l[ií]mite)(?:\s+de\s+cobertura)?|fecha\s+de\s+cobertura)\s*[:\-–]\s*(.+)$/i,
-  ],
+const LABELED_FIELDS = [
+  ['title', ['puesto', 'titulo', 'titulo de la vacante', 'nombre del puesto', 'vacante solicitada', 'posicion', 'perfil solicitado', 'cargo']],
+  ['clientName', ['cliente', 'empresa', 'empresa contratante', 'compania', 'razon social']],
+  ['location', ['ubicacion', 'lugar de trabajo', 'centro de trabajo', 'domicilio', 'ciudad', 'sede']],
+  ['positionsTotal', ['numero de posiciones', 'numero de vacantes', 'numero de plazas', 'posiciones', 'vacantes', 'plazas']],
+  ['openedAt', ['fecha de apertura', 'fecha de inicio', 'apertura']],
+  ['targetCoverageDate', ['fecha limite de cobertura', 'fecha objetivo de cobertura', 'fecha de cobertura', 'fecha objetivo', 'fecha limite', 'cobertura']],
 ];
 
-const SECTION_RE =
-  /^(descripci[oó]n(?:\s+del\s+puesto)?|perfil(?:\s+del\s+puesto)?|requisitos|responsabilidades|funciones|actividades|habilidades|escolaridad|experiencia|prestaciones|horario|sueldo|salario|modalidad|tipo\s+de\s+(?:contrato|empleo|contrataci[oó]n)|informaci[oó]n\s+adicional)\s*[:\-–]?\s*(.*)$/i;
+const TABLE_FIELDS = LABELED_FIELDS.flatMap(([key, labels]) => labels.map((label) => [label, key]));
+const LABOR_HEADERS = [
+  ['horario', 'Horario'],
+  ['sueldo', 'Sueldo'],
+  ['salario', 'Sueldo'],
+  ['prestaciones', 'Prestaciones'],
+];
+const HEADER_INDEX = new Map([...TABLE_FIELDS, ...LABOR_HEADERS.map(([label, name]) => [label, name])]);
+
+const SECTION_DEFS = [
+  ['descripcion de la vacante', 'Descripción de la vacante'],
+  ['descripcion del puesto', 'Descripción del puesto'],
+  ['descripcion de puesto', 'Descripción de puesto'],
+  ['descripcion', 'Descripción'],
+  ['perfil del puesto', 'Perfil del puesto'],
+  ['perfil solicitado', 'Perfil solicitado'],
+  ['funciones principales', 'Funciones principales'],
+  ['funciones', 'Funciones'],
+  ['responsabilidades', 'Responsabilidades'],
+  ['requisitos', 'Requisitos'],
+  ['escolaridad', 'Escolaridad'],
+  ['experiencia', 'Experiencia'],
+  ['conocimientos', 'Conocimientos'],
+  ['disponibilidad', 'Disponibilidad'],
+  ['actividades', 'Actividades'],
+  ['habilidades', 'Habilidades'],
+  ['prestaciones', 'Prestaciones'],
+  ['horario', 'Horario'],
+  ['sueldo', 'Sueldo'],
+  ['salario', 'Sueldo'],
+  ['condiciones y oferta', 'Condiciones y oferta'],
+  ['modalidad', 'Modalidad'],
+  ['tipo de contrato', 'Tipo de contrato'],
+  ['tipo de empleo', 'Tipo de empleo'],
+  ['tipo de contratacion', 'Tipo de contratación'],
+  ['informacion adicional', 'Información adicional'],
+];
+
+const GENERIC_TITLES = new Set([
+  'vacante',
+  'vacante de prueba',
+  'oferta laboral',
+  'oferta de empleo',
+  'descripcion de puesto',
+  'descripcion de la vacante',
+  'descripcion del puesto',
+  'job description',
+  'solicitud de personal',
+  'perfil de puesto',
+  'perfil del puesto',
+  'requisicion de personal',
+  'prueba de extraccion',
+]);
+
+const NON_TITLE_PREFIXES = [
+  'fecha limite de cobertura',
+  'fecha objetivo de cobertura',
+  'fecha de cobertura',
+  'fecha de apertura',
+  'fecha de inicio',
+  'fecha objetivo',
+  'fecha limite',
+  'numero de posiciones',
+  'numero de vacantes',
+  'numero de plazas',
+  'lugar de trabajo',
+  'centro de trabajo',
+  'razon social',
+  'empresa contratante',
+  'cliente',
+  'empresa',
+  'compania',
+  'ubicacion',
+  'domicilio',
+  'ciudad',
+  'sede',
+  'posiciones',
+  'vacantes',
+  'plazas',
+  'apertura',
+  'cobertura',
+];
+
+const KNOWN_LINE_PHRASES = [
+  ...new Set([
+    ...HEADER_INDEX.keys(),
+    ...SECTION_DEFS.map(([key]) => key),
+    ...GENERIC_TITLES,
+    'prueba de extraccion',
+  ]),
+].sort((a, b) => b.length - a.length);
 
 const BLANK_RE =
   /^(?:n\/?a|s\/n|ninguno|ninguna|no\s+especificado|no\s+especifica|no\s+disponible|por\s+definir|pendiente|sin\s+especificar|-+|—+|n\/d)$/i;
@@ -449,94 +532,385 @@ function parseExplicitDate(raw) {
   return null;
 }
 
-function matchField(line) {
-  for (const [key, re] of FIELD_RES) {
-    const match = line.match(re);
-    if (match) return { key, value: String(match[1] || '').trim() };
+function normLine(value) {
+  return fold(String(value || ''))
+    .replace(/[\u0000-\u001F]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/[:\-–]+$/g, '')
+    .trim();
+}
+
+function cleanCell(value) {
+  return String(value ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function wordCount(value) {
+  return cleanCell(value).split(/\s+/).filter(Boolean).length;
+}
+
+function isPageMarker(value) {
+  return /^--\s*\d+\s+of\s+\d+\s*--$/i.test(cleanCell(value));
+}
+
+function isPageChrome(value) {
+  const norm = normLine(value);
+  return /^documento de prueba\s*-\s*pagina\s+\d+$/.test(norm) || /^pagina\s+\d+(\s+de\s+\d+)?$/.test(norm);
+}
+
+function isPruebaHeading(value) {
+  return normLine(value) === 'prueba de extraccion';
+}
+
+function isConfidentiality(value) {
+  return /confidencial/.test(normLine(value));
+}
+
+function isGenericTitle(value) {
+  return GENERIC_TITLES.has(normLine(value));
+}
+
+function startsWithNonTitleLabel(value) {
+  const norm = normLine(value);
+  return NON_TITLE_PREFIXES.some((prefix) => norm === prefix || norm.startsWith(`${prefix} `));
+}
+
+function isAmbiguousNumericDate(raw) {
+  const match = cleanCell(raw).match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+  if (!match) return false;
+  return Number(match[1]) <= 12 && Number(match[2]) <= 12;
+}
+
+function parsePositions(value) {
+  const text = cleanCell(value);
+  if (!text || isBlankToken(text)) return null;
+  if (/^\d{1,4}$/.test(text)) {
+    const n = Number(text);
+    return n >= 1 && n <= 9999 ? n : null;
+  }
+  const labeled = text.match(/^(\d{1,4})\s+(?:posiciones|vacantes|plazas)\b\.?$/i);
+  if (!labeled) return null;
+  const n = Number(labeled[1]);
+  return n >= 1 && n <= 9999 ? n : null;
+}
+
+function lookupHeader(value) {
+  return HEADER_INDEX.get(normLine(value)) || null;
+}
+
+function flattenedHeaders(value) {
+  let rest = normLine(value);
+  if (!rest) return null;
+  const found = [];
+  while (rest) {
+    const hit = KNOWN_LINE_PHRASES.find((phrase) => HEADER_INDEX.has(phrase) && (rest === phrase || rest.startsWith(`${phrase} `)));
+    if (!hit) return null;
+    found.push(hit);
+    rest = rest.slice(hit.length).trim();
+  }
+  return found.length >= 2 ? found : null;
+}
+
+function matchLabeledValue(line) {
+  const raw = cleanCell(line);
+  const sep = raw.search(/[:\-–]/);
+  if (sep <= 0) return null;
+  const label = normLine(raw.slice(0, sep));
+  const value = cleanCell(raw.slice(sep + 1));
+  if (!label || !value || value.length > 300) return null;
+  for (const [key, labels] of LABELED_FIELDS) {
+    if (labels.includes(label)) return { key, value };
+  }
+  return null;
+}
+
+function matchLabelOnly(line) {
+  const norm = normLine(line);
+  for (const [key, labels] of LABELED_FIELDS) {
+    if (labels.includes(norm)) return key;
   }
   return null;
 }
 
 function matchSection(line) {
-  const match = line.match(SECTION_RE);
-  if (!match) return null;
-  const name = match[1].trim();
-  return {
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    inline: String(match[2] || '').trim(),
-  };
+  if (flattenedHeaders(line)) return null;
+  const raw = cleanCell(line);
+  const norm = normLine(line);
+  for (const [key, name] of SECTION_DEFS) {
+    if (norm !== key && !norm.startsWith(`${key} `)) continue;
+    const rest = norm.slice(key.length).trim();
+    if (!rest) return { name, inline: '' };
+    if (HEADER_INDEX.has(rest) || flattenedHeaders(rest)) return null;
+    const inline = raw.split(/\s+/).slice(key.split(' ').length).join(' ').replace(/^[:\-–]\s*/, '');
+    return { name, inline: cleanCell(inline) };
+  }
+  return null;
+}
+
+function isRejectedTitle(line) {
+  const value = cleanCell(line);
+  const norm = normLine(value);
+  if (!norm || isBlankToken(value) || isGenericTitle(value) || isPageMarker(value) || isPageChrome(value)) return true;
+  if (isPruebaHeading(value) || isConfidentiality(value) || startsWithNonTitleLabel(value)) return true;
+  if (HEADER_INDEX.has(norm) || parseExplicitDate(value) || isAmbiguousNumericDate(value)) return true;
+  if (/^\d+$/.test(norm) || value.includes('@') || /[_0-9]/.test(value)) return true;
+  if (/^(documento ficticio|documento de prueba|este documento|este archivo)\b/.test(norm)) return true;
+  if (wordCount(value) > 8 || value.length > 80) return true;
+  return false;
 }
 
 function isPlausibleTitle(line) {
-  const value = clip(line, TITLE_CAP);
-  if (value.length < 8 || value.length > 90) return false;
-  if (!/[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(value)) return false;
-  if (isBlankToken(value) || value.includes('@') || /[_0-9]/.test(value)) return false;
-  if (parseExplicitDate(value)) return false;
+  const value = cleanCell(line);
+  if (isRejectedTitle(value)) return false;
+  if (value.length < 8 || !/[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(value)) return false;
   const words = value.split(/\s+/).filter(Boolean);
   if (words.length >= 2) return true;
   return words.length === 1 && /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/.test(words[0]);
 }
 
+function valueFitsLabel(key, value) {
+  if (isBlankToken(value) || isPageMarker(value) || matchLabelOnly(value) || flattenedHeaders(value)) return false;
+  if (key === 'positionsTotal') return parsePositions(value) != null;
+  if (key === 'openedAt' || key === 'targetCoverageDate') return Boolean(parseExplicitDate(value) || isAmbiguousNumericDate(value));
+  if (key === 'title') return cleanCell(value).length >= 2 && cleanCell(value).length <= 120 && !isGenericTitle(value);
+  const text = cleanCell(value);
+  return text.length >= 2 && text.length <= 120 && wordCount(text) <= 12;
+}
+
 function loosePositions(lines) {
   for (const line of lines.slice(0, 30)) {
-    const match = line.match(/^(\d{1,4})\s+(?:vacantes|posiciones|plazas)\b\.?$/i);
-    if (!match) continue;
-    const n = Number(match[1]);
-    if (n >= 1 && n <= 9999) return n;
+    const n = parsePositions(line);
+    if (n && !/^\d+$/.test(cleanCell(line))) return n;
   }
   return null;
 }
 
-export function parseRecruitmentVacancyText(raw) {
-  const text = plainText(raw).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP);
-  if (text.length < 3) return {};
-  const lines = text
-    .split('\n')
-    .map((line) => line.replace(/^#+\s*/, '').trim())
-    .filter(Boolean);
-  const suggestions = {};
-  const sections = [];
-  const leftover = [];
-  let current = null;
+function mergeSplitHeadings(lines) {
+  const merged = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const next = lines[i + 1];
+    const combined = next ? normLine(`${lines[i]} ${next}`) : '';
+    const first = normLine(lines[i]);
+    if (
+      next &&
+      KNOWN_LINE_PHRASES.includes(combined) &&
+      combined.length > first.length &&
+      wordCount(next) <= 4 &&
+      !/[.;:]$/.test(cleanCell(next))
+    ) {
+      merged.push(cleanCell(`${lines[i]} ${next}`));
+      i += 1;
+      continue;
+    }
+    merged.push(lines[i]);
+  }
+  return merged;
+}
 
-  function assign(key, value) {
-    value = plainText(value).replace(/[<>]/g, '');
-    if (suggestions[key] || isBlankToken(value)) return;
-    if (key === 'title') {
-      const title = clip(value, TITLE_CAP);
-      if (title.length < 2 || title.length > 120) return;
-      suggestions.title = { value: title, confidence: 'high' };
-      return;
+function emptyCapture() {
+  return { fields: {}, dates: {} };
+}
+
+function putField(bucket, key, value, confidence) {
+  if (bucket.fields[key] || bucket.dates[key] || isBlankToken(value)) return false;
+  if (key === 'title') {
+    const title = clip(cleanCell(value), TITLE_CAP);
+    if (title.length < 2 || title.length > 120 || isGenericTitle(title)) return false;
+    bucket.fields.title = { value: title, confidence };
+    return true;
+  }
+  if (key === 'clientName' || key === 'location') {
+    const short = clip(cleanCell(value), SHORT_CAP);
+    if (short.length < 2 || short.length > 120) return false;
+    bucket.fields[key] = { value: short, confidence };
+    return true;
+  }
+  if (key === 'positionsTotal') {
+    const n = parsePositions(value);
+    if (!n) return false;
+    bucket.fields.positionsTotal = { value: n, confidence };
+    return true;
+  }
+  if (key === 'openedAt' || key === 'targetCoverageDate') {
+    bucket.dates[key] = { raw: cleanCell(value), confidence };
+    return true;
+  }
+  return false;
+}
+
+function interpretTables(tables) {
+  const bucket = emptyCapture();
+  const labor = [];
+  const list = Array.isArray(tables) ? tables : [];
+  const laborNames = new Set(LABOR_HEADERS.map(([, name]) => name));
+  for (const table of list) {
+    if (!Array.isArray(table) || table.some((row) => !Array.isArray(row))) continue;
+    const rows = table.map((row) => row.map((cell) => cleanCell(cell)));
+    let ambiguous = false;
+    const local = emptyCapture();
+    const localLabor = [];
+    for (let r = 0; r < rows.length; r += 1) {
+      const row = rows[r];
+      const mapped = row.map((cell) => lookupHeader(cell));
+      const recognized = mapped.filter(Boolean);
+      if (!recognized.length) continue;
+      if (new Set(recognized).size !== recognized.length) {
+        ambiguous = true;
+        break;
+      }
+      const next = rows[r + 1];
+      if (!next) continue;
+      if (next.some((cell) => lookupHeader(cell))) continue;
+      if (next.length !== row.length) {
+        ambiguous = true;
+        break;
+      }
+      row.forEach((cell, index) => {
+        const token = lookupHeader(cell);
+        const value = next[index];
+        if (!token || !value) return;
+        if (laborNames.has(token)) {
+          localLabor.push({ name: token, lines: [value] });
+          return;
+        }
+        putField(local, token, value, 'high');
+      });
+      r += 1;
     }
-    if (key === 'clientName' || key === 'location') {
-      const short = clip(value, SHORT_CAP);
-      if (short.length < 2 || short.length > 120) return;
-      suggestions[key] = { value: short, confidence: 'high' };
-      return;
+    if (ambiguous) continue;
+    for (const [key, item] of Object.entries(local.fields)) {
+      if (!bucket.fields[key]) bucket.fields[key] = item;
+      else if (String(bucket.fields[key].value) !== String(item.value)) delete bucket.fields[key];
     }
-    if (key === 'positionsTotal') {
-      const n = Number(String(value).match(/\d{1,4}/)?.[0]);
-      if (!Number.isInteger(n) || n < 1 || n > 9999) return;
-      suggestions.positionsTotal = { value: n, confidence: 'high' };
-      return;
+    for (const [key, item] of Object.entries(local.dates)) {
+      if (!bucket.dates[key]) bucket.dates[key] = item;
+      else if (normLine(bucket.dates[key].raw) !== normLine(item.raw)) delete bucket.dates[key];
     }
-    if (key === 'openedAt' || key === 'targetCoverageDate') {
-      const iso = parseExplicitDate(value);
-      if (!iso) return;
-      suggestions[key] = { value: iso, confidence: 'high' };
+    labor.push(...localLabor);
+  }
+  return { ...bucket, labor };
+}
+
+function resolveDate(textItem, tableItem) {
+  const sources = [textItem, tableItem].filter(Boolean);
+  if (!sources.length) return { status: 'absent' };
+  const parsed = sources.map((item) => ({ ...item, iso: parseExplicitDate(item.raw) }));
+  const isos = [...new Set(parsed.map((item) => item.iso).filter(Boolean))];
+  if (isos.length > 1) return { status: 'conflict' };
+  if (isos.length === 1) {
+    const winner = parsed.find((item) => item.iso === isos[0]);
+    return { status: 'ok', iso: isos[0], confidence: winner.confidence || 'high' };
+  }
+  if (parsed.some((item) => isAmbiguousNumericDate(item.raw))) return { status: 'ambiguous' };
+  return { status: 'absent' };
+}
+
+function mergeField(textItem, tableItem) {
+  if (!textItem && !tableItem) return null;
+  if (textItem && !tableItem) return textItem;
+  if (!textItem && tableItem) return tableItem;
+  if (String(textItem.value) === String(tableItem.value) || normLine(textItem.value) === normLine(tableItem.value)) {
+    return { value: tableItem.value || textItem.value, confidence: 'high' };
+  }
+  if (textItem.confidence === 'high' && tableItem.confidence === 'high') return null;
+  return tableItem.confidence === 'high' ? tableItem : textItem;
+}
+
+export function parseRecruitmentVacancyText(raw, options = {}) {
+  const text = plainText(raw).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP);
+  const lines = mergeSplitHeadings(
+    text
+      .split('\n')
+      .map((line) => line.replace(/^#+\s*/, '').replace(/\t+/g, ' ').trim())
+      .filter(Boolean)
+      .filter((line) => !isPageMarker(line)),
+  );
+  const fromTable = interpretTables(options.tables);
+  if (
+    text.length < 3 &&
+    !Object.keys(fromTable.fields).length &&
+    !Object.keys(fromTable.dates).length &&
+    !fromTable.labor.length
+  ) {
+    return {};
+  }
+  const fromText = emptyCapture();
+  const consumed = new Set();
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (consumed.has(i) || isPruebaHeading(lines[i])) continue;
+    const labeled = matchLabeledValue(lines[i]);
+    if (labeled) {
+      if (!(labeled.key === 'title' && cleanCell(labeled.value).length > 120)) {
+        putField(fromText, labeled.key, labeled.value, 'high');
+      }
+      consumed.add(i);
+      continue;
+    }
+    const key = matchLabelOnly(lines[i]);
+    const next = lines[i + 1];
+    if (!key || !next || matchLabelOnly(next) || matchLabeledValue(next) || !valueFitsLabel(key, next)) continue;
+    if (putField(fromText, key, next, 'high')) {
+      consumed.add(i);
+      consumed.add(i + 1);
+      i += 1;
     }
   }
 
-  for (const line of lines) {
-    const field = matchField(line);
-    if (field) {
+  if (!fromText.fields.title) {
+    for (let i = 0; i < lines.length; i += 1) {
+      if (consumed.has(i) || !isPlausibleTitle(lines[i])) continue;
+      fromText.fields.title = { value: clip(lines[i], TITLE_CAP), confidence: 'medium' };
+      consumed.add(i);
+      break;
+    }
+  }
+  if (!fromText.fields.positionsTotal) {
+    const n = loosePositions(lines.filter((_, index) => !consumed.has(index)));
+    if (n) fromText.fields.positionsTotal = { value: n, confidence: 'medium' };
+  }
+
+  const suggestions = {};
+  for (const key of ['title', 'clientName', 'location', 'positionsTotal']) {
+    const merged = mergeField(fromText.fields[key], fromTable.fields[key]);
+    if (merged) suggestions[key] = merged;
+  }
+  const opened = resolveDate(fromText.dates.openedAt, fromTable.dates.openedAt);
+  const coverage = resolveDate(fromText.dates.targetCoverageDate, fromTable.dates.targetCoverageDate);
+  const datePairBroken =
+    opened.status !== 'absent' && coverage.status !== 'absent' && (opened.status !== 'ok' || coverage.status !== 'ok');
+  if (!datePairBroken) {
+    if (opened.status === 'ok') suggestions.openedAt = { value: opened.iso, confidence: opened.confidence };
+    if (coverage.status === 'ok') {
+      suggestions.targetCoverageDate = { value: coverage.iso, confidence: coverage.confidence };
+    }
+    if (
+      suggestions.openedAt &&
+      suggestions.targetCoverageDate &&
+      suggestions.targetCoverageDate.value < suggestions.openedAt.value
+    ) {
+      delete suggestions.targetCoverageDate;
+    }
+  }
+
+  const sections = [];
+  const leftover = [];
+  let current = null;
+  let stop = false;
+  for (let i = 0; i < lines.length; i += 1) {
+    if (consumed.has(i)) continue;
+    const line = lines[i];
+    if (isPruebaHeading(line)) {
+      stop = true;
       current = null;
-      if (field.key === 'title' && clip(field.value, 400).length > 120) {
-        leftover.push(line);
-      } else {
-        assign(field.key, field.value);
-      }
+      continue;
+    }
+    if (stop || isPageChrome(line) || isConfidentiality(line)) continue;
+    if (flattenedHeaders(line)) {
+      current = null;
       continue;
     }
     const section = matchSection(line);
@@ -549,41 +923,49 @@ export function parseRecruitmentVacancyText(raw) {
     if (current) current.lines.push(line);
     else leftover.push(line);
   }
-
-  if (!suggestions.title && leftover.length && isPlausibleTitle(leftover[0])) {
-    suggestions.title = { value: clip(leftover.shift(), TITLE_CAP), confidence: 'medium' };
+  for (const block of fromTable.labor) {
+    const body = block.lines.join(' ');
+    if (sections.some((section) => section.name === block.name && normLine(section.lines.join(' ')) === normLine(body))) continue;
+    sections.push(block);
   }
 
-  if (!suggestions.positionsTotal) {
-    const n = loosePositions(lines);
-    if (n) suggestions.positionsTotal = { value: n, confidence: 'medium' };
-  }
-
+  const assignedLines = new Set(
+    [suggestions.title?.value, suggestions.clientName?.value, suggestions.location?.value, suggestions.positionsTotal?.value]
+      .filter((value) => value != null)
+      .map((value) => normLine(value)),
+  );
   const parts = [];
   for (const section of sections) {
-    const body = section.lines.join('\n').trim();
-    if (!body || isBlankToken(body)) continue;
-    parts.push(`${section.name}\n${body}`);
+    const bodyLines = [];
+    for (const line of section.lines.map((item) => cleanCell(item)).filter(Boolean)) {
+      if (isPageMarker(line) || isPageChrome(line) || assignedLines.has(normLine(line))) continue;
+      if (bodyLines.length && normLine(bodyLines[bodyLines.length - 1]) === normLine(line)) continue;
+      bodyLines.push(line);
+    }
+    if (!bodyLines.length) {
+      if (section.name === 'Requisitos' || section.name === 'Responsabilidades') parts.push(section.name);
+      continue;
+    }
+    parts.push(`${section.name}\n${bodyLines.join('\n')}`);
   }
   let jd = parts.join('\n\n').trim();
   let confidence = 'high';
   if (!jd) {
-    const rest = leftover.join('\n').trim();
+    const restLines = [];
+    for (const line of leftover) {
+      if (isPageMarker(line) || isPageChrome(line) || isGenericTitle(line) || assignedLines.has(normLine(line))) continue;
+      if (restLines.length && normLine(restLines[restLines.length - 1]) === normLine(line)) continue;
+      restLines.push(cleanCell(line));
+    }
+    const rest = restLines.join('\n').trim();
     if (rest.length >= 40 && !isBlankToken(rest)) {
       jd = rest;
       confidence = 'medium';
     }
   }
   if (jd) {
-    jd = plainText(jd).replace(/[<>]/g, '').slice(0, JD_CAP).trim();
+    jd = jd.replace(/[<>]/g, '').replace(/\n{3,}/g, '\n\n').slice(0, JD_CAP).trim();
     if (jd && !isBlankToken(jd)) suggestions.jobDescription = { value: jd, confidence };
-  }
-  if (
-    suggestions.openedAt &&
-    suggestions.targetCoverageDate &&
-    suggestions.targetCoverageDate.value < suggestions.openedAt.value
-  ) {
-    delete suggestions.targetCoverageDate;
   }
   return suggestions;
 }
@@ -683,18 +1065,73 @@ export async function extractRecruitmentVacancyDocText(buffer, options = {}) {
   return raceWithRecruitmentVacancyExtractTimeout(owned, timeoutMs);
 }
 
-async function readVacancyFileText(kind, buffer) {
+export function joinRecruitmentVacancyPdfPages(textResult) {
+  const pages = Array.isArray(textResult?.pages) ? textResult.pages : [];
+  if (!pages.length) return String(textResult?.text || '');
+  return pages
+    .map((page) => String(page?.text || '').replace(/[ \t]+$/gm, '').trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+/**
+ * One PDFParse per file. getText and getTable share it. destroy runs in finally.
+ * pageJoiner stays empty so pdf-parse does not insert "-- n of m --"; pages are joined here.
+ */
+export async function extractRecruitmentVacancyPdfSource(buffer, options = {}) {
+  const parser =
+    options.parser ||
+    (await (async () => {
+      const { PDFParse } = await import('pdf-parse');
+      return new PDFParse({ data: buffer });
+    })());
+  try {
+    const textResult = await parser.getText({ pageJoiner: '' });
+    const text = joinRecruitmentVacancyPdfPages(textResult);
+    let tables = [];
+    try {
+      const tableResult = await parser.getTable();
+      for (const page of tableResult?.pages || []) {
+        if (Array.isArray(page?.tables)) tables.push(...page.tables);
+      }
+    } catch {
+      tables = [];
+    }
+    return { text, tables };
+  } finally {
+    await Promise.resolve(parser.destroy()).catch(() => {});
+  }
+}
+
+export async function readRecruitmentVacancyPdfSource(buffer, options = {}) {
+  const pending = extractRecruitmentVacancyPdfSource(buffer, options);
+  pending.catch(() => {});
+  return raceWithRecruitmentVacancyExtractTimeout(
+    pending,
+    options.timeoutMs ?? RECRUITMENT_VACANCY_EXTRACT_TIMEOUT_MS,
+  );
+}
+
+async function readVacancyFileSource(kind, buffer) {
   try {
     if (kind === 'txt') {
-      return plainText(buffer.toString('utf8').replace(/^\uFEFF/, '')).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP);
+      return {
+        text: plainText(buffer.toString('utf8').replace(/^\uFEFF/, '')).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP),
+        tables: [],
+      };
+    }
+    if (kind === 'pdf') {
+      const source = await readRecruitmentVacancyPdfSource(buffer);
+      return {
+        text: plainText(source.text).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP),
+        tables: source.tables,
+      };
     }
     const text =
       kind === 'doc'
         ? await extractRecruitmentVacancyDocText(buffer)
-        : await raceWithRecruitmentVacancyExtractTimeout(
-            extractTextFromResumeBuffer(buffer, kind === 'pdf' ? '.pdf' : '.docx'),
-          );
-    return plainText(text).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP);
+        : await raceWithRecruitmentVacancyExtractTimeout(extractTextFromResumeBuffer(buffer, '.docx'));
+    return { text: plainText(text).slice(0, RECRUITMENT_VACANCY_EXTRACT_TEXT_CAP), tables: [] };
   } catch (err) {
     if (err && err.message === RECRUITMENT_VACANCY_EXTRACT_MSG.fail) throw err;
     throw extractError(RECRUITMENT_VACANCY_EXTRACT_MSG.fail);
@@ -707,8 +1144,7 @@ async function readVacancyFileText(kind, buffer) {
  */
 export async function analyzeRecruitmentVacancyFile({ buffer, originalName, mimetype = '' }) {
   const kind = classifyRecruitmentVacancyExtractFile(buffer, originalName, mimetype);
-  const text = await readVacancyFileText(kind, buffer);
-  if (!text || text.length < 3) throw extractError(RECRUITMENT_VACANCY_EXTRACT_MSG.empty);
-  const suggestions = parseRecruitmentVacancyText(text);
+  const source = await readVacancyFileSource(kind, buffer);
+  const suggestions = parseRecruitmentVacancyText(source.text, { tables: source.tables });
   return buildRecruitmentVacancyExtractResponse(originalName, suggestions);
 }
