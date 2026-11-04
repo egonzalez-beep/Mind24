@@ -84,6 +84,12 @@ check(/rec-form-vac-docs-drop/.test(indexHtml) && /recFormVacDocsHandleFile/.tes
 check(/rec-vac-form-coverage-block/.test(indexHtml) && /Información principal/.test(indexHtml), 'formulario vacante premium por secciones');
 check(!/modal-logo[\s\S]{0,80}modal-rec-vacancy/.test(indexHtml.match(/id="modal-rec-vacancy"[\s\S]*?id="modal-rec-vacancy-detail"/)?.[0]||''), 'sin logo MIND24 en modal vacante');
 check(/Crear vacante/.test(indexHtml) && /Guardar cambios/.test(indexHtml), 'CTAs create/edit vacante');
+const vacModalBlock = indexHtml.match(/id="modal-rec-vacancy"[\s\S]*?id="modal-rec-vacancy-detail"/)?.[0] || '';
+check(/id="rec-vac-extract-drop"/.test(vacModalBlock) && /Arrastra aquí el archivo de tu vacante/.test(vacModalBlock), 'zona para precargar vacante dentro del modal');
+check(
+  /apiJson\('\/api\/org\/recruitment\/vacancies'/.test(indexHtml.match(/async function recSubmitVacancy[\s\S]*?\n\}/)?.[0] || ''),
+  'guardar vacante sigue en el endpoint de creación',
+);
 
 console.log('\n=== Recruitment 1B.5 — tablero ejecutivo ===\n');
 

@@ -21,6 +21,14 @@ import {
 } from '../services/recruitmentCandidateResume.service.js';
 import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
 import {
+  RECRUITMENT_VACANCY_EXTRACT_MAX_BYTES,
+  RECRUITMENT_VACANCY_EXTRACT_MSG,
+  analyzeRecruitmentVacancyFile,
+  isDeclaredRecruitmentVacancyExtractFile,
+  recruitmentVacancyExtractUploadFailure,
+} from '../services/recruitmentVacancyExtract.service.js';
+import { recruitmentVacancyExtractLimiter } from '../middleware/rateLimit.middleware.js';
+import {
   createRecruitmentVacancy,
   getRecruitmentVacancy,
   listRecruitmentVacancies,
@@ -100,6 +108,15 @@ const recruitmentVacancyDocumentUpload = multer({
         : new Error('INVALID_DOCUMENT_FILE'),
       isAllowedRecruitmentVacancyDocumentFile(file.mimetype, file.originalname),
     );
+  },
+});
+
+const recruitmentVacancyExtractUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_VACANCY_EXTRACT_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const ok = isDeclaredRecruitmentVacancyExtractFile(file.originalname);
+    cb(ok ? null : new Error('INVALID_VACANCY_EXTRACT_FILE'), ok);
   },
 });
 
@@ -245,6 +262,40 @@ router.post('/vacancies', async (req, res, next) => {
     next(e);
   }
 });
+
+router.post(
+  '/vacancies/extract',
+  recruitmentVacancyExtractLimiter,
+  (req, res, next) => {
+    recruitmentVacancyExtractUpload.single('file')(req, res, (err) => {
+      if (!err) return next();
+      const mapped = recruitmentVacancyExtractUploadFailure(err);
+      return res.status(mapped.status).json(mapped.body);
+    });
+  },
+  async (req, res, next) => {
+    try {
+      await assertEmpresaAdmin(req.session.userId);
+      if (!req.file || !req.file.buffer) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: RECRUITMENT_VACANCY_EXTRACT_MSG.empty,
+        });
+      }
+      const result = await analyzeRecruitmentVacancyFile({
+        buffer: req.file.buffer,
+        originalName: req.file.originalname,
+        mimetype: req.file.mimetype,
+      });
+      res.json(result);
+    } catch (e) {
+      if (e && e.message === RECRUITMENT_VACANCY_EXTRACT_MSG.fail) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: e.message });
+      }
+      next(e);
+    }
+  },
+);
 
 router.get('/metrics', async (req, res, next) => {
   try {

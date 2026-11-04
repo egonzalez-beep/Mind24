@@ -569,6 +569,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-form-cv-parse-msg--info{color:var(--slate-500);}
 .rec-cand-form-cv-image-hint{font-size:11px;color:var(--slate-500);margin-top:8px;line-height:1.4;}
 .rec-cand-form-field--cv-prefill .form-input{box-shadow:inset 0 0 0 1px rgba(45,212,191,.32);background:rgba(240,253,250,.28);}
+.rec-vac-extract{margin:0 0 12px;}
+.rec-vac-extract-drop{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px dashed rgba(13,148,136,.45);border-radius:12px;background:rgba(240,253,250,.45);outline:none;}
+.rec-vac-extract-drop:focus-visible,.rec-vac-extract-pick:focus-visible,.rec-vac-extract-manual:focus-visible{box-shadow:0 0 0 2px #fff,0 0 0 4px #0f766e;}
+.rec-vac-extract.is-over .rec-vac-extract-drop{border-style:solid;background:rgba(204,251,241,.72);}
+.rec-vac-extract.is-over .rec-vac-extract-over{display:block;}
+.rec-vac-extract-icon{display:flex;flex:0 0 auto;color:#0d9488;}
+.rec-vac-extract-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+.rec-vac-extract-copy{flex:1;min-width:0;}
+.rec-vac-extract-title{margin:0;font-size:13px;font-weight:600;color:var(--slate-800);line-height:1.35;}
+.rec-vac-extract-sub,.rec-vac-extract-meta,.rec-vac-extract-over{margin:2px 0 0;font-size:12px;color:var(--slate-500);line-height:1.35;}
+.rec-vac-extract-over{display:none;font-weight:600;color:var(--slate-700);}
+.rec-vac-extract-pick{flex:0 0 auto;}
+.rec-vac-extract-scan{height:2px;margin-top:8px;border-radius:99px;background:rgba(13,148,136,.18);overflow:hidden;position:relative;}
+.rec-vac-extract-scan::after{content:"";position:absolute;inset:0 auto 0 0;width:35%;background:#0f766e;transform:translateX(-120%);opacity:0;}
+.rec-vac-extract.is-busy .rec-vac-extract-scan::after{opacity:1;animation:recVacExtractScan 1.1s ease-in-out infinite;}
+@keyframes recVacExtractScan{from{transform:translateX(-120%);}to{transform:translateX(320%);}}
+.rec-vac-extract-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;}
+.rec-vac-extract-manual{margin:0;padding:0;border:0;background:none;color:#0f766e;font:inherit;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+.rec-vac-extract-manual:disabled{opacity:.5;cursor:default;}
+.rec-vac-extract-file,.rec-vac-extract-status{margin:4px 0 0;min-height:1.2em;font-size:12px;line-height:1.4;color:var(--slate-600);overflow-wrap:anywhere;}
+.rec-vac-extract-status{min-height:1.25em;}
+.rec-vac-extract.is-done .rec-vac-extract-status{color:#0f766e;}
+.rec-vac-extract.is-error .rec-vac-extract-status{color:#9f1239;}
+.rec-vac-form-field--suggested>.form-label::after{content:" · Sugerido";font-weight:600;color:var(--slate-500);letter-spacing:0;text-transform:none;}
+@media (max-width:720px){
+  .rec-vac-extract-drop{flex-wrap:wrap;align-items:flex-start;}
+  .rec-vac-extract-pick{width:100%;}
+}
+@media (prefers-reduced-motion:reduce){
+  .rec-vac-extract.is-busy .rec-vac-extract-scan::after{animation:none;transform:none;width:100%;opacity:.85;}
+}
 .rec-cand-form-notes{min-height:72px;resize:vertical;}
 .rec-cand-form-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.2);}
 .rec-cand-form-footer .rec-stages-ghost-btn{padding:10px 16px;font-size:13px;font-weight:600;}
@@ -2523,6 +2554,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     <input type="hidden" id="rec-form-vacancy-id">
     <input type="hidden" id="rec-form-prev-assignee-id">
     <div class="rec-cand-form-body">
+      <div id="rec-vac-extract" class="rec-vac-extract">
+        <div id="rec-vac-extract-drop" class="rec-vac-extract-drop" tabindex="0" role="group" aria-label="Arrastra aquí el archivo de tu vacante. También puedes seleccionarlo desde tu equipo.">
+          <span class="rec-vac-extract-icon" id="rec-vac-extract-icon" aria-hidden="true"></span>
+          <div class="rec-vac-extract-copy">
+            <p class="rec-vac-extract-title">Arrastra aquí el archivo de tu vacante</p>
+            <p class="rec-vac-extract-sub">También puedes seleccionarlo desde tu equipo</p>
+            <p id="rec-vac-extract-formats" class="rec-vac-extract-meta">PDF, Word o TXT · máx. 10 MB</p>
+            <p id="rec-vac-extract-over" class="rec-vac-extract-over">Suelta el archivo para analizarlo</p>
+          </div>
+          <button type="button" class="rec-stages-ghost-btn rec-vac-extract-pick" id="rec-vac-extract-pick">Seleccionar archivo</button>
+        </div>
+        <div class="rec-vac-extract-scan" aria-hidden="true"></div>
+        <div class="rec-vac-extract-actions">
+          <button type="button" class="rec-vac-extract-manual" id="rec-vac-extract-manual">Crear vacante manualmente</button>
+          <button type="button" class="rec-vac-extract-manual hidden" id="rec-vac-extract-remove">Quitar archivo</button>
+          <button type="button" class="rec-vac-extract-manual hidden" id="rec-vac-extract-retry">Reintentar</button>
+        </div>
+        <p id="rec-vac-extract-file" class="rec-vac-extract-file"></p>
+        <p id="rec-vac-extract-status" class="rec-vac-extract-status" role="status" aria-live="polite"></p>
+        <input type="file" id="rec-vac-extract-input" class="hidden" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" tabindex="-1" aria-hidden="true">
+      </div>
       <div class="rec-cand-form-section-head rec-vac-form-first-section">
         <span class="rec-cand-form-section-icon" id="rec-vac-form-info-icon" aria-hidden="true"></span>
         <span class="rec-cand-form-section-title">Información principal</span>
@@ -5317,6 +5369,7 @@ function closeModal(id){
   if(id==='modal-rec-candidate-detail'&&typeof recCandTryCloseDetailModal==='function'){
     if(!recCandTryCloseDetailModal()) return;
   }
+  if(id==='modal-rec-vacancy'&&typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
   const m=document.getElementById(id);
   if(m){
     m.classList.add('hidden');
@@ -9786,6 +9839,7 @@ function recVacFormApplyDecorIcons(){
     'rec-vac-form-desc-icon':'description',
     'rec-vac-form-files-icon':'file',
     'rec-form-vac-docs-upload-icon':'upload',
+    'rec-vac-extract-icon':'upload',
   };
   Object.keys(map).forEach(function(id){
     const el=document.getElementById(id);
@@ -10436,12 +10490,370 @@ async function recLoadVacancies(selectId){
     recRenderCarousel();
   }
 }
+let recVacExtractSeq=0;
+let recVacExtractAbort=null;
+let recVacExtractBusy=false;
+let recVacExtractLastFile=null;
+let recVacExtractDragDepth=0;
+let recVacExtractOpenedDefault='';
+const recVacExtractTouched={};
+const REC_VAC_EXTRACT_MAX_BYTES=10*1024*1024;
+const REC_VAC_EXTRACT_MSG={
+  format:'Este formato de archivo no es compatible.',
+  size:'El archivo supera el tamaño permitido.',
+  empty:'No encontramos suficiente información para completar la vacante. Puedes continuar manualmente.',
+  fail:'No pudimos analizar el archivo. Intenta nuevamente o captura la vacante manualmente.',
+  done:'Información extraída. Revisa los datos antes de crear la vacante.',
+  kept:'Se conservó la información que ya habías capturado.',
+};
+const REC_VAC_EXTRACT_FIELDS={
+  title:'rec-form-title',
+  clientName:'rec-form-client',
+  location:'rec-form-location',
+  positionsTotal:'rec-form-positions',
+  openedAt:'rec-form-opened',
+  targetCoverageDate:'rec-form-target-coverage',
+  jobDescription:'rec-form-jd',
+};
+function recVacExtractFieldIds(){
+  return Object.keys(REC_VAC_EXTRACT_FIELDS).map(function(key){ return REC_VAC_EXTRACT_FIELDS[key]; });
+}
+function recVacExtractSetState(name){
+  const root=document.getElementById('rec-vac-extract');
+  if(!root) return;
+  ['is-selected','is-busy','is-done','is-error'].forEach(function(cls){ root.classList.remove(cls); });
+  if(name) root.classList.add(name);
+  root.setAttribute('aria-busy', name==='is-busy' ? 'true' : 'false');
+}
+function recVacExtractSetOver(on){
+  const root=document.getElementById('rec-vac-extract');
+  if(!root) return;
+  root.classList.toggle('is-over', !!on);
+  const over=document.getElementById('rec-vac-extract-over');
+  if(over) over.setAttribute('aria-hidden', on ? 'false' : 'true');
+}
+function recVacExtractToggleAction(id, show){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('hidden', !show);
+  if(show) el.removeAttribute('hidden');
+  else el.setAttribute('hidden','');
+}
+function recVacExtractShowFile(name){
+  const el=document.getElementById('rec-vac-extract-file');
+  if(!el) return;
+  el.textContent=name ? String(name) : '';
+}
+function recVacExtractShowStatus(text, state){
+  const el=document.getElementById('rec-vac-extract-status');
+  if(el) el.textContent=text||'';
+  recVacExtractSetState(state||'');
+}
+function recVacExtractClientError(file){
+  if(!file) return REC_VAC_EXTRACT_MSG.empty;
+  const name=String(file.name||'').toLowerCase();
+  const ext=name.lastIndexOf('.')>=0 ? name.slice(name.lastIndexOf('.')) : '';
+  if(['.pdf','.doc','.docx','.txt'].indexOf(ext)<0) return REC_VAC_EXTRACT_MSG.format;
+  if(!file.size) return REC_VAC_EXTRACT_MSG.empty;
+  if(file.size>REC_VAC_EXTRACT_MAX_BYTES) return REC_VAC_EXTRACT_MSG.size;
+  return '';
+}
+function recVacExtractSafeMessage(err){
+  const msg=err&&err.message ? String(err.message) : '';
+  if(msg===REC_VAC_EXTRACT_MSG.format||msg===REC_VAC_EXTRACT_MSG.size||msg===REC_VAC_EXTRACT_MSG.empty||msg===REC_VAC_EXTRACT_MSG.fail||msg==='Demasiados análisis de vacantes. Espera unos minutos.') return msg;
+  return REC_VAC_EXTRACT_MSG.fail;
+}
+function recVacExtractFieldDirty(id){
+  if(recVacExtractTouched[id]) return true;
+  const el=document.getElementById(id);
+  if(!el) return false;
+  const value=String(el.value||'').trim();
+  if(id==='rec-form-positions') return value!==''&&value!=='1';
+  if(id==='rec-form-opened') return value!==''&&value!==String(recVacExtractOpenedDefault||'');
+  return value!=='';
+}
+function recVacExtractConflicts(incoming){
+  return Object.keys(incoming).some(function(key){
+    const id=REC_VAC_EXTRACT_FIELDS[key];
+    const el=document.getElementById(id);
+    if(!el) return false;
+    if(String(el.value)===String(incoming[key])) return false;
+    return recVacExtractFieldDirty(id);
+  });
+}
+function recVacExtractMarkSuggested(fieldId){
+  const el=document.getElementById(fieldId);
+  const wrap=el&&el.parentElement;
+  if(wrap) wrap.classList.add('rec-vac-form-field--suggested');
+}
+function recVacExtractClearSuggested(fieldId){
+  const el=fieldId ? document.getElementById(fieldId) : null;
+  const wrap=el ? el.parentElement : null;
+  if(wrap) wrap.classList.remove('rec-vac-form-field--suggested');
+}
+function recVacExtractClearAllSuggested(){
+  document.querySelectorAll('.rec-vac-form-field--suggested').forEach(function(node){
+    node.classList.remove('rec-vac-form-field--suggested');
+  });
+}
+function recVacExtractNormalizeIncoming(suggestions){
+  const incoming={};
+  if(!suggestions||typeof suggestions!=='object') return incoming;
+  Object.keys(REC_VAC_EXTRACT_FIELDS).forEach(function(key){
+    const item=suggestions[key];
+    if(!item||(item.confidence!=='high'&&item.confidence!=='medium')) return;
+    if(item.value==null||item.value==='') return;
+    if(key==='positionsTotal'){
+      const n=Number(item.value);
+      if(!Number.isInteger(n)||n<1||n>9999) return;
+      incoming.positionsTotal=n;
+      return;
+    }
+    incoming[key]=item.value;
+  });
+  if(incoming.targetCoverageDate){
+    const opened=incoming.openedAt||(document.getElementById('rec-form-opened')&&document.getElementById('rec-form-opened').value)||'';
+    if(opened&&String(incoming.targetCoverageDate)<String(opened)) delete incoming.targetCoverageDate;
+  }
+  return incoming;
+}
+function recVacExtractApplySuggestions(suggestions, opts){
+  opts=opts||{};
+  const incoming=recVacExtractNormalizeIncoming(suggestions);
+  const keys=Object.keys(incoming);
+  if(!keys.length) return { applied:[], empty:true, needsConfirm:false };
+  if(!opts.force&&recVacExtractConflicts(incoming)) return { applied:[], empty:false, needsConfirm:true };
+  if(opts.dryRun) return { applied:keys.map(function(key){ return REC_VAC_EXTRACT_FIELDS[key]; }), empty:false, needsConfirm:false };
+  const applied=[];
+  keys.forEach(function(key){
+    const id=REC_VAC_EXTRACT_FIELDS[key];
+    const el=document.getElementById(id);
+    if(!el) return;
+    recVacExtractClearSuggested(id);
+    el.value=String(incoming[key]);
+    recVacExtractMarkSuggested(id);
+    applied.push(id);
+  });
+  return { applied:applied, empty:false, needsConfirm:false };
+}
+function recVacExtractFocusField(id){
+  const el=id&&document.getElementById(id);
+  if(!el) return;
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try{ el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'center' }); }catch(_e){}
+  try{ el.focus({ preventScroll:true }); }catch(_e2){ try{ el.focus(); }catch(_e3){} }
+}
+function recVacExtractFocusFirst(ids){
+  const order=recVacExtractFieldIds();
+  const id=order.filter(function(item){ return ids.indexOf(item)>=0; })[0];
+  recVacExtractFocusField(id);
+}
+function recVacExtractBegin(){
+  recVacExtractSeq+=1;
+  if(recVacExtractAbort) recVacExtractAbort.abort();
+  recVacExtractAbort=typeof AbortController!=='undefined' ? new AbortController() : null;
+  return recVacExtractSeq;
+}
+function recVacExtractPreventBrowserOpen(ev){
+  ev.preventDefault();
+}
+function recVacExtractArmPageDropGuard(){
+  if(window.__recVacExtractPageDrop) return;
+  window.__recVacExtractPageDrop=true;
+  document.addEventListener('dragover', recVacExtractPreventBrowserOpen);
+  document.addEventListener('drop', recVacExtractPreventBrowserOpen);
+}
+function recVacExtractDisarmPageDropGuard(){
+  if(!window.__recVacExtractPageDrop) return;
+  window.__recVacExtractPageDrop=false;
+  document.removeEventListener('dragover', recVacExtractPreventBrowserOpen);
+  document.removeEventListener('drop', recVacExtractPreventBrowserOpen);
+}
+function recVacExtractOnModalClose(){
+  recVacExtractSeq+=1;
+  if(recVacExtractAbort) recVacExtractAbort.abort();
+  recVacExtractAbort=null;
+  recVacExtractBusy=false;
+  recVacExtractLastFile=null;
+  recVacExtractDragDepth=0;
+  recVacExtractDisarmPageDropGuard();
+  recVacExtractClearAllSuggested();
+  Object.keys(recVacExtractTouched).forEach(function(key){ delete recVacExtractTouched[key]; });
+}
+function recVacExtractResetUi(){
+  recVacExtractSetOver(false);
+  recVacExtractSetState('');
+  recVacExtractShowFile('');
+  const status=document.getElementById('rec-vac-extract-status');
+  if(status) status.textContent='';
+  recVacExtractToggleAction('rec-vac-extract-remove', false);
+  recVacExtractToggleAction('rec-vac-extract-retry', false);
+  const input=document.getElementById('rec-vac-extract-input');
+  if(input) input.value='';
+}
+function recVacExtractOnModalOpen(mode){
+  recVacExtractOnModalClose();
+  recVacExtractResetUi();
+  const panel=document.getElementById('rec-vac-extract');
+  const drop=document.getElementById('rec-vac-extract-drop');
+  const creating=mode!=='edit';
+  if(panel) panel.classList.toggle('hidden', !creating);
+  if(drop){
+    if(creating) drop.setAttribute('tabindex','0');
+    else drop.setAttribute('tabindex','-1');
+  }
+  const opened=document.getElementById('rec-form-opened');
+  recVacExtractOpenedDefault=opened ? String(opened.value||'') : '';
+  if(creating) recVacExtractArmPageDropGuard();
+}
+function recVacExtractOnDragEnter(ev){
+  ev.preventDefault();
+  recVacExtractDragDepth+=1;
+  recVacExtractSetOver(true);
+}
+function recVacExtractOnDragOver(ev){
+  ev.preventDefault();
+  if(ev.dataTransfer) ev.dataTransfer.dropEffect=recVacExtractBusy ? 'none' : 'copy';
+}
+function recVacExtractOnDragLeave(ev){
+  ev.preventDefault();
+  recVacExtractDragDepth=Math.max(0, recVacExtractDragDepth-1);
+  if(recVacExtractDragDepth===0) recVacExtractSetOver(false);
+}
+function recVacExtractOnDrop(ev){
+  ev.preventDefault();
+  recVacExtractDragDepth=0;
+  recVacExtractSetOver(false);
+  if(recVacExtractBusy) return;
+  const file=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(file) recVacExtractHandleFile(file);
+}
+function recVacExtractOnKeyDown(ev){
+  if(ev.key!=='Enter'&&ev.key!==' ') return;
+  if(ev.target&&ev.target.id==='rec-vac-extract-pick') return;
+  ev.preventDefault();
+  recVacExtractPick();
+}
+function recVacExtractPick(){
+  if(recVacExtractBusy) return;
+  const input=document.getElementById('rec-vac-extract-input');
+  if(input) input.click();
+}
+function recVacExtractOnFileInput(ev){
+  const input=ev.target;
+  const file=input&&input.files&&input.files[0];
+  if(input) input.value='';
+  if(file) recVacExtractHandleFile(file);
+}
+function recVacExtractManual(){
+  recVacExtractFocusField('rec-form-title');
+}
+function recVacExtractRemove(){
+  recVacExtractBegin();
+  recVacExtractBusy=false;
+  recVacExtractLastFile=null;
+  recVacExtractResetUi();
+}
+async function recVacExtractHandleFile(file){
+  if(recVacExtractBusy) return;
+  const localErr=recVacExtractClientError(file);
+  if(localErr){
+    recVacExtractLastFile=null;
+    recVacExtractShowFile('');
+    recVacExtractShowStatus(localErr, 'is-error');
+    recVacExtractToggleAction('rec-vac-extract-retry', false);
+    recVacExtractToggleAction('rec-vac-extract-remove', false);
+    return;
+  }
+  const seq=recVacExtractBegin();
+  recVacExtractLastFile=file;
+  recVacExtractBusy=true;
+  recVacExtractShowFile(file.name);
+  recVacExtractShowStatus('Analizando el archivo…', 'is-busy');
+  recVacExtractToggleAction('rec-vac-extract-retry', false);
+  recVacExtractToggleAction('rec-vac-extract-remove', true);
+  try{
+    const fd=new FormData();
+    fd.append('file', file, file.name);
+    const res=await apiJson('/api/org/recruitment/vacancies/extract',{
+      method:'POST',
+      body:fd,
+      signal:recVacExtractAbort ? recVacExtractAbort.signal : undefined,
+    });
+    if(seq!==recVacExtractSeq) return;
+    const preview=recVacExtractApplySuggestions(res&&res.suggestions, { dryRun:true });
+    if(preview.empty){
+      recVacExtractShowStatus(REC_VAC_EXTRACT_MSG.empty, 'is-error');
+      recVacExtractToggleAction('rec-vac-extract-retry', true);
+      return;
+    }
+    if(recVacExtractConflicts(recVacExtractNormalizeIncoming(res&&res.suggestions))){
+      const ok=window.confirm('El formulario ya tiene información. ¿Quieres reemplazar esos campos con los datos del archivo?');
+      if(seq!==recVacExtractSeq) return;
+      if(!ok){
+        recVacExtractShowStatus(REC_VAC_EXTRACT_MSG.kept, 'is-selected');
+        return;
+      }
+    }
+    if(seq!==recVacExtractSeq) return;
+    const applied=recVacExtractApplySuggestions(res&&res.suggestions, { force:true });
+    recVacExtractShowStatus(REC_VAC_EXTRACT_MSG.done, 'is-done');
+    recVacExtractFocusFirst(applied.applied||[]);
+  }catch(err){
+    if(seq!==recVacExtractSeq) return;
+    if(err&&err.name==='AbortError') return;
+    recVacExtractShowStatus(recVacExtractSafeMessage(err), 'is-error');
+    recVacExtractToggleAction('rec-vac-extract-retry', true);
+  }finally{
+    if(seq===recVacExtractSeq) recVacExtractBusy=false;
+  }
+}
+function recVacExtractRetry(){
+  if(recVacExtractLastFile) recVacExtractHandleFile(recVacExtractLastFile);
+}
+function recVacExtractBindOnce(){
+  if(window.__recVacExtractBound) return;
+  window.__recVacExtractBound=true;
+  const drop=document.getElementById('rec-vac-extract-drop');
+  if(drop){
+    drop.addEventListener('dragenter', recVacExtractOnDragEnter);
+    drop.addEventListener('dragover', recVacExtractOnDragOver);
+    drop.addEventListener('dragleave', recVacExtractOnDragLeave);
+    drop.addEventListener('drop', recVacExtractOnDrop);
+    drop.addEventListener('keydown', recVacExtractOnKeyDown);
+    drop.addEventListener('click', function(ev){
+      if(ev.target&&ev.target.closest&&ev.target.closest('#rec-vac-extract-pick')) return;
+      recVacExtractPick();
+    });
+  }
+  const pick=document.getElementById('rec-vac-extract-pick');
+  if(pick) pick.addEventListener('click', recVacExtractPick);
+  const input=document.getElementById('rec-vac-extract-input');
+  if(input) input.addEventListener('change', recVacExtractOnFileInput);
+  const manual=document.getElementById('rec-vac-extract-manual');
+  if(manual) manual.addEventListener('click', recVacExtractManual);
+  const remove=document.getElementById('rec-vac-extract-remove');
+  if(remove) remove.addEventListener('click', recVacExtractRemove);
+  const retry=document.getElementById('rec-vac-extract-retry');
+  if(retry) retry.addEventListener('click', recVacExtractRetry);
+  recVacExtractFieldIds().forEach(function(id){
+    const el=document.getElementById(id);
+    if(!el) return;
+    const mark=function(){
+      recVacExtractTouched[id]=true;
+      recVacExtractClearSuggested(id);
+    };
+    el.addEventListener('input', mark);
+    el.addEventListener('change', mark);
+  });
+}
 async function recOpenVacancyModal(mode,vacancyIdOverride){
   const err=document.getElementById('rec-form-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
   recFormVacDocsSetErr('');
   recVacFormApplyDecorIcons();
   recFormVacDocsWireDropZone();
+  recVacExtractBindOnce();
   await recLoadEmployees();
   const titleEl=document.getElementById('rec-modal-title');
   const subEl=document.getElementById('rec-modal-subtitle');
@@ -10490,6 +10902,7 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     document.getElementById('rec-form-jd').value='';
     recFillResponsibleSelect('');
   }
+  recVacExtractOnModalOpen(mode);
   openModal('modal-rec-vacancy');
 }
 async function recSyncPrimaryAssignee(vacancyId, employeeId, prevAssigneeId){
