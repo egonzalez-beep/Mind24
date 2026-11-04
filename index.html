@@ -267,6 +267,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-vacancies-stage{position:relative;margin-bottom:0;}
 .rec-vac-band{padding:0 0 8px;border-bottom:1px solid rgba(226,232,240,.85);margin-bottom:8px;}
 .rec-vac-band-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.rec-headcount{margin:0 0 8px;font-size:12px;font-weight:650;color:var(--slate-600);letter-spacing:-.01em;}
 .rec-carousel-meta{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .rec-carousel-range{font-size:11px;font-weight:600;color:var(--slate-500);min-width:72px;text-align:center;}
 .rec-carousel-arrow{width:30px;height:30px;border:1px solid var(--slate-200);background:#fff;border-radius:999px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);display:flex;align-items:center;justify-content:center;padding:0;transition:var(--tr-fast);}
@@ -730,7 +731,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-pipeline-header-sep{color:var(--slate-400);font-weight:600;}
 .rec-pipeline-header-vac{font-size:15px;font-weight:800;color:var(--primary);letter-spacing:-.25px;line-height:1.25;}
 .rec-pipeline-count-pill{font-size:11px;font-weight:600;color:var(--slate-600);background:var(--slate-100);padding:4px 10px;border-radius:999px;}
-.rec-pipeline-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.rec-pipeline-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.rec-kanban-empty-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);font-family:inherit;font-size:12px;font-weight:650;padding:5px 10px;border-radius:999px;cursor:pointer;}
+.rec-kanban-empty-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-kanban-empty-toggle:hover{border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
+.rec-kanban-empty-count{font-size:11px;font-weight:600;color:var(--slate-500);}
+.rec-form-capacity{margin:6px 0 0;font-size:12px;font-weight:600;color:var(--slate-600);}
+.rec-form-positions--blocked{border-color:#e11d48;box-shadow:0 0 0 3px rgba(244,63,94,.12);}
+.rec-hired-fold{margin-top:8px;}
+.rec-hired-fold summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--slate-700);list-style-position:outside;}
+.rec-hired-fold-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;}
+.rec-hired-fold-item{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12px;color:var(--slate-600);}
+.rec-hired-fold-link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--purple-dark);cursor:pointer;text-align:left;}
+.rec-hired-fold-link:hover{text-decoration:underline;}
 .rec-pipeline-ghost-btn{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;transition:var(--tr-fast);}
 .rec-pipeline-ghost-btn:disabled{opacity:.55;cursor:default;}
 .rec-pipeline-menu-btn:disabled{opacity:.45;cursor:default;}
@@ -2602,6 +2615,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <div>
             <label class="form-label">Número de posiciones *</label>
             <input type="number" id="rec-form-positions" class="form-input" min="1" max="9999" value="1">
+            <p id="rec-form-capacity" class="rec-form-capacity hidden"></p>
           </div>
           <div>
             <label class="form-label">Fecha de apertura *</label>
@@ -2690,6 +2704,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
         <div class="rec-exec-kpi-val" id="rec-kpi-coverage-val">—</div>
         <div class="rec-exec-cov-pos" id="rec-kpi-coverage-pos"></div>
         <div class="rec-exec-cov-bar"><div class="rec-exec-cov-bar-fill" id="rec-kpi-coverage-bar" style="width:0%"></div></div>
+        <details class="rec-hired-fold hidden" id="rec-hired-fold">
+          <summary id="rec-hired-fold-summary">Contratados: 0 de 0</summary>
+          <ul class="rec-hired-fold-list" id="rec-hired-fold-list"></ul>
+        </details>
       </div>
       <div class="rec-exec-kpi rec-exec-kpi--process" id="rec-kpi-inprocess-card">
         <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--process" id="rec-kpi-icon-process" aria-hidden="true"></span><div class="rec-exec-kpi-label">En proceso</div></div>
@@ -3547,6 +3565,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div id="rec-pane-vacancies">
         <div id="rec-main-block">
           <div class="rec-vacancies-stage rec-vac-band">
+          <p class="rec-headcount" id="rec-headcount" aria-live="polite">—</p>
           <div class="rec-vac-band-head">
             <div class="rec-filter-bar" id="rec-filter-bar" role="tablist" aria-label="Filtrar vacantes"></div>
             <div class="rec-carousel-meta">
@@ -3573,7 +3592,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                 <span class="rec-pipeline-header-vac" id="rec-pipeline-vac-title">—</span>
                 <span class="rec-pipeline-count-pill" id="rec-pipeline-cand-count">0 candidatos</span>
               </div>
-              <div class="rec-pipeline-header-actions hidden" aria-hidden="true"></div>
+              <div class="rec-pipeline-header-actions">
+                <button type="button" class="rec-kanban-empty-toggle" id="rec-kanban-empty-toggle" aria-pressed="true" onclick="recKanbanToggleEmptyStages()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+                  <span id="rec-kanban-empty-toggle-label">Mostrar todas las etapas</span>
+                </button>
+                <span class="rec-kanban-empty-count" id="rec-kanban-empty-count"></span>
+              </div>
             </div>
             <div class="rec-pipeline-slot" id="rec-pipeline-slot"></div>
           </div>
@@ -8726,6 +8751,77 @@ function recKanbanSaveColCollapsed(vacancyId){
     localStorage.setItem('rec_kanban_cols_'+vacancyId,JSON.stringify(map));
   }catch(_e){}
 }
+function recKanbanHideEmptyEnabled(){
+  const st=recEnsureState();
+  if(typeof st.kanbanHideEmpty==='boolean') return st.kanbanHideEmpty;
+  try{
+    st.kanbanHideEmpty=sessionStorage.getItem('rec_kanban_hide_empty')==='0'?false:true;
+  }catch(_e){
+    st.kanbanHideEmpty=true;
+  }
+  return st.kanbanHideEmpty;
+}
+function recKanbanSetHideEmpty(on){
+  const st=recEnsureState();
+  st.kanbanHideEmpty=!!on;
+  if(on) st.kanbanEmptyPinnedOpen={};
+  try{ sessionStorage.setItem('rec_kanban_hide_empty', on?'1':'0'); }catch(_e){}
+}
+function recKanbanColumnShouldCollapse(vacancyId, stageId, count){
+  const st=recEnsureState();
+  const key=recKanbanColCollapseKey(vacancyId, stageId);
+  if(st.kanbanDragging&&count===0) return false;
+  if(count===0&&recKanbanHideEmptyEnabled()) return !(st.kanbanEmptyPinnedOpen&&st.kanbanEmptyPinnedOpen[key]);
+  return !!(st.kanbanColCollapsed&&st.kanbanColCollapsed[key]);
+}
+function recKanbanEmptyHiddenCount(vacancyId){
+  const st=recEnsureState();
+  if(!recKanbanHideEmptyEnabled()) return 0;
+  const stages=st.kanbanStages||[];
+  const apps=st.kanbanApplications||[];
+  let hidden=0;
+  stages.forEach(function(vs){
+    const sid=(vs.stage&&vs.stage.id)||vs.stageId;
+    const n=apps.filter(function(app){
+      const appSid=app.stageId||(app.stage&&app.stage.id);
+      return String(appSid)===String(sid);
+    }).length;
+    if(n===0&&recKanbanColumnShouldCollapse(vacancyId, sid, 0)) hidden+=1;
+  });
+  return hidden;
+}
+function recKanbanSyncEmptyChrome(vacancyId){
+  const hide=recKanbanHideEmptyEnabled();
+  const btn=document.getElementById('rec-kanban-empty-toggle');
+  const label=document.getElementById('rec-kanban-empty-toggle-label');
+  const countEl=document.getElementById('rec-kanban-empty-count');
+  if(btn) btn.setAttribute('aria-pressed', hide?'true':'false');
+  if(label) label.textContent=hide?'Mostrar todas las etapas':'Ocultar etapas vacías';
+  const hidden=recKanbanEmptyHiddenCount(vacancyId);
+  if(countEl){
+    countEl.textContent=hidden? (hidden===1?'1 etapa vacía oculta':hidden+' etapas vacías ocultas') : '';
+  }
+}
+function recKanbanToggleEmptyStages(){
+  recKanbanSetHideEmpty(!recKanbanHideEmptyEnabled());
+  const st=recEnsureState();
+  if(st.selectedId) recKanbanRender(st.selectedId);
+}
+function recKanbanRevealEmptyForDrag(){
+  document.querySelectorAll('#rec-kanban-board .rec-kanban-col').forEach(function(col){
+    if(recKanbanColCardCount(col)===0) col.classList.remove('rec-kanban-col--collapsed');
+  });
+}
+function recKanbanRestoreEmptyAfterDrag(){
+  const st=recEnsureState();
+  const vacancyId=st.selectedId;
+  document.querySelectorAll('#rec-kanban-board .rec-kanban-col').forEach(function(col){
+    const sid=col.getAttribute('data-stage-id');
+    const n=recKanbanColCardCount(col);
+    col.classList.toggle('rec-kanban-col--collapsed', recKanbanColumnShouldCollapse(vacancyId, sid, n));
+  });
+  recKanbanSyncEmptyChrome(vacancyId);
+}
 function recKanbanStageIconSvg(stage){
   const key=String((stage&&stage.key)||'').toUpperCase();
   const wrap=function(inner){
@@ -8845,8 +8941,17 @@ function recCarouselScroll(dir){
 function recKanbanToggleCol(vacancyId,stageId){
   const st=recEnsureState();
   const key=recKanbanColCollapseKey(vacancyId,stageId);
-  st.kanbanColCollapsed[key]=!st.kanbanColCollapsed[key];
-  recKanbanSaveColCollapsed(vacancyId);
+  const count=(st.kanbanApplications||[]).filter(function(app){
+    const sid=app.stageId||(app.stage&&app.stage.id);
+    return String(sid)===String(stageId);
+  }).length;
+  if(count===0&&recKanbanHideEmptyEnabled()){
+    if(!st.kanbanEmptyPinnedOpen) st.kanbanEmptyPinnedOpen={};
+    st.kanbanEmptyPinnedOpen[key]=!st.kanbanEmptyPinnedOpen[key];
+  }else{
+    st.kanbanColCollapsed[key]=!st.kanbanColCollapsed[key];
+    recKanbanSaveColCollapsed(vacancyId);
+  }
   recKanbanRender(vacancyId);
 }
 function recDetailIconSvg(){
@@ -9128,8 +9233,9 @@ function recRenderExecutiveKpis(v){
   const sum=v.applicationSummary||{};
   const positions=v.positionsTotal||1;
   const hired=sum.hired||0;
-  const pct=snap?snap.coveragePercent:Math.min(100,Math.round((hired/Math.max(1,positions))*100));
-  const covText=snap?snap.coveragePositionsText:(hired+' / '+positions);
+  const confirmed=sum.hiredConfirmed||0;
+  const pct=snap?snap.coveragePercent:Math.min(100,Math.round((confirmed/Math.max(1,positions))*100));
+  const covText=snap?snap.coveragePositionsText:(confirmed+' / '+positions);
   const covVal=document.getElementById('rec-kpi-coverage-val');
   if(covVal) covVal.textContent=pct+'%';
   const covPos=document.getElementById('rec-kpi-coverage-pos');
@@ -9150,6 +9256,36 @@ function recRenderExecutiveKpis(v){
   recApplyTargetKpiTone(v);
   const days=document.getElementById('rec-kpi-days-open');
   if(days) days.textContent=snap!=null?String(snap.daysOpen)+' días':'—';
+  recRenderHiredFold(v, hired, positions);
+}
+function recFmtHiredEntered(iso){
+  if(!iso) return 'Sin fecha registrada';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return 'Sin fecha registrada';
+  try{
+    return d.toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+  }catch(_e){
+    return d.toISOString();
+  }
+}
+function recRenderHiredFold(v, hired, positions){
+  const fold=document.getElementById('rec-hired-fold');
+  const summary=document.getElementById('rec-hired-fold-summary');
+  const list=document.getElementById('rec-hired-fold-list');
+  if(!fold||!summary||!list) return;
+  if(!hired){
+    fold.classList.add('hidden');
+    fold.open=false;
+    list.innerHTML='';
+    return;
+  }
+  fold.classList.remove('hidden');
+  summary.textContent='Contratados: '+hired+' de '+positions;
+  const people=v.hiredCandidates||[];
+  list.innerHTML=people.map(function(p){
+    const when=recFmtHiredEntered(p.hiredStageEnteredAt);
+    return '<li class="rec-hired-fold-item"><button type="button" class="rec-hired-fold-link" onclick="recCandOpenDetail(\''+tcEsc(p.candidateId)+'\')">'+tcEsc(p.fullName||'—')+'</button><span>'+tcEsc(when)+'</span></li>';
+  }).join('');
 }
 function recRenderFunnelDistribution(v){
   const el=document.getElementById('rec-detail-funnel');
@@ -10180,10 +10316,9 @@ function recKanbanRender(vacancyId){
     const sid=stage.id||vs.stageId;
     const stageName=stage.name||stage.key||'Etapa';
     const colApps=byStage.get(sid)||[];
-    const cKey=recKanbanColCollapseKey(vacancyId,sid);
-    const collapsed=!!(st.kanbanColCollapsed&&st.kanbanColCollapsed[cKey]);
+    const collapsed=recKanbanColumnShouldCollapse(vacancyId, sid, colApps.length);
     const colCls='rec-kanban-col'+(collapsed?' rec-kanban-col--collapsed':'')+recKanbanColSemanticMod(stage);
-    const dragAttr=collapsed?'':' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
+    const dragAttr=' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
     const collapseLabel=collapsed?'Expandir etapa':'Contraer etapa';
     const colTip=stageName+' · '+colApps.length+' candidatos';
     html+='<div class="'+colCls+'" data-stage-id="'+tcEsc(sid)+'"'+dragAttr+
@@ -10231,6 +10366,7 @@ function recKanbanRender(vacancyId){
   html+='</div>';
   slot.innerHTML=html;
   if(st.kanbanError) recKanbanSetErr(st.kanbanError);
+  recKanbanSyncEmptyChrome(vacancyId);
 }
 function recKanbanFindCol(stageId){
   const board=document.getElementById('rec-kanban-board');
@@ -10357,7 +10493,9 @@ function recKanbanCardDragStart(ev){
     return;
   }
   st.kanbanDragAppId=appId;
+  st.kanbanDragging=true;
   card.classList.add('rec-kanban-card--dragging');
+  recKanbanRevealEmptyForDrag();
   if(ev.dataTransfer){
     ev.dataTransfer.setData('text/plain',appId);
     ev.dataTransfer.effectAllowed='move';
@@ -10366,10 +10504,12 @@ function recKanbanCardDragStart(ev){
 function recKanbanCardDragEnd(ev){
   const st=recEnsureState();
   st.kanbanDragAppId=null;
+  st.kanbanDragging=false;
   st.kanbanSuppressClick=true;
   setTimeout(function(){ st.kanbanSuppressClick=false; }, 50);
   if(ev.currentTarget) ev.currentTarget.classList.remove('rec-kanban-card--dragging');
   document.querySelectorAll('.rec-kanban-col--over').forEach(function(el){ el.classList.remove('rec-kanban-col--over'); });
+  recKanbanRestoreEmptyAfterDrag();
 }
 function recKanbanColDragOver(ev){
   ev.preventDefault();
@@ -10422,6 +10562,8 @@ async function recKanbanColDrop(ev){
       recKanbanUpdateCardFoot(card,app);
     }
     recKanbanSetErr('');
+    if(out&&out.vacancy&&out.vacancy.status) recApplyVacancyStatusLocal(out.vacancy.id, out.vacancy.status);
+    if(out&&out.headcount) recRenderHeadcount(out.headcount);
     if(st.detailCandidateId===candidateId) recCandMarkPipelineDirty();
     recKanbanSilentReconcile(vacancyId);
     await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
@@ -10472,11 +10614,91 @@ function recFillResponsibleSelect(selectedEmployeeId){
   });
   sel.value=selectedEmployeeId||'';
 }
+function recDeriveHeadcount(vacancies){
+  const active=(vacancies||[]).filter(function(v){ return v.status==='ACTIVE'; });
+  return {
+    activeVacancies: active.length,
+    headcount: active.reduce(function(sum, v){ return sum+Math.max(0, Number(v.positionsTotal)||0); }, 0),
+  };
+}
+function recRenderHeadcount(headcount){
+  const el=document.getElementById('rec-headcount');
+  if(!el) return;
+  const active=Math.max(0, Number(headcount&&headcount.activeVacancies)||0);
+  const positions=Math.max(0, Number(headcount&&headcount.headcount)||0);
+  const vacLabel=active===1?'1 vacante activa':active+' vacantes activas';
+  el.textContent=vacLabel+' · Headcount: '+positions;
+}
+function recApplyVacancyStatusLocal(vacancyId, status){
+  if(!vacancyId||!status) return;
+  const st=recEnsureState();
+  const v=(st.allVacancies||[]).find(function(row){ return row.id===vacancyId; });
+  if(!v||v.status===status) return;
+  v.status=status;
+  const badge=document.querySelector('.rec-vac-card[data-vacancy-id="'+vacancyId+'"] .rec-status-badge');
+  if(badge){
+    badge.className='rec-status-badge rec-status-badge--'+status;
+    badge.textContent=recVacancyStatusLabel(status);
+  }
+  recRenderFilters();
+}
+function recVacCapacityLine(positions, hired){
+  const posLabel=positions===1?'1 posición':positions+' posiciones';
+  const hiredLabel=hired===1?'1 contratado':hired+' contratados';
+  const avail=Math.max(positions-hired, 0);
+  const availLabel=avail===1?'1 disponible':avail+' disponibles';
+  return posLabel+' · '+hiredLabel+' · '+availLabel;
+}
+function recVacCoverageFormState(){
+  const posEl=document.getElementById('rec-form-positions');
+  const statusEl=document.getElementById('rec-form-status');
+  const positions=parseInt(posEl&&posEl.value, 10);
+  const hired=Math.max(0, parseInt(posEl&&posEl.dataset.hired, 10)||0);
+  const savedStatus=(posEl&&posEl.dataset.savedStatus)||'';
+  const nextStatus=(statusEl&&statusEl.value)||'ACTIVE';
+  const P=Number.isInteger(positions)?positions:0;
+  let message='';
+  if(hired>0&&P<hired) message='No puedes reducir las posiciones por debajo de los candidatos que están en Contratado.';
+  else if(savedStatus==='COVERED'&&nextStatus==='ACTIVE'&&P<=hired){
+    message='Esta vacante ya tiene cubiertas todas sus posiciones. Para reabrirla, aumenta el número de posiciones requeridas o libera una contratación.';
+  }
+  return { positions:P, hired:hired, message:message, showLine:!!(posEl&&posEl.dataset.editing==='1'&&hired>0) };
+}
+function recVacSyncCoverageHint(){
+  const state=recVacCoverageFormState();
+  const posEl=document.getElementById('rec-form-positions');
+  const line=document.getElementById('rec-form-capacity');
+  if(posEl){
+    posEl.classList.toggle('rec-form-positions--blocked', !!state.message);
+    posEl.setAttribute('aria-invalid', state.message?'true':'false');
+  }
+  if(line){
+    if(state.showLine&&state.positions>=1){
+      line.textContent=recVacCapacityLine(state.positions, state.hired);
+      line.classList.remove('hidden');
+    }else{
+      line.textContent='';
+      line.classList.add('hidden');
+    }
+  }
+  return state;
+}
+function recVacCoverageBindOnce(){
+  const st=recEnsureState();
+  if(st.coverageFormBound) return;
+  st.coverageFormBound=true;
+  const posEl=document.getElementById('rec-form-positions');
+  const statusEl=document.getElementById('rec-form-status');
+  if(posEl) posEl.addEventListener('input', recVacSyncCoverageHint);
+  if(statusEl) statusEl.addEventListener('change', recVacSyncCoverageHint);
+}
 async function recLoadVacancies(selectId){
   const st=recEnsureState();
   try{
     const j=await apiJson('/api/org/recruitment/vacancies');
     st.allVacancies=j.vacancies||[];
+    st.headcount=j.headcount||recDeriveHeadcount(st.allVacancies);
+    recRenderHeadcount(st.headcount);
     if(selectId) st.selectedId=selectId;
     else if(!st.selectedId||!st.allVacancies.some(v=>v.id===st.selectedId)){
       st.selectedId=recPickDefaultSelection(st.allVacancies);
@@ -10486,6 +10708,7 @@ async function recLoadVacancies(selectId){
   }catch(e){
     console.error('[recruitment] vacancies',e);
     st.allVacancies=[];
+    recRenderHeadcount({activeVacancies:0, headcount:0});
     recRenderFilters();
     recRenderCarousel();
   }
@@ -10873,6 +11096,10 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     document.getElementById('rec-form-client').value=v.clientName||'';
     document.getElementById('rec-form-location').value=v.location||'';
     document.getElementById('rec-form-positions').value=String(v.positionsTotal||1);
+    const posEl=document.getElementById('rec-form-positions');
+    posEl.dataset.hired=String((v.applicationSummary&&v.applicationSummary.hired)||0);
+    posEl.dataset.savedStatus=v.status||'ACTIVE';
+    posEl.dataset.editing='1';
     document.getElementById('rec-form-opened').value=recDateInputValue(v.openedAt);
     const targetCov=document.getElementById('rec-form-target-coverage');
     if(targetCov) targetCov.value=v.targetCoverageDate||'';
@@ -10895,6 +11122,12 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     document.getElementById('rec-form-client').value='';
     document.getElementById('rec-form-location').value='';
     document.getElementById('rec-form-positions').value='1';
+    const posNew=document.getElementById('rec-form-positions');
+    if(posNew){
+      posNew.dataset.hired='0';
+      posNew.dataset.savedStatus='';
+      posNew.dataset.editing='0';
+    }
     document.getElementById('rec-form-opened').value=recDateInputValue(new Date().toISOString());
     const targetCovNew=document.getElementById('rec-form-target-coverage');
     if(targetCovNew) targetCovNew.value='';
@@ -10903,6 +11136,8 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
     recFillResponsibleSelect('');
   }
   recVacExtractOnModalOpen(mode);
+  recVacCoverageBindOnce();
+  recVacSyncCoverageHint();
   openModal('modal-rec-vacancy');
 }
 async function recSyncPrimaryAssignee(vacancyId, employeeId, prevAssigneeId){
@@ -10930,6 +11165,11 @@ async function recSubmitVacancy(){
   const targetRaw=(document.getElementById('rec-form-target-coverage')?.value||'').trim();
   if(!title||!clientName||!openedRaw||!Number.isInteger(positionsTotal)||positionsTotal<1){
     if(err){ err.textContent='Completa los campos obligatorios (título, cliente, posiciones, fecha).'; err.classList.remove('hidden'); }
+    return;
+  }
+  const coverage=recVacSyncCoverageHint();
+  if(coverage.message){
+    if(err){ err.textContent=coverage.message; err.classList.remove('hidden'); }
     return;
   }
   const body={

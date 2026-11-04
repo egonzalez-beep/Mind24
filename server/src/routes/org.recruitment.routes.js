@@ -33,6 +33,7 @@ import {
   getRecruitmentVacancy,
   listRecruitmentVacancies,
   updateRecruitmentVacancy,
+  getActiveVacancyHeadcount,
 } from '../services/recruitmentVacancy.service.js';
 import {
   createRecruitmentApplication,
@@ -320,7 +321,8 @@ router.get('/vacancies', async (req, res, next) => {
       throw err;
     }
     const vacancies = await listRecruitmentVacancies(u.organizationId, { status });
-    res.json({ vacancies });
+    const headcount = await getActiveVacancyHeadcount(u.organizationId);
+    res.json({ vacancies, headcount });
   } catch (e) {
     next(e);
   }
@@ -992,7 +994,13 @@ router.patch('/applications/:id', async (req, res, next) => {
       interviewTimeSpecified,
       changedByUserId: u.id,
     });
-    res.json({ application });
+    const headcount = await getActiveVacancyHeadcount(u.organizationId);
+    const { prisma } = await import('../db/client.js');
+    const vacancy = await prisma.recruitmentVacancy.findFirst({
+      where: { id: application.vacancyId, organizationId: u.organizationId },
+      select: { id: true, status: true },
+    });
+    res.json({ application, vacancy, headcount });
   } catch (e) {
     next(e);
   }

@@ -616,6 +616,11 @@ enum RecruitmentVacancyStatus {
   CLOSED
 }
 
+enum RecruitmentVacancyCoverageSource {
+  MANUAL
+  AUTOMATIC
+}
+
 enum RecruitmentVacancyAssigneeRole {
   PRIMARY
   SUPPORT
@@ -782,6 +787,10 @@ model RecruitmentVacancy {
   openedAt            DateTime                 @db.Timestamptz(6)
   targetCoverageDate  DateTime?                @db.Date
   status              RecruitmentVacancyStatus @default(ACTIVE)
+  /// Momento en que pasó a Cubierta. No lo envía el cliente.
+  coveredAt           DateTime?                @db.Timestamptz(6)
+  /// MANUAL si la fijó un administrador; AUTOMATIC si la cerró la cobertura confirmada.
+  coverageSource      RecruitmentVacancyCoverageSource?
   jobDescription      String?                  @db.Text
   notes               String?                  @db.Text
   createdAt           DateTime                 @default(now())
@@ -902,6 +911,8 @@ model RecruitmentApplication {
   interviewScheduledAt DateTime? @db.Timestamptz(6)
   /// false = solo fecha conocida (no mostrar hora en UI).
   interviewTimeSpecified Boolean @default(true)
+  /// Entrada real a la etapa HIRED. Se limpia al salir. No lo envía el cliente.
+  hiredStageEnteredAt DateTime? @db.Timestamptz(6)
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -916,6 +927,7 @@ model RecruitmentApplication {
   @@index([organizationId, stageId])
   @@index([vacancyId, stageId, position])
   @@index([organizationId, candidateId])
+  @@index([hiredStageEnteredAt])
 }
 
 enum RecruitmentApplicationInterviewEventType {

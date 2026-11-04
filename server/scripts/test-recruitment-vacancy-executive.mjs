@@ -49,7 +49,7 @@ const snap = buildExecutiveSnapshot(
     openedAt: new Date('2026-10-01T18:00:00.000Z'),
     targetCoverageDate: new Date(Date.UTC(2026, 11, 1)),
   },
-  { total: 25, hired: 20, inProcess: 18, rejected: 2, finalists: 1 },
+  { total: 25, hired: 20, hiredConfirmed: 20, inProcess: 18, rejected: 2, finalists: 1 },
   '2026-11-15',
 );
 check(snap.coveragePercent === 40, 'snapshot cobertura');

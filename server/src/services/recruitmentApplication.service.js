@@ -9,6 +9,12 @@ import {
 } from './recruitmentVacancyStage.service.js';
 import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
 import { emitWorkforceRecruitmentNovedadForStageEvent } from './workforceRecruitmentNovedad.service.js';
+import {
+  HIRED_STAGE_KEY,
+  nextHiredStageEnteredAt,
+  reconcileVacancyCoverage,
+  shouldRecordStageEvent,
+} from './recruitmentCoverage.service.js';
 
 const POSITION_GAP = 1000;
 
@@ -32,6 +38,7 @@ function serializeApplication(row) {
       ? row.interviewScheduledAt.toISOString()
       : null,
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
+    hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -100,7 +107,7 @@ export async function createRecruitmentApplication({
     throw err;
   }
 
-  return prisma.$transaction(async (tx) => {
+  const serialized = await prisma.$transaction(async (tx) => {
     await ensureVacancyRecruitmentStages(organizationId, vacancyId, tx);
     const newStage = await assertNewStageEnabledForVacancy(organizationId, vacancyId, tx);
     const position = await nextPositionInStage(vacancyId, newStage.id, tx);
@@ -154,6 +161,12 @@ export async function createRecruitmentApplication({
         stageId: targetStageId,
         position,
         interviewScheduledAt: resolvedAt,
+        hiredStageEnteredAt: nextHiredStageEnteredAt({
+          fromKey: newStage.key,
+          toKey: targetStage?.key ?? null,
+          previousEnteredAt: null,
+          now: new Date(),
+        }),
       };
       if (resolvedAt != null && interviewTimeSpecified !== undefined) {
         moveData.interviewTimeSpecified = interviewTimeSpecified;
@@ -175,6 +188,14 @@ export async function createRecruitmentApplication({
 
     return serializeApplication(app);
   });
+  if (serialized.stage?.key === HIRED_STAGE_KEY) {
+    try {
+      await reconcileVacancyCoverage(organizationId, vacancyId);
+    } catch (err) {
+      console.error('[recruitment-coverage]', err?.message || err);
+    }
+  }
+  return serialized;
 }
 
 export async function listRecruitmentApplicationsForVacancy(organizationId, vacancyId) {
@@ -210,7 +231,7 @@ export async function updateRecruitmentApplication({
   }
   const existing = existingRow;
 
-  return prisma.$transaction(async (tx) => {
+  const serialized = await prisma.$transaction(async (tx) => {
     const data = {};
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;
@@ -225,6 +246,12 @@ export async function updateRecruitmentApplication({
       });
       toStageKey = nextStage?.key ?? null;
       data.stageId = stageId;
+      data.hiredStageEnteredAt = nextHiredStageEnteredAt({
+        fromKey: existing.stage?.key ?? null,
+        toKey: toStageKey,
+        previousEnteredAt: existing.hiredStageEnteredAt ?? null,
+        now: new Date(),
+      });
       if (position == null) {
         data.position = await nextPositionInStage(existing.vacancyId, stageId, tx);
       }
@@ -246,13 +273,24 @@ export async function updateRecruitmentApplication({
       }
     }
 
-    const updated = await tx.recruitmentApplication.update({
-      where: { id: applicationId },
-      data,
+    const where = stageChanged
+      ? { id: applicationId, organizationId, stageId: existing.stageId }
+      : { id: applicationId, organizationId };
+    const written = await tx.recruitmentApplication.updateMany({ where, data });
+    if (!shouldRecordStageEvent({ stageChanged, updatedCount: written.count })) {
+      if (stageChanged || written.count !== 1) {
+        const err = new Error('CONFLICT');
+        err.code = 'CONFLICT';
+        err.message = 'La etapa cambió en otra operación. Actualiza el tablero.';
+        throw err;
+      }
+    }
+    const updated = await tx.recruitmentApplication.findFirst({
+      where: { id: applicationId, organizationId },
       include: { candidate: true, stage: true },
     });
 
-    if (stageId != null && stageId !== existing.stageId) {
+    if (shouldRecordStageEvent({ stageChanged, updatedCount: written.count })) {
       await recordStageEvent(tx, {
         organizationId,
         applicationId,
@@ -264,4 +302,14 @@ export async function updateRecruitmentApplication({
 
     return serializeApplication(updated);
   });
+  const touchedHired =
+    existing.stage?.key === HIRED_STAGE_KEY || serialized.stage?.key === HIRED_STAGE_KEY;
+  if (stageId != null && stageId !== existing.stageId && touchedHired) {
+    try {
+      await reconcileVacancyCoverage(organizationId, existing.vacancyId);
+    } catch (err) {
+      console.error('[recruitment-coverage]', err?.message || err);
+    }
+  }
+  return serialized;
 }

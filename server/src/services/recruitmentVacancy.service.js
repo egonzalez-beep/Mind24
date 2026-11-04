@@ -4,17 +4,30 @@ import {
   listEnabledVacancyStagesForDistribution,
   seedVacancyStagesFromOrganizationCatalog,
 } from './recruitmentVacancyStage.service.js';
+import {
+  countDistinctHiredCandidates,
+  planVacancyCoverageUpdate,
+  isHireConfirmedAt,
+  listCurrentHiresForVacancy,
+  officialCoveragePercent,
+  reconcileVacancyCoverage,
+} from './recruitmentCoverage.service.js';
 
 export function emptyApplicationSummary() {
-  return { total: 0, inProcess: 0, finalists: 0, hired: 0, rejected: 0 };
+  return { total: 0, inProcess: 0, finalists: 0, hired: 0, hiredConfirmed: 0, rejected: 0 };
 }
 
-function summarizeApplications(applications) {
+function summarizeApplications(applications, now = new Date()) {
   const summary = emptyApplicationSummary();
+  const hiredSeen = new Set();
   for (const app of applications) {
     summary.total += 1;
     const key = app.stage?.key;
-    if (key === 'HIRED') summary.hired += 1;
+    if (key === 'HIRED' && app.candidateId && !hiredSeen.has(app.candidateId)) {
+      hiredSeen.add(app.candidateId);
+      summary.hired += 1;
+      if (isHireConfirmedAt(app.hiredStageEnteredAt, now)) summary.hiredConfirmed += 1;
+    }
     if (key === 'FINALIST') summary.finalists += 1;
     if (key === 'REJECTED') summary.rejected += 1;
     if (key !== 'HIRED' && key !== 'REJECTED') summary.inProcess += 1;
@@ -75,15 +88,15 @@ export function formatTargetObjectiveLabel(targetCoverageDateYmd, todayKey = loc
 export function buildExecutiveSnapshot(vacancyRow, applicationSummary, todayKey = localTodayDateKey()) {
   const summary = applicationSummary ?? emptyApplicationSummary();
   const positionsTotal = vacancyRow.positionsTotal;
-  const hired = summary.hired ?? 0;
+  const confirmed = summary.hiredConfirmed ?? 0;
   const rejectionRatePercent = computeRejectionRatePercent(summary.rejected, summary.total);
   const openedKey = localDateKeyFromIso(vacancyRow.openedAt.toISOString());
   const daysOpen = Math.max(0, calendarDayDiff(openedKey, todayKey));
   const targetYmd = formatTargetCoverageDate(vacancyRow);
 
   return {
-    coveragePercent: computeCoveragePercent(hired, positionsTotal),
-    coveragePositionsText: `${hired} / ${positionsTotal}`,
+    coveragePercent: officialCoveragePercent(positionsTotal, confirmed),
+    coveragePositionsText: `${confirmed} / ${positionsTotal}`,
     inProcess: summary.inProcess ?? 0,
     rejectionRatePercent,
     rejectionDisplay: rejectionRatePercent == null ? 'Sin datos' : `${rejectionRatePercent}%`,
@@ -117,7 +130,12 @@ async function buildApplicationSummariesByVacancyId(organizationId, vacancyIds) 
 
   const applications = await prisma.recruitmentApplication.findMany({
     where: { organizationId, vacancyId: { in: vacancyIds } },
-    select: { vacancyId: true, stage: { select: { key: true } } },
+    select: {
+      vacancyId: true,
+      candidateId: true,
+      hiredStageEnteredAt: true,
+      stage: { select: { key: true } },
+    },
   });
 
   const byVacancy = new Map();
@@ -193,6 +211,9 @@ export function serializeRecruitmentVacancy(row, extras = {}) {
     primaryAssignee: extras.primaryAssignee ?? null,
     executiveSnapshot: extras.executiveSnapshot ?? null,
     stageDistribution: extras.stageDistribution ?? null,
+    hiredCandidates: extras.hiredCandidates ?? undefined,
+    coveredAt: row.coveredAt ? row.coveredAt.toISOString() : null,
+    coverageSource: row.coverageSource ?? null,
   };
 }
 
@@ -258,6 +279,9 @@ export async function createRecruitmentVacancy(organizationId, payload) {
             : 'ACTIVE',
         jobDescription: payload.jobDescription?.trim() || null,
         notes: payload.notes?.trim() || null,
+        ...(payload.status === 'COVERED'
+          ? { coveredAt: new Date(), coverageSource: 'MANUAL' }
+          : {}),
         ...(payload.targetCoverageDate !== undefined
           ? { targetCoverageDate: parseTargetCoverageDate(payload.targetCoverageDate) }
           : {}),
@@ -266,7 +290,13 @@ export async function createRecruitmentVacancy(organizationId, payload) {
     await seedVacancyStagesFromOrganizationCatalog(organizationId, created.id, tx);
     return created;
   });
-  const [vacancy] = await enrichVacancies(organizationId, [row]);
+  if (row.status === 'ACTIVE') {
+    await reconcileVacancyCoverage(organizationId, row.id);
+  }
+  const fresh = await prisma.recruitmentVacancy.findFirst({
+    where: { id: row.id, organizationId },
+  });
+  const [vacancy] = await enrichVacancies(organizationId, [fresh || row]);
   return vacancy;
 }
 
@@ -285,10 +315,11 @@ export async function listRecruitmentVacancies(organizationId, { status } = {}) 
 export async function getRecruitmentVacancy(organizationId, vacancyId) {
   const row = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const ids = [row.id];
-  const [summaryMap, assigneeMap, stageDistribution] = await Promise.all([
+  const [summaryMap, assigneeMap, stageDistribution, hiredCandidates] = await Promise.all([
     buildApplicationSummariesByVacancyId(organizationId, ids),
     buildPrimaryAssigneesByVacancyId(organizationId, ids),
     buildStageDistributionForVacancy(organizationId, vacancyId),
+    listCurrentHiresForVacancy(organizationId, vacancyId),
   ]);
   const applicationSummary = summaryMap.get(row.id) ?? emptyApplicationSummary();
   const vacancy = serializeRecruitmentVacancy(row, {
@@ -296,12 +327,13 @@ export async function getRecruitmentVacancy(organizationId, vacancyId) {
     primaryAssignee: assigneeMap.get(row.id) ?? null,
     executiveSnapshot: buildExecutiveSnapshot(row, applicationSummary),
     stageDistribution,
+    hiredCandidates,
   });
   return vacancy;
 }
 
 export async function updateRecruitmentVacancy(organizationId, vacancyId, patch) {
-  await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
+  const current = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const data = {};
   if (patch.title != null) data.title = patch.title.trim();
   if (patch.clientName != null) data.clientName = patch.clientName.trim();
@@ -332,10 +364,48 @@ export async function updateRecruitmentVacancy(organizationId, vacancyId, patch)
     data.targetCoverageDate = parseTargetCoverageDate(patch.targetCoverageDate);
   }
 
-  const row = await prisma.recruitmentVacancy.update({
-    where: { id: vacancyId },
+  const nextPositions = data.positionsTotal ?? current.positionsTotal;
+  const nextStatus = data.status ?? current.status;
+  const currentHired = await countDistinctHiredCandidates(organizationId, vacancyId);
+  const coverageMeta = planVacancyCoverageUpdate({
+    currentStatus: current.status,
+    nextStatus,
+    positionsTotal: nextPositions,
+    currentHired,
+    now: new Date(),
+  });
+  if (coverageMeta.coverageSource === 'MANUAL') data.status = 'COVERED';
+  if (current.status === 'COVERED' && nextStatus === 'ACTIVE') data.status = 'ACTIVE';
+  Object.assign(data, coverageMeta);
+
+  const written = await prisma.recruitmentVacancy.updateMany({
+    where: { id: vacancyId, organizationId, status: current.status },
     data,
+  });
+  if (written.count !== 1) {
+    const err = new Error('CONFLICT');
+    err.code = 'CONFLICT';
+    err.message = 'La vacante cambió en otra operación. Vuelve a abrirla antes de guardar.';
+    throw err;
+  }
+  if (nextStatus === 'ACTIVE') {
+    await reconcileVacancyCoverage(organizationId, vacancyId);
+  }
+  const row = await prisma.recruitmentVacancy.findFirst({
+    where: { id: vacancyId, organizationId },
   });
   const [vacancy] = await enrichVacancies(organizationId, [row]);
   return vacancy;
+}
+
+export async function getActiveVacancyHeadcount(organizationId) {
+  const agg = await prisma.recruitmentVacancy.aggregate({
+    where: { organizationId, status: 'ACTIVE' },
+    _count: { _all: true },
+    _sum: { positionsTotal: true },
+  });
+  return {
+    activeVacancies: agg._count._all,
+    headcount: agg._sum.positionsTotal ?? 0,
+  };
 }
