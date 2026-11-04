@@ -45,6 +45,7 @@ const candidateWriteFields = {
   whatsapp: z.string().max(40).optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
+  curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
   city: z.string().max(120).optional().nullable(),
   state: z.string().max(120).optional().nullable(),
   locality: z.string().max(120).optional().nullable(),
@@ -187,11 +188,10 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
     hasProfilePhoto: !!employee.profilePhotoPath,
   };
 
+  const candidatePublic = { ...candidate, registeredBy };
+  delete candidatePublic.curp;
   return {
-    candidate: {
-      ...candidate,
-      registeredBy,
-    },
+    candidate: candidatePublic,
     confirmation: {
       registeredByName: employee.fullName,
       candidateName: candidate.fullName,
@@ -201,10 +201,14 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
   };
 }
 
-export async function findDuplicateCandidatesForWorkforcePortal(organizationId, { email, phone }) {
+export async function findDuplicateCandidatesForWorkforcePortal(
+  organizationId,
+  { email, phone, curp },
+) {
   const candidates = await findPotentialDuplicateRecruitmentCandidates(organizationId, {
     email,
     phone,
+    curp,
   });
   return candidates;
 }

@@ -1,7 +1,9 @@
 import { prisma } from '../db/client.js';
 import {
+  normalizeRecruitmentCandidateCurp,
   normalizeRecruitmentCandidateFullName,
   prepareRecruitmentCandidateWritePayload,
+  recruitmentCandidateCurpForLookup,
   resolveRecruitmentCandidatePhoneFields,
   resolveRecruitmentCandidateProfileFields,
   resolveRecruitmentCandidateProfileSecondary,
@@ -80,6 +82,7 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
     phone: row.phone,
     whatsapp: row.whatsapp,
     email: row.email,
+    curp: row.curp ? String(row.curp).replace(/\s+/g, '').toUpperCase() : null,
     city: row.city,
     state: row.state,
     locality: row.locality,
@@ -269,7 +272,7 @@ async function assertRecruitmentStageFilterForOrg(organizationId, stageId) {
  */
 export async function findPotentialDuplicateRecruitmentCandidates(
   organizationId,
-  { email, phone },
+  { email, phone, curp } = {},
   { excludeCandidateId } = {},
 ) {
   const or = [];
@@ -282,7 +285,25 @@ export async function findPotentialDuplicateRecruitmentCandidates(
     or.push({ phone: { contains: digits.slice(-10) } });
     or.push({ whatsapp: { contains: digits.slice(-10) } });
   }
-  if (!or.length) return [];
+  const normCurp = recruitmentCandidateCurpForLookup(curp);
+  let curpConflict = false;
+  if (normCurp) {
+    const curpHit = await prisma.recruitmentCandidate.findFirst({
+      where: {
+        organizationId,
+        curp: { equals: normCurp, mode: 'insensitive' },
+        ...(excludeCandidateId ? { id: { not: excludeCandidateId } } : {}),
+      },
+      select: { id: true },
+    });
+    curpConflict = !!curpHit;
+    or.push({ curp: { equals: normCurp, mode: 'insensitive' } });
+  }
+  if (!or.length) {
+    const empty = [];
+    empty.curpConflict = false;
+    return empty;
+  }
 
   const rows = await prisma.recruitmentCandidate.findMany({
     where: {
@@ -293,7 +314,9 @@ export async function findPotentialDuplicateRecruitmentCandidates(
     take: 10,
     orderBy: { updatedAt: 'desc' },
   });
-  return rows.map((r) => serializeRecruitmentCandidate(r));
+  const list = rows.map((r) => serializeRecruitmentCandidate(r));
+  list.curpConflict = curpConflict;
+  return list;
 }
 
 function encodeListCursor(createdAt, id) {
@@ -683,6 +706,7 @@ export async function createRecruitmentCandidate(
       phone: prepared.phone,
       whatsapp: prepared.whatsapp,
       email: normalizeRecruitmentCandidateEmail(prepared.email),
+      curp: prepared.curp,
       city: trimOrNull(prepared.city),
       state: trimOrNull(prepared.state),
       locality: trimOrNull(prepared.locality),
@@ -781,6 +805,9 @@ export async function updateRecruitmentCandidate(organizationId, candidateId, pa
   data.phone = phones.phone;
   if (patch.email !== undefined) {
     data.email = normalizeRecruitmentCandidateEmail(patch.email);
+  }
+  if (patch.curp !== undefined) {
+    data.curp = normalizeRecruitmentCandidateCurp(patch.curp);
   }
   if (patch.city !== undefined) data.city = trimOrNull(patch.city);
   if (patch.state !== undefined) data.state = trimOrNull(patch.state);

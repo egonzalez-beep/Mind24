@@ -326,16 +326,19 @@ router.post('/recruitment/candidates/check-duplicates', requireTimeclockSession,
       .object({
         email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
         phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+        curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
       })
       .parse(req.body ?? {});
     const email = body.email && String(body.email).trim() ? body.email : undefined;
     const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
-    if (!email && !phone) {
-      res.json({ candidates: [] });
+    const curp = body.curp && String(body.curp).trim() ? body.curp : undefined;
+    if (!email && !phone && !curp) {
+      res.json({ candidates: [], curpConflict: false });
       return;
     }
-    const candidates = await findDuplicateCandidatesForWorkforcePortal(orgId, { email, phone });
+    const candidates = await findDuplicateCandidatesForWorkforcePortal(orgId, { email, phone, curp });
     res.json({
+      curpConflict: candidates.curpConflict === true,
       candidates: candidates.map((c) => ({
         id: c.id,
         fullName: c.fullName,

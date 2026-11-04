@@ -28,7 +28,7 @@ const schema = fs.readFileSync(path.join(rootDir, 'prisma/schema.prisma'), 'utf8
 const { prisma } = await import('../src/db/client.js');
 const { createApp } = await import('../src/app.js');
 const { hashPassword } = await import('../src/services/auth.service.js');
-const { normalizeRecruitmentCandidateFullName } = await import(
+const { normalizeRecruitmentCandidateCurp, normalizeRecruitmentCandidateFullName } = await import(
   '../src/services/recruitmentCandidateCatalog.service.js'
 );
 
@@ -98,6 +98,12 @@ check(
   normalizeRecruitmentCandidateFullName('  JULIO   cesar  juarez ') === 'Julio Cesar Juarez',
   'fullName title case',
 );
+check(
+  normalizeRecruitmentCandidateFullName('maría de la cruz') === 'María De La Cruz',
+  'nombres: hoy se title-casea cada palabra, incluidas partículas',
+);
+check(normalizeRecruitmentCandidateCurp('gose900101hqrtmn09') === 'GOSE900101HQRTMN09', 'CURP canónica');
+check(normalizeRecruitmentCandidateCurp('   ') === null, 'CURP vacía');
 
 console.log('\n=== Recruitment 1D.2.1 — integración (DB) ===\n');
 
@@ -122,6 +128,7 @@ if (dbOk) {
   for (const mig of [
     '20261020180000_recruitment_vacancy_stages',
     '20261023120000_recruitment_candidate_profile_fields',
+    '20261103203000_recruitment_candidate_curp',
   ]) {
     try {
       await prisma.$executeRawUnsafe(

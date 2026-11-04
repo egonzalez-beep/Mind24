@@ -633,6 +633,7 @@ model RecruitmentCandidate {
   phone             String
   whatsapp          String?
   email             String?
+  curp              String?
   city              String?
   state             String?
   locality          String?

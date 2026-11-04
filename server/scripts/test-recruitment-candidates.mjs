@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import vm from 'node:vm';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'node:child_process';
 
@@ -101,6 +102,220 @@ check(
   !patchSchemaBlock.includes('candidateContactRefine(data'),
   'PATCH no exige contacto en payload',
 );
+
+console.log('\n=== Recruitment CURP opcional — unit y frontend ===\n');
+
+const {
+  normalizeRecruitmentCandidateCurp,
+  recruitmentCandidateCurpConflicts,
+  recruitmentCandidateCurpForLookup,
+  RECRUITMENT_CURP_INVALID_MESSAGE,
+} = await import('../src/services/recruitmentCandidateCatalog.service.js');
+
+function curpError(input) {
+  try {
+    normalizeRecruitmentCandidateCurp(input);
+    return null;
+  } catch (e) {
+    return e;
+  }
+}
+check(normalizeRecruitmentCandidateCurp(undefined) === null, 'sin CURP → null');
+check(normalizeRecruitmentCandidateCurp(null) === null, 'CURP null → null');
+check(normalizeRecruitmentCandidateCurp('') === null, 'CURP vacía → null');
+check(normalizeRecruitmentCandidateCurp('   ') === null, 'CURP en blanco → null');
+check(
+  normalizeRecruitmentCandidateCurp('gose900101hqrtmn09') === 'GOSE900101HQRTMN09',
+  'minúsculas → mayúsculas',
+);
+check(
+  normalizeRecruitmentCandidateCurp('  gose900101hqrtmn09  ') === 'GOSE900101HQRTMN09',
+  'espacios externos → valor limpio',
+);
+check(
+  normalizeRecruitmentCandidateCurp('go se 900101 hqrtmn09') === 'GOSE900101HQRTMN09',
+  'espacios internos → valor limpio',
+);
+check(
+  normalizeRecruitmentCandidateCurp('GOÑE900101HQRTMN09') === 'GOÑE900101HQRTMN09',
+  'CURP con Ñ',
+);
+check(
+  normalizeRecruitmentCandidateCurp('garc850101mdfrrl08') === 'GARC850101MDFRRL08',
+  'segunda CURP canónica',
+);
+const badFormat = curpError('GOSE901301HQRTMN09');
+const badLen = curpError('GOSE900101HQRTMN0');
+const badLong = curpError('GOSE900101HQRTMN099');
+check(
+  badFormat?.code === 'VALIDATION_ERROR' && badFormat.message === RECRUITMENT_CURP_INVALID_MESSAGE,
+  'rechazo de formato inválido',
+);
+check(badLen?.message === 'Ingresa una CURP válida de 18 caracteres.', 'rechazo de longitud distinta de 18');
+check(badLong?.message === RECRUITMENT_CURP_INVALID_MESSAGE, 'rechazo de longitud mayor a 18');
+check(
+  recruitmentCandidateCurpConflicts('GOSE900101HQRTMN09', [{ curp: 'gose 900101 hqrtmn09' }]) === true,
+  'duplicado compara CURP normalizada',
+);
+check(
+  recruitmentCandidateCurpConflicts('GOSE900101HQRTMN09', [{ curp: 'MORA900101MDFRRL08' }]) === false,
+  'otra CURP no conflicto',
+);
+check(recruitmentCandidateCurpConflicts(null, [{ curp: 'GOSE900101HQRTMN09' }]) === false, 'sin CURP no conflicto');
+check(recruitmentCandidateCurpForLookup('NOPE') === null, 'CURP inválida no llega a la consulta');
+check(
+  recruitmentCandidateCurpForLookup('  gose900101hqrtmn09 ') === 'GOSE900101HQRTMN09',
+  'consulta usa CURP canónica',
+);
+
+const candModel = schema.match(/model RecruitmentCandidate \{[\s\S]*?\n\}/)?.[0] || '';
+check(/curp\s+String\?/.test(candModel), 'schema curp opcional');
+check(!/curp[\s\S]*@unique/.test(candModel), 'sin unique en curp');
+const curpMig = fs.readFileSync(
+  path.join(rootDir, 'prisma/migrations/20261103203000_recruitment_candidate_curp/migration.sql'),
+  'utf8',
+);
+const curpMigSql = curpMig
+  .split('\n')
+  .filter((line) => !line.trim().startsWith('--'))
+  .join('\n');
+check(/ADD COLUMN "curp" TEXT/.test(curpMigSql), 'migración agrega curp');
+check(!/NOT NULL|DEFAULT|UNIQUE|UPDATE /i.test(curpMigSql), 'migración sin null forzado, default, unique ni backfill');
+const writeBlock = routes.split('const candidateWriteFields')[1]?.split('const candidateCreateSchema')[0] || '';
+check(/curp:/.test(writeBlock) && !/organizationId/.test(writeBlock), 'DTO acepta curp y no organizationId');
+check(/curpConflict: candidates\.curpConflict === true/.test(routes), 'check-duplicates expone curpConflict');
+check(!/curp:\s*c\.curp/.test(routes), 'respuesta de duplicados no incluye CURP');
+check(/assertRecruitmentCandidateInOrg\(body\.excludeCandidateId, u\.organizationId\)/.test(routes), 'excludeCandidateId se valida en la organización');
+const dupStart = routes.indexOf("router.post('/candidates/check-duplicates'");
+const dupRoute = routes.slice(dupStart, routes.indexOf("router.post('/candidates',", dupStart + 10));
+check(dupStart > 0 && dupRoute.includes('assertEmpresaAdmin') && !/organizationId:\s*(req\.body|body\.organizationId)/.test(dupRoute), 'check usa organizationId de la sesión');
+const mapStart = dupRoute.indexOf('candidates.map');
+const dupMap = dupRoute.slice(mapStart, dupRoute.indexOf('})),', mapStart));
+check(mapStart > 0 && !/\bcurp\b|organizationId|notes/.test(dupMap), 'mapa de duplicados sin CURP, notas ni organización');
+const publicRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
+const publicDupStart = publicRoutes.indexOf("router.post('/recruitment/candidates/check-duplicates'");
+const publicDup = publicRoutes.slice(publicDupStart, publicRoutes.indexOf('router.post(', publicDupStart + 20));
+check(publicDupStart > 0 && !/excludeCandidateId/.test(publicDup), 'portal no acepta excludeCandidateId');
+const qBlock = candidateSvc.slice(candidateSvc.indexOf('const qTrim'), candidateSvc.indexOf('const profileTrim'));
+check(!/\bcurp\b/.test(qBlock), 'búsqueda q no filtra por CURP');
+const wfBlock = candidateSvc.slice(
+  candidateSvc.indexOf('async function enrichWorkforceRegisteredCandidateRows'),
+  candidateSvc.indexOf('export async function listCandidatesRegisteredByWorkforceEmployee'),
+);
+check(!/\bcurp\b/.test(wfBlock), 'listado colaborador no incluye CURP');
+
+const publicHtml = fs.readFileSync(path.join(rootDir, 'public/index.html'));
+const rootHtml = fs.readFileSync(path.join(rootDir, '..', 'index.html'));
+check(publicHtml.equals(rootHtml), 'index.html y server/public/index.html idénticos');
+
+const datosBlock = indexHtml.slice(indexHtml.indexOf('Datos del candidato'), indexHtml.indexOf('Perfil del candidato'));
+const curpInput = datosBlock.match(/<input[^>]*id="rec-cand-form-curp"[^>]*>/)?.[0] || '';
+check(/id="rec-cand-form-curp"/.test(datosBlock), 'CURP en datos del candidato');
+check(/Opcional/.test(datosBlock) && /Ej\. GOSE900101HQRTMN09/.test(curpInput), 'etiqueta opcional y placeholder');
+check(/maxlength="18"/.test(curpInput), 'maxlength 18');
+check(/oninput="recCandCurpFieldInput\(this\)"/.test(curpInput), 'normaliza al escribir');
+check(/onpaste="recCandCurpFieldPaste\(event\)"/.test(curpInput), 'normaliza al pegar');
+check(/onblur="recCandCurpFieldBlur\(this\)"/.test(curpInput), 'normaliza en blur');
+check(!/text-transform/i.test(curpInput), 'el input no depende de text-transform');
+const curpCss = indexHtml.match(/#rec-cand-form-curp\{[^}]*\}/)?.[0] || '';
+check(curpCss && !/text-transform/i.test(curpCss), 'CSS del campo sin text-transform');
+check(/@media\(max-width:520px\)[\s\S]*?\.rec-cand-form-grid-row,/.test(indexHtml), 'grid del formulario colapsa en móvil');
+check(/recCandExpedienteCurpHtml\(c\)/.test(indexHtml), 'expediente usa el bloque de CURP');
+check(/Ya existe un candidato con esta CURP\. Revisa el expediente antes de continuar\./.test(indexHtml), 'advertencia de CURP duplicada');
+check(/recCandDupeCreateAnyway/.test(indexHtml), 'la advertencia no sustituye crear de todos modos');
+check(/Guardar de todos modos/.test(indexHtml), 'edición ofrece guardar de todos modos');
+check(/onclick="closeModal\('modal-rec-candidate-duplicates'\)"/.test(indexHtml), 'volver cierra solo la advertencia');
+const showDupeFn = indexHtml.slice(indexHtml.indexOf('function recCandShowDupeModal'), indexHtml.indexOf('function recCandSelectDupe'));
+check(/modal-rec-candidate-form/.test(showDupeFn), 'la advertencia conserva el formulario abierto');
+const portfolioFn = indexHtml.match(/function recCandBuildPortfolioRowHtml[\s\S]*?\nfunction recCandBindFilters/)?.[0] || '';
+check(!/\bcurp\b/i.test(portfolioFn), 'cartera sin columna CURP');
+const submitFn = indexHtml.slice(
+  indexHtml.indexOf('async function recCandSubmitForm'),
+  indexHtml.indexOf('function recCandWorkforceClearPartialCvState'),
+);
+const editBranch = submitFn.split('if(id){')[1]?.split('const st=recEnsureState()')[0] || '';
+check(/recCandEditCurpNeedsDuplicateCheck/.test(editBranch), 'edición revisa CURP solo si cambió');
+check(/excludeCandidateId:id/.test(editBranch), 'edición envía el id del candidato abierto');
+check(/recCandPatchExisting\(id, body\)/.test(editBranch), 'sin conflicto la edición hace PATCH');
+check(!/recCandCreateAndOpen/.test(editBranch), 'la edición no crea otro candidato');
+check(/check-duplicates/.test(submitFn) && /curp:body\.curp/.test(submitFn), 'alta revisa CURP una vez al guardar');
+const proceedFn = indexHtml.slice(
+  indexHtml.indexOf('async function recCandDupeCreateAnyway'),
+  indexHtml.indexOf('async function recCandCreateAndOpen'),
+);
+const proceedEdit = proceedFn.split("if(intent==='edit')")[1]?.split('}else if(body)')[0] || '';
+check(/recCandPatchExisting\(editId, body\)/.test(proceedEdit), 'aceptar en edición actualiza al mismo candidato');
+check(!/recCandCreateAndOpen|recCandWorkforceCreateAndConfirm|method:'POST'/.test(proceedEdit), 'aceptar en edición no hace POST');
+check(/candFormOriginalCurp/.test(indexHtml), 'edición recuerda el CURP original');
+const inputFn = indexHtml.slice(
+  indexHtml.indexOf('function recCandCurpFieldInput'),
+  indexHtml.indexOf('function recCandCurpFieldPaste'),
+);
+check(!/check-duplicates/.test(inputFn), 'no consulta duplicados en cada tecla');
+
+const curpSrc = indexHtml.slice(
+  indexHtml.indexOf('var REC_CAND_CURP_RE='),
+  indexHtml.indexOf('function recCandEditFromDetail'),
+);
+const curpCtx = {
+  recCandExpCell(kind, label, inner) {
+    return `CELL:${kind}:${label}:${inner}`;
+  },
+  tcEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[ch]);
+  },
+};
+curpCtx.window = curpCtx;
+vm.createContext(curpCtx);
+vm.runInContext(
+  `${curpSrc}
+function fakeInput(value, start, end){
+  const el={value:value||'', selectionStart:start==null?(value||'').length:start, selectionEnd:end==null?(start==null?(value||'').length:start):end};
+  el.setSelectionRange=function(a,b){ this.selectionStart=a; this.selectionEnd=b; };
+  return el;
+}
+this.__typed=fakeInput('gose900101hqrtmn09', 4, 4);
+recCandCurpFieldInput(this.__typed);
+this.__pasted=fakeInput('', 0, 0);
+this.__pastePrevented=false;
+recCandCurpFieldPaste({
+  target:this.__pasted,
+  preventDefault:function(){ this.__pastePrevented=true; }.bind(this),
+  clipboardData:{ getData:function(){ return 'go se 900101 hqrtmn09'; } },
+});
+this.__blurred=fakeInput('gose900101hqrtmn09', 18, 18);
+recCandCurpFieldBlur(this.__blurred);
+this.__present=recCandExpedienteCurpHtml({ curp:'gose900101hqrtmn09' });
+this.__absent=recCandExpedienteCurpHtml({ curp:null });
+this.__blank=recCandExpedienteCurpHtml({ curp:'   ' });
+this.__unsafe=recCandExpedienteCurpHtml({ curp:'<img src=x onerror=alert(1)>' });
+this.__err=recCandCurpClientError('nope');
+this.__okErr=recCandCurpClientError('');
+this.__same=recCandEditCurpNeedsDuplicateCheck('gose900101hqrtmn09','GOSE900101HQRTMN09');
+this.__changed=recCandEditCurpNeedsDuplicateCheck('mora900101mdfrrl08','GOSE900101HQRTMN09');
+this.__cleared=recCandEditCurpNeedsDuplicateCheck('','GOSE900101HQRTMN09');
+this.__blankCurp=recCandEditCurpNeedsDuplicateCheck('   ','GOSE900101HQRTMN09');
+`,
+  curpCtx,
+);
+check(curpCtx.__typed.value === 'GOSE900101HQRTMN09' && curpCtx.__typed.selectionStart === 4, 'escritura convierte el valor y conserva el cursor');
+check(curpCtx.__pastePrevented === true && curpCtx.__pasted.value === 'GOSE900101HQRTMN09', 'pegado en minúsculas convierte el valor real');
+check(curpCtx.__blurred.value === 'GOSE900101HQRTMN09', 'blur vuelve a normalizar');
+check(curpCtx.__err === 'Ingresa una CURP válida de 18 caracteres.' && curpCtx.__okErr === '', 'validación de formulario');
+check(/GOSE900101HQRTMN09/.test(curpCtx.__present) && /CELL:curp:CURP:/.test(curpCtx.__present), 'CURP visible en expediente');
+check(curpCtx.__absent === '' && curpCtx.__blank === '', 'sin CURP no deja placeholder');
+check(!/Sin datos|—/.test(curpCtx.__absent), 'ausente sin guion ni texto vacío');
+check(curpCtx.__unsafe.includes('&lt;IMG') && !/<(img|IMG)/.test(curpCtx.__unsafe), 'expediente escapa el contenido');
+check(/set\('rec-cand-form-curp',candidate\.curp\?String\(candidate\.curp\)\.replace/.test(indexHtml), 'edición precarga el CURP en mayúsculas');
+check(curpCtx.__same === false, 'edición sin cambio de CURP no consulta');
+check(curpCtx.__changed === true, 'edición con CURP distinta consulta');
+check(curpCtx.__cleared === false && curpCtx.__blankCurp === false, 'eliminar CURP no consulta');
 
 console.log('\n=== Recruitment 1F.1 — ficha premium candidato (estático) ===\n');
 
@@ -255,6 +470,7 @@ if (dbOk) {
     '20261020180000_recruitment_vacancy_stages',
     '20261020200000_recruitment_candidate_resume',
     '20261023120000_recruitment_candidate_profile_fields',
+    '20261103203000_recruitment_candidate_curp',
   ]) {
     try {
       await prisma.$executeRawUnsafe(
@@ -566,6 +782,128 @@ if (dbOk) {
       body: { email: adminB.email, password: pass },
     });
     const cookieB = cookieHeaderFromResponse(loginB.res, 'mind24.sid');
+
+    let phoneSeq = 0;
+    const nextPhone = () => {
+      phoneSeq += 1;
+      return `557700${String(phoneSeq).padStart(4, '0')}`;
+    };
+    const postCand = (extra) =>
+      jsonFetch(base, '/api/org/recruitment/candidates', {
+        method: 'POST',
+        cookie,
+        body: {
+          fullName: 'Ana López',
+          profile: 'Ventas',
+          whatsapp: nextPhone(),
+          ...extra,
+        },
+      });
+
+    const withoutCurp = await postCand({});
+    check(withoutCurp.res.status === 201 && withoutCurp.data.candidate?.curp == null, 'registro sin CURP');
+    const validCurp = await postCand({ curp: 'gose900101hqrtmn09' });
+    check(
+      validCurp.res.status === 201 && validCurp.data.candidate?.curp === 'GOSE900101HQRTMN09',
+      'registro con CURP válida en mayúsculas',
+    );
+    const curpId = validCurp.data.candidate?.id;
+    const spacedCurp = await postCand({ curp: '  go se 900101 hqrtmn09  ' });
+    check(spacedCurp.data.candidate?.curp === 'GOSE900101HQRTMN09', 'persistencia limpia espacios');
+    const emptyCurp = await postCand({ curp: '   ' });
+    check(emptyCurp.res.status === 201 && emptyCurp.data.candidate?.curp == null, 'CURP vacía persiste null');
+    const invalidCurp = await postCand({ curp: 'GOSE901301HQRTMN09' });
+    check(
+      invalidCurp.res.status === 400 &&
+        invalidCurp.data?.message === 'Ingresa una CURP válida de 18 caracteres.',
+      'API rechaza formato inválido',
+    );
+    const shortCurp = await postCand({ curp: 'GOSE900101HQRTMN0' });
+    check(shortCurp.res.status === 400, 'API rechaza longitud distinta de 18');
+    const added = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { curp: 'mora900101mdfrrl08' },
+    });
+    check(added.res.status === 200 && added.data.candidate?.curp === 'MORA900101MDFRRL08', 'edición agrega CURP');
+    const changed = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { curp: 'GOSE900101HQRTMN09' },
+    });
+    check(changed.data.candidate?.curp === 'GOSE900101HQRTMN09', 'edición modifica CURP');
+    const cleared = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { curp: '' },
+    });
+    check(cleared.res.status === 200 && cleared.data.candidate?.curp == null, 'edición elimina CURP');
+    await prisma.recruitmentCandidate.update({
+      where: { id: curpId },
+      data: { curp: 'gose900101hqrtmn09' },
+    });
+    const serialized = await jsonFetch(base, `/api/org/recruitment/candidates/${curpId}`, { cookie });
+    check(serialized.data.candidate?.curp === 'GOSE900101HQRTMN09', 'serialización administrativa en mayúsculas');
+    const sameOrgDup = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie,
+      body: { curp: 'gose900101hqrtmn09' },
+    });
+    check(sameOrgDup.data?.curpConflict === true, 'advertencia de CURP en la misma organización');
+    check(
+      sameOrgDup.data?.candidates?.some((c) => c.id === curpId) &&
+        sameOrgDup.data.candidates.every((c) => {
+          const keys = Object.keys(c);
+          return !keys.includes('curp') && !keys.includes('organizationId') && !keys.includes('notes');
+        }),
+      'duplicado misma org sin CURP ni datos de más',
+    );
+    const soloCurp = await postCand({ curp: 'garc850101mdfrrl08' });
+    const soloId = soloCurp.data.candidate?.id;
+    check(soloCurp.data.candidate?.curp === 'GARC850101MDFRRL08', 'CURP propia persistida en mayúsculas');
+    const selfDup = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie,
+      body: { curp: 'garc850101mdfrrl08', excludeCandidateId: soloId },
+    });
+    check(
+      selfDup.data?.curpConflict === false &&
+        !(selfDup.data?.candidates || []).some((c) => c.id === soloId),
+      'el candidato no entra en conflicto consigo mismo',
+    );
+    const foreignExclude = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie: cookieB,
+      body: { curp: 'gose900101hqrtmn09', excludeCandidateId: curpId },
+    });
+    check(foreignExclude.res.status === 404, 'excludeCandidateId de otra organización se rechaza');
+    const again = await postCand({ curp: 'GOSE900101HQRTMN09' });
+    check(again.res.status === 201, 'CURP repetida no bloquea el guardado');
+    const crossDup = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie: cookieB,
+      body: { curp: 'gose900101hqrtmn09' },
+    });
+    check(
+      crossDup.data?.curpConflict === false &&
+        !(crossDup.data?.candidates || []).some((c) => c.id === curpId),
+      'duplicado no revela candidatos de otra organización',
+    );
+    const otherOrg = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie: cookieB,
+      body: {
+        fullName: 'Bruno Díaz',
+        profile: 'Ventas',
+        whatsapp: '5599001122',
+        curp: 'gose900101hqrtmn09',
+      },
+    });
+    check(
+      otherOrg.res.status === 201 && otherOrg.data.candidate?.curp === 'GOSE900101HQRTMN09',
+      'misma CURP permitida en otra organización',
+    );
+
     const cross = await jsonFetch(base, `/api/org/recruitment/candidates/${candidateId}`, {
       cookie: cookieB,
     });

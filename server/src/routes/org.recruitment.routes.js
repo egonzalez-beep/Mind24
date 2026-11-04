@@ -3,6 +3,7 @@ import multer from 'multer';
 import { z } from 'zod';
 import { assertEmpresaAdmin } from '../services/candidate.service.js';
 import {
+  assertRecruitmentCandidateInOrg,
   createRecruitmentCandidate,
   findPotentialDuplicateRecruitmentCandidates,
   getRecruitmentCandidate,
@@ -154,6 +155,7 @@ const candidateWriteFields = {
   whatsapp: z.string().max(40).optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
+  curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
   city: z.string().max(120).optional().nullable(),
   state: z.string().max(120).optional().nullable(),
   locality: z.string().max(120).optional().nullable(),
@@ -495,19 +497,29 @@ router.post('/candidates/check-duplicates', async (req, res, next) => {
       .object({
         email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
         phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+        curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+        excludeCandidateId: z.string().min(1).max(80).optional(),
       })
       .parse(req.body ?? {});
     const email = body.email && String(body.email).trim() ? body.email : undefined;
     const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
-    if (!email && !phone) {
-      res.json({ candidates: [] });
+    const curp = body.curp && String(body.curp).trim() ? body.curp : undefined;
+    if (!email && !phone && !curp) {
+      res.json({ candidates: [], curpConflict: false });
       return;
     }
-    const candidates = await findPotentialDuplicateRecruitmentCandidates(u.organizationId, {
-      email,
-      phone,
-    });
+    let excludeCandidateId;
+    if (body.excludeCandidateId) {
+      await assertRecruitmentCandidateInOrg(body.excludeCandidateId, u.organizationId);
+      excludeCandidateId = body.excludeCandidateId;
+    }
+    const candidates = await findPotentialDuplicateRecruitmentCandidates(
+      u.organizationId,
+      { email, phone, curp },
+      { excludeCandidateId },
+    );
     res.json({
+      curpConflict: candidates.curpConflict === true,
       candidates: candidates.map((c) => ({
         id: c.id,
         fullName: c.fullName,

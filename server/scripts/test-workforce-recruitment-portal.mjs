@@ -241,6 +241,26 @@ try {
   spoofRejected = true;
 }
 check(spoofRejected, 'schema strict rechaza registeredBy en body');
+const withCurp = workforceCandidateCreateSchema.parse({
+  fullName: 'Juan Pérez',
+  profile: 'Ventas',
+  whatsapp: '5512345678',
+  curp: 'gose900101hqrtmn09',
+});
+check(withCurp.curp === 'gose900101hqrtmn09', 'portal acepta CURP opcional');
+let orgSpoofRejected = false;
+try {
+  workforceCandidateCreateSchema.parse({
+    fullName: 'Juan Pérez',
+    profile: 'Ventas',
+    whatsapp: '5512345678',
+    organizationId: 'org-spoof',
+  });
+} catch {
+  orgSpoofRejected = true;
+}
+check(orgSpoofRejected, 'portal rechaza organizationId en el body');
+check(/delete candidatePublic\.curp/.test(portalSvc), 'alta de colaborador no devuelve CURP');
 
 console.log('\n=== Notas Workforce — unit ===\n');
 
@@ -333,6 +353,16 @@ try {
 
 if (dbOk) {
   const { prisma } = await import('../src/db/client.js');
+  try {
+    await prisma.$executeRawUnsafe(
+      fs.readFileSync(
+        path.join(root, 'server/prisma/migrations/20261103203000_recruitment_candidate_curp/migration.sql'),
+        'utf8',
+      ),
+    );
+  } catch {
+    /* ya aplicada */
+  }
   const { createApp } = await import('../src/app.js');
   const { hashPassword } = await import('../src/services/auth.service.js');
   const { generateTimeclockAccessToken } = await import('../src/services/timeclockToken.service.js');
@@ -399,6 +429,7 @@ if (dbOk) {
       },
     });
     check(create.res.status === 201 && create.data.candidate?.id, 'POST candidato workforce');
+    check(!Object.prototype.hasOwnProperty.call(create.data.candidate, 'curp'), 'alta pública sin CURP en el JSON');
     const candId = create.data.candidate.id;
 
     const pdfBody = Buffer.from('%PDF-1.4 wf rec test');
@@ -456,6 +487,33 @@ if (dbOk) {
     const detail = await getRecruitmentCandidate(org.id, candId);
     check(detail.resume?.originalFileName === 'cv-test.pdf', 'admin detail incluye CV subido');
 
+    const curpCreate = await jsonFetch(base, '/api/timeclock/public/recruitment/candidates', {
+      method: 'POST',
+      cookie: tcA,
+      body: {
+        fullName: `CURP ${suffix}`,
+        profile: 'Ventas',
+        whatsapp: '5511100099',
+        curp: '  go se 900101 hqrtmn09  ',
+      },
+    });
+    check(
+      curpCreate.res.status === 201 && !Object.prototype.hasOwnProperty.call(curpCreate.data.candidate || {}, 'curp'),
+      'portal persiste CURP sin devolverla',
+    );
+    const curpDetail = await getRecruitmentCandidate(org.id, curpCreate.data.candidate.id);
+    check(curpDetail.curp === 'GOSE900101HQRTMN09', 'admin lee la CURP canónica del alta pública');
+    const pubDup = await jsonFetch(base, '/api/timeclock/public/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie: tcA,
+      body: { curp: 'gose900101hqrtmn09' },
+    });
+    check(
+      pubDup.data?.curpConflict === true &&
+        (pubDup.data.candidates || []).every((c) => !Object.prototype.hasOwnProperty.call(c, 'curp')),
+      'duplicado público misma org sin exponer CURP',
+    );
+
     const crossUp = await jsonFetch(
       base,
       `/api/timeclock/public/recruitment/candidates/${candId}/resume`,
@@ -481,7 +539,9 @@ if (dbOk) {
       { cookie: tcA },
     );
     check(
-      listA.res.status === 200 && listA.data.candidates?.some((c) => c.id === candId),
+      listA.res.status === 200 &&
+        listA.data.candidates?.some((c) => c.id === candId) &&
+        listA.data.candidates.every((c) => !Object.prototype.hasOwnProperty.call(c, 'curp')),
       'Mis candidatos incluye propio',
     );
 

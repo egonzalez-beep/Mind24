@@ -538,6 +538,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-form-span-full{grid-column:1/-1;}
 .rec-cand-form-other{margin-top:6px;}
 .rec-cand-form-optional{font-size:11px;font-weight:500;color:var(--slate-400);letter-spacing:0;text-transform:none;margin-left:4px;}
+.rec-cand-form-curp{min-width:0;}
+#rec-cand-form-curp{min-width:0;width:100%;box-sizing:border-box;}
 .rec-cand-form-field-icon-wrap{position:relative;}
 .rec-cand-form-field-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;color:var(--slate-400);}
 .rec-cand-form-field-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
@@ -2866,12 +2868,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <input type="tel" id="rec-cand-form-phone" class="form-input" maxlength="40" autocomplete="tel" placeholder="+52 55 1234 5678">
           </div>
         </div>
-        <div class="rec-cand-form-span-full">
+        <div>
           <label class="form-label">Email</label>
           <div class="rec-cand-form-field-icon-wrap">
             <span class="rec-cand-form-field-icon" id="rec-cand-form-email-icon" aria-hidden="true"></span>
             <input type="email" id="rec-cand-form-email" class="form-input" maxlength="200" autocomplete="email" placeholder="ejemplo@correo.com">
           </div>
+        </div>
+        <div class="rec-cand-form-curp">
+          <label class="form-label" for="rec-cand-form-curp">CURP <span class="rec-cand-form-optional">Opcional</span></label>
+          <input type="text" id="rec-cand-form-curp" class="form-input" maxlength="18" placeholder="Ej. GOSE900101HQRTMN09" autocomplete="off" spellcheck="false" autocapitalize="characters" inputmode="text" oninput="recCandCurpFieldInput(this)" onpaste="recCandCurpFieldPaste(event)" onblur="recCandCurpFieldBlur(this)">
         </div>
       </div>
       <div class="rec-cand-form-section-head">
@@ -2983,11 +2989,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   <div class="modal-card" style="max-width:min(480px,calc(100vw - 32px));background:#FAFBFF;" onclick="event.stopPropagation()">
     <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-duplicates')">✕</button>
     <h2 class="modal-title" style="font-size:18px;">Encontramos un posible candidato existente</h2>
-    <p style="font-size:13px;color:var(--slate-600);margin:0 0 8px;">Revisa si ya está registrado antes de crear uno nuevo.</p>
+    <p id="rec-cand-dupe-intro" style="font-size:13px;color:var(--slate-600);margin:0 0 8px;">Revisa si ya está registrado antes de crear uno nuevo.</p>
+    <p id="rec-cand-dupe-curp-warn" class="hidden" style="font-size:13px;color:#B45309;margin:0 0 10px;">Ya existe un candidato con esta CURP. Revisa el expediente antes de continuar.</p>
     <div id="rec-cand-dupe-list" class="rec-cand-dupe-list"></div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <button type="button" class="form-submit form-submit-purple" onclick="recCandDupeUseExisting()">Usar existente</button>
-      <button type="button" class="rec-stages-ghost-btn" onclick="recCandDupeCreateAnyway()">Crear de todos modos</button>
+      <button type="button" id="rec-cand-dupe-use" class="form-submit form-submit-purple" onclick="recCandDupeUseExisting()">Usar existente</button>
+      <button type="button" id="rec-cand-dupe-proceed" class="rec-stages-ghost-btn" onclick="recCandDupeCreateAnyway()">Crear de todos modos</button>
       <button type="button" class="rec-stage-act" onclick="closeModal('modal-rec-candidate-duplicates')">Volver</button>
     </div>
   </div>
@@ -11145,6 +11152,7 @@ function recCandExpIcon(kind){
     location:'<svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
     source:'<svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
     registrar:'<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    curp:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h10"/></svg>',
   };
   return icons[kind]||icons.profile;
 }
@@ -11408,6 +11416,7 @@ function recCandRenderExpediente(c){
   let srcInner=src&&src!=='—'?'<span class="rec-cand-source-pill">'+tcEsc(src)+'</span>':'<p class="rec-cand-exp-val">—</p>';
   box.innerHTML=
     recCandExpCell('contact','Contacto',contactInner)+
+    recCandExpedienteCurpHtml(c)+
     recCandExpCell('profile','Perfil',profInner)+
     recCandExpCell('location','Ubicación',recCandLocationDetailHtml(c))+
     recCandExpCell('source','Fuente',srcInner)+
@@ -12815,6 +12824,8 @@ function recCandOpenForm(mode,candidate,opts){
     set('rec-cand-form-whatsapp',candidate.whatsapp||candidate.phone);
     set('rec-cand-form-phone',recCandSecondaryPhone(candidate)==='—'?'':recCandSecondaryPhone(candidate));
     set('rec-cand-form-email',candidate.email);
+    set('rec-cand-form-curp',candidate.curp?String(candidate.curp).replace(/\s+/g,'').toUpperCase():'');
+    recEnsureState().candFormOriginalCurp=recCandNormalizeCurpInputValue(candidate.curp);
     set('rec-cand-form-city',candidate.city);
     set('rec-cand-form-state',candidate.state);
     set('rec-cand-form-locality',candidate.locality);
@@ -12836,7 +12847,8 @@ function recCandOpenForm(mode,candidate,opts){
     set('rec-cand-form-source','');
     set('rec-cand-form-source-other','');
     recCandToggleOtherWrap('rec-cand-form-source','rec-cand-form-source-other-wrap');
-    ['rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-city','rec-cand-form-state','rec-cand-form-locality','rec-cand-form-neighborhood','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    ['rec-cand-form-phone','rec-cand-form-whatsapp','rec-cand-form-email','rec-cand-form-curp','rec-cand-form-city','rec-cand-form-state','rec-cand-form-locality','rec-cand-form-neighborhood','rec-cand-form-notes'].forEach(function(fid){ set(fid,''); });
+    recEnsureState().candFormOriginalCurp='';
     set('rec-cand-form-interview-date','');
     set('rec-cand-form-interview-time','');
     recCandFormSyncInterviewVisibility();
@@ -12860,6 +12872,58 @@ function recCandOpenForm(mode,candidate,opts){
     });
   }
 }
+var REC_CAND_CURP_RE=/^[A-ZÑ][AEIOUX][A-ZÑ]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|BC|BS|CC|CL|CM|CS|CH|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-ZÑ]{3}[A-Z0-9]\d$/;
+function recCandNormalizeCurpInputValue(raw){
+  return String(raw==null?'':raw).replace(/\s+/g,'').toUpperCase().slice(0,18);
+}
+function recCandCurpFieldApply(el,raw,caret){
+  if(!el) return;
+  const value=recCandNormalizeCurpInputValue(raw);
+  const pos=typeof caret==='number'?Math.max(0,Math.min(value.length,caret)):null;
+  if(el.value!==value) el.value=value;
+  if(pos!=null&&el.setSelectionRange){
+    try{ el.setSelectionRange(pos,pos); }catch(_e){}
+  }
+}
+function recCandCurpFieldInput(el){
+  if(!el) return;
+  const raw=el.value||'';
+  const start=typeof el.selectionStart==='number'?el.selectionStart:raw.length;
+  recCandCurpFieldApply(el,raw,String(raw.slice(0,start)).replace(/\s+/g,'').length);
+}
+function recCandCurpFieldPaste(ev){
+  if(!ev) return;
+  const el=ev.target;
+  if(!el) return;
+  const clip=ev.clipboardData||window.clipboardData;
+  const text=clip&&clip.getData?clip.getData('text'):null;
+  if(text==null) return;
+  if(ev.preventDefault) ev.preventDefault();
+  const cur=el.value||'';
+  const start=typeof el.selectionStart==='number'?el.selectionStart:cur.length;
+  const end=typeof el.selectionEnd==='number'?el.selectionEnd:start;
+  const merged=cur.slice(0,start)+String(text)+cur.slice(end);
+  recCandCurpFieldApply(el,merged,String(cur.slice(0,start)+String(text)).replace(/\s+/g,'').length);
+}
+function recCandCurpFieldBlur(el){
+  recCandCurpFieldApply(el,el&&el.value);
+}
+function recCandCurpClientError(raw){
+  const compact=recCandNormalizeCurpInputValue(raw);
+  if(!compact) return '';
+  if(!REC_CAND_CURP_RE.test(compact)) return 'Ingresa una CURP válida de 18 caracteres.';
+  return '';
+}
+function recCandEditCurpNeedsDuplicateCheck(nextCurp, originalCurp){
+  const next=recCandNormalizeCurpInputValue(nextCurp);
+  if(!next) return false;
+  return next!==recCandNormalizeCurpInputValue(originalCurp);
+}
+function recCandExpedienteCurpHtml(c){
+  const curp=String(c&&c.curp!=null?c.curp:'').replace(/\s+/g,'').toUpperCase();
+  if(!curp) return '';
+  return recCandExpCell('curp','CURP','<p class="rec-cand-exp-val">'+tcEsc(curp)+'</p>');
+}
 function recCandEditFromDetail(){
   const st=recEnsureState();
   if(st.detailCandidate) recCandOpenForm('edit',st.detailCandidate);
@@ -12877,6 +12941,7 @@ function recCandReadFormBody(){
     whatsapp:g('rec-cand-form-whatsapp'),
     phone:g('rec-cand-form-phone')||null,
     email:g('rec-cand-form-email')||null,
+    curp:recCandNormalizeCurpInputValue(document.getElementById('rec-cand-form-curp')&&document.getElementById('rec-cand-form-curp').value),
     source:g('rec-cand-form-source')||null,
     sourceOther:g('rec-cand-form-source-other')||null,
     city:g('rec-cand-form-city')||null,
@@ -12899,6 +12964,7 @@ function recCandApiCandidateBody(body){
     whatsapp:body.whatsapp,
     phone:body.phone,
     email:body.email,
+    curp:body.curp||null,
     source:body.source,
     sourceOther:body.sourceOther,
     city:body.city,
@@ -12930,6 +12996,11 @@ async function recCandSubmitForm(){
     if(err){ err.textContent='Indica el WhatsApp del candidato.'; err.classList.remove('hidden'); }
     return;
   }
+  const curpErr=recCandCurpClientError(body.curp);
+  if(curpErr){
+    if(err){ err.textContent=curpErr; err.classList.remove('hidden'); }
+    return;
+  }
   if(btn) btn.disabled=true;
   try{
     if(id){
@@ -12937,23 +13008,33 @@ async function recCandSubmitForm(){
         if(err){ err.textContent='Indica el WhatsApp del candidato.'; err.classList.remove('hidden'); }
         return;
       }
-      await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(recCandApiCandidateBody(body))});
-      closeModal('modal-rec-candidate-form');
-      await recCandLoadList(false);
-      if(recEnsureState().detailCandidateId===id){
-        const c=await recCandFetchDetail(id);
-        await recCandRenderDetail(c,false);
+      const stEdit=recEnsureState();
+      if(recCandEditCurpNeedsDuplicateCheck(body.curp, stEdit.candFormOriginalCurp)){
+        const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify({curp:body.curp,excludeCandidateId:id})});
+        stEdit.candDupeCurpConflict=!!(dup&&dup.curpConflict);
+        if(stEdit.candDupeCurpConflict){
+          stEdit.candDupeIntent='edit';
+          stEdit.candDupeEditId=id;
+          stEdit.candDupePendingBody=body;
+          stEdit.candDupeSelectedId=(dup.candidates&&dup.candidates[0]&&dup.candidates[0].id)||null;
+          recCandShowDupeModal(dup.candidates||[]);
+          return;
+        }
       }
+      await recCandPatchExisting(id, body);
       return;
     }
     const st=recEnsureState();
     const dupPhone=body.whatsapp||body.phone;
-    if(body.email||dupPhone){
-      const dup=await recCandFormRecApiJson('/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null})});
-      if((dup.candidates||[]).length){
+    if(body.email||dupPhone||body.curp){
+      const dup=await recCandFormRecApiJson('/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null,curp:body.curp||null})});
+      st.candDupeCurpConflict=!!(dup&&dup.curpConflict);
+      if((dup.candidates||[]).length||st.candDupeCurpConflict){
+        st.candDupeIntent='create';
+        st.candDupeEditId=null;
         st.candDupePendingBody=body;
-        st.candDupeSelectedId=dup.candidates[0].id;
-        recCandShowDupeModal(dup.candidates);
+        st.candDupeSelectedId=(dup.candidates&&dup.candidates[0]&&dup.candidates[0].id)||null;
+        recCandShowDupeModal(dup.candidates||[]);
         return;
       }
     }
@@ -13881,10 +13962,28 @@ function tcEmpShowCandidateRegisteredSuccess(conf,warn){
 function tcEmpShowCandidateRegisteredCvPartial(conf,extraErr){
   tcEmpRecruitmentShowCvPartial(extraErr||'');
 }
+async function recCandPatchExisting(id, body){
+  await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(recCandApiCandidateBody(body))});
+  closeModal('modal-rec-candidate-form');
+  await recCandLoadList(false);
+  if(recEnsureState().detailCandidateId===id){
+    const c=await recCandFetchDetail(id);
+    await recCandRenderDetail(c,false);
+  }
+}
 function recCandShowDupeModal(list){
   const box=document.getElementById('rec-cand-dupe-list');
+  const warn=document.getElementById('rec-cand-dupe-curp-warn');
+  const intro=document.getElementById('rec-cand-dupe-intro');
+  const useBtn=document.getElementById('rec-cand-dupe-use');
+  const proceed=document.getElementById('rec-cand-dupe-proceed');
   const st=recEnsureState();
+  const editing=st.candDupeIntent==='edit';
   st.candDupeList=list||[];
+  if(warn) warn.classList.toggle('hidden',!st.candDupeCurpConflict);
+  if(intro) intro.textContent=editing?'Revisa el expediente antes de guardar este cambio.':'Revisa si ya está registrado antes de crear uno nuevo.';
+  if(useBtn) useBtn.classList.toggle('hidden',editing);
+  if(proceed) proceed.textContent=editing?'Guardar de todos modos':'Crear de todos modos';
   if(box){
     box.innerHTML=(list||[]).map(function(c){
       const sel=c.id===st.candDupeSelectedId?' rec-cand-dupe-item--selected':'';
@@ -13895,6 +13994,12 @@ function recCandShowDupeModal(list){
     }).join('');
   }
   openModal('modal-rec-candidate-duplicates');
+  const formModal=document.getElementById('modal-rec-candidate-form');
+  if(formModal){
+    formModal.classList.remove('hidden');
+    formModal.style.pointerEvents='auto';
+    formModal.style.visibility='visible';
+  }
 }
 function recCandSelectDupe(id){
   const st=recEnsureState();
@@ -13912,12 +14017,23 @@ async function recCandDupeUseExisting(){
 async function recCandDupeCreateAnyway(){
   const st=recEnsureState();
   const body=st.candDupePendingBody;
+  const editId=st.candDupeEditId;
+  const intent=st.candDupeIntent;
   closeModal('modal-rec-candidate-duplicates');
-  if(body){
-    if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
-    else await recCandCreateAndOpen(body);
+  try{
+    if(intent==='edit'){
+      if(editId&&body) await recCandPatchExisting(editId, body);
+    }else if(body){
+      if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
+      else await recCandCreateAndOpen(body);
+    }
+  }catch(e){
+    const err=document.getElementById('rec-cand-form-err');
+    if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
   }
   st.candDupePendingBody=null;
+  st.candDupeEditId=null;
+  st.candDupeIntent=null;
 }
 async function recCandCreateAndOpen(body){
   const st=recEnsureState();

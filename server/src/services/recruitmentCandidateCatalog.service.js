@@ -34,6 +34,45 @@ function trimOrNull(v) {
   return s === '' ? null : s;
 }
 
+/**
+ * Estructura de CURP mexicana, sin consulta a RENAPO.
+ * 4 letras, fecha AAMMDD, sexo, entidad, 3 consonantes, homoclave y dígito.
+ */
+export const RECRUITMENT_CURP_RE =
+  /^[A-ZÑ][AEIOUX][A-ZÑ]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|BC|BS|CC|CL|CM|CS|CH|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-ZÑ]{3}[A-Z0-9]\d$/;
+
+export const RECRUITMENT_CURP_INVALID_MESSAGE = 'Ingresa una CURP válida de 18 caracteres.';
+
+/** Trim, quita espacios y pasa a mayúsculas. Vacío → null. Con contenido, exige estructura. */
+export function normalizeRecruitmentCandidateCurp(input) {
+  if (input == null) return null;
+  const compact = String(input).replace(/\s+/g, '').toUpperCase();
+  if (!compact) return null;
+  if (compact.length !== 18 || !RECRUITMENT_CURP_RE.test(compact)) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = RECRUITMENT_CURP_INVALID_MESSAGE;
+    throw err;
+  }
+  return compact;
+}
+
+/** Búsqueda de duplicados: CURP inválida no participa y no revela otras organizaciones. */
+export function recruitmentCandidateCurpForLookup(input) {
+  try {
+    return normalizeRecruitmentCandidateCurp(input);
+  } catch {
+    return null;
+  }
+}
+
+export function recruitmentCandidateCurpConflicts(normalizedCurp, rows) {
+  if (!normalizedCurp) return false;
+  return (rows || []).some(
+    (row) => String(row?.curp || '').replace(/\s+/g, '').toUpperCase() === normalizedCurp,
+  );
+}
+
 export function normalizeRecruitmentCandidateFullName(fullName) {
   const collapsed = String(fullName ?? '')
     .trim()
@@ -202,6 +241,9 @@ export function prepareRecruitmentCandidateWritePayload(raw, { partial = false }
     }
   }
   if (raw.email !== undefined) out.email = raw.email;
+  if (raw.curp !== undefined || !partial) {
+    out.curp = normalizeRecruitmentCandidateCurp(raw.curp);
+  }
   if (raw.city !== undefined) out.city = trimOrNull(raw.city);
   if (raw.state !== undefined) out.state = trimOrNull(raw.state);
   if (raw.locality !== undefined) out.locality = trimOrNull(raw.locality);
