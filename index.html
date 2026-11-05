@@ -725,25 +725,43 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-ws-op-kicker{font-size:12px;font-weight:600;color:var(--slate-600);margin:0 0 12px;letter-spacing:.02em;padding-left:11px;position:relative;line-height:1.4;}
 .rec-ws-op-kicker::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:999px;background:linear-gradient(180deg,rgba(124,58,237,.75),rgba(139,92,246,.45));}
 .rec-workspace--pipeline{margin-top:8px;padding:12px 14px 14px;border-radius:14px;background:#fff;border:1px solid rgba(226,232,240,.95);box-shadow:0 1px 6px rgba(15,23,42,.04);min-height:0;}
-.rec-pipeline-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--slate-100);}
-.rec-pipeline-header-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
-.rec-pipeline-header-label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);}
-.rec-pipeline-header-sep{color:var(--slate-400);font-weight:600;}
-.rec-pipeline-header-vac{font-size:15px;font-weight:800;color:var(--primary);letter-spacing:-.25px;line-height:1.25;}
-.rec-pipeline-count-pill{font-size:11px;font-weight:600;color:var(--slate-600);background:var(--slate-100);padding:4px 10px;border-radius:999px;}
-.rec-pipeline-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
-.rec-kanban-empty-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);font-family:inherit;font-size:12px;font-weight:650;padding:5px 10px;border-radius:999px;cursor:pointer;}
-.rec-kanban-empty-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.rec-kanban-empty-toggle:hover{border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
-.rec-kanban-empty-count{font-size:11px;font-weight:600;color:var(--slate-500);}
+.rec-pipeline-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:nowrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--slate-100);}
+.rec-pipeline-header-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;flex:1;}
+.rec-pipeline-header-label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);flex-shrink:0;}
+.rec-pipeline-header-sep{color:var(--slate-400);font-weight:600;flex-shrink:0;}
+.rec-pipeline-header-vac{font-size:15px;font-weight:800;color:var(--primary);letter-spacing:-.25px;line-height:1.25;min-width:0;}
+.rec-pipeline-count-pill{font-size:11px;font-weight:600;color:var(--slate-600);background:var(--slate-100);padding:4px 10px;border-radius:999px;flex-shrink:0;}
+.rec-pipeline-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;align-self:center;}
+.rec-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;min-width:36px;min-height:36px;padding:0;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-700);cursor:pointer;flex-shrink:0;}
+.rec-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-icon-btn:hover{background:var(--slate-50);border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
+.rec-icon-btn:active{background:rgba(124,58,237,.1);}
+.rec-icon-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.rec-icon-btn:disabled{opacity:.45;cursor:not-allowed;}
+.rec-kanban-empty-toggle[aria-pressed="true"]{background:rgba(124,58,237,.08);color:var(--purple-dark);border-color:rgba(124,58,237,.35);}
 .rec-form-capacity{margin:6px 0 0;font-size:12px;font-weight:600;color:var(--slate-600);}
 .rec-form-positions--blocked{border-color:#e11d48;box-shadow:0 0 0 3px rgba(244,63,94,.12);}
-.rec-hired-fold{margin-top:8px;}
-.rec-hired-fold summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--slate-700);list-style-position:outside;}
-.rec-hired-fold-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;}
-.rec-hired-fold-item{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12px;color:var(--slate-600);}
-.rec-hired-fold-link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--purple-dark);cursor:pointer;text-align:left;}
-.rec-hired-fold-link:hover{text-decoration:underline;}
+.rec-exec-kpi--coverage .rec-exec-kpi-head{flex-wrap:nowrap;min-width:0;}
+.rec-exec-kpi--coverage .rec-exec-kpi-icon{flex-shrink:0;}
+.rec-exec-kpi--coverage .rec-exec-kpi-label{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-hired-btn{width:auto;min-width:36px;height:36px;padding:0 8px;gap:4px;margin-left:auto;flex-shrink:0;}
+@media(max-width:820px){.rec-exec-kpi--coverage .rec-exec-kpi-icon{display:none;}}
+.rec-hired-btn.hidden{display:none;}
+.rec-hired-btn-count{font-size:12px;font-weight:800;line-height:1;color:inherit;}
+.rec-hired-popover{position:fixed;z-index:2100;display:flex;flex-direction:column;max-height:min(360px,calc(100vh - 16px));padding:10px;border-radius:14px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 16px 40px rgba(15,23,42,.16);overflow:hidden;}
+.rec-hired-popover.hidden{display:none!important;}
+.rec-hired-popover-title{margin:0 4px 8px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
+.rec-hired-popover-scroll{overflow-y:auto;max-height:280px;display:flex;flex-direction:column;gap:2px;}
+.rec-hired-row{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;padding:8px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;cursor:pointer;}
+.rec-hired-row:hover,.rec-hired-row:focus-visible{background:rgba(124,58,237,.06);outline:none;}
+.rec-hired-row-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.rec-hired-row-name{font-size:13px;font-weight:700;color:var(--primary);line-height:1.3;overflow-wrap:break-word;}
+.rec-hired-row-date{font-size:11px;font-weight:600;color:var(--slate-500);line-height:1.3;}
+.rec-hired-row-go{width:14px;height:14px;flex-shrink:0;color:var(--slate-400);}
+.rec-hired-row-go svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-hired-popover-msg{margin:4px;font-size:12px;font-weight:600;color:var(--slate-600);}
+.rec-hired-retry{align-self:flex-start;margin:2px 4px 4px;border:0;background:transparent;color:var(--purple-dark);font:inherit;font-size:12px;font-weight:700;cursor:pointer;min-height:36px;padding:0 4px;}
+.rec-hired-retry:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .rec-pipeline-ghost-btn{border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;transition:var(--tr-fast);}
 .rec-pipeline-ghost-btn:disabled{opacity:.55;cursor:default;}
 .rec-pipeline-menu-btn:disabled{opacity:.45;cursor:default;}
@@ -2699,14 +2717,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </header>
     <div class="rec-exec-kpis" id="rec-exec-kpis" aria-label="Indicadores ejecutivos">
       <div class="rec-exec-kpi rec-exec-kpi--coverage" id="rec-kpi-coverage">
-        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--coverage" id="rec-kpi-icon-coverage" aria-hidden="true"></span><div class="rec-exec-kpi-label">Cobertura</div></div>
+        <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--coverage" id="rec-kpi-icon-coverage" aria-hidden="true"></span><div class="rec-exec-kpi-label">Cobertura</div><button type="button" class="rec-icon-btn rec-hired-btn hidden" id="rec-hired-btn" aria-label="Ver candidatos contratados" title="Ver candidatos contratados" aria-expanded="false" aria-controls="rec-hired-popover" aria-haspopup="dialog" onclick="recHiredPopoverToggle()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M8.2 12.5 7 21l5-2.2L17 21l-1.2-8.5"/><path d="m9.2 8 1.6 1.6 3.2-3.2"/></svg><span class="rec-hired-btn-count" id="rec-hired-btn-count"></span></button></div>
         <div class="rec-exec-kpi-val" id="rec-kpi-coverage-val">—</div>
         <div class="rec-exec-cov-pos" id="rec-kpi-coverage-pos"></div>
         <div class="rec-exec-cov-bar"><div class="rec-exec-cov-bar-fill" id="rec-kpi-coverage-bar" style="width:0%"></div></div>
-        <details class="rec-hired-fold hidden" id="rec-hired-fold">
-          <summary id="rec-hired-fold-summary">Contratados: 0 de 0</summary>
-          <ul class="rec-hired-fold-list" id="rec-hired-fold-list"></ul>
-        </details>
       </div>
       <div class="rec-exec-kpi rec-exec-kpi--process" id="rec-kpi-inprocess-card">
         <div class="rec-exec-kpi-head"><span class="rec-exec-kpi-icon rec-exec-kpi-icon--process" id="rec-kpi-icon-process" aria-hidden="true"></span><div class="rec-exec-kpi-label">En proceso</div></div>
@@ -3612,11 +3626,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                 <span class="rec-pipeline-count-pill" id="rec-pipeline-cand-count">0 candidatos</span>
               </div>
               <div class="rec-pipeline-header-actions">
-                <button type="button" class="rec-kanban-empty-toggle" id="rec-kanban-empty-toggle" aria-pressed="true" onclick="recKanbanToggleEmptyStages()">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
-                  <span id="rec-kanban-empty-toggle-label">Mostrar todas las etapas</span>
+                <button type="button" class="rec-icon-btn rec-kanban-empty-toggle" id="rec-kanban-empty-toggle" aria-pressed="true" aria-label="Mostrar todas las etapas" title="Mostrar todas las etapas" onclick="recKanbanToggleEmptyStages()">
+                  <svg id="rec-kanban-empty-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><path d="M12 8v8" stroke-dasharray="1.5 2"/><rect x="16" y="4" width="5" height="16" rx="1"/></svg>
                 </button>
-                <span class="rec-kanban-empty-count" id="rec-kanban-empty-count"></span>
               </div>
             </div>
             <div class="rec-pipeline-slot" id="rec-pipeline-slot"></div>
@@ -4456,6 +4468,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
   </div>
   <div class="tc-ws-novedades-popover-body" id="tc-ws-novedades-body"></div>
+</div>
+<div id="rec-hired-popover" class="rec-hired-popover hidden" role="dialog" aria-modal="false" aria-labelledby="rec-hired-popover-title" aria-hidden="true" hidden>
+  <p class="rec-hired-popover-title" id="rec-hired-popover-title">Contratados</p>
+  <div class="rec-hired-popover-scroll" id="rec-hired-popover-list"></div>
 </div>
 <div id="mind24-notif-popover" class="mind24-notif-popover hidden" role="dialog" aria-modal="false" aria-labelledby="mind24-notif-popover-title" aria-hidden="true">
   <div class="mind24-notif-popover-head">
@@ -5415,6 +5431,7 @@ function closeModal(id){
   }
   if(id==='modal-rec-vacancy'&&typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
   if(id==='modal-rec-candidate-form'&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
+  if(id==='modal-rec-vacancy-detail'&&typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const m=document.getElementById(id);
   if(m){
     m.classList.add('hidden');
@@ -5436,6 +5453,7 @@ function closeModal(id){
   if(typeof tcEmpRefreshActiveWorkspaceTabAfterInteraction==='function') tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 function closeAllModals(){
+  if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const candForm=document.getElementById('modal-rec-candidate-form');
   if(candForm&&!candForm.classList.contains('hidden')&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
   const evalModal=document.getElementById('modal-evaluacion');
@@ -8796,33 +8814,60 @@ function recKanbanColumnShouldCollapse(vacancyId, stageId, count){
   if(count===0&&recKanbanHideEmptyEnabled()) return !(st.kanbanEmptyPinnedOpen&&st.kanbanEmptyPinnedOpen[key]);
   return !!(st.kanbanColCollapsed&&st.kanbanColCollapsed[key]);
 }
-function recKanbanEmptyHiddenCount(vacancyId){
-  const st=recEnsureState();
-  if(!recKanbanHideEmptyEnabled()) return 0;
-  const stages=st.kanbanStages||[];
-  const apps=st.kanbanApplications||[];
-  let hidden=0;
-  stages.forEach(function(vs){
-    const sid=(vs.stage&&vs.stage.id)||vs.stageId;
-    const n=apps.filter(function(app){
-      const appSid=app.stageId||(app.stage&&app.stage.id);
-      return String(appSid)===String(sid);
-    }).length;
-    if(n===0&&recKanbanColumnShouldCollapse(vacancyId, sid, 0)) hidden+=1;
-  });
-  return hidden;
+const REC_KANBAN_EMPTY_SVG_HIDDEN='<rect x="3" y="4" width="5" height="16" rx="1"/><path d="M12 8v8" stroke-dasharray="1.5 2"/><rect x="16" y="4" width="5" height="16" rx="1"/>';
+const REC_KANBAN_EMPTY_SVG_ALL='<rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="16" rx="1"/><rect x="16.5" y="4" width="4.5" height="16" rx="1"/>';
+// REC_HIRED_POPOVER_PURE_HELPERS_START
+function recKanbanEmptyToggleState(hideEmpty){
+  if(hideEmpty) return { pressed:true, label:'Mostrar todas las etapas' };
+  return { pressed:false, label:'Ocultar etapas vacías' };
 }
-function recKanbanSyncEmptyChrome(vacancyId){
+function recFmtHiredEnteredDate(iso){
+  if(iso==null||String(iso).trim()==='') return '';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return '';
+  try{
+    return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  }catch(_e){
+    return '';
+  }
+}
+function recHiredPopoverRows(people){
+  return (people||[]).map(function(p){
+    const date=recFmtHiredEnteredDate(p&&p.hiredStageEnteredAt);
+    return {
+      candidateId:p&&p.candidateId?String(p.candidateId):'',
+      fullName:p&&p.fullName?String(p.fullName):'—',
+      dateLabel:date?('En Contratado desde '+date):''
+    };
+  });
+}
+function recHiredButtonVisible(count){
+  return Number(count)>0;
+}
+function recHiredPopoverPlace(anchor, popSize, viewport){
+  const margin=8;
+  const width=Math.min(320, Math.max(160, viewport.width-margin*2));
+  let left=anchor.right-width;
+  if(left<margin) left=margin;
+  if(left+width>viewport.width-margin) left=Math.max(margin, viewport.width-margin-width);
+  let top=anchor.bottom+6;
+  if(top+popSize.height>viewport.height-margin){
+    const above=anchor.top-popSize.height-6;
+    top=above>=margin?above:Math.max(margin, viewport.height-margin-popSize.height);
+  }
+  return { left:left, top:top, width:width };
+}
+// REC_HIRED_POPOVER_PURE_HELPERS_END
+function recKanbanSyncEmptyChrome(_vacancyId){
   const hide=recKanbanHideEmptyEnabled();
   const btn=document.getElementById('rec-kanban-empty-toggle');
-  const label=document.getElementById('rec-kanban-empty-toggle-label');
-  const countEl=document.getElementById('rec-kanban-empty-count');
-  if(btn) btn.setAttribute('aria-pressed', hide?'true':'false');
-  if(label) label.textContent=hide?'Mostrar todas las etapas':'Ocultar etapas vacías';
-  const hidden=recKanbanEmptyHiddenCount(vacancyId);
-  if(countEl){
-    countEl.textContent=hidden? (hidden===1?'1 etapa vacía oculta':hidden+' etapas vacías ocultas') : '';
-  }
+  if(!btn) return;
+  const state=recKanbanEmptyToggleState(hide);
+  btn.setAttribute('aria-pressed', state.pressed?'true':'false');
+  btn.setAttribute('aria-label', state.label);
+  btn.title=state.label;
+  const icon=document.getElementById('rec-kanban-empty-toggle-icon');
+  if(icon) icon.innerHTML=hide?REC_KANBAN_EMPTY_SVG_HIDDEN:REC_KANBAN_EMPTY_SVG_ALL;
 }
 function recKanbanToggleEmptyStages(){
   recKanbanSetHideEmpty(!recKanbanHideEmptyEnabled());
@@ -9084,6 +9129,7 @@ function recDetailToggleAcc(which){
 }
 async function recFetchAndRenderVacancyDetail(vacancyId){
   const st=recEnsureState();
+  if(st.detailVacancyId&&st.detailVacancyId!==vacancyId) recHiredPopoverClose(false);
   st.detailVacancyId=vacancyId;
   recRenderVacancyDetail();
   recVacDocsLoad();
@@ -9100,6 +9146,7 @@ async function recFetchAndRenderVacancyDetail(vacancyId){
 }
 async function recOpenVacancyDetail(vacancyId,ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  recHiredPopoverClose(false);
   const st=recEnsureState();
   st.detailVacNotesComposerOpen=false;
   recVacDocsFillCategorySelect();
@@ -9278,36 +9325,162 @@ function recRenderExecutiveKpis(v){
   recApplyTargetKpiTone(v);
   const days=document.getElementById('rec-kpi-days-open');
   if(days) days.textContent=snap!=null?String(snap.daysOpen)+' días':'—';
-  recRenderHiredFold(v, hired, positions);
+  recRenderHiredControl(v, hired);
 }
-function recFmtHiredEntered(iso){
-  if(!iso) return 'Sin fecha registrada';
-  const d=new Date(iso);
-  if(Number.isNaN(d.getTime())) return 'Sin fecha registrada';
-  try{
-    return d.toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
-  }catch(_e){
-    return d.toISOString();
+function recHiredPopoverIsOpen(){
+  const pop=document.getElementById('rec-hired-popover');
+  return !!(pop&&!pop.classList.contains('hidden'));
+}
+function recHiredPopoverBindOnce(){
+  if(window.__recHiredPopoverBound) return;
+  window.__recHiredPopoverBound=true;
+  document.addEventListener('click', recHiredPopoverOnDocClick, true);
+  document.addEventListener('keydown', recHiredPopoverOnKey, true);
+  window.addEventListener('resize', recHiredPopoverOnResize);
+}
+function recHiredPopoverOnDocClick(ev){
+  if(!recHiredPopoverIsOpen()) return;
+  const pop=document.getElementById('rec-hired-popover');
+  const btn=document.getElementById('rec-hired-btn');
+  if(pop&&pop.contains(ev.target)) return;
+  if(btn&&btn.contains(ev.target)) return;
+  recHiredPopoverClose(false);
+}
+function recHiredPopoverOnKey(ev){
+  if(ev.key!=='Escape'||!recHiredPopoverIsOpen()) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  recHiredPopoverClose(true);
+}
+function recHiredPopoverOnResize(){
+  if(!recHiredPopoverIsOpen()) return;
+  const btn=document.getElementById('rec-hired-btn');
+  if(!btn||btn.classList.contains('hidden')){ recHiredPopoverClose(false); return; }
+  const rect=btn.getBoundingClientRect();
+  if(!rect.width||!rect.height){ recHiredPopoverClose(false); return; }
+  recHiredPopoverApplyPlace();
+}
+function recHiredPopoverApplyPlace(){
+  const btn=document.getElementById('rec-hired-btn');
+  const pop=document.getElementById('rec-hired-popover');
+  if(!btn||!pop) return;
+  const rect=btn.getBoundingClientRect();
+  const box=recHiredPopoverPlace(
+    { left:rect.left, right:rect.right, top:rect.top, bottom:rect.bottom },
+    { width:pop.offsetWidth, height:pop.offsetHeight },
+    { width:window.innerWidth, height:window.innerHeight }
+  );
+  pop.style.left=box.left+'px';
+  pop.style.top=box.top+'px';
+  pop.style.width=box.width+'px';
+}
+function recHiredPopoverClose(restoreFocus){
+  const pop=document.getElementById('rec-hired-popover');
+  const btn=document.getElementById('rec-hired-btn');
+  if(pop){
+    pop.classList.add('hidden');
+    pop.setAttribute('hidden','');
+    pop.setAttribute('aria-hidden','true');
+  }
+  if(btn) btn.setAttribute('aria-expanded','false');
+  if(restoreFocus&&btn&&!btn.classList.contains('hidden')){
+    try{ btn.focus(); }catch(_e){}
   }
 }
-function recRenderHiredFold(v, hired, positions){
-  const fold=document.getElementById('rec-hired-fold');
-  const summary=document.getElementById('rec-hired-fold-summary');
-  const list=document.getElementById('rec-hired-fold-list');
-  if(!fold||!summary||!list) return;
-  if(!hired){
-    fold.classList.add('hidden');
-    fold.open=false;
-    list.innerHTML='';
+function recHiredPopoverShowMessage(list, text, retry){
+  const msg=document.createElement('p');
+  msg.className='rec-hired-popover-msg';
+  msg.textContent=text;
+  list.appendChild(msg);
+  if(!retry) return;
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='rec-hired-retry';
+  button.textContent='Reintentar';
+  button.addEventListener('click', function(){
+    const id=recEnsureState().detailVacancyId;
+    if(id) recFetchAndRenderVacancyDetail(id);
+  });
+  list.appendChild(button);
+}
+function recHiredPopoverRender(v){
+  const list=document.getElementById('rec-hired-popover-list');
+  if(!list) return;
+  list.textContent='';
+  const people=v&&Array.isArray(v.hiredCandidates)?v.hiredCandidates:null;
+  if(!people){
+    recHiredPopoverShowMessage(list, 'No se pudieron cargar los contratados.', true);
     return;
   }
-  fold.classList.remove('hidden');
-  summary.textContent='Contratados: '+hired+' de '+positions;
-  const people=v.hiredCandidates||[];
-  list.innerHTML=people.map(function(p){
-    const when=recFmtHiredEntered(p.hiredStageEnteredAt);
-    return '<li class="rec-hired-fold-item"><button type="button" class="rec-hired-fold-link" onclick="recCandOpenDetail(\''+tcEsc(p.candidateId)+'\')">'+tcEsc(p.fullName||'—')+'</button><span>'+tcEsc(when)+'</span></li>';
-  }).join('');
+  if(!people.length){
+    recHiredPopoverShowMessage(list, 'No hay candidatos contratados.', false);
+    return;
+  }
+  recHiredPopoverRows(people).forEach(function(row){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='rec-hired-row';
+    const body=document.createElement('span');
+    body.className='rec-hired-row-body';
+    const name=document.createElement('span');
+    name.className='rec-hired-row-name';
+    name.textContent=row.fullName;
+    body.appendChild(name);
+    if(row.dateLabel){
+      const date=document.createElement('span');
+      date.className='rec-hired-row-date';
+      date.textContent=row.dateLabel;
+      body.appendChild(date);
+    }
+    const go=document.createElement('span');
+    go.className='rec-hired-row-go';
+    go.setAttribute('aria-hidden','true');
+    go.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
+    button.appendChild(body);
+    button.appendChild(go);
+    button.addEventListener('click', function(){
+      recHiredPopoverClose(false);
+      if(row.candidateId) recCandOpenDetail(row.candidateId);
+    });
+    list.appendChild(button);
+  });
+}
+function recHiredPopoverOpen(){
+  const btn=document.getElementById('rec-hired-btn');
+  const pop=document.getElementById('rec-hired-popover');
+  const v=recFindVacancy(recEnsureState().detailVacancyId);
+  if(!btn||!pop||btn.classList.contains('hidden')) return;
+  if(typeof mind24NotifClose==='function') mind24NotifClose(false);
+  recHiredPopoverBindOnce();
+  recHiredPopoverRender(v);
+  pop.classList.remove('hidden');
+  pop.removeAttribute('hidden');
+  pop.setAttribute('aria-hidden','false');
+  btn.setAttribute('aria-expanded','true');
+  recHiredPopoverApplyPlace();
+}
+function recHiredPopoverToggle(){
+  if(recHiredPopoverIsOpen()) recHiredPopoverClose(false);
+  else recHiredPopoverOpen();
+}
+function recRenderHiredControl(v, hiredCount){
+  const btn=document.getElementById('rec-hired-btn');
+  const countEl=document.getElementById('rec-hired-btn-count');
+  const show=recHiredButtonVisible(hiredCount);
+  if(btn){
+    btn.classList.toggle('hidden', !show);
+    if(show) btn.removeAttribute('hidden');
+    else btn.setAttribute('hidden','');
+  }
+  if(countEl) countEl.textContent=show?String(hiredCount):'';
+  if(!show){
+    recHiredPopoverClose(false);
+    return;
+  }
+  if(recHiredPopoverIsOpen()){
+    recHiredPopoverRender(v);
+    recHiredPopoverApplyPlace();
+  }
 }
 function recRenderFunnelDistribution(v){
   const el=document.getElementById('rec-detail-funnel');
@@ -10244,6 +10417,7 @@ function recRenderCarousel(){
   recRenderSelectedPanel();
 }
 function recSelectVacancy(id){
+  if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   recEnsureState().selectedId=id;
   document.querySelectorAll('.rec-vac-card').forEach(function(card){
     card.classList.toggle('selected',card.dataset.vacancyId===id);
@@ -11251,6 +11425,7 @@ async function recSubmitVacancy(){
   }
 }
 function recSwitchModuleTab(tab){
+  if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const st=recEnsureState();
   st.moduleTab=tab==='candidates'?'candidates':tab==='metrics'?'metrics':'vacancies';
   const vacPane=document.getElementById('rec-pane-vacancies');
@@ -15242,6 +15417,7 @@ async function mind24NotifOpenPopover(btn){
   const body=document.getElementById('mind24-notif-body');
   if(!pop||!body) return;
   tcCloseTeamPulse(false);
+  if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   mind24NotifOpen=true;
   pop.classList.remove('hidden');
   pop.setAttribute('aria-hidden','false');
