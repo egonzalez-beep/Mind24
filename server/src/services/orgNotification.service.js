@@ -7,6 +7,7 @@ export const ORG_NOTIFICATION_TYPES = [
   'TASK_OVERDUE',
   'GOAL_PERIOD_REPORTED',
   'PLATFORM_ANNOUNCEMENT',
+  'RECRUITMENT_CANDIDATE_CREATED',
 ];
 
 const DEFAULT_LIST_LIMIT = 25;
@@ -15,6 +16,13 @@ const MAX_LIST_LIMIT = 30;
 function quoteTitle(title) {
   const t = String(title || '').trim();
   return t ? `“${t}”` : 'actividad';
+}
+
+function isDedupeUniqueConflict(err) {
+  if (err?.code !== 'P2002') return false;
+  const target = err.meta?.target;
+  const text = Array.isArray(target) ? target.join(' ') : String(target || '');
+  return text.includes('dedupeKey');
 }
 
 async function upsertOrgNotification(client, data) {
@@ -28,23 +36,102 @@ async function upsertOrgNotification(client, data) {
     remoteWorkSessionId,
     goalId,
     goalPeriodId,
+    recruitmentCandidateId,
+    recruitmentVacancyId,
+    recruitmentStageId,
   } = data;
-  return client.orgNotification.upsert({
-    where: {
-      organizationId_dedupeKey: { organizationId, dedupeKey },
-    },
-    create: {
-      organizationId,
-      dedupeKey,
-      type,
-      message,
-      employeeId: employeeId ?? null,
-      taskId: taskId ?? null,
-      remoteWorkSessionId: remoteWorkSessionId ?? null,
-      goalId: goalId ?? null,
-      goalPeriodId: goalPeriodId ?? null,
-    },
-    update: {},
+  const create = {
+    organizationId,
+    dedupeKey,
+    type,
+    message,
+    employeeId: employeeId ?? null,
+    taskId: taskId ?? null,
+    remoteWorkSessionId: remoteWorkSessionId ?? null,
+    goalId: goalId ?? null,
+    goalPeriodId: goalPeriodId ?? null,
+    recruitmentCandidateId: recruitmentCandidateId ?? null,
+    recruitmentVacancyId: recruitmentVacancyId ?? null,
+    recruitmentStageId: recruitmentStageId ?? null,
+  };
+  try {
+    return await client.orgNotification.upsert({
+      where: {
+        organizationId_dedupeKey: { organizationId, dedupeKey },
+      },
+      create,
+      update: {},
+    });
+  } catch (err) {
+    if (!isDedupeUniqueConflict(err)) throw err;
+    const existing = await client.orgNotification.findUnique({
+      where: { organizationId_dedupeKey: { organizationId, dedupeKey } },
+    });
+    if (!existing) throw err;
+    return existing;
+  }
+}
+
+function compactNotifLabel(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+}
+
+export function buildRecruitmentCandidateCreatedMessage({
+  actorKind,
+  actorLabel,
+  candidateName,
+  vacancyTitle,
+  stageName,
+}) {
+  const candidate = compactNotifLabel(candidateName) || 'un candidato';
+  const vacancy = compactNotifLabel(vacancyTitle);
+  const stage = compactNotifLabel(stageName);
+  if (actorKind === 'public') {
+    return `${candidate} se registró como nuevo candidato.`;
+  }
+  const actor = compactNotifLabel(actorLabel);
+  if (actorKind === 'system' || !actor) {
+    return `Se agregó un nuevo candidato: ${candidate}.`;
+  }
+  if (vacancy && stage) {
+    return `${actor} agregó a ${candidate} a ${vacancy} en la etapa ${stage}.`;
+  }
+  if (vacancy) {
+    return `${actor} agregó a ${candidate} a la vacante ${vacancy}.`;
+  }
+  return `${actor} agregó a ${candidate} como nuevo candidato.`;
+}
+
+export async function notifyRecruitmentCandidateCreated(
+  tx,
+  {
+    organizationId,
+    candidateId,
+    candidateName,
+    actorKind,
+    actorLabel,
+    vacancyId,
+    vacancyTitle,
+    stageId,
+    stageName,
+  },
+) {
+  if (!organizationId || !candidateId) return null;
+  const message = buildRecruitmentCandidateCreatedMessage({
+    actorKind,
+    actorLabel,
+    candidateName,
+    vacancyTitle,
+    stageName,
+  });
+  return upsertOrgNotification(tx, {
+    organizationId,
+    type: 'RECRUITMENT_CANDIDATE_CREATED',
+    message,
+    recruitmentCandidateId: candidateId,
+    recruitmentVacancyId: vacancyId || null,
+    recruitmentStageId: stageId || null,
+    dedupeKey: `recruitment_candidate_created:${candidateId}`,
   });
 }
 
@@ -198,6 +285,9 @@ function serializeNotification(row, readSet) {
     employeeId: row.employeeId,
     taskId: row.taskId,
     remoteWorkSessionId: row.remoteWorkSessionId,
+    recruitmentCandidateId: row.recruitmentCandidateId || null,
+    recruitmentVacancyId: row.recruitmentVacancyId || null,
+    recruitmentStageId: row.recruitmentStageId || null,
     createdAt: row.createdAt,
     read: readSet.has(row.id),
   };

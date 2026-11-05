@@ -128,8 +128,8 @@ function serializeCandidateApplicationProcess(row) {
   };
 }
 
-export async function assertRecruitmentCandidateInOrg(candidateId, organizationId) {
-  const row = await prisma.recruitmentCandidate.findFirst({
+export async function assertRecruitmentCandidateInOrg(candidateId, organizationId, db = prisma) {
+  const row = await db.recruitmentCandidate.findFirst({
     where: { id: candidateId, organizationId },
   });
   if (!row) {
@@ -693,10 +693,10 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
 export async function createRecruitmentCandidate(
   organizationId,
   payload,
-  { registeredByWorkforceEmployeeId = null } = {},
+  { registeredByWorkforceEmployeeId = null, db = prisma } = {},
 ) {
   const prepared = prepareRecruitmentCandidateWritePayload(payload, { partial: false });
-  const row = await prisma.recruitmentCandidate.create({
+  const row = await db.recruitmentCandidate.create({
     data: {
       organizationId,
       fullName: prepared.fullName,

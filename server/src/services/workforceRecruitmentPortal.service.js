@@ -1,11 +1,8 @@
 import { z } from 'zod';
 import { prisma } from '../db/client.js';
-import {
-  createRecruitmentCandidate,
-  findPotentialDuplicateRecruitmentCandidates,
-} from './recruitmentCandidate.service.js';
+import { findPotentialDuplicateRecruitmentCandidates } from './recruitmentCandidate.service.js';
 import { createRecruitmentCandidateNote } from './recruitmentCandidateNote.service.js';
-import { createRecruitmentApplication } from './recruitmentApplication.service.js';
+import { createRecruitmentCandidateAndNotify } from './recruitmentCandidateCreate.service.js';
 import { assertRecruitmentVacancyInOrg } from './recruitmentVacancy.service.js';
 import { getVacancyStageConfiguration } from './recruitmentVacancyStage.service.js';
 import { listRecruitmentVacancies } from './recruitmentVacancy.service.js';
@@ -145,19 +142,11 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
     vacancyMeta = { id: vacancy.id, title: vacancy.title };
   }
 
-  const candidate = await createRecruitmentCandidate(organizationId, createPayload, {
-    registeredByWorkforceEmployeeId: workforceEmployeeId,
-  });
-
-  const initialNote = typeof notes === 'string' && notes.trim() ? notes.trim() : null;
-  if (initialNote) {
-    await createRecruitmentCandidateNote(organizationId, candidate.id, null, initialNote, {
-      authorWorkforceEmployeeId: workforceEmployeeId,
-    });
-  }
-
+  let resolvedStageId = null;
+  let interviewScheduledAt;
+  let interviewTimeSpecified;
   if (vacancyId) {
-    const resolvedStageId = await resolveStageForVacancy(organizationId, vacancyId, stageId || null);
+    resolvedStageId = await resolveStageForVacancy(organizationId, vacancyId, stageId || null);
     const st = await prisma.recruitmentStage.findFirst({
       where: { id: resolvedStageId, organizationId },
       select: { name: true, key: true },
@@ -170,16 +159,30 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
       { interviewDate, interviewTime },
       { stageKey: st?.key },
     );
-    await createRecruitmentApplication({
-      organizationId,
-      vacancyId,
-      candidateId: candidate.id,
-      changedByUserId: null,
-      initialStageId: resolvedStageId,
-      interviewScheduledAt: interviewSchedule?.scheduledAt ?? undefined,
-      interviewTimeSpecified: interviewSchedule?.timeSpecified,
-    });
+    interviewScheduledAt = interviewSchedule?.scheduledAt ?? undefined;
+    interviewTimeSpecified = interviewSchedule?.timeSpecified;
     stageName = st?.name || st?.key || null;
+  }
+
+  const { candidate, application } = await createRecruitmentCandidateAndNotify({
+    organizationId,
+    payload: createPayload,
+    registeredByWorkforceEmployeeId: workforceEmployeeId,
+    actorKind: 'workforce',
+    actorLabel: String(employee.fullName || '').trim() || 'Colaborador',
+    vacancyId: vacancyId || null,
+    stageId: resolvedStageId,
+    changedByUserId: null,
+    interviewScheduledAt,
+    interviewTimeSpecified,
+  });
+  if (application?.stage?.name) stageName = application.stage.name;
+
+  const initialNote = typeof notes === 'string' && notes.trim() ? notes.trim() : null;
+  if (initialNote) {
+    await createRecruitmentCandidateNote(organizationId, candidate.id, null, initialNote, {
+      authorWorkforceEmployeeId: workforceEmployeeId,
+    });
   }
 
   const registeredBy = {

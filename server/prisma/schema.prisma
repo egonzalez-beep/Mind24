@@ -95,6 +95,7 @@ enum OrgNotificationType {
   TASK_OVERDUE
   GOAL_PERIOD_REPORTED
   PLATFORM_ANNOUNCEMENT
+  RECRUITMENT_CANDIDATE_CREATED
 }
 
 enum WorkforceWorkplaceInboxEventType {
@@ -389,6 +390,12 @@ model OrgNotification {
   goal                WorkforceGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
   goalPeriodId        String?
   goalPeriod          WorkforceGoalPeriod? @relation(fields: [goalPeriodId], references: [id], onDelete: SetNull)
+  recruitmentCandidateId String?
+  recruitmentCandidate   RecruitmentCandidate? @relation(fields: [recruitmentCandidateId], references: [id], onDelete: SetNull)
+  recruitmentVacancyId   String?
+  recruitmentVacancy     RecruitmentVacancy? @relation(fields: [recruitmentVacancyId], references: [id], onDelete: SetNull)
+  recruitmentStageId     String?
+  recruitmentStage       RecruitmentStage? @relation(fields: [recruitmentStageId], references: [id], onDelete: SetNull)
   dedupeKey           String
   createdAt           DateTime            @default(now())
 
@@ -655,6 +662,7 @@ model RecruitmentCandidate {
   applications RecruitmentApplication[]
   resume       RecruitmentCandidateResume?
   notesRows    RecruitmentCandidateNote[]
+  orgNotifications OrgNotification[]
   tagAssignments RecruitmentCandidateTagAssignment[]
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
@@ -802,6 +810,7 @@ model RecruitmentVacancy {
   vacancyStages RecruitmentVacancyStage[]
   notesRows    RecruitmentVacancyNote[]
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
+  orgNotifications OrgNotification[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -889,6 +898,7 @@ model RecruitmentStage {
   interviewEvents     RecruitmentApplicationInterviewEvent[]
   workforceRecruitmentNovedadesFrom WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadFromStage")
   workforceRecruitmentNovedadesTo   WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadToStage")
+  orgNotifications OrgNotification[]
 
   @@unique([organizationId, key])
   @@index([organizationId, position])

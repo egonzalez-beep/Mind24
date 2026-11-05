@@ -231,8 +231,8 @@ async function enrichVacancies(organizationId, rows) {
   );
 }
 
-export async function assertRecruitmentVacancyInOrg(vacancyId, organizationId) {
-  const row = await prisma.recruitmentVacancy.findFirst({
+export async function assertRecruitmentVacancyInOrg(vacancyId, organizationId, db = prisma) {
+  const row = await db.recruitmentVacancy.findFirst({
     where: { id: vacancyId, organizationId },
   });
   if (!row) {

@@ -1847,8 +1847,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .mind24-notif-item-dot--out{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.45);}
 .mind24-notif-item-dot--done{background:#6ee7b7;box-shadow:0 0 0 3px rgba(110,231,183,.35);}
 .mind24-notif-item-dot--overdue{background:#fca5a5;box-shadow:0 0 0 3px rgba(252,165,165,.35);}
+.mind24-notif-item-dot--candidate{background:#c4b5fd;box-shadow:0 0 0 3px rgba(196,181,253,.45);}
+.mind24-notif-item-mark{width:16px;height:16px;margin-top:2px;flex-shrink:0;color:#7c3aed;}
+.mind24-notif-item-mark svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block;}
 .mind24-notif-item-body{flex:1;min-width:0;}
-.mind24-notif-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;}
+.mind24-notif-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .mind24-notif-item-time{margin:3px 0 0;font-size:11px;color:var(--slate-500);font-weight:500;}
 .mind24-notif-empty,.mind24-notif-loading{font-size:12px;color:var(--slate-400);padding:16px 8px;text-align:center;margin:0;}
 .mind24-notif-more{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:8px;border-radius:8px;margin:2px auto 0;}
@@ -10888,10 +10891,13 @@ function recVacCoverageBindOnce(){
   if(posEl) posEl.addEventListener('input', recVacSyncCoverageHint);
   if(statusEl) statusEl.addEventListener('change', recVacSyncCoverageHint);
 }
+let recVacLoadSeq=0;
 async function recLoadVacancies(selectId){
   const st=recEnsureState();
+  const seq=++recVacLoadSeq;
   try{
     const j=await apiJson('/api/org/recruitment/vacancies');
+    if(seq!==recVacLoadSeq) return;
     st.allVacancies=j.vacancies||[];
     st.headcount=j.headcount||recDeriveHeadcount(st.allVacancies);
     recRenderHeadcount(st.headcount);
@@ -10899,9 +10905,24 @@ async function recLoadVacancies(selectId){
     else if(!st.selectedId||!st.allVacancies.some(v=>v.id===st.selectedId)){
       st.selectedId=recPickDefaultSelection(st.allVacancies);
     }
+    if(st.notifVacancyFocusId){
+      const focusId=st.notifVacancyFocusId;
+      st.notifVacancyFocusId=null;
+      const vac=(st.allVacancies||[]).find(function(v){ return v.id===focusId; });
+      if(vac){
+        if((st.filter||'ACTIVE')!=='ALL'&&st.filter!==vac.status) st.filter=vac.status;
+        if(st.vacancySearchQuery&&!recVacancyMatchesSearch(vac, st.vacancySearchQuery)){
+          st.vacancySearchQuery='';
+          const search=document.getElementById('rec-global-q');
+          if(search) search.value='';
+        }
+        st.selectedId=vac.id;
+      }
+    }
     recRenderFilters();
     recRenderCarousel();
   }catch(e){
+    if(seq!==recVacLoadSeq) return;
     console.error('[recruitment] vacancies',e);
     st.allVacancies=[];
     recRenderHeadcount({activeVacancies:0, headcount:0});
@@ -13220,6 +13241,16 @@ async function recCandLoadDetailCandidate(id,opts){
     if(e&&e.name==='AbortError') return;
     if(!recCandNavShouldApplyDetailFetch(seq,recCandDetailFetchSeq)) return;
     if(e&&e.httpStatus===404){
+      if(opts.notifyMissing){
+        const nameEl=document.getElementById('rec-cand-detail-name');
+        if(nameEl) nameEl.textContent='Candidato no disponible';
+        const host=document.getElementById('rec-cand-pipeline-host');
+        if(host) host.innerHTML='';
+        const exp=document.getElementById('rec-cand-expediente');
+        if(exp) exp.innerHTML='';
+        recCandSetDetailLoadErr('El candidato ya no está disponible.');
+        return;
+      }
       recCandSetDetailLoadErr('');
       recCandNavRemoveMissingId(id);
       return;
@@ -15201,7 +15232,9 @@ async function recCandCreateAndOpen(body){
     }
     if(vacId){
       try{
-        await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null,body._interview||null);
+        if(!(j.application&&j.application.id)){
+          await recCandAssignToVacancy(j.candidate.id,vacId,stageId||null,body._interview||null);
+        }
         if(recEnsureState().selectedId===vacId) recKanbanLoad(vacId);
       }catch(e){
         await recCandOpenDetail(j.candidate.id);
@@ -15326,7 +15359,14 @@ function mind24NotifDotClass(type){
   if(type==='TASK_COMPLETED') return 'mind24-notif-item-dot--done';
   if(type==='TASK_OVERDUE') return 'mind24-notif-item-dot--overdue';
   if(type==='GOAL_PERIOD_REPORTED') return 'mind24-notif-item-dot--done';
+  if(type==='RECRUITMENT_CANDIDATE_CREATED') return 'mind24-notif-item-dot--candidate';
   return 'mind24-notif-item-dot--out';
+}
+function mind24NotifMarkHtml(type){
+  if(type==='RECRUITMENT_CANDIDATE_CREATED'){
+    return '<span class="mind24-notif-item-mark mind24-notif-item-mark--candidate" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span>';
+  }
+  return '<span class="mind24-notif-item-dot '+mind24NotifDotClass(type)+'" aria-hidden="true"></span>';
 }
 function mind24NotifFmtTime(iso){
   if(!iso) return '—';
@@ -15391,13 +15431,18 @@ function mind24NotifRenderList(append){
   }
   const html=mind24NotifItems.map(function(n){
     const cls='mind24-notif-item'+(n.read?'':' mind24-notif-item--unread');
-    return '<button type="button" class="'+cls+'" data-notif-id="'+tcEsc(n.id)+'" onclick="mind24NotifOpenItem(\''+n.id+'\')">'+
-      '<span class="mind24-notif-item-dot '+mind24NotifDotClass(n.type)+'" aria-hidden="true"></span>'+
-      '<span class="mind24-notif-item-body"><p class="mind24-notif-item-msg">'+tcEsc(n.message)+'</p>'+
+    return '<button type="button" class="'+cls+'" data-notif-id="'+tcEsc(n.id)+'">'+
+      mind24NotifMarkHtml(n.type)+
+      '<span class="mind24-notif-item-body"><p class="mind24-notif-item-msg" title="'+tcEsc(n.message)+'">'+tcEsc(n.message)+'</p>'+
       '<p class="mind24-notif-item-time">'+tcEsc(mind24NotifFmtTime(n.createdAt))+'</p></span></button>';
   }).join('');
   const more=mind24NotifHasMore?'<button type="button" class="mind24-notif-more" onclick="mind24NotifLoadMore()">Ver anteriores</button>':'';
   body.innerHTML=html+more;
+  body.querySelectorAll('[data-notif-id]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      mind24NotifOpenItem(btn.getAttribute('data-notif-id'));
+    });
+  });
   mind24NotifSyncMarkAllBtn();
 }
 async function mind24NotifFetchList(opts){
@@ -15465,11 +15510,47 @@ async function mind24NotifOpenItem(id){
   mind24NotifRenderList(false);
   await mind24NotifRefreshBadge();
   mind24NotifClose(false);
+  if(itemBefore&&itemBefore.type==='RECRUITMENT_CANDIDATE_CREATED'){
+    void mind24NotifOpenRecruitmentCandidate(itemBefore);
+    return;
+  }
   showView('dash-timeclock');
   if(typeof tcOnShow==='function') tcOnShow();
   if(empId&&typeof tcViewJornada==='function'){
     window.setTimeout(function(){ tcViewJornada(empId); },350);
   }
+}
+let mind24NotifCandidateNavSeq=0;
+async function mind24NotifOpenRecruitmentCandidate(item){
+  const seq=++mind24NotifCandidateNavSeq;
+  const st=recEnsureState();
+  if(item.recruitmentVacancyId){
+    st.moduleTab='vacancies';
+    st.selectedId=item.recruitmentVacancyId;
+    st.notifVacancyFocusId=item.recruitmentVacancyId;
+  }
+  showView('dash-recruitment');
+  await new Promise(function(resolve){ setTimeout(resolve, 0); });
+  if(seq!==mind24NotifCandidateNavSeq) return;
+  if(!item.recruitmentCandidateId){
+    recCandDetailAbortPending();
+    recCandDetailFetchSeq++;
+    st.detailNavLoading=false;
+    st.detailCandidateId=null;
+    st.detailCandidate=null;
+    st.candNavIds=[];
+    openModal('modal-rec-candidate-detail');
+    const nameEl=document.getElementById('rec-cand-detail-name');
+    if(nameEl) nameEl.textContent='Candidato no disponible';
+    const host=document.getElementById('rec-cand-pipeline-host');
+    if(host) host.innerHTML='';
+    const exp=document.getElementById('rec-cand-expediente');
+    if(exp) exp.innerHTML='';
+    recCandSetDetailLoadErr('El candidato ya no está disponible.');
+    recCandNavUpdateUi();
+    return;
+  }
+  await recCandOpenDetail(item.recruitmentCandidateId,{ notifyMissing:true });
 }
 function mind24NotifEnsureListeners(){
   if(mind24NotifBound) return;

@@ -86,28 +86,29 @@ export async function createRecruitmentApplication({
   initialStageId,
   interviewScheduledAt = undefined,
   interviewTimeSpecified = undefined,
+  db = null,
 }) {
-  await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
-  const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId);
-  if (candidate.archivedAt) {
-    const err = new Error('VALIDATION_ERROR');
-    err.code = 'VALIDATION_ERROR';
-    err.message =
-      'No se puede asignar a vacante un candidato archivado. Desarchívalo antes de crear una nueva postulación.';
-    throw err;
-  }
+  const run = async (tx) => {
+    await assertRecruitmentVacancyInOrg(vacancyId, organizationId, tx);
+    const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId, tx);
+    if (candidate.archivedAt) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message =
+        'No se puede asignar a vacante un candidato archivado. Desarchívalo antes de crear una nueva postulación.';
+      throw err;
+    }
 
-  const duplicate = await prisma.recruitmentApplication.findUnique({
-    where: { candidateId_vacancyId: { candidateId, vacancyId } },
-  });
-  if (duplicate) {
-    const err = new Error('CONFLICT');
-    err.code = 'CONFLICT';
-    err.message = 'El candidato ya está asignado a esta vacante.';
-    throw err;
-  }
+    const duplicate = await tx.recruitmentApplication.findUnique({
+      where: { candidateId_vacancyId: { candidateId, vacancyId } },
+    });
+    if (duplicate) {
+      const err = new Error('CONFLICT');
+      err.code = 'CONFLICT';
+      err.message = 'El candidato ya está asignado a esta vacante.';
+      throw err;
+    }
 
-  const serialized = await prisma.$transaction(async (tx) => {
     await ensureVacancyRecruitmentStages(organizationId, vacancyId, tx);
     const newStage = await assertNewStageEnabledForVacancy(organizationId, vacancyId, tx);
     const position = await nextPositionInStage(vacancyId, newStage.id, tx);
@@ -187,8 +188,9 @@ export async function createRecruitmentApplication({
     }
 
     return serializeApplication(app);
-  });
-  if (serialized.stage?.key === HIRED_STAGE_KEY) {
+  };
+  const serialized = db ? await run(db) : await prisma.$transaction(run);
+  if (!db && serialized.stage?.key === HIRED_STAGE_KEY) {
     try {
       await reconcileVacancyCoverage(organizationId, vacancyId);
     } catch (err) {

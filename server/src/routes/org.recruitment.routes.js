@@ -2,9 +2,9 @@ import { Router } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { assertEmpresaAdmin } from '../services/candidate.service.js';
+import { createRecruitmentCandidateAndNotify } from '../services/recruitmentCandidateCreate.service.js';
 import {
   assertRecruitmentCandidateInOrg,
-  createRecruitmentCandidate,
   findPotentialDuplicateRecruitmentCandidates,
   getRecruitmentCandidate,
   listRecruitmentCandidates,
@@ -202,7 +202,15 @@ const candidateWriteFields = {
   notes: z.string().max(20_000).optional().nullable(),
 };
 
-const candidateCreateSchema = z.object(candidateWriteFields).superRefine(candidateContactRefine);
+export const candidateCreateSchema = z
+  .object({
+    ...candidateWriteFields,
+    vacancyId: z.string().min(1).max(80).optional().nullable(),
+    stageId: z.string().min(1).max(80).optional().nullable(),
+    interviewDate: z.string().max(10).optional().nullable(),
+    interviewTime: z.string().max(5).optional().nullable(),
+  })
+  .superRefine(candidateContactRefine);
 
 const candidatePatchSchema = z
   .object({
@@ -613,8 +621,49 @@ router.post('/candidates', async (req, res, next) => {
     const body = candidateCreateSchema.parse(req.body);
     const initialNote =
       typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim() : null;
-    const { notes: _legacyNotes, ...createPayload } = body;
-    const candidate = await createRecruitmentCandidate(u.organizationId, createPayload);
+    const {
+      notes: _legacyNotes,
+      vacancyId,
+      stageId,
+      interviewDate,
+      interviewTime,
+      ...createPayload
+    } = body;
+    const actorLabel = String(u.fullName || '').trim() || String(u.email || '').trim() || 'Administrador';
+    let interviewScheduledAt;
+    let interviewTimeSpecified;
+    if (vacancyId) {
+      const { prisma } = await import('../db/client.js');
+      let stageKey = 'NEW';
+      if (stageId) {
+        const st = await prisma.recruitmentStage.findFirst({
+          where: { id: stageId, organizationId: u.organizationId },
+          select: { key: true },
+        });
+        if (st?.key) stageKey = st.key;
+      }
+      const { resolveInterviewScheduledAtForOrg } = await import(
+        '../services/recruitmentInterviewSchedule.service.js'
+      );
+      const interviewSchedule = await resolveInterviewScheduledAtForOrg(
+        u.organizationId,
+        { interviewDate, interviewTime },
+        { stageKey },
+      );
+      interviewScheduledAt = interviewSchedule?.scheduledAt ?? undefined;
+      interviewTimeSpecified = interviewSchedule?.timeSpecified;
+    }
+    const { candidate, application } = await createRecruitmentCandidateAndNotify({
+      organizationId: u.organizationId,
+      payload: createPayload,
+      actorKind: 'admin',
+      actorLabel,
+      vacancyId: vacancyId || null,
+      stageId: stageId || null,
+      changedByUserId: u.id,
+      interviewScheduledAt,
+      interviewTimeSpecified,
+    });
     if (initialNote) {
       await createRecruitmentCandidateNote(
         u.organizationId,
@@ -623,7 +672,7 @@ router.post('/candidates', async (req, res, next) => {
         initialNote,
       );
     }
-    res.status(201).json({ candidate });
+    res.status(201).json({ candidate, application: application || null });
   } catch (e) {
     next(e);
   }
