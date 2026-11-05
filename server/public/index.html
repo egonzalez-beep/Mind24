@@ -1665,8 +1665,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-ws-novedades-item--unread{background:rgba(254,242,242,.45);border-color:rgba(239,68,68,.12);}
 .tc-ws-novedades-item-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#fca5a5;box-shadow:0 0 0 3px rgba(252,165,165,.35);}
 .tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.4);}
+.tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--unread{background:color-mix(in srgb, var(--purple) 7%, transparent);border-color:color-mix(in srgb, var(--purple) 16%, transparent);}
+.tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--read{background:transparent;border-color:transparent;}
+.tc-ws-novedades-item-mark{width:18px;height:18px;margin-top:1px;flex-shrink:0;color:var(--purple-dark);display:inline-flex;}
+.tc-ws-novedades-item-mark svg{width:18px;height:18px;display:block;}
 .tc-ws-novedades-item-body{flex:1;min-width:0;}
-.tc-ws-novedades-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;}
+.tc-ws-novedades-item-title{margin:0;font-size:13px;line-height:1.35;color:var(--primary);font-weight:700;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.tc-ws-novedades-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;overflow-wrap:anywhere;}
+.tc-ws-novedades-item-msg--soft{margin-top:2px;font-weight:500;color:var(--slate-600);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .tc-ws-novedades-item-time{margin:3px 0 0;font-size:11px;color:var(--slate-500);font-weight:500;}
 .tc-ws-novedades-empty{font-size:12px;color:var(--slate-400);padding:16px 8px;text-align:center;margin:0;}
 .tc-ws-hero-user{display:flex;align-items:center;gap:12px;}
@@ -14612,6 +14618,9 @@ const TC_EMP_NOVEDADES_POLL_MS=20000;
 const TC_EMP_WS_POLL_MS=20000;
 const tcEmpGoalReportInFlight={};
 let tcEmpGoalsLoadInFlight=false;
+let tcEmpGoalsLoadSeq=0;
+let tcEmpGoalsPendingFocusId='';
+let tcEmpGoalsReminderNavSeq=0;
 let tcEmpTasksLoadInFlight=false;
 let tcEmpTasksLoadSeq=0;
 let tcEmpWsPollTimer=null;
@@ -14846,10 +14855,20 @@ function tcEmpNovedadesRenderList(){
     return;
   }
   body.innerHTML=tcEmpNovedadesItems.map(function(n){
-    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread');
+    const reminder=n.eventType==='WORKFORCE_DAILY_GOALS_REMINDER';
+    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'');
+    const meta=n.metadata||{};
+    const title=reminder&&typeof meta.title==='string'?meta.title:'';
+    const bodyText=reminder&&typeof meta.body==='string'?meta.body:'';
+    const copy=title&&bodyText
+      ? '<p class="tc-ws-novedades-item-title">'+tcEsc(title)+'</p><p class="tc-ws-novedades-item-msg tc-ws-novedades-item-msg--soft">'+tcEsc(bodyText)+'</p>'
+      : '<p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>';
+    const mark=reminder
+      ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
+      : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
-      '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>'+
-      '<span class="tc-ws-novedades-item-body"><p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>'+
+      mark+
+      '<span class="tc-ws-novedades-item-body">'+copy+
       '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.createdAt))+'</p></span></button>';
   }).join('');
 }
@@ -14925,6 +14944,7 @@ function tcEmpNovedadesOpenItem(id){
   if(source==='workplace'){
     if(item.eventType==='TASK_ASSIGNED') tcEmpQuickGoActivities();
     else if(item.eventType==='GOAL_ASSIGNED') tcEmpQuickGoGoals();
+    else if(item.eventType==='WORKFORCE_DAILY_GOALS_REMINDER') tcEmpOpenDailyGoalsReminder(item);
     return;
   }
   const filter=tcEmpNovedadesFilterForEventType(item.eventType);
@@ -17696,21 +17716,62 @@ function tcEmpGoalPreviewPct(goal,target,raw){
   if(!Number.isFinite(t)||t<=0) return '—';
   return tcGoalFmtPct((val/t)*100);
 }
+function tcEmpFocusGoalCard(goalId){
+  const body=document.getElementById('tc-emp-goals-body');
+  if(!body||!goalId) return false;
+  const cards=body.querySelectorAll('[data-goal-id]');
+  for(let i=0;i<cards.length;i++){
+    if(cards[i].getAttribute('data-goal-id')===goalId){
+      cards[i].scrollIntoView({block:'nearest',inline:'nearest'});
+      return true;
+    }
+  }
+  return false;
+}
+async function tcEmpOpenDailyGoalsReminder(item){
+  const seq=++tcEmpGoalsReminderNavSeq;
+  const parsed=tcEmpNovedadesParseCompositeId(item&&item.id);
+  const rawId=parsed&&parsed.rawId;
+  if(rawId){
+    try{
+      await tcPublicJson('/api/timeclock/public/novedades/workplace/'+encodeURIComponent(rawId)+'/read',{method:'POST',body:'{}'});
+      if(item&&!item.read){
+        item.read=true;
+        tcEmpNovedadesUpdateBadge(Math.max(0,(tcEmpNovedadesLastUnreadCount||0)-1));
+      }
+    }catch(_){}
+  }
+  if(seq!==tcEmpGoalsReminderNavSeq) return;
+  const meta=item&&item.metadata||{};
+  tcEmpGoalsSetView('todo');
+  const pendingCount=Number(meta.pendingCount)||0;
+  tcEmpGoalsPendingFocusId=pendingCount===1&&typeof meta.goalId==='string'?meta.goalId:'';
+  if(tcEmpWorkspaceTab!=='goals') tcEmpWorkspaceSetTab('goals');
+  await tcEmpLoadGoals(false,true);
+}
 async function tcEmpLoadGoals(showLoading,force){
   const body=document.getElementById('tc-emp-goals-body');
   if(!body) return;
   if(!force&&tcEmpWorkspaceHasBlockingInteraction()) return;
   if(tcEmpGoalsLoadInFlight&&!force) return;
+  const seq=++tcEmpGoalsLoadSeq;
+  const focusId=tcEmpGoalsPendingFocusId;
   if(showLoading!==false&&!force) body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
   tcEmpGoalsLoadInFlight=true;
   try{
     const out=await tcPublicFetchGoals();
+    if(seq!==tcEmpGoalsLoadSeq) return;
     tcEmpGoalsCache=(out&&out.goals)||[];
     tcEmpRenderGoals();
+    if(focusId&&focusId===tcEmpGoalsPendingFocusId){
+      tcEmpGoalsPendingFocusId='';
+      tcEmpFocusGoalCard(focusId);
+    }
   }catch(e){
+    if(seq!==tcEmpGoalsLoadSeq) return;
     if(!force||showLoading!==false) body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
   }finally{
-    tcEmpGoalsLoadInFlight=false;
+    if(seq===tcEmpGoalsLoadSeq) tcEmpGoalsLoadInFlight=false;
   }
 }
 function tcEmpGoalsBindDirtyListeners(){
@@ -17763,7 +17824,7 @@ function tcEmpBuildGoalCardHtml(g,p,tz,showForm){
     }
   }
   const comment=p.employeeComment?('<p class="tc-goal-card-meta">Comentario: '+tcEsc(p.employeeComment)+'</p>'):'';
-  return '<article class="tc-goal-card-v2">'+
+  return '<article class="tc-goal-card-v2" data-goal-id="'+tcEsc(g.id)+'">'+
     '<div class="tc-goal-card-v2-head">'+
     '<div class="tc-goal-card-v2-head-left">'+
     '<span class="tc-goal-card-v2-icon">'+tcWsSvgTarget()+'</span>'+

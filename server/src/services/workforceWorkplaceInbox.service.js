@@ -61,6 +61,35 @@ export async function emitWorkplaceInboxGoalAssigned(
   });
 }
 
+export async function markWorkplaceInboxItemRead(organizationId, recipientWorkforceEmployeeId, itemId) {
+  const row = await prisma.workforceWorkplaceInbox.findFirst({
+    where: {
+      id: itemId,
+      organizationId,
+      recipientWorkforceEmployeeId,
+    },
+    select: { id: true, readAt: true },
+  });
+  if (!row) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    err.message = 'Novedad no encontrada.';
+    throw err;
+  }
+  if (row.readAt) return { ok: true };
+  const now = new Date();
+  await prisma.workforceWorkplaceInbox.updateMany({
+    where: {
+      id: row.id,
+      organizationId,
+      recipientWorkforceEmployeeId,
+      readAt: null,
+    },
+    data: { readAt: now },
+  });
+  return { ok: true, readAt: now.toISOString() };
+}
+
 export async function countUnreadWorkplaceInbox(organizationId, recipientWorkforceEmployeeId) {
   return prisma.workforceWorkplaceInbox.count({
     where: {

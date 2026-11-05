@@ -101,6 +101,7 @@ enum OrgNotificationType {
 enum WorkforceWorkplaceInboxEventType {
   TASK_ASSIGNED
   GOAL_ASSIGNED
+  WORKFORCE_DAILY_GOALS_REMINDER
 }
 
 enum RemoteWorkSessionStatus {
