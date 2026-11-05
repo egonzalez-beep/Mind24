@@ -593,7 +593,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-vac-extract-status{min-height:1.25em;}
 .rec-vac-extract.is-done .rec-vac-extract-status{color:#0f766e;}
 .rec-vac-extract.is-error .rec-vac-extract-status{color:#9f1239;}
-.rec-vac-form-field--suggested>.form-label::after{content:" · Sugerido";font-weight:600;color:var(--slate-500);letter-spacing:0;text-transform:none;}
+.rec-vac-form-field--suggested>.form-label::after,.rec-cand-form-field--suggested>.form-label::after{content:" · Sugerido";font-weight:600;color:var(--slate-500);letter-spacing:0;text-transform:none;}
 @media (max-width:720px){
   .rec-vac-extract-drop{flex-wrap:wrap;align-items:flex-start;}
   .rec-vac-extract-pick{width:100%;}
@@ -2909,8 +2909,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
           <span class="rec-cand-form-section-icon" id="rec-cand-form-cv-icon" aria-hidden="true"></span>
           <span class="rec-cand-form-section-title">CV</span>
         </div>
-        <div id="rec-cand-form-cv-panel" class="rec-cand-form-cv-panel"></div>
-        <input type="file" id="rec-cand-form-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*">
+        <div id="rec-cand-form-cv-panel" class="rec-cand-form-cv-panel">
+          <div id="rec-cand-cv-extract" class="rec-vac-extract">
+            <div id="rec-cand-cv-extract-drop" class="rec-vac-extract-drop" tabindex="0" role="group" aria-label="Arrastra aquí el CV del candidato. También puedes seleccionarlo desde tu equipo.">
+              <span class="rec-vac-extract-icon" id="rec-cand-cv-extract-icon" aria-hidden="true"></span>
+              <div class="rec-vac-extract-copy">
+                <p class="rec-vac-extract-title">Arrastra aquí el CV del candidato</p>
+                <p class="rec-vac-extract-sub">También puedes seleccionarlo desde tu equipo</p>
+                <p class="rec-vac-extract-meta">PDF, Word o imagen · máx. 10 MB</p>
+                <p id="rec-cand-cv-extract-over" class="rec-vac-extract-over">Suelta el archivo para analizarlo</p>
+              </div>
+              <button type="button" class="rec-stages-ghost-btn rec-vac-extract-pick" id="rec-cand-cv-extract-pick">Seleccionar archivo</button>
+            </div>
+            <div class="rec-vac-extract-scan" aria-hidden="true"></div>
+            <div class="rec-vac-extract-actions">
+              <button type="button" class="rec-vac-extract-manual hidden" id="rec-cand-cv-extract-remove">Quitar archivo</button>
+              <button type="button" class="rec-vac-extract-manual hidden" id="rec-cand-cv-extract-retry">Reintentar</button>
+            </div>
+            <p id="rec-cand-cv-extract-file" class="rec-vac-extract-file"></p>
+            <p id="rec-cand-cv-extract-status" class="rec-vac-extract-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <input type="file" id="rec-cand-form-cv-file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,image/*" tabindex="-1" aria-hidden="true">
         <p id="rec-cand-form-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
         <p id="rec-cand-form-cv-parse-msg" class="rec-cand-form-cv-parse-msg hidden" role="status"></p>
       </div>
@@ -5394,6 +5414,7 @@ function closeModal(id){
     if(!recCandTryCloseDetailModal()) return;
   }
   if(id==='modal-rec-vacancy'&&typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
+  if(id==='modal-rec-candidate-form'&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
   const m=document.getElementById(id);
   if(m){
     m.classList.add('hidden');
@@ -5415,6 +5436,8 @@ function closeModal(id){
   if(typeof tcEmpRefreshActiveWorkspaceTabAfterInteraction==='function') tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
 function closeAllModals(){
+  const candForm=document.getElementById('modal-rec-candidate-form');
+  if(candForm&&!candForm.classList.contains('hidden')&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
   const evalModal=document.getElementById('modal-evaluacion');
   const evalWasOpen=evalModal&&!evalModal.classList.contains('hidden');
   document.querySelectorAll('.modal-overlay').forEach(function(m){
@@ -12581,6 +12604,7 @@ function recCandFormApplyDecorIcons(){
     'rec-cand-form-profile-icon':'briefcase',
     'rec-cand-form-loc-icon':'pin',
     'rec-cand-form-cv-icon':'file',
+    'rec-cand-cv-extract-icon':'upload',
     'rec-cand-form-notes-icon':'notes',
   };
   Object.keys(map).forEach(function(id){
@@ -13145,9 +13169,6 @@ function recCandFormParseFallbackMsg(code){
   if(code==='EXTRACTION_FAILED'||code==='NO_DATA') return REC_CAND_FORM_CV_MSG_EXTRACT_FAIL;
   return REC_CAND_FORM_CV_MSG_EXTRACT_FAIL;
 }
-function recCandFormExtractSparkleSvg(){
-  return '<svg class="rec-cand-form-cv-extract-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 2 8 7l-5 1.5L8 10l1.5 5L11 10l5-1.5L11 7 9.5 2Z"/><path d="M18 14l-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3Z"/></svg>';
-}
 function recCandFormSetCvParseMsg(kind,text){
   const el=document.getElementById('rec-cand-form-cv-parse-msg');
   if(!el) return;
@@ -13184,11 +13205,25 @@ function recCandFormResetFieldTouch(){
   st.candFormFieldsTouched={};
   st.candFormCvFilledFields={};
 }
+function recCandFormFieldWrap(fieldId){
+  const el=document.getElementById(fieldId);
+  if(!el) return null;
+  let node=el.parentElement;
+  while(node&&node.id!=='modal-rec-candidate-form'){
+    for(let i=0;i<node.children.length;i+=1){
+      if(node.children[i].classList&&node.children[i].classList.contains('form-label')) return node;
+    }
+    node=node.parentElement;
+  }
+  return el.parentElement;
+}
 function recCandFormMarkFieldTouched(fieldId){
   if(!fieldId) return;
   const st=recEnsureState();
   st.candFormFieldsTouched[fieldId]=true;
   if(st.candFormCvFilledFields) delete st.candFormCvFilledFields[fieldId];
+  const wrap=recCandFormFieldWrap(fieldId);
+  if(wrap) wrap.classList.remove('rec-cand-form-field--suggested','rec-cand-form-field--cv-prefill');
 }
 function recCandFormBindFieldTouchOnce(){
   if(window.__recCandFormTouchBound) return;
@@ -13204,149 +13239,438 @@ function recCandFormBindFieldTouchOnce(){
   });
 }
 function recCandFormClearPrefillMarks(){
-  document.querySelectorAll('.rec-cand-form-field--cv-prefill').forEach(function(w){ w.classList.remove('rec-cand-form-field--cv-prefill'); });
+  document.querySelectorAll('.rec-cand-form-field--cv-prefill,.rec-cand-form-field--suggested').forEach(function(w){
+    w.classList.remove('rec-cand-form-field--cv-prefill','rec-cand-form-field--suggested');
+  });
 }
 function recCandFormMarkPrefill(fieldId){
-  const el=document.getElementById(fieldId);
-  if(!el) return;
-  const wrap=el.closest('.rec-cand-form-span-full')||el.closest('.rec-cand-form-field-icon-wrap')?.parentElement||el.parentElement;
-  if(wrap) wrap.classList.add('rec-cand-form-field--cv-prefill');
+  const wrap=recCandFormFieldWrap(fieldId);
+  if(!wrap) return;
+  wrap.classList.remove('rec-cand-form-field--cv-prefill');
+  wrap.classList.add('rec-cand-form-field--suggested');
 }
 function recCandFormApplyParsedFields(fields){
   if(!fields||typeof fields!=='object') return 0;
   const st=recEnsureState();
-  const touched=st.candFormFieldsTouched||{};
   if(!st.candFormCvFilledFields) st.candFormCvFilledFields={};
-  const cvFilled=st.candFormCvFilledFields;
+  const current={};
+  Object.keys(REC_CAND_CV_EXTRACT_FIELDS).forEach(function(key){
+    const id=REC_CAND_CV_EXTRACT_FIELDS[key];
+    const el=document.getElementById(id);
+    current[id]=el?el.value:'';
+  });
+  const profile=fields.profile;
+  const opts=REC_CAND_PROFILE_OPTS||[];
+  const safeFields=Object.assign({}, fields);
+  if(profile&&!opts.includes(profile)) safeFields.profile='';
+  const merged=recCandCvApplySuggestions({
+    current:current,
+    fromCv:st.candFormCvFilledFields,
+    touched:st.candFormFieldsTouched||{},
+    profileDefault:opts[0]||'Ventas'
+  }, safeFields);
+  st.candFormCvFilledFields=merged.fromCv;
   let n=0;
-  function tryFill(fieldId,val){
-    if(val==null||val==='') return;
-    if(touched[fieldId]) return;
-    const el=document.getElementById(fieldId);
+  Object.keys(merged.marks).forEach(function(id){
+    if(!merged.marks[id]) return;
+    const el=document.getElementById(id);
     if(!el) return;
-    const next=String(val);
-    const cur=String(el.value||'').trim();
-    const fromCv=cvFilled[fieldId];
-    if(cur&&fromCv==null) return;
-    if(cur&&fromCv!=null&&cur!==fromCv) return;
-    el.value=next;
-    cvFilled[fieldId]=next;
-    recCandFormMarkPrefill(fieldId);
+    el.value=merged.current[id];
+    if(id==='rec-cand-form-profile') recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
+    recCandFormMarkPrefill(id);
     n+=1;
-  }
-  tryFill('rec-cand-form-name',fields.fullName);
-  tryFill('rec-cand-form-whatsapp',fields.whatsapp);
-  tryFill('rec-cand-form-phone',fields.phone);
-  tryFill('rec-cand-form-email',fields.email);
-  tryFill('rec-cand-form-city',fields.city);
-  tryFill('rec-cand-form-state',fields.state);
-  if(fields.profile&&!touched['rec-cand-form-profile']){
-    const profEl=document.getElementById('rec-cand-form-profile');
-    const opts=REC_CAND_PROFILE_OPTS||[];
-    const fid='rec-cand-form-profile';
-    if(profEl&&opts.includes(fields.profile)){
-      const cur=String(profEl.value||'').trim();
-      const fromCv=cvFilled[fid];
-      const canReplace=!cur||(fromCv!=null&&(cur===fromCv||cur===opts[0]));
-      if(canReplace&&fields.profile!==cur){
-        profEl.value=fields.profile;
-        cvFilled[fid]=fields.profile;
-        recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
-        recCandFormMarkPrefill(fid);
-        n+=1;
-      }
-    }
-  }
+  });
   return n;
 }
-async function recCandFormAnalyzeCv(){
-  const st=recEnsureState();
-  const file=st.candFormPendingCvFile;
-  if(!file||recCandFormCvFileKind(file)!=='parseable') return;
-  if(st.candFormCvAnalyzing) return;
-  st.candFormCvAnalyzing=true;
-  recCandFormSetCvErr('');
-  recCandFormSetCvParseMsg('loading');
-  const btn=document.getElementById('rec-cand-form-cv-analyze-btn');
-  if(btn) btn.disabled=true;
-  try{
-    const fd=new FormData();
-    fd.append('file',file);
-    const parseUrl=recCandFormIsWorkforce()?'/api/timeclock/public/recruitment/candidates/resume/parse':'/api/org/recruitment/candidates/resume/parse';
-    const r=await fetch(parseUrl,{method:'POST',body:fd,credentials:'include'});
-    const text=await r.text();
-    let data=null; try{ data=text?JSON.parse(text):null; }catch(_e){}
-    if(!r.ok) throw new Error(REC_CAND_FORM_CV_MSG_EXTRACT_FAIL);
-    if(!data.ok){
-      recCandFormSetCvParseMsg('info',recCandFormParseFallbackMsg(data.code));
-      return;
-    }
-    recCandFormApplyParsedFields(data.fields||{});
-    recCandFormSetCvParseMsg('ok');
-    recCandRenderFormCvPanel();
-  }catch(e){
-    recCandFormSetCvParseMsg('info',REC_CAND_FORM_CV_MSG_EXTRACT_FAIL);
-  }finally{
-    st.candFormCvAnalyzing=false;
-    if(btn) btn.disabled=false;
-    recCandRenderFormCvPanel();
-  }
+let recCandCvExtractSeq=0;
+let recCandCvExtractAbort=null;
+let recCandCvExtractBusy=false;
+let recCandCvExtractDragDepth=0;
+let recCandCvExtractLastFile=null;
+const REC_CAND_CV_EXTRACT_FIELDS={
+  fullName:'rec-cand-form-name',
+  whatsapp:'rec-cand-form-whatsapp',
+  phone:'rec-cand-form-phone',
+  email:'rec-cand-form-email',
+  city:'rec-cand-form-city',
+  state:'rec-cand-form-state',
+  profile:'rec-cand-form-profile'
+};
+const REC_CAND_CV_EXTRACT_MSG={
+  format:'Este formato de archivo no es compatible.',
+  size:'El archivo supera el límite de 10 MB.',
+  fail:'No pudimos extraer los datos automáticamente. Puedes continuar el registro manualmente.',
+  done:'Datos encontrados en el CV. Revísalos antes de guardar.',
+  kept:'Se conservó la información que ya habías capturado.',
+  image:'La imagen se adjuntará al expediente. Captura los datos manualmente.',
+  busy:'Analizando el CV…',
+  confirm:'El CV anterior ya completó algunos campos. ¿Quieres reemplazar esos datos sugeridos con el nuevo archivo?',
+  keptFile:'No pudimos analizar el archivo nuevo. Se conservó el archivo anterior.'
+};
+// REC_CAND_CV_FILE_PURE_HELPERS_START
+function recCandCvResolvePendingFile(previous, next, outcome){
+  if(outcome==='committed'||outcome==='image') return next||null;
+  if(outcome==='cancelled'||outcome==='invalid') return previous||null;
+  if(outcome==='failed') return previous||next||null;
+  return previous||null;
 }
-function recCandFormCvValidate(file){
-  if(!file) return 'Selecciona un archivo.';
-  if(file.size>REC_CAND_CV_MAX_BYTES) return 'El archivo supera el límite de 10 MB.';
+function recCandCvPendingAfterModalClose(pending, workforceCreatedCandidateId){
+  if(workforceCreatedCandidateId) return pending||null;
+  return null;
+}
+function recCandCvShouldWriteSuggestion(opts){
+  opts=opts||{};
+  const val=opts.value;
+  if(val==null||String(val).trim()==='') return false;
+  if(opts.touched) return false;
+  const cur=String(opts.current==null?'':opts.current).trim();
+  const fromCv=opts.fromCv;
+  if(opts.allowDefault&&fromCv==null&&cur===opts.defaultValue) return String(val)!==cur;
+  if(cur&&fromCv==null) return false;
+  if(cur&&fromCv!=null&&String(cur)!==String(fromCv)) return false;
+  return true;
+}
+function recCandCvApplySuggestions(state, fields){
+  const map=[
+    ['rec-cand-form-name','fullName',false],
+    ['rec-cand-form-whatsapp','whatsapp',false],
+    ['rec-cand-form-phone','phone',false],
+    ['rec-cand-form-email','email',false],
+    ['rec-cand-form-city','city',false],
+    ['rec-cand-form-state','state',false],
+    ['rec-cand-form-profile','profile',true]
+  ];
+  const next={
+    current:Object.assign({}, (state&&state.current)||{}),
+    fromCv:Object.assign({}, (state&&state.fromCv)||{}),
+    touched:Object.assign({}, (state&&state.touched)||{}),
+    marks:{}
+  };
+  const profileDefault=(state&&state.profileDefault)||'Ventas';
+  map.forEach(function(row){
+    const id=row[0];
+    const value=fields&&fields[row[1]];
+    if(!recCandCvShouldWriteSuggestion({
+      value:value,
+      touched:!!next.touched[id],
+      current:next.current[id],
+      fromCv:Object.prototype.hasOwnProperty.call(next.fromCv, id)?next.fromCv[id]:null,
+      allowDefault:row[2],
+      defaultValue:profileDefault
+    })) return;
+    const text=String(value);
+    next.current[id]=text;
+    next.fromCv[id]=text;
+    next.marks[id]=true;
+  });
+  return next;
+}
+// REC_CAND_CV_FILE_PURE_HELPERS_END
+function recCandCvExtractRoot(){ return document.getElementById('rec-cand-cv-extract'); }
+function recCandCvExtractSetState(name){
+  const root=recCandCvExtractRoot();
+  if(!root) return;
+  ['is-selected','is-busy','is-done','is-error'].forEach(function(cls){ root.classList.remove(cls); });
+  if(name) root.classList.add(name);
+  root.setAttribute('aria-busy', name==='is-busy' ? 'true' : 'false');
+}
+function recCandCvExtractSetOver(on){
+  const root=recCandCvExtractRoot();
+  if(root) root.classList.toggle('is-over', !!on);
+}
+function recCandCvExtractToggle(id, show){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('hidden', !show);
+  if(show) el.removeAttribute('hidden');
+  else el.setAttribute('hidden','');
+}
+function recCandCvExtractShowFile(name){
+  const el=document.getElementById('rec-cand-cv-extract-file');
+  if(el) el.textContent=name ? String(name) : '';
+}
+function recCandCvExtractShowStatus(text, state){
+  const el=document.getElementById('rec-cand-cv-extract-status');
+  if(el) el.textContent=text||'';
+  recCandCvExtractSetState(state||'');
+  recCandFormSetCvErr('');
+  recCandFormSetCvParseMsg('hidden');
+}
+function recCandCvExtractResetUi(){
+  recCandCvExtractSetOver(false);
+  recCandCvExtractSetState('');
+  recCandCvExtractShowFile('');
+  const status=document.getElementById('rec-cand-cv-extract-status');
+  if(status) status.textContent='';
+  recCandCvExtractToggle('rec-cand-cv-extract-remove', false);
+  recCandCvExtractToggle('rec-cand-cv-extract-retry', false);
+  const input=document.getElementById('rec-cand-form-cv-file');
+  if(input) input.value='';
+  recCandFormSetCvErr('');
+  recCandFormSetCvParseMsg('hidden');
+}
+function recCandCvExtractSafeMessage(msg){
+  const text=msg ? String(msg) : '';
+  if(text===REC_CAND_CV_EXTRACT_MSG.format||text===REC_CAND_CV_EXTRACT_MSG.size||text===REC_CAND_CV_EXTRACT_MSG.fail||text==='Demasiados análisis de CV. Espera unos minutos.'||text==='Formato no admitido para análisis. Use PDF, DOC o DOCX.'||text==='El CV supera el límite de 10 MB.') return text=== 'Formato no admitido para análisis. Use PDF, DOC o DOCX.' ? REC_CAND_CV_EXTRACT_MSG.format : (text==='El CV supera el límite de 10 MB.' ? REC_CAND_CV_EXTRACT_MSG.size : text);
+  return REC_CAND_CV_EXTRACT_MSG.fail;
+}
+function recCandCvExtractClientError(file){
+  if(!file) return REC_CAND_CV_EXTRACT_MSG.fail;
+  const kind=recCandFormCvFileKind(file);
+  if(kind!=='parseable'&&kind!=='image') return REC_CAND_CV_EXTRACT_MSG.format;
+  if(!file.size) return REC_CAND_CV_EXTRACT_MSG.fail;
+  if(file.size>REC_CAND_CV_MAX_BYTES) return REC_CAND_CV_EXTRACT_MSG.size;
   return '';
 }
+function recCandCvWouldReplaceSuggested(fields){
+  const st=recEnsureState();
+  const filled=st.candFormCvFilledFields||{};
+  const touched=st.candFormFieldsTouched||{};
+  return Object.keys(REC_CAND_CV_EXTRACT_FIELDS).some(function(key){
+    const id=REC_CAND_CV_EXTRACT_FIELDS[key];
+    const next=fields&&fields[key];
+    if(next==null||next==='') return false;
+    if(touched[id]) return false;
+    const el=document.getElementById(id);
+    if(!el) return false;
+    const cur=String(el.value||'').trim();
+    const fromCv=filled[id];
+    return !!fromCv&&cur===fromCv&&String(next)!==cur;
+  });
+}
+function recCandCvExtractBegin(){
+  recCandCvExtractSeq+=1;
+  if(recCandCvExtractAbort) recCandCvExtractAbort.abort();
+  recCandCvExtractAbort=typeof AbortController!=='undefined' ? new AbortController() : null;
+  return recCandCvExtractSeq;
+}
+function recCandCvExtractPreventBrowserOpen(ev){ ev.preventDefault(); }
+function recCandCvExtractArmPageDropGuard(){
+  if(window.__recCandCvExtractPageDrop) return;
+  window.__recCandCvExtractPageDrop=true;
+  document.addEventListener('dragover', recCandCvExtractPreventBrowserOpen);
+  document.addEventListener('drop', recCandCvExtractPreventBrowserOpen);
+}
+function recCandCvExtractDisarmPageDropGuard(){
+  if(!window.__recCandCvExtractPageDrop) return;
+  window.__recCandCvExtractPageDrop=false;
+  document.removeEventListener('dragover', recCandCvExtractPreventBrowserOpen);
+  document.removeEventListener('drop', recCandCvExtractPreventBrowserOpen);
+}
+function recCandCvExtractOnModalClose(){
+  recCandCvExtractSeq+=1;
+  if(recCandCvExtractAbort) recCandCvExtractAbort.abort();
+  recCandCvExtractAbort=null;
+  recCandCvExtractBusy=false;
+  recCandCvExtractDragDepth=0;
+  recCandCvExtractLastFile=null;
+  const st=recEnsureState();
+  st.candFormCvAnalyzing=false;
+  st.candFormPendingCvFile=recCandCvPendingAfterModalClose(st.candFormPendingCvFile, st.candFormWorkforceCreatedCandidateId);
+  recCandCvExtractDisarmPageDropGuard();
+  recCandFormClearPrefillMarks();
+  recCandCvExtractResetUi();
+}
+function recCandCvExtractOnDragEnter(ev){
+  ev.preventDefault();
+  recCandCvExtractDragDepth+=1;
+  recCandCvExtractSetOver(true);
+}
+function recCandCvExtractOnDragOver(ev){
+  ev.preventDefault();
+  if(ev.dataTransfer) ev.dataTransfer.dropEffect='copy';
+}
+function recCandCvExtractOnDragLeave(ev){
+  ev.preventDefault();
+  recCandCvExtractDragDepth=Math.max(0, recCandCvExtractDragDepth-1);
+  if(recCandCvExtractDragDepth===0) recCandCvExtractSetOver(false);
+}
+function recCandCvExtractOnDrop(ev){
+  ev.preventDefault();
+  recCandCvExtractDragDepth=0;
+  recCandCvExtractSetOver(false);
+  const file=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(file) recCandCvExtractHandleFile(file);
+}
+function recCandCvExtractOnKeyDown(ev){
+  if(ev.key!=='Enter'&&ev.key!==' ') return;
+  if(ev.target&&ev.target.id==='rec-cand-cv-extract-pick') return;
+  ev.preventDefault();
+  recCandCvExtractPick();
+}
+function recCandCvExtractPick(){
+  const input=document.getElementById('rec-cand-form-cv-file');
+  if(input) input.click();
+}
+function recCandCvExtractOnFileInput(ev){
+  const input=ev.target;
+  const file=input&&input.files&&input.files[0];
+  if(input) input.value='';
+  if(file) recCandCvExtractHandleFile(file);
+}
+function recCandCvExtractRemove(){
+  recCandCvExtractBegin();
+  recCandCvExtractBusy=false;
+  recCandCvExtractLastFile=null;
+  recEnsureState().candFormPendingCvFile=null;
+  recEnsureState().candFormCvAnalyzing=false;
+  recCandCvExtractResetUi();
+}
+function recCandFormCvValidate(file){
+  return recCandCvExtractClientError(file);
+}
 function recCandFormCvPicked(file){
-  const err=recCandFormCvValidate(file);
-  if(err){ recCandFormSetCvErr(err); return; }
-  recCandFormSetCvErr('');
-  recCandFormSetCvParseMsg('hidden');
-  recEnsureState().candFormPendingCvFile=file;
-  recCandRenderFormCvPanel();
+  recCandCvExtractHandleFile(file);
 }
 function recCandFormClearCv(){
+  recCandCvExtractRemove();
+}
+function recCandCvExtractCommitPending(previous, file, outcome){
   const st=recEnsureState();
-  st.candFormPendingCvFile=null;
-  st.candFormCvAnalyzing=false;
-  recCandFormSetCvErr('');
-  recCandFormSetCvParseMsg('hidden');
-  recCandRenderFormCvPanel();
+  const kept=recCandCvResolvePendingFile(previous, file, outcome);
+  st.candFormPendingCvFile=kept;
+  return kept;
+}
+function recCandCvExtractShowKeptFile(kept){
+  recCandCvExtractShowFile(kept&&kept.name?String(kept.name):'');
+  recCandCvExtractToggle('rec-cand-cv-extract-remove', !!kept);
+}
+async function recCandCvExtractHandleFile(file){
+  const st=recEnsureState();
+  const localErr=recCandCvExtractClientError(file);
+  if(localErr){
+    const previous=st.candFormPendingCvFile;
+    recCandCvExtractBegin();
+    recCandCvExtractBusy=false;
+    recEnsureState().candFormCvAnalyzing=false;
+    const kept=recCandCvExtractCommitPending(previous, null, 'invalid');
+    recCandCvExtractLastFile=kept;
+    recCandCvExtractShowKeptFile(kept);
+    recCandCvExtractShowStatus(localErr, 'is-error');
+    recCandCvExtractToggle('rec-cand-cv-extract-retry', false);
+    return;
+  }
+  const previous=st.candFormPendingCvFile;
+  const seq=recCandCvExtractBegin();
+  recCandCvExtractLastFile=file;
+  st.candFormCvAnalyzing=true;
+  recCandCvExtractBusy=true;
+  recCandCvExtractShowFile(String(file.name||''));
+  recCandCvExtractToggle('rec-cand-cv-extract-remove', true);
+  recCandCvExtractToggle('rec-cand-cv-extract-retry', false);
+  if(!previous) recCandCvExtractCommitPending(null, file, 'committed');
+  if(recCandFormCvFileKind(file)==='image'){
+    recCandCvExtractCommitPending(previous, file, 'image');
+    st.candFormCvAnalyzing=false;
+    recCandCvExtractBusy=false;
+    recCandCvExtractShowStatus(REC_CAND_CV_EXTRACT_MSG.image, 'is-selected');
+    return;
+  }
+  recCandCvExtractShowStatus(REC_CAND_CV_EXTRACT_MSG.busy, 'is-busy');
+  try{
+    const fd=new FormData();
+    fd.append('file', file, file.name);
+    const parseUrl=recCandFormIsWorkforce()?'/api/timeclock/public/recruitment/candidates/resume/parse':'/api/org/recruitment/candidates/resume/parse';
+    const r=await fetch(parseUrl,{
+      method:'POST',
+      body:fd,
+      credentials:'include',
+      signal:recCandCvExtractAbort ? recCandCvExtractAbort.signal : undefined
+    });
+    if(seq!==recCandCvExtractSeq) return;
+    const text=await r.text();
+    let data=null; try{ data=text?JSON.parse(text):null; }catch(_e){}
+    if(seq!==recCandCvExtractSeq) return;
+    if(!r.ok||!data||!data.ok){
+      if(data&&data.code==='NOT_PARSEABLE'){
+        recCandCvExtractCommitPending(previous, file, 'image');
+        recCandCvExtractShowStatus(REC_CAND_CV_EXTRACT_MSG.image, 'is-selected');
+        recCandCvExtractToggle('rec-cand-cv-extract-retry', false);
+        return;
+      }
+      const kept=recCandCvExtractCommitPending(previous, file, 'failed');
+      const restored=!!previous&&kept===previous;
+      recCandCvExtractShowKeptFile(kept);
+      recCandCvExtractShowStatus(restored?REC_CAND_CV_EXTRACT_MSG.keptFile:recCandCvExtractSafeMessage(data&&data.message), 'is-error');
+      recCandCvExtractToggle('rec-cand-cv-extract-retry', true);
+      return;
+    }
+    const fields=data.fields||{};
+    if(recCandCvWouldReplaceSuggested(fields)){
+      const ok=window.confirm(REC_CAND_CV_EXTRACT_MSG.confirm);
+      if(seq!==recCandCvExtractSeq) return;
+      if(!ok){
+        const kept=recCandCvExtractCommitPending(previous, file, 'cancelled');
+        recCandCvExtractLastFile=kept;
+        recCandCvExtractShowKeptFile(kept);
+        recCandCvExtractShowStatus(REC_CAND_CV_EXTRACT_MSG.kept, 'is-selected');
+        return;
+      }
+    }
+    if(seq!==recCandCvExtractSeq) return;
+    recCandCvExtractCommitPending(previous, file, 'committed');
+    recCandFormApplyParsedFields(fields);
+    recCandCvExtractShowStatus(REC_CAND_CV_EXTRACT_MSG.done, 'is-done');
+    const first=document.getElementById('rec-cand-form-name');
+    if(first){ try{ first.focus({ preventScroll:true }); }catch(_e2){ try{ first.focus(); }catch(_e3){} } }
+  }catch(err){
+    if(seq!==recCandCvExtractSeq) return;
+    if(err&&err.name==='AbortError') return;
+    const kept=recCandCvExtractCommitPending(previous, file, 'failed');
+    const restored=!!previous&&kept===previous;
+    recCandCvExtractShowKeptFile(kept);
+    recCandCvExtractShowStatus(restored?REC_CAND_CV_EXTRACT_MSG.keptFile:recCandCvExtractSafeMessage(err&&err.message), 'is-error');
+    recCandCvExtractToggle('rec-cand-cv-extract-retry', true);
+  }finally{
+    if(seq===recCandCvExtractSeq){
+      st.candFormCvAnalyzing=false;
+      recCandCvExtractBusy=false;
+    }
+  }
+}
+function recCandCvExtractRetry(){
+  if(recCandCvExtractLastFile) recCandCvExtractHandleFile(recCandCvExtractLastFile);
+}
+function recCandCvExtractBindOnce(){
+  if(window.__recCandCvExtractBound) return;
+  window.__recCandCvExtractBound=true;
+  const drop=document.getElementById('rec-cand-cv-extract-drop');
+  if(drop){
+    drop.addEventListener('dragenter', recCandCvExtractOnDragEnter);
+    drop.addEventListener('dragover', recCandCvExtractOnDragOver);
+    drop.addEventListener('dragleave', recCandCvExtractOnDragLeave);
+    drop.addEventListener('drop', recCandCvExtractOnDrop);
+    drop.addEventListener('keydown', recCandCvExtractOnKeyDown);
+    drop.addEventListener('click', function(ev){
+      if(ev.target&&ev.target.closest&&ev.target.closest('#rec-cand-cv-extract-pick')) return;
+      recCandCvExtractPick();
+    });
+  }
+  const pick=document.getElementById('rec-cand-cv-extract-pick');
+  if(pick) pick.addEventListener('click', recCandCvExtractPick);
+  const input=document.getElementById('rec-cand-form-cv-file');
+  if(input&&!input.__bound){
+    input.__bound=true;
+    input.addEventListener('change', recCandCvExtractOnFileInput);
+  }
+  const remove=document.getElementById('rec-cand-cv-extract-remove');
+  if(remove) remove.addEventListener('click', recCandCvExtractRemove);
+  const retry=document.getElementById('rec-cand-cv-extract-retry');
+  if(retry) retry.addEventListener('click', recCandCvExtractRetry);
 }
 function recCandFormResetModalScroll(){
   const card=document.querySelector('#modal-rec-candidate-form .modal-card.rec-modal-scroll');
   if(card) card.scrollTop=0;
 }
 function recCandRenderFormCvPanel(){
-  const panel=document.getElementById('rec-cand-form-cv-panel');
-  if(!panel) return;
-  const f=recEnsureState().candFormPendingCvFile;
-  if(!f){
-    panel.innerHTML='<div class="rec-cand-cv-drop" id="rec-cand-form-cv-drop" role="button" tabindex="0" aria-label="Subir CV">'+
-      '<div class="rec-cand-form-cv-upload-icon">'+recCandFormIconSvg('upload')+'</div>'+
-      '<p class="rec-cand-form-cv-hint-primary">Arrastra aquí el CV para completar los datos automáticamente</p>'+
-      '<p class="rec-cand-form-cv-hint-sub">o selecciona un archivo</p>'+
-      '<p class="rec-cand-form-cv-meta">PDF, DOC, DOCX, JPG, PNG o WEBP · máx. 10 MB</p></div>';
-    const drop=document.getElementById('rec-cand-form-cv-drop');
-    drop.__cvDropBound=false;
-    recCandBindCvDropZone(drop,{ inputId:'rec-cand-form-cv-file', onFile:recCandFormCvPicked });
+  recCandCvExtractBindOnce();
+  const file=recEnsureState().candFormPendingCvFile;
+  if(!file){
+    recCandCvExtractResetUi();
     return;
   }
-  const kind=recCandFormCvFileKind(f);
-  const st=recEnsureState();
-  const analyzing=!!st.candFormCvAnalyzing;
-  let actionsHtml='';
-  if(kind==='parseable'){
-    actionsHtml='<div class="rec-cand-form-cv-actions"><button type="button" id="rec-cand-form-cv-analyze-btn" class="rec-cand-form-cv-analyze-btn"'+(analyzing?' disabled':'')+' onclick="recCandFormAnalyzeCv()">'+recCandFormExtractSparkleSvg()+'<span>Extraer datos</span></button></div>';
-  }else if(kind==='image'){
-    actionsHtml='<p class="rec-cand-form-cv-image-hint">'+tcEsc(REC_CAND_FORM_CV_MSG_NOT_PARSEABLE)+'</p>';
-  }
-  panel.innerHTML='<div class="rec-cand-form-cv-file-row">'+
-    '<span class="rec-cand-form-section-icon" style="color:var(--purple);">'+recCandFormIconSvg('file')+'</span>'+
-    '<div style="min-width:0;flex:1;">'+
-    '<p class="rec-cand-form-cv-file-name">'+tcEsc(f.name||'CV')+'</p>'+
-    '<p class="rec-cand-form-cv-file-meta">'+recCandFmtBytes(f.size)+'</p></div>'+
-    '<button type="button" class="rec-vac-detail-btn" onclick="recCandFormClearCv()" title="Quitar archivo" aria-label="Quitar archivo">✕</button></div>'+actionsHtml;
+  recCandCvExtractShowFile(file.name);
+  recCandCvExtractToggle('rec-cand-cv-extract-remove', true);
 }
 function recCandRenderCvPanel(c){
   const panel=document.getElementById('rec-cand-cv-panel');
@@ -13434,7 +13758,8 @@ function recCandOpenForm(mode,candidate,opts){
   recCandCatalogInits();
   recCandFormApplyDecorIcons();
   recCandFormBindFieldTouchOnce();
-  recCandFormBindFieldTouchOnce();
+  recCandCvExtractBindOnce();
+  recCandCvExtractOnModalClose();
   const kicker=document.querySelector('#modal-rec-candidate-form .rec-cand-form-kicker');
   if(kicker) kicker.textContent=recCandFormIsWorkforce()?'Mi espacio de trabajo':'Reclutamiento';
   const title=document.getElementById('rec-cand-form-title');
@@ -13508,6 +13833,7 @@ function recCandOpenForm(mode,candidate,opts){
     recCandFormSetCvErr('');
     recCandFormSetCvParseMsg('hidden');
     recCandRenderFormCvPanel();
+    recCandCvExtractArmPageDropGuard();
   }
   const err=document.getElementById('rec-cand-form-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
@@ -14687,8 +15013,9 @@ async function recCandCreateAndOpen(body){
   const vacId=body._vacancyId;
   const stageId=body._stageId;
   const pendingCv=st.candFormPendingCvFile;
-  st.candFormPendingCvFile=null;
   const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(recCandApiCandidateCreateBody(body))});
+  if(!(j&&j.candidate&&j.candidate.id)) throw new Error('No se pudo registrar al candidato.');
+  st.candFormPendingCvFile=null;
   closeModal('modal-rec-candidate-form');
   recSwitchModuleTab('candidates');
   await recCandLoadList(false);
@@ -14781,8 +15108,7 @@ async function recCandToggleArchive(){
   function bind(){
     const inp=document.getElementById('rec-cand-cv-file');
     if(inp&&!inp.__bound){ inp.__bound=true; inp.addEventListener('change',function(){ if(inp.files&&inp.files[0]) recCandUploadCvFile(inp.files[0]); inp.value=''; }); }
-    const formInp=document.getElementById('rec-cand-form-cv-file');
-    if(formInp&&!formInp.__bound){ formInp.__bound=true; formInp.addEventListener('change',function(){ if(formInp.files&&formInp.files[0]) recCandFormCvPicked(formInp.files[0]); formInp.value=''; }); }
+    recCandCvExtractBindOnce();
     recCandFormApplyDecorIcons();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);

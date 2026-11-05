@@ -8,6 +8,7 @@ import {
   requireTimeclockSession,
 } from '../middleware/timeclockSession.middleware.js';
 import {
+  recruitmentPortalResumeParseLimiter,
   timeclockCheckInLimiter,
   timeclockExchangeLimiter,
   timeclockHeartbeatLimiter,
@@ -43,7 +44,10 @@ import {
 } from '../services/workforceTask.service.js';
 import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service.js';
 import { notifyShiftCheckIn, notifyShiftCheckOut } from '../services/orgNotification.service.js';
-import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
+import {
+  analyzeRecruitmentResumeUpload,
+  recruitmentResumeParseUploadFailure,
+} from '../services/recruitmentCandidateResumeParse.service.js';
 import {
   countUnreadCollaboratorNovedades,
   listCollaboratorNovedadesFeed,
@@ -75,17 +79,25 @@ import {
 
 const router = Router();
 
+const workforceCandidateResumeFileFilter = (_req, file, cb) => {
+  cb(
+    isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
+      ? null
+      : new Error('INVALID_DOCUMENT_FILE'),
+    isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname),
+  );
+};
+
 const workforceCandidateResumeUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES },
-  fileFilter: (_req, file, cb) => {
-    cb(
-      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
-        ? null
-        : new Error('INVALID_DOCUMENT_FILE'),
-      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname),
-    );
-  },
+  fileFilter: workforceCandidateResumeFileFilter,
+});
+
+const workforceCandidateResumeParseUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES, files: 1 },
+  fileFilter: workforceCandidateResumeFileFilter,
 });
 
 function saveSession(req) {
@@ -358,8 +370,14 @@ router.post(
   '/recruitment/candidates/resume/parse',
   requireTimeclockSession,
   requireTimeclockMutationOrigin,
-  timeclockCheckInLimiter,
-  workforceCandidateResumeUpload.single('file'),
+  recruitmentPortalResumeParseLimiter,
+  (req, res, next) => {
+    workforceCandidateResumeParseUpload.single('file')(req, res, (err) => {
+      if (!err) return next();
+      const mapped = recruitmentResumeParseUploadFailure(err);
+      return res.status(mapped.status).json(mapped.body);
+    });
+  },
   async (req, res, next) => {
     try {
       if (!req.file?.buffer?.length) {

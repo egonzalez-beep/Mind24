@@ -19,7 +19,10 @@ import {
   streamRecruitmentCandidateResumeFile,
   uploadRecruitmentCandidateResume,
 } from '../services/recruitmentCandidateResume.service.js';
-import { analyzeRecruitmentResumeUpload } from '../services/recruitmentCandidateResumeParse.service.js';
+import {
+  analyzeRecruitmentResumeUpload,
+  recruitmentResumeParseUploadFailure,
+} from '../services/recruitmentCandidateResumeParse.service.js';
 import {
   RECRUITMENT_VACANCY_EXTRACT_MAX_BYTES,
   RECRUITMENT_VACANCY_EXTRACT_MSG,
@@ -27,7 +30,10 @@ import {
   isDeclaredRecruitmentVacancyExtractFile,
   recruitmentVacancyExtractUploadFailure,
 } from '../services/recruitmentVacancyExtract.service.js';
-import { recruitmentVacancyExtractLimiter } from '../middleware/rateLimit.middleware.js';
+import {
+  recruitmentCandidateResumeParseLimiter,
+  recruitmentVacancyExtractLimiter,
+} from '../middleware/rateLimit.middleware.js';
 import {
   createRecruitmentVacancy,
   getRecruitmentVacancy,
@@ -124,6 +130,19 @@ const recruitmentVacancyExtractUpload = multer({
 const recruitmentCandidateResumeUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES },
+  fileFilter: (_req, file, cb) => {
+    cb(
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
+        ? null
+        : new Error('INVALID_RESUME_FILE'),
+      isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname),
+    );
+  },
+});
+
+const recruitmentCandidateResumeParseUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES, files: 1 },
   fileFilter: (_req, file, cb) => {
     cb(
       isAllowedRecruitmentCandidateResumeFile(file.mimetype, file.originalname)
@@ -647,7 +666,14 @@ router.get('/candidates', async (req, res, next) => {
 
 router.post(
   '/candidates/resume/parse',
-  recruitmentCandidateResumeUpload.single('file'),
+  recruitmentCandidateResumeParseLimiter,
+  (req, res, next) => {
+    recruitmentCandidateResumeParseUpload.single('file')(req, res, (err) => {
+      if (!err) return next();
+      const mapped = recruitmentResumeParseUploadFailure(err);
+      return res.status(mapped.status).json(mapped.body);
+    });
+  },
   async (req, res, next) => {
     try {
       await assertEmpresaAdmin(req.session.userId);
