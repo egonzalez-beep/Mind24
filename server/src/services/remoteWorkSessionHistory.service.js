@@ -27,7 +27,7 @@ function parseDateKey(key) {
   return { y, m, d };
 }
 
-function addDaysToDateKey(key, days) {
+export function addDaysToDateKey(key, days) {
   const { y, m, d } = parseDateKey(key);
   const dt = new Date(Date.UTC(y, m - 1, d + days));
   const yy = dt.getUTCFullYear();

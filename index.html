@@ -1378,6 +1378,55 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-history-dialog--mobile{left:50%!important;top:auto!important;bottom:16px!important;transform:translateX(-50%);width:calc(100vw - 24px);max-height:85vh;border-radius:18px 18px 14px 14px;}
 .tc-history-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--slate-100);}
 .tc-history-dialog-head h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-history-tabs{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap;}
+.tc-history-tab{appearance:none;border:0;background:transparent;color:var(--slate-500);font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:1.2;}
+.tc-history-tab--on{background:var(--purple-light);color:var(--purple-dark);}
+.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-dialog--punctuality{width:min(920px,calc(100vw - 32px));}
+.tc-punct-panel{display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;}
+.tc-punct-panel.hidden{display:none!important;}
+.tc-punct-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
+.tc-punct-kicker{margin:0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-punct-sub{margin:3px 0 0;font-size:12px;line-height:1.4;color:var(--slate-500);overflow-wrap:anywhere;}
+.tc-punct-nav-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.tc-punct-nav,.tc-punct-refresh{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;color:var(--slate-600);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+.tc-punct-nav[disabled],.tc-punct-refresh[disabled]{opacity:.35;cursor:not-allowed;}
+.tc-punct-refresh--spin svg{animation:m24SpinAnim .7s linear infinite;}
+.tc-punct-week{min-width:0;font-size:13px;font-weight:700;color:var(--primary);text-align:center;white-space:nowrap;}
+.tc-punct-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0;}
+.tc-punct-kpi{border-radius:14px;padding:10px 12px;min-width:0;}
+.tc-punct-kpi strong{display:block;font-size:22px;line-height:1.1;letter-spacing:-.03em;}
+.tc-punct-kpi span{display:block;margin:0 0 4px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.tc-punct-kpi--punct{background:#ecfdf3;color:#15803d;}
+.tc-punct-kpi--cover{background:#eff6ff;color:#1d4ed8;}
+.tc-punct-kpi--late{background:#fffbeb;color:#b45309;}
+.tc-punct-kpi--extra{background:#f5f3ff;color:#6d28d9;}
+.tc-punct-days{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:100%;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding-bottom:2px;}
+.tc-punct-card{flex:1 1 0;min-width:108px;scroll-snap-align:start;border:1px solid var(--slate-200);background:#fff;border-radius:16px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;color:inherit;}
+.tc-punct-card--complete{background:#f0fdf4;border-color:#86efac;}
+.tc-punct-card--late,.tc-punct-card--incomplete{background:#fffbeb;border-color:#fcd34d;}
+.tc-punct-card--extra{background:#f5f3ff;border-color:#ddd6fe;}
+.tc-punct-card--progress{background:#eff6ff;border-color:#bfdbfe;}
+.tc-punct-card--none{background:#f8fafc;border-color:var(--slate-200);}
+.tc-punct-card-dow{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);}
+.tc-punct-card-date{font-size:18px;font-weight:800;color:var(--primary);margin:2px 0 8px;}
+.tc-punct-card-state{font-size:13px;font-weight:700;line-height:1.3;}
+.tc-punct-card-line{font-size:11px;color:var(--slate-500);line-height:1.35;overflow-wrap:anywhere;}
+.tc-punct-empty{margin:0;font-size:13px;line-height:1.45;color:var(--slate-600);}
+.tc-punct-link{margin-top:8px;border:0;background:transparent;color:var(--purple-dark);font-weight:700;font-size:13px;cursor:pointer;padding:0;font-family:inherit;}
+.tc-punct-pop{position:absolute;z-index:3;width:min(280px,calc(100% - 16px));background:#fff;border:1px solid var(--slate-200);border-radius:14px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:12px 14px;text-align:left;}
+.tc-punct-pop.hidden{display:none!important;}
+.tc-punct-pop h4{margin:0 0 6px;font-size:14px;color:var(--primary);}
+.tc-punct-pop p{margin:0 0 4px;font-size:12px;line-height:1.4;color:var(--slate-600);}
+.tc-punct-err{font-size:13px;color:#b91c1c;}
+@media(max-width:700px){
+  .tc-punct-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .tc-punct-card{flex:0 0 148px;}
+  .tc-punct-head{flex-wrap:wrap;}
+}
+@media(prefers-reduced-motion:reduce){
+  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg{transition:none;animation:none;}
+}
 .tc-history-dialog-body{flex:1 1 auto;min-height:0;padding:12px 16px 16px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
 .tc-history-cal-wrap{position:relative;}
 .tc-cal-viewport{position:relative;overflow:hidden;min-height:268px;}
@@ -1786,6 +1835,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-expected-work-duration{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--slate-600);}
 .tc-expected-work-duration select{min-width:96px;max-width:112px;}
 .tc-expected-work-duration select[id$="-ew-minutes"]{min-width:112px;max-width:128px;}
+.tc-work-schedule-field{grid-column:1/-1;margin-top:2px;}
+.tc-work-schedule-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:0 0 2px;max-width:100%;}
+.tc-work-schedule-fields.hidden{display:none;}
+.tc-work-schedule-fields label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:12px;font-weight:600;color:var(--slate-600);}
+.tc-work-schedule-fields input[type="time"]{width:132px;max-width:100%;}
+.tc-work-schedule-tol{display:flex;align-items:center;gap:6px;}
+.tc-work-schedule-tol input{width:76px;max-width:100%;}
+.tc-work-schedule-suffix{font-size:13px;font-weight:600;color:var(--slate-500);}
+.tc-work-schedule-days-wrap{flex-basis:100%;display:flex;flex-direction:column;gap:6px;min-width:0;max-width:100%;}
+.tc-work-schedule-days-label{font-size:12px;font-weight:600;color:var(--slate-600);}
+.tc-work-schedule-days{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;}
+.tc-work-schedule-day{appearance:none;border:1px solid var(--slate-200);background:var(--white);color:var(--slate-600);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;line-height:1.2;cursor:pointer;}
+.tc-work-schedule-day[aria-pressed="true"]{background:var(--purple-light);border-color:transparent;color:var(--purple-dark);}
+.tc-work-schedule-hint{flex-basis:100%;margin:0;font-size:12px;line-height:1.45;color:var(--slate-500);overflow-wrap:anywhere;}
+.tc-jornada-schedule{display:flex;align-items:flex-start;gap:6px;max-width:100%;font-size:12px;line-height:1.45;color:var(--slate-600);overflow-wrap:anywhere;}
+.tc-jornada-schedule svg{width:14px;height:14px;flex-shrink:0;margin-top:1px;}
 .tc-emp-laptop{display:none;margin-bottom:12px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;}
 @media(max-width:768px){.tc-emp-laptop{display:block;}}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
@@ -3758,6 +3823,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
                 </select>
               </div>
             </div>
+            <div class="tc-work-schedule-field">
+              <label class="form-label">Horario laboral</label>
+              <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ws-on" onchange="tcWorkScheduleToggle('add')"> Asignar horario fijo</label>
+              <div id="tc-add-ws-fields" class="tc-work-schedule-fields hidden">
+                <div class="tc-work-schedule-days-wrap">
+                  <span class="tc-work-schedule-days-label">Días laborales</span>
+                  <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
+                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+                  </div>
+                </div>
+                <label>Entrada<input type="time" id="tc-add-ws-start" class="form-input" value="08:00" step="60"></label>
+                <label>Salida<input type="time" id="tc-add-ws-end" class="form-input" value="15:00" step="60"></label>
+                <label>Tolerancia<span class="tc-work-schedule-tol"><input type="number" id="tc-add-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span></label>
+                <p class="tc-work-schedule-hint">Elige los días laborales. Los demás quedan como descanso, en la zona horaria del colaborador.</p>
+              </div>
+            </div>
           </div>
           <p id="tc-add-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:10px;"></p>
           <div style="display:flex;gap:10px;margin-top:14px;">
@@ -3851,6 +3938,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
               <option value="0">00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
             </select>
           </div>
+          <div class="tc-work-schedule-field">
+            <label class="form-label">Horario laboral</label>
+            <label class="tc-expected-work-none"><input type="checkbox" id="tc-edit-ws-on" onchange="tcWorkScheduleToggle('edit')"> Asignar horario fijo</label>
+            <div id="tc-edit-ws-fields" class="tc-work-schedule-fields hidden">
+              <div class="tc-work-schedule-days-wrap">
+                <span class="tc-work-schedule-days-label">Días laborales</span>
+                <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
+                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+                </div>
+              </div>
+              <label>Entrada<input type="time" id="tc-edit-ws-start" class="form-input" value="08:00" step="60"></label>
+              <label>Salida<input type="time" id="tc-edit-ws-end" class="form-input" value="15:00" step="60"></label>
+              <label>Tolerancia<span class="tc-work-schedule-tol"><input type="number" id="tc-edit-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span></label>
+              <p class="tc-work-schedule-hint">Elige los días laborales. Los demás quedan como descanso, en la zona horaria del colaborador.</p>
+            </div>
+          </div>
           <p id="tc-emp-edit-err" class="tc-task-modal-err hidden"></p>
           <div class="tc-task-modal-actions">
             <button type="button" class="card-action" onclick="tcCloseEmpEdit()">Cancelar</button>
@@ -3892,10 +4001,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
       <div id="tc-history-backdrop" class="tc-history-backdrop hidden" aria-hidden="true"></div>
       <div id="tc-history-dialog" class="tc-history-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="tc-history-dialog-title" aria-hidden="true">
         <div class="tc-history-dialog-head">
-          <h3 id="tc-history-dialog-title">Historial de jornadas</h3>
+          <div class="tc-history-tabs" role="tablist" aria-label="Vistas del historial">
+            <button type="button" class="tc-history-tab tc-history-tab--on" id="tc-history-tab-history" role="tab" aria-selected="true" aria-controls="tc-hist-view-history" onclick="tcHistorySetView('history')">Historial</button>
+            <button type="button" class="tc-history-tab" id="tc-history-tab-punct" role="tab" aria-selected="false" aria-controls="tc-hist-view-punct" onclick="tcHistorySetView('punctuality')">Puntualidad semanal</button>
+          </div>
+          <h3 id="tc-history-dialog-title" class="visually-hidden">Historial de jornadas</h3>
           <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-history-dialog-close" aria-label="Cerrar historial de jornadas" onclick="tcCloseHistoryDialog(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
-        <div class="tc-history-dialog-body">
+        <div class="tc-history-dialog-body" id="tc-history-dialog-body">
+          <div id="tc-hist-view-history" role="tabpanel" aria-labelledby="tc-history-tab-history">
           <div class="tc-week-summary" id="tc-week-summary"></div>
           <div class="tc-history-kpi-strip hidden" id="tc-history-kpi-strip" aria-live="polite"></div>
           <details class="tc-conn-summary" id="tc-conn-trend">
@@ -3917,7 +4031,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
             <p class="tc-history-refresh-err hidden" id="tc-history-refresh-err"></p>
             <div id="tc-history-day-body"></div>
           </div>
+          </div>
+          <div id="tc-hist-view-punct" class="tc-punct-panel hidden" role="tabpanel" aria-labelledby="tc-history-tab-punct">
+            <div id="tc-punct-root"></div>
+          </div>
         </div>
+        <div id="tc-punct-pop" class="tc-punct-pop hidden" role="dialog" aria-modal="false" aria-hidden="true"></div>
       </div>
       <div id="tc-task-assign-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-task-assign-title" aria-hidden="true" onclick="tcKanbanCloseAssign()">
         <div class="tc-task-modal" onclick="event.stopPropagation()">
@@ -8287,6 +8406,7 @@ async function tcOpenEmpEdit(id){
     const fi=document.getElementById('tc-emp-edit-photo-input'); if(fi) fi.value='';
     tcEmpEditAvatarRender(emp);
     tcExpectedWorkSet('edit', emp.expectedWorkMinutes!=null?emp.expectedWorkMinutes:null);
+    tcWorkScheduleSet('edit', emp.workSchedule||null);
     if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
   }catch(e){
     alert(e.message||'No se pudo abrir el colaborador.');
@@ -8309,6 +8429,7 @@ async function tcSaveEmpEdit(){
     employeeCode:((document.getElementById('tc-emp-edit-code')||{}).value||'').trim()||null,
     timezone:((document.getElementById('tc-emp-edit-tz')||{}).value||'').trim(),
     expectedWorkMinutes: tcExpectedWorkRead('edit'),
+    workSchedule: tcWorkScheduleRead('edit'),
   };
   if(!body.fullName){
     if(err){ err.textContent='El nombre es obligatorio.'; err.classList.remove('hidden'); }
@@ -8355,6 +8476,104 @@ async function tcEmpRemovePhoto(){
   }catch(e){
     if(err){ err.textContent=e.message||'No se pudo quitar la foto.'; err.classList.remove('hidden'); }
   }
+}
+function tcSvgClock(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+}
+function tcMinuteToHm(minute){
+  const n=Math.floor(Number(minute));
+  if(!Number.isFinite(n)||n<0||n>1439) return '';
+  return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+}
+function tcFormatMinuteEsMx(minute){
+  const n=Math.floor(Number(minute));
+  const h24=Math.floor(n/60);
+  const suffix=h24<12?'a. m.':'p. m.';
+  const h12=h24%12||12;
+  return h12+':'+String(n%60).padStart(2,'0')+' '+suffix;
+}
+function tcFormatWeekdaySelection(weekdays){
+  const labels=['','Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  if(!Array.isArray(weekdays)||!weekdays.length) return '';
+  const days=weekdays.filter(function(day, index){ return Number.isInteger(day)&&day>=1&&day<=7&&weekdays.indexOf(day)===index; }).slice().sort(function(a,b){ return a-b; });
+  if(!days.length) return '';
+  const groups=[];
+  let start=days[0], prev=days[0];
+  for(let i=1;i<=days.length;i++){
+    const day=days[i];
+    if(day===prev+1){ prev=day; continue; }
+    groups.push(start===prev?labels[start]:labels[start]+'–'+labels[prev]);
+    start=day; prev=day;
+  }
+  return groups.join(', ');
+}
+function tcFormatWorkScheduleSummary(schedule){
+  if(!schedule||schedule.startMinute==null||schedule.endMinute==null||schedule.toleranceMinutes==null) return '';
+  const days=tcFormatWeekdaySelection(schedule.weekdays);
+  if(!days) return '';
+  return days+' · '+tcFormatMinuteEsMx(schedule.startMinute)+'–'+tcFormatMinuteEsMx(schedule.endMinute)+' · Tolerancia '+schedule.toleranceMinutes+' min';
+}
+function tcWorkScheduleDayToggle(btn){
+  if(!btn) return;
+  const on=btn.getAttribute('aria-pressed')==='true';
+  btn.setAttribute('aria-pressed', on?'false':'true');
+}
+function tcWorkScheduleSelectedDays(prefix){
+  const days=[];
+  for(let day=1; day<=7; day++){
+    const btn=document.getElementById('tc-'+prefix+'-ws-day-'+day);
+    if(btn&&btn.getAttribute('aria-pressed')==='true') days.push(day);
+  }
+  return days;
+}
+function tcWorkScheduleApplyDays(prefix, weekdays){
+  const selected=Array.isArray(weekdays)?weekdays:[];
+  for(let day=1; day<=7; day++){
+    const btn=document.getElementById('tc-'+prefix+'-ws-day-'+day);
+    if(btn) btn.setAttribute('aria-pressed', selected.indexOf(day)>=0?'true':'false');
+  }
+}
+function tcJornadaScheduleHtml(emp){
+  const text=tcFormatWorkScheduleSummary(emp&&emp.workSchedule);
+  if(!text) return '';
+  return '<div class="tc-jornada-schedule">'+tcSvgClock()+'<span>'+tcEsc(text)+'</span></div>';
+}
+function tcWorkScheduleToggle(prefix){
+  const on=document.getElementById('tc-'+prefix+'-ws-on');
+  const fields=document.getElementById('tc-'+prefix+'-ws-fields');
+  if(!on||!fields) return;
+  fields.classList.toggle('hidden', !on.checked);
+  if(!on.checked) return;
+  const start=document.getElementById('tc-'+prefix+'-ws-start');
+  const end=document.getElementById('tc-'+prefix+'-ws-end');
+  const tol=document.getElementById('tc-'+prefix+'-ws-tol');
+  if(start&&!start.value) start.value='08:00';
+  if(end&&!end.value) end.value='15:00';
+  if(tol&&tol.value==='') tol.value='10';
+  if(!tcWorkScheduleSelectedDays(prefix).length) tcWorkScheduleApplyDays(prefix, [1,2,3,4,5]);
+}
+function tcWorkScheduleSet(prefix, schedule){
+  const on=document.getElementById('tc-'+prefix+'-ws-on');
+  const start=document.getElementById('tc-'+prefix+'-ws-start');
+  const end=document.getElementById('tc-'+prefix+'-ws-end');
+  const tol=document.getElementById('tc-'+prefix+'-ws-tol');
+  const days=schedule&&Array.isArray(schedule.weekdays)?schedule.weekdays:[];
+  const active=!!(schedule&&schedule.startMinute!=null&&schedule.endMinute!=null&&schedule.toleranceMinutes!=null&&days.length);
+  if(on) on.checked=active;
+  if(start) start.value=active?tcMinuteToHm(schedule.startMinute):'08:00';
+  if(end) end.value=active?tcMinuteToHm(schedule.endMinute):'15:00';
+  if(tol) tol.value=active?String(schedule.toleranceMinutes):'10';
+  tcWorkScheduleApplyDays(prefix, active?days:[]);
+  tcWorkScheduleToggle(prefix);
+}
+function tcWorkScheduleRead(prefix){
+  const on=document.getElementById('tc-'+prefix+'-ws-on');
+  if(!on||!on.checked) return null;
+  const start=(document.getElementById('tc-'+prefix+'-ws-start')||{}).value||'';
+  const end=(document.getElementById('tc-'+prefix+'-ws-end')||{}).value||'';
+  const raw=String((document.getElementById('tc-'+prefix+'-ws-tol')||{}).value??'').trim();
+  const tol=/^(?:0|[1-9]\d*)$/.test(raw)?Number(raw):raw;
+  return { start:start, end:end, toleranceMinutes:tol, weekdays:tcWorkScheduleSelectedDays(prefix) };
 }
 function tcSvgCalendarHistory(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>';
@@ -15743,9 +15962,11 @@ async function tcCreateEmployee(){
         employeeCode:((document.getElementById('tc-add-code')||{}).value||'').trim()||null,
         timezone:timezone.trim(),
         expectedWorkMinutes: tcExpectedWorkRead('add'),
+        workSchedule: tcWorkScheduleRead('add'),
       }),
     });
     if(out.accessLink) tcShowSecretLink(out.accessLink);
+    tcWorkScheduleSet('add', null);
     ['tc-add-name','tc-add-position','tc-add-dept','tc-add-code'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
     const tz=document.getElementById('tc-add-tz'); if(tz) tz.selectedIndex=0;
     tcToggleAddForm(false);
@@ -15820,6 +16041,7 @@ async function tcViewJornada(id){
         dlHtml+
         '</dl>'+
         '<div class="tc-jornada-meta">'+
+        tcJornadaScheduleHtml(emp)+
         '<button type="button" class="tc-history-toggle tc-history-toggle--inline" id="tc-history-toggle" aria-expanded="false" aria-controls="tc-history-dialog" aria-label="Abrir historial de jornadas" onclick="tcToggleHistoryPanel()">'+tcSvgCalendarHistory()+' Historial de jornadas</button>'+
         '<div class="tc-jornada-alta">Alta: '+tcEsc(altaFmt)+'</div>'+
         '</div></div></div>'+
@@ -15909,6 +16131,17 @@ let tcConnChartRows=[];
 let tcCalAnimating=false;
 let tcCalLoadingTimer=null;
 let tcHistoryKeyHandler=null;
+let tcHistoryView='history';
+let tcPunctWeek='';
+let tcPunctPayload=null;
+let tcPunctSeq=0;
+let tcPunctAbort=null;
+let tcPunctLoading=false;
+let tcPunctPinnedKey=null;
+let tcPunctAnchor=null;
+let tcPunctDaysScroll=0;
+let tcPunctIgnoreHover=false;
+let tcHistoryResizeBound=false;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function tcFmtDurationHuman(sec){
@@ -16004,7 +16237,8 @@ function tcPositionHistoryDialog(){
   const r=btn.getBoundingClientRect();
   let left=Math.max(16, r.left);
   let top=r.bottom+10;
-  const w=Math.min(580, window.innerWidth-32);
+  const wide=dlg.classList.contains('tc-history-dialog--punctuality');
+  const w=Math.min(wide?920:580, window.innerWidth-32);
   if(left+w>window.innerWidth-16) left=window.innerWidth-w-16;
   const maxH=Math.min(window.innerHeight*0.78, 640);
   if(top+maxH>window.innerHeight-12) top=Math.max(12, r.top-maxH-8);
@@ -16014,6 +16248,15 @@ function tcPositionHistoryDialog(){
 }
 function tcHistoryOnKeydown(e){
   if(e.key!=='Escape') return;
+  if(tcPunctPinnedKey){
+    const back=tcPunctAnchor;
+    tcPunctIgnoreHover=true;
+    tcPunctClosePopover(false);
+    if(back&&back.focus) back.focus();
+    tcPunctIgnoreHover=false;
+    e.preventDefault();
+    return;
+  }
   if(tcHistoryPinnedDay){
     tcHistoryPinnedDay=null;
     tcRenderHistoryDayPanel();
@@ -16047,6 +16290,11 @@ async function tcOpenHistoryDialog(){
   dlg.classList.remove('hidden');
   dlg.setAttribute('aria-hidden','false');
   tcPositionHistoryDialog();
+  if(!tcHistoryResizeBound){
+    window.addEventListener('resize', tcHistoryOnResize);
+    tcHistoryResizeBound=true;
+  }
+  tcPunctBind();
   if(!tcHistoryKeyHandler){
     tcHistoryKeyHandler=function(ev){ tcHistoryOnKeydown(ev); };
     document.addEventListener('keydown', tcHistoryKeyHandler);
@@ -16077,12 +16325,266 @@ function tcCloseHistoryDialog(restoreFocus){
     tcHistoryKeyHandler=null;
   }
   if(tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
+  if(tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
   tcHistoryRefreshInFlight=false;
+  tcHistoryView='history';
+  tcPunctWeek='';
+  tcPunctPayload=null;
+  tcPunctDaysScroll=0;
+  tcPunctPinnedKey=null;
+  tcPunctAnchor=null;
+  tcPunctClosePopover(false);
+  tcHistorySetView('history', true);
+  if(tcHistoryResizeBound){
+    window.removeEventListener('resize', tcHistoryOnResize);
+    tcHistoryResizeBound=false;
+  }
+  tcPunctUnbind();
   const panel=document.getElementById('tc-history-day-panel');
   if(panel) panel.classList.add('hidden');
   const tip=document.getElementById('tc-conn-chart-tip');
   if(tip) tip.classList.add('hidden');
   if(restoreFocus&&toggle) toggle.focus();
+}
+function tcHistoryOnResize(){
+  if(!tcHistoryOpen) return;
+  tcPositionHistoryDialog();
+  if(tcPunctPinnedKey&&tcPunctAnchor) tcPunctPositionPopover(tcPunctAnchor);
+}
+let tcPunctDocBound=false;
+function tcPunctBind(){
+  if(tcPunctDocBound) return;
+  document.addEventListener('click', tcPunctOnDocumentClick);
+  const body=document.getElementById('tc-history-dialog-body');
+  if(body) body.addEventListener('scroll', tcPunctOnScroll, {passive:true});
+  tcPunctDocBound=true;
+}
+function tcPunctUnbind(){
+  if(!tcPunctDocBound) return;
+  document.removeEventListener('click', tcPunctOnDocumentClick);
+  const body=document.getElementById('tc-history-dialog-body');
+  if(body) body.removeEventListener('scroll', tcPunctOnScroll);
+  tcPunctDocBound=false;
+}
+function tcPunctOnScroll(){
+  if(!tcPunctAnchor) return;
+  tcPunctPositionPopover(tcPunctAnchor);
+}
+function tcPunctOnDocumentClick(e){
+  if(!tcPunctPinnedKey) return;
+  const pop=document.getElementById('tc-punct-pop');
+  if(pop&&pop.contains(e.target)) return;
+  if(e.target&&e.target.closest&&e.target.closest('.tc-punct-card')) return;
+  tcPunctClosePopover(false);
+}
+function tcPunctClosePopover(restore){
+  const pop=document.getElementById('tc-punct-pop');
+  const back=tcPunctAnchor;
+  tcPunctPinnedKey=null;
+  tcPunctAnchor=null;
+  if(pop){ pop.classList.add('hidden'); pop.setAttribute('aria-hidden','true'); pop.innerHTML=''; }
+  if(restore&&back&&back.focus) back.focus();
+}
+function tcPunctPositionPopover(anchor){
+  const dlg=document.getElementById('tc-history-dialog');
+  const pop=document.getElementById('tc-punct-pop');
+  const body=document.getElementById('tc-history-dialog-body');
+  if(!dlg||!pop||!anchor) return;
+  const dr=dlg.getBoundingClientRect();
+  const ar=anchor.getBoundingClientRect();
+  if(body){
+    const br=body.getBoundingClientRect();
+    if(ar.bottom<br.top+4||ar.top>br.bottom-4){
+      pop.classList.add('hidden');
+      return;
+    }
+  }
+  pop.classList.remove('hidden');
+  const pw=pop.offsetWidth||260;
+  const ph=pop.offsetHeight||120;
+  let left=ar.left-dr.left+(ar.width/2)-(pw/2);
+  left=Math.max(8, Math.min(left, dr.width-pw-8));
+  let top=ar.bottom-dr.top+8;
+  if(top+ph>dr.height-8) top=Math.max(8, ar.top-dr.top-ph-8);
+  pop.style.left=left+'px';
+  pop.style.top=top+'px';
+}
+function tcPunctOpenPopover(anchor, day, pin){
+  const pop=document.getElementById('tc-punct-pop');
+  if(!pop||!day) return;
+  if(pin&&tcPunctPinnedKey===day.dateKey){ tcPunctClosePopover(false); return; }
+  const title=tcFmtDayTitle(day.dateKey, tcJornadaTz);
+  const lines=(day.details||[]).map(function(line){ return '<p>'+tcEsc(line)+'</p>'; }).join('');
+  pop.innerHTML='<h4>'+tcEsc(title)+'</h4>'+lines;
+  pop.setAttribute('aria-hidden','false');
+  tcPunctAnchor=anchor;
+  tcPunctPinnedKey=pin?day.dateKey:tcPunctPinnedKey;
+  if(!pin) tcPunctPinnedKey=null;
+  tcPunctPositionPopover(anchor);
+}
+function tcPunctCardClick(btn){
+  const key=btn&&btn.getAttribute('data-punct-date');
+  const day=(tcPunctPayload&&tcPunctPayload.days||[]).filter(function(item){ return item.dateKey===key; })[0];
+  if(!day) return;
+  tcPunctOpenPopover(btn, day, true);
+}
+function tcPunctCardHover(btn, on){
+  if(tcPunctIgnoreHover||tcPunctPinnedKey) return;
+  if(!on){ tcPunctClosePopover(false); return; }
+  const key=btn.getAttribute('data-punct-date');
+  const day=(tcPunctPayload&&tcPunctPayload.days||[]).filter(function(item){ return item.dateKey===key; })[0];
+  if(day) tcPunctOpenPopover(btn, day, false);
+}
+function tcHistorySetView(view, silent){
+  tcHistoryView=view==='punctuality'?'punctuality':'history';
+  const hist=document.getElementById('tc-hist-view-history');
+  const punct=document.getElementById('tc-hist-view-punct');
+  const tabH=document.getElementById('tc-history-tab-history');
+  const tabP=document.getElementById('tc-history-tab-punct');
+  const dlg=document.getElementById('tc-history-dialog');
+  const onPunct=tcHistoryView==='punctuality';
+  if(hist) hist.classList.toggle('hidden', onPunct);
+  if(punct) punct.classList.toggle('hidden', !onPunct);
+  if(tabH){ tabH.classList.toggle('tc-history-tab--on', !onPunct); tabH.setAttribute('aria-selected', onPunct?'false':'true'); }
+  if(tabP){ tabP.classList.toggle('tc-history-tab--on', onPunct); tabP.setAttribute('aria-selected', onPunct?'true':'false'); }
+  if(dlg) dlg.classList.toggle('tc-history-dialog--punctuality', onPunct);
+  if(onPunct&&tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
+  if(!onPunct&&tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
+  tcPunctClosePopover(false);
+  if(tcHistoryOpen) tcPositionHistoryDialog();
+  if(!silent&&onPunct) tcLoadPunctuality(tcPunctWeek||'');
+  if(!silent&&!onPunct&&tcHistoryOpen&&!tcHistoryPayload) tcLoadHistoryMonth();
+}
+function tcPunctPct(value){
+  return value==null?'—':String(value)+'%';
+}
+function tcPunctCardClass(status){
+  if(status==='COMPLETE') return 'tc-punct-card--complete';
+  if(status==='LATE'||status==='INCOMPLETE') return 'tc-punct-card--late';
+  if(status==='EXTRA') return 'tc-punct-card--extra';
+  if(status==='IN_PROGRESS') return 'tc-punct-card--progress';
+  return 'tc-punct-card--none';
+}
+function tcPunctRender(payload, err){
+  const root=document.getElementById('tc-punct-root');
+  if(!root||tcHistoryView!=='punctuality') return;
+  const daysEl=root.querySelector('.tc-punct-days');
+  if(daysEl) tcPunctDaysScroll=daysEl.scrollLeft;
+  if(err){
+    root.innerHTML='<p class="tc-punct-err">'+tcEsc(err)+' <button type="button" class="tc-punct-link" onclick="tcRefreshPunctuality()">Reintentar</button></p>';
+    return;
+  }
+  if(!payload){
+    root.innerHTML='<p class="tc-punct-empty">Cargando…</p>';
+    return;
+  }
+  if(payload.emptyReason==='NO_SCHEDULE'){
+    root.innerHTML='<p class="tc-punct-empty">Este colaborador todavía no tiene un horario laboral asignado.</p><button type="button" class="tc-punct-link" onclick="tcPunctualityEditEmployee()">Editar colaborador</button>';
+    return;
+  }
+  if(payload.emptyReason==='NOT_IN_FORCE'){
+    root.innerHTML=tcPunctChrome(payload)+'<p class="tc-punct-empty">El horario actual todavía no aplicaba en esta semana.</p>';
+    return;
+  }
+  const summary=payload.summary||{};
+  const notice=payload.emptyReason==='NO_EVALUABLE'?'<p class="tc-punct-empty">Aún no hay días evaluables en esta semana.</p>':'';
+  const cards=(payload.days||[]).map(function(day){
+    const lines=(day.lines||[]).map(function(line){ return '<div class="tc-punct-card-line">'+tcEsc(line)+'</div>'; }).join('');
+    const dow=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][day.weekday]||'';
+    return '<button type="button" class="tc-punct-card '+tcPunctCardClass(day.status)+'" data-punct-date="'+tcEsc(day.dateKey)+'" aria-haspopup="dialog" onclick="tcPunctCardClick(this)" onmouseenter="tcPunctCardHover(this,true)" onmouseleave="tcPunctCardHover(this,false)" onfocus="tcPunctCardHover(this,true)" onblur="tcPunctCardHover(this,false)">'
+      +'<div class="tc-punct-card-dow">'+tcEsc(dow)+'</div>'
+      +'<div class="tc-punct-card-date">'+tcEsc(tcFmtChartDayLabel(day.dateKey, tcJornadaTz))+'</div>'
+      +'<div class="tc-punct-card-state">'+tcEsc(day.headline||day.statusLabel||'')+'</div>'
+      +lines+'</button>';
+  }).join('');
+  root.innerHTML=tcPunctChrome(payload)
+    +'<div class="tc-punct-kpis">'
+    +tcPunctKpi('punct','Puntualidad', tcPunctPct(summary.punctualityPct))
+    +tcPunctKpi('cover','Jornada esperada', tcPunctPct(summary.expectedCoveragePct))
+    +tcPunctKpi('late','Retardos', summary.evaluableDays?String(summary.lateDays||0):'—')
+    +tcPunctKpi('extra','Tiempo adicional', summary.evaluableDays?String(summary.extraTimeDays||0):'—')
+    +'</div>'+notice+'<div class="tc-punct-days">'+cards+'</div>';
+  const scroller=root.querySelector('.tc-punct-days');
+  if(scroller) scroller.scrollLeft=tcPunctDaysScroll;
+}
+function tcPunctKpi(kind, label, value){
+  return '<div class="tc-punct-kpi tc-punct-kpi--'+kind+'"><span>'+tcEsc(label)+'</span><strong>'+tcEsc(value)+'</strong></div>';
+}
+function tcPunctScheduleLine(schedule){
+  if(!schedule||!Array.isArray(schedule.weekdays)) return '';
+  const labels=['','Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const days=schedule.weekdays.slice().sort(function(a,b){ return a-b; });
+  const groups=[];
+  let start=days[0], prev=days[0];
+  for(let i=1;i<=days.length;i++){
+    const day=days[i];
+    if(day===prev+1){ prev=day; continue; }
+    groups.push(start===prev?labels[start]:labels[start]+'–'+labels[prev]);
+    start=day; prev=day;
+  }
+  function hm(min){
+    const h24=Math.floor(min/60), m=min%60;
+    const suffix=h24<12?'a. m.':'p. m.';
+    return (h24%12||12)+':'+String(m).padStart(2,'0')+' '+suffix;
+  }
+  if(!Number.isInteger(schedule.startMinute)||!Number.isInteger(schedule.endMinute)||!Number.isInteger(schedule.toleranceMinutes)) return '';
+  return groups.join(', ')+' · '+hm(schedule.startMinute)+'–'+hm(schedule.endMinute)+' · Tolerancia '+schedule.toleranceMinutes+' min';
+}
+function tcPunctChrome(payload){
+  const nextDisabled=payload&&payload.canGoNext===false?' disabled':'';
+  const summary=tcPunctScheduleLine(payload&&payload.schedule);
+  return '<div class="tc-punct-head"><div><p class="tc-punct-kicker">Puntualidad semanal</p><p class="tc-punct-sub">'+tcEsc(summary)+'</p></div>'
+    +'<div class="tc-punct-nav-wrap">'
+    +'<button type="button" class="tc-punct-nav" aria-label="Semana anterior" title="Semana anterior" onclick="tcPunctShiftWeek(-1)">‹</button>'
+    +'<span class="tc-punct-week">'+tcEsc(payload&&payload.weekLabel||'')+'</span>'
+    +'<button type="button" class="tc-punct-nav" aria-label="Semana siguiente" title="Semana siguiente" onclick="tcPunctShiftWeek(1)"'+nextDisabled+'>›</button>'
+    +'<button type="button" class="tc-punct-refresh" aria-label="Actualizar puntualidad semanal" title="Actualizar" onclick="tcRefreshPunctuality()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>'
+    +'</div></div>';
+}
+function tcPunctualityEditEmployee(){
+  if(tcJornadaEmpId) tcOpenEmpEdit(tcJornadaEmpId);
+}
+function tcPunctShiftWeek(delta){
+  if(!tcPunctPayload||!tcPunctPayload.weekStart) return;
+  if(delta>0&&tcPunctPayload.canGoNext===false) return;
+  tcPunctClosePopover(false);
+  tcLoadPunctuality(tcYmdAddDays(tcPunctPayload.weekStart, delta*7));
+}
+async function tcLoadPunctuality(week){
+  if(!tcJornadaEmpId||tcHistoryView!=='punctuality') return;
+  const seq=++tcPunctSeq;
+  if(tcPunctAbort) tcPunctAbort.abort();
+  tcPunctAbort=new AbortController();
+  tcPunctLoading=true;
+  const root=document.getElementById('tc-punct-root');
+  if(root) root.setAttribute('aria-busy','true');
+  const refreshBtn=root&&root.querySelector('.tc-punct-refresh');
+  if(refreshBtn){ refreshBtn.disabled=true; refreshBtn.classList.add('tc-punct-refresh--spin'); }
+  if(!tcPunctPayload) tcPunctRender(null, '');
+  const q=week?('?week='+encodeURIComponent(week)):'';
+  try{
+    const payload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/punctuality'+q,{signal:tcPunctAbort.signal});
+    if(seq!==tcPunctSeq||tcHistoryView!=='punctuality') return;
+    tcPunctPayload=payload;
+    tcPunctWeek=payload&&payload.weekStart||week||'';
+    tcPunctRender(payload, '');
+  }catch(e){
+    if(e&&e.name==='AbortError') return;
+    if(seq!==tcPunctSeq||tcHistoryView!=='punctuality') return;
+    tcPunctRender(null, e&&e.message||'No se pudo consultar la puntualidad.');
+  }finally{
+    if(seq===tcPunctSeq){
+      tcPunctLoading=false;
+      const busy=document.getElementById('tc-punct-root');
+      if(busy) busy.setAttribute('aria-busy','false');
+    }
+  }
+}
+async function tcRefreshPunctuality(){
+  tcPunctClosePopover(false);
+  const days=document.querySelector('#tc-punct-root .tc-punct-days');
+  if(days) tcPunctDaysScroll=days.scrollLeft;
+  await tcLoadPunctuality(tcPunctWeek||'');
 }
 async function tcToggleHistoryPanel(){
   if(tcHistoryOpen){ tcCloseHistoryDialog(true); return; }
@@ -16189,6 +16691,7 @@ function tcShowHistoryRefreshErr(msg){
   el.classList.remove('hidden');
 }
 async function tcRefreshHistory(){
+  if(tcHistoryView==='punctuality'){ await tcRefreshPunctuality(); return; }
   if(!tcJornadaEmpId||tcHistoryRefreshInFlight) return;
   tcHistoryRefreshInFlight=true;
   tcHideHistoryRefreshErr();

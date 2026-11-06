@@ -1,12 +1,14 @@
-import { localDateKey, localMidnightUtc } from './remoteWorkSessionHistory.service.js';
+import { localMidnightUtc } from './remoteWorkSessionHistory.service.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
+import { utcInstantFromLocalParts } from '../utils/timezoneLocalInstant.util.js';
+
+export { utcInstantFromLocalParts };
 
 export const RECRUITMENT_INTERVIEW_SCHEDULE_STAGE_KEYS = new Set([
   'INITIAL_INTERVIEW',
   'CLIENT_INTERVIEW',
 ]);
 
-const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 
 export function stageKeyAllowsInterviewSchedule(stageKey) {
@@ -39,47 +41,6 @@ export function resolveInterviewScheduledAtForApplicationUpdate({
     return explicitInterviewScheduledAt;
   }
   return null;
-}
-
-/** UTC instant for local date + time (24h) in IANA timezone. */
-export function utcInstantFromLocalParts(dateKey, hour, minute, timeZone) {
-  if (!DATE_KEY_RE.test(dateKey)) {
-    const err = new Error('VALIDATION_ERROR');
-    err.code = 'VALIDATION_ERROR';
-    err.message = 'Fecha de entrevista no válida.';
-    throw err;
-  }
-  if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-    const err = new Error('VALIDATION_ERROR');
-    err.code = 'VALIDATION_ERROR';
-    err.message = 'Hora de entrevista no válida.';
-    throw err;
-  }
-  const targetMinutes = hour * 60 + minute;
-  let lo = localMidnightUtc(dateKey, timeZone).getTime();
-  let hi = lo + 26 * 60 * 60 * 1000;
-  while (lo < hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const dt = new Date(mid);
-    const key = localDateKey(dt, timeZone);
-    if (key !== dateKey) {
-      if (key < dateKey) lo = mid + 60_000;
-      else hi = mid;
-      continue;
-    }
-    const parts = new Intl.DateTimeFormat('en-GB', {
-      timeZone,
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false,
-    }).formatToParts(dt);
-    const h = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
-    const m = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
-    const mins = h * 60 + m;
-    if (mins < targetMinutes) lo = mid + 60_000;
-    else hi = mid;
-  }
-  return new Date(lo);
 }
 
 /** @returns {{ scheduledAt: Date, timeSpecified: boolean } | null} */

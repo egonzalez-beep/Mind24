@@ -6,6 +6,7 @@ import {
   adminCloseRemoteWorkSession,
 } from '../services/remoteWorkSession.service.js';
 import { listEmployeeSessionsHistory } from '../services/remoteWorkSessionHistory.service.js';
+import { getEmployeeWeekPunctuality } from '../services/workforcePunctuality.service.js';
 import { getSessionWorkLogForAdmin } from '../services/remoteWorkSessionWorkLog.service.js';
 import {
   assertWorkforceEmployeeInOrg,
@@ -107,6 +108,7 @@ router.post('/employees', async (req, res, next) => {
         timezone: z.string().min(1).max(64),
         isActive: z.boolean().optional(),
         expectedWorkMinutes: z.number().int().min(0).max(960).nullable().optional(),
+        workSchedule: z.unknown().optional(),
       })
       .parse(req.body);
     const out = await createWorkforceEmployee(u.organizationId, body);
@@ -150,6 +152,25 @@ router.get('/employees/:id/sessions', async (req, res, next) => {
       employeeId: req.params.id,
       fromKey: from,
       toKey: to,
+    });
+    res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/employees/:id/punctuality', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const query = z
+      .object({
+        week: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      })
+      .parse(req.query);
+    const out = await getEmployeeWeekPunctuality({
+      organizationId: u.organizationId,
+      employeeId: req.params.id,
+      weekKey: query.week,
     });
     res.json(out);
   } catch (e) {
@@ -301,6 +322,7 @@ router.patch('/employees/:id', async (req, res, next) => {
         timezone: z.string().min(1).max(64).optional(),
         isActive: z.boolean().optional(),
         expectedWorkMinutes: z.number().int().min(0).max(960).nullable().optional(),
+        workSchedule: z.unknown().optional(),
       })
       .parse(req.body);
     const employee = await updateWorkforceEmployee(u.organizationId, req.params.id, body);

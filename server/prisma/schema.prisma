@@ -145,6 +145,14 @@ model WorkforceEmployee {
   isActive        Boolean  @default(true)
   /// Minutos de jornada objetivo diaria; null o 0 = sin asistencia/checador.
   expectedWorkMinutes Int?
+  /// Horario fijo en minutos locales de `timezone` (8:00 = 480).
+  /// La máscara usa bit 0 = lunes … bit 6 = domingo. Null si no hay horario.
+  /// No guarda historial ni un horario distinto por día.
+  workScheduleStartMinute       Int?
+  workScheduleEndMinute         Int?
+  workScheduleToleranceMinutes  Int?
+  workScheduleWeekdayMask       Int?
+  workScheduleAssignedAt        DateTime? @db.Timestamptz(6)
   accessTokenHash String   @unique
   tokenVersion    Int      @default(1)
   profilePhotoPath String?

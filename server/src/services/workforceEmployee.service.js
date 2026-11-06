@@ -21,6 +21,10 @@ import {
   employeeAttendanceEnabled,
   normalizeExpectedWorkMinutesInput,
 } from './workforceExpectedWork.service.js';
+import {
+  buildWorkScheduleDto,
+  resolveWorkSchedulePersistence,
+} from '../utils/workforceWorkSchedule.util.js';
 
 export { employeeAttendanceEnabled, assertEmployeeAttendanceEligible } from './workforceExpectedWork.service.js';
 
@@ -68,6 +72,7 @@ export function sanitizeEmployeeForAdmin(emp) {
     profilePhotoPath: emp.profilePhotoPath ?? null,
     expectedWorkMinutes: emp.expectedWorkMinutes ?? null,
     attendanceEnabled: employeeAttendanceEnabled(emp),
+    workSchedule: buildWorkScheduleDto(emp),
     createdAt: emp.createdAt,
     updatedAt: emp.updatedAt,
   };
@@ -116,6 +121,11 @@ export async function createWorkforceEmployee(organizationId, data) {
     err.code = 'ORG_BLOCKED';
     throw err;
   }
+  const scheduleColumns = resolveWorkSchedulePersistence(
+    null,
+    data.workSchedule === undefined ? null : data.workSchedule,
+    new Date(),
+  );
   const { token, hash } = generateTimeclockAccessToken();
   const emp = await prisma.workforceEmployee.create({
     data: {
@@ -127,6 +137,7 @@ export async function createWorkforceEmployee(organizationId, data) {
       timezone: data.timezone.trim(),
       isActive: data.isActive ?? true,
       expectedWorkMinutes: resolveExpectedWorkMinutesForCreate(data),
+      ...scheduleColumns,
       accessTokenHash: hash,
       tokenVersion: 1,
     },
@@ -138,13 +149,14 @@ export async function createWorkforceEmployee(organizationId, data) {
 }
 
 export async function updateWorkforceEmployee(organizationId, employeeId, data) {
-  await assertWorkforceEmployeeInOrg(employeeId, organizationId);
+  const existing = await assertWorkforceEmployeeInOrg(employeeId, organizationId);
   if (data.timezone != null && !isValidIanaTimezone(data.timezone)) {
     const err = new Error('VALIDATION_ERROR');
     err.code = 'VALIDATION_ERROR';
     err.message = 'Zona horaria IANA inválida.';
     throw err;
   }
+  const scheduleColumns = resolveWorkSchedulePersistence(existing, data.workSchedule, new Date());
   const emp = await prisma.workforceEmployee.update({
     where: { id: employeeId },
     data: {
@@ -159,6 +171,7 @@ export async function updateWorkforceEmployee(organizationId, employeeId, data) 
       ...(data.expectedWorkMinutes !== undefined
         ? { expectedWorkMinutes: resolveExpectedWorkMinutesForUpdate(data.expectedWorkMinutes) }
         : {}),
+      ...scheduleColumns,
     },
   });
   return sanitizeEmployeeForAdmin(emp);
