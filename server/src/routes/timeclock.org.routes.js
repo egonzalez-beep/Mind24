@@ -7,6 +7,7 @@ import {
 } from '../services/remoteWorkSession.service.js';
 import { listEmployeeSessionsHistory } from '../services/remoteWorkSessionHistory.service.js';
 import { getEmployeeWeekPunctuality } from '../services/workforcePunctuality.service.js';
+import { exportWeeklyPunctualityPdf } from '../services/workforcePunctualityExport.service.js';
 import { getSessionWorkLogForAdmin } from '../services/remoteWorkSessionWorkLog.service.js';
 import {
   assertWorkforceEmployeeInOrg,
@@ -154,6 +155,28 @@ router.get('/employees/:id/sessions', async (req, res, next) => {
       toKey: to,
     });
     res.json(out);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/punctuality/export', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const query = z
+      .object({
+        week: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(req.query);
+    const out = await exportWeeklyPunctualityPdf({
+      organizationId: u.organizationId,
+      weekKey: query.week,
+    });
+    res.setHeader('Content-Type', out.contentType);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Disposition', out.contentDisposition);
+    res.setHeader('Content-Length', out.buffer.length);
+    res.send(out.buffer);
   } catch (e) {
     next(e);
   }

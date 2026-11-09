@@ -150,19 +150,22 @@ for (const p of protectedNow) console.log(`    · ${p}`);
 let pagesBefore = null;
 let pagesAfter = null;
 
+const pdfApi = await import('../src/services/pdf.service.js');
 try {
-  const { renderHtmlToPdfBuffer } = await import('../src/services/pdf.service.js');
-  const bufBefore = await renderHtmlToPdfBuffer(htmlBefore);
-  const bufAfter = await renderHtmlToPdfBuffer(htmlAfter);
+  const bufBefore = await pdfApi.renderHtmlToPdfBuffer(htmlBefore);
+  const bufAfter = await pdfApi.renderHtmlToPdfBuffer(htmlAfter);
   pagesBefore = countPdfPages(bufBefore);
   pagesAfter = countPdfPages(bufAfter);
   fs.writeFileSync(path.join(OUT_DIR, 'report-enterprise-pagination-before.pdf'), bufBefore);
   fs.writeFileSync(path.join(OUT_DIR, 'report-enterprise-pagination-after.pdf'), bufAfter);
   console.log(`\n  Páginas PDF (portada + cuerpo): ANTES ${pagesBefore} → DESPUÉS ${pagesAfter} (Δ ${pagesBefore - pagesAfter})`);
   console.log(`  PDF → ${path.relative(process.cwd(), path.join(OUT_DIR, 'report-enterprise-pagination-after.pdf'))}`);
+  console.log(`  FIRMA ${bufBefore.subarray(0, 5).toString()} ${bufAfter.subarray(0, 5).toString()}`);
 } catch (e) {
   console.log(`\n  PDF omitido (${e.message || 'Puppeteer/Chromium no disponible'})`);
   console.log('  HTML before/after en server/scripts/output/');
+} finally {
+  await pdfApi.closePdfBrowser();
 }
 
 const stillRisky = [];

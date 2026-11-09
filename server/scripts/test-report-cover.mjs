@@ -216,23 +216,26 @@ for (const sc of scenarios) {
   ok(`${sc.name}: HTML → ${path.relative(process.cwd(), outPath)}`);
 }
 
+const pdfApi = await import('../src/services/pdf.service.js');
 try {
-  const { renderHtmlToPdfBuffer } = await import('../src/services/pdf.service.js');
   const pdfHtml = buildSampleHtml(
     buildModuleCoverSummaries([honestidadAtt, cleaverAtt, termanFull]),
     'sample-pdf',
   );
-  const buf = await renderHtmlToPdfBuffer(pdfHtml);
+  const buf = await pdfApi.renderHtmlToPdfBuffer(pdfHtml);
   const pdfPath = path.join(OUT_DIR, 'report-cover-sample.pdf');
   fs.writeFileSync(pdfPath, buf);
-  check(buf.length > 5000, `PDF muestra generado (${buf.length} bytes)`);
+  check(buf.length > 5000 && buf.subarray(0, 5).toString() === '%PDF-', `PDF muestra generado (${buf.length} bytes)`);
   ok(`PDF → ${path.relative(process.cwd(), pdfPath)}`);
 } catch (e) {
   ok(`PDF omitido (${e.message || 'Puppeteer no disponible en este entorno'})`);
+} finally {
+  await pdfApi.closePdfBrowser();
 }
 
 if (failed) {
   console.log(`\nRESULTADO: ${failed} fallos, ${passed} ok\n`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(`\nRESULTADO: ${passed} ok\n`);
 }
-console.log(`\nRESULTADO: ${passed} ok\n`);

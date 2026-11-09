@@ -1381,17 +1381,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .tc-history-tabs{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap;}
 .tc-history-tab{appearance:none;border:0;background:transparent;color:var(--slate-500);font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:1.2;}
 .tc-history-tab--on{background:var(--purple-light);color:var(--purple-dark);}
-.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible,.tc-punct-pdf:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-history-dialog--punctuality{width:min(920px,calc(100vw - 32px));}
 .tc-punct-panel{display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;}
 .tc-punct-panel.hidden{display:none!important;}
 .tc-punct-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
 .tc-punct-kicker{margin:0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-dark);}
 .tc-punct-sub{margin:3px 0 0;font-size:12px;line-height:1.4;color:var(--slate-500);overflow-wrap:anywhere;}
-.tc-punct-nav-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.tc-punct-nav-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;max-width:100%;}
 .tc-punct-nav,.tc-punct-refresh{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;color:var(--slate-600);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
-.tc-punct-nav[disabled],.tc-punct-refresh[disabled]{opacity:.35;cursor:not-allowed;}
-.tc-punct-refresh--spin svg{animation:m24SpinAnim .7s linear infinite;}
+.tc-punct-pdf{width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(124,58,237,.28);border-radius:10px;background:#fff;color:var(--purple-dark);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.tc-punct-nav[disabled],.tc-punct-refresh[disabled],.tc-punct-pdf[disabled]{opacity:.35;cursor:not-allowed;}
+.tc-punct-refresh--spin svg,.tc-punct-pdf--busy svg{animation:m24SpinAnim .7s linear infinite;}
 .tc-punct-week{min-width:0;font-size:13px;font-weight:700;color:var(--primary);text-align:center;white-space:nowrap;}
 .tc-punct-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0;}
 .tc-punct-kpi{border-radius:14px;padding:10px 12px;min-width:0;}
@@ -1425,7 +1426,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   .tc-punct-head{flex-wrap:wrap;}
 }
 @media(prefers-reduced-motion:reduce){
-  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg{transition:none;animation:none;}
+  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg,.tc-punct-pdf--busy svg{transition:none;animation:none;}
 }
 .tc-history-dialog-body{flex:1 1 auto;min-height:0;padding:12px 16px 16px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
 .tc-history-cal-wrap{position:relative;}
@@ -16141,6 +16142,8 @@ let tcPunctPinnedKey=null;
 let tcPunctAnchor=null;
 let tcPunctDaysScroll=0;
 let tcPunctIgnoreHover=false;
+let tcPunctPdfBusy=false;
+let tcPunctPdfAbort=null;
 let tcHistoryResizeBound=false;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -16326,6 +16329,7 @@ function tcCloseHistoryDialog(restoreFocus){
   }
   if(tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
   if(tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
+  if(tcPunctPdfAbort){ tcPunctPdfAbort.abort(); tcPunctPdfAbort=null; tcPunctPdfBusy=false; }
   tcHistoryRefreshInFlight=false;
   tcHistoryView='history';
   tcPunctWeek='';
@@ -16450,6 +16454,7 @@ function tcHistorySetView(view, silent){
   if(dlg) dlg.classList.toggle('tc-history-dialog--punctuality', onPunct);
   if(onPunct&&tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
   if(!onPunct&&tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
+  if(!onPunct&&tcPunctPdfAbort){ tcPunctPdfAbort.abort(); tcPunctPdfAbort=null; tcPunctPdfBusy=false; }
   tcPunctClosePopover(false);
   if(tcHistoryOpen) tcPositionHistoryDialog();
   if(!silent&&onPunct) tcLoadPunctuality(tcPunctWeek||'');
@@ -16479,7 +16484,7 @@ function tcPunctRender(payload, err){
     return;
   }
   if(payload.emptyReason==='NO_SCHEDULE'){
-    root.innerHTML='<p class="tc-punct-empty">Este colaborador todavía no tiene un horario laboral asignado.</p><button type="button" class="tc-punct-link" onclick="tcPunctualityEditEmployee()">Editar colaborador</button>';
+    root.innerHTML=tcPunctChrome(payload)+'<p class="tc-punct-empty">Este colaborador todavía no tiene un horario laboral asignado.</p><button type="button" class="tc-punct-link" onclick="tcPunctualityEditEmployee()">Editar colaborador</button>';
     return;
   }
   if(payload.emptyReason==='NOT_IN_FORCE'){
@@ -16539,7 +16544,68 @@ function tcPunctChrome(payload){
     +'<span class="tc-punct-week">'+tcEsc(payload&&payload.weekLabel||'')+'</span>'
     +'<button type="button" class="tc-punct-nav" aria-label="Semana siguiente" title="Semana siguiente" onclick="tcPunctShiftWeek(1)"'+nextDisabled+'>›</button>'
     +'<button type="button" class="tc-punct-refresh" aria-label="Actualizar puntualidad semanal" title="Actualizar" onclick="tcRefreshPunctuality()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>'
+    +tcPunctPdfButton()
     +'</div></div>';
+}
+function tcPunctPdfButton(){
+  const busy=tcPunctPdfBusy?' disabled aria-busy="true"':'';
+  const spin=tcPunctPdfBusy?' tc-punct-pdf--busy':'';
+  return '<button type="button" class="tc-punct-pdf'+spin+'" id="tc-punct-pdf-btn" aria-label="Descargar reporte semanal en PDF" title="Descargar reporte semanal en PDF"'+busy+' onclick="tcDownloadPunctualityPdf()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>';
+}
+function tcPunctPdfSetErr(msg){
+  const root=document.getElementById('tc-punct-root');
+  if(!root) return;
+  let el=document.getElementById('tc-punct-pdf-err');
+  if(!msg){ if(el) el.remove(); return; }
+  if(!el){
+    el=document.createElement('p');
+    el.id='tc-punct-pdf-err';
+    el.className='tc-punct-err';
+    root.prepend(el);
+  }
+  el.textContent=msg;
+}
+async function tcDownloadPunctualityPdf(){
+  if(tcPunctPdfBusy) return;
+  const week=(tcPunctPayload&&tcPunctPayload.weekStart)||tcPunctWeek;
+  if(!week) return;
+  tcPunctPdfBusy=true;
+  if(tcPunctPdfAbort) tcPunctPdfAbort.abort();
+  tcPunctPdfAbort=new AbortController();
+  const signal=tcPunctPdfAbort.signal;
+  const btn=document.getElementById('tc-punct-pdf-btn');
+  if(btn){ btn.disabled=true; btn.classList.add('tc-punct-pdf--busy'); btn.setAttribute('aria-busy','true'); }
+  tcPunctPdfSetErr('');
+  try{
+    const res=await fetch('/api/org/timeclock/punctuality/export?week='+encodeURIComponent(week),{credentials:'include',signal});
+    if(!res.ok){
+      let msg='No se pudo descargar el reporte.';
+      try{ const j=await res.json(); if(j&&j.message) msg=String(j.message); }catch(_){}
+      throw new Error(msg);
+    }
+    const blob=await res.blob();
+    let filename='mind24-puntualidad-semanal.pdf';
+    const cd=res.headers.get('Content-Disposition')||'';
+    const m=/filename="([^"]+)"/i.exec(cd);
+    if(m&&m[1]) filename=m[1];
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    a.rel='noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    if(e&&e.name==='AbortError') return;
+    tcPunctPdfSetErr((e&&e.message)||'No se pudo descargar el reporte.');
+  }finally{
+    if(signal.aborted) return;
+    tcPunctPdfBusy=false;
+    const again=document.getElementById('tc-punct-pdf-btn');
+    if(again){ again.disabled=false; again.classList.remove('tc-punct-pdf--busy'); again.removeAttribute('aria-busy'); }
+  }
 }
 function tcPunctualityEditEmployee(){
   if(tcJornadaEmpId) tcOpenEmpEdit(tcJornadaEmpId);

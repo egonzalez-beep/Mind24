@@ -127,15 +127,17 @@ check(pm80solo.includes('Aplicación completa: 80/80 respuestas.'), 'Personalida
 
 console.log(`  OK  fixture → ${path.relative(process.cwd(), out60)}`);
 
+const pdfApi = await import('../src/services/pdf.service.js');
 try {
-  const { renderHtmlToPdfBuffer } = await import('../src/services/pdf.service.js');
-  const buf = await renderHtmlToPdfBuffer(honClePm60);
+  const buf = await pdfApi.renderHtmlToPdfBuffer(honClePm60);
   const pdfPath = path.join(OUT_DIR, 'report-polish-hon-cle-pm24-v2-60.pdf');
   fs.writeFileSync(pdfPath, buf);
-  check(buf.length > 8000, `PDF multimódulo generado (${buf.length} bytes)`);
+  check(buf.length > 8000 && buf.subarray(0, 5).toString() === '%PDF-', `PDF multimódulo generado (${buf.length} bytes)`);
   console.log(`  OK  PDF → ${path.relative(process.cwd(), pdfPath)}`);
 } catch (e) {
   console.log(`  OK  PDF omitido (${e.message || 'Puppeteer no disponible'})`);
+} finally {
+  await pdfApi.closePdfBrowser();
 }
 
 console.log(

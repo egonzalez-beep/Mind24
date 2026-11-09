@@ -34,7 +34,7 @@ function weekdayNumber(dateKey, timeZone) {
   return WEEKDAY_INDEX[short] || null;
 }
 
-function formatTimeEs(instant, timeZone) {
+export function formatTimeEs(instant, timeZone) {
   if (!instant) return null;
   return new Intl.DateTimeFormat('es-MX', {
     timeZone,
@@ -43,7 +43,7 @@ function formatTimeEs(instant, timeZone) {
   }).format(instant);
 }
 
-function formatDurationEs(sec) {
+export function formatDurationEs(sec) {
   const totalMin = Math.floor(Math.max(0, Number(sec) || 0) / 60);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
