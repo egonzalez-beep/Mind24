@@ -63,6 +63,25 @@ check(/recKanbanColSemanticMod\(stage\)/.test(indexHtml), 'columnas usan recKanb
 check(/key==='HIRED'/.test(indexHtml.match(/function recKanbanColSemanticMod[\s\S]*?^function /m)?.[0] || ''), 'semántica solo FINALIST/HIRED/REJECTED por key');
 check(/rec-kanban-col--sem-finalist\.rec-kanban-col--collapsed/.test(indexHtml), 'colapsadas conservan semántica');
 
+console.log('\n=== Recruitment Kanban — filtro fijo y autoscroll ===\n');
+
+const dragStart = indexHtml.match(/function recKanbanCardDragStart[\s\S]*?^function recKanbanCardDragEnd/m)?.[0] || '';
+const dragEnd = indexHtml.match(/function recKanbanCardDragEnd[\s\S]*?^function recKanbanColDragOver/m)?.[0] || '';
+const dragOver = indexHtml.match(/function recKanbanColDragOver[\s\S]*?^function recKanbanColDragLeave/m)?.[0] || '';
+check(!/recKanbanRevealEmptyForDrag/.test(indexHtml), 'el arrastre no abre etapas vacías');
+check(!/kanbanDragging&&count===0/.test(indexHtml), 'una columna vacía no se abre por estar arrastrando');
+check(!/sessionStorage\.setItem\(/.test(dragStart + dragEnd + dragOver + dropBlock), 'el arrastre no escribe la preferencia de etapas');
+check(/dropEffect='none'/.test(dragOver), 'una columna oculta no es destino');
+check(/recKanbanAutoScrollStop\(/.test(dragEnd) && /recKanbanAutoScrollStop\(/.test(dropBlock), 'soltar o cancelar detiene el autoscroll');
+check(/async function recKanbanLoad[\s\S]{0,240}recKanbanAutoScrollStop/.test(indexHtml), 'cambiar de vacante detiene el autoscroll');
+check(/function recSwitchModuleTab[\s\S]{0,280}recKanbanAutoScrollStop/.test(indexHtml), 'cambiar de pestaña detiene el autoscroll');
+check(/name!=='dash-recruitment'&&window\.__REC_STATE/.test(indexHtml), 'salir de la vista detiene el autoscroll');
+check(/kanbanDragScrollBound/.test(indexHtml), 'el listener de arrastre se registra una vez');
+check(/kanbanEpoch/.test(dropBlock) && /kanbanEpoch!==moveEpoch/.test(dropBlock), 'una respuesta anterior no pisa un movimiento nuevo');
+check(/requestAnimationFrame\(recKanbanAutoScrollTick\)/.test(indexHtml), 'autoscroll con un solo frame loop');
+check(/recKanbanPrefersReducedMotion\(\)\?3:16/.test(indexHtml), 'menor velocidad si el usuario prefiere menos movimiento');
+check(/scrollLeft/.test(indexHtml.match(/function recKanbanAutoScrollTick[\s\S]*?^function /m)?.[0] || ''), 'el autoscroll mueve el tablero, no la página');
+
 console.log('\n=== Regresiones ===\n');
 
 function runRegression(script) {
@@ -79,6 +98,7 @@ function runRegression(script) {
   }
 }
 
+runRegression('test-recruitment-kanban-drag-visual.mjs');
 runRegression('test-recruitment-vacancies-frontend.mjs');
 runRegression('test-recruitment-backend.mjs');
 runRegression('test-recruitment-candidate-application-flow.mjs');

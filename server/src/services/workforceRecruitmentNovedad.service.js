@@ -62,9 +62,9 @@ function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle
   const name = String(candidateName || 'Candidato').trim() || 'Candidato';
   const stage = String(stageName || 'etapa').trim() || 'etapa';
   const vacancy = String(vacancyTitle || 'vacante').trim() || 'vacante';
-  if (eventType === 'HIRED') return `¡${name} fue contratado para ${vacancy}!`;
-  if (eventType === 'REJECTED') return `${name} fue rechazado del proceso ${vacancy}.`;
-  return `${name} fue movido a ${stage} en ${vacancy}.`;
+  if (eventType === 'HIRED') return `${name} llegó a contratación en ${vacancy}.`;
+  if (eventType === 'REJECTED') return `${name} salió del proceso ${vacancy}.`;
+  return `${name} cambió a la etapa ${stage} en ${vacancy}.`;
 }
 
 function serializeNovedad(row) {
@@ -85,7 +85,8 @@ function serializeNovedad(row) {
 }
 
 /**
- * Emite novedad para el colaborador que registró al candidato, en la misma transacción del stage event.
+ * Entrega la novedad del colaborador que registró al candidato.
+ * Se llama cuando la etapa ya cumplió la espera, dentro de la transacción del barrido.
  */
 export async function emitWorkforceRecruitmentNovedadForStageEvent(
   tx,
@@ -113,12 +114,14 @@ export async function emitWorkforceRecruitmentNovedadForStageEvent(
           organizationId: true,
           fullName: true,
           registeredByWorkforceEmployeeId: true,
+          archivedAt: true,
         },
       },
       vacancy: { select: { id: true, organizationId: true, title: true } },
     },
   });
   if (!app?.candidate?.registeredByWorkforceEmployeeId) return null;
+  if (app.candidate.archivedAt) return null;
 
   const recipientId = app.candidate.registeredByWorkforceEmployeeId;
   if (
@@ -131,9 +134,9 @@ export async function emitWorkforceRecruitmentNovedadForStageEvent(
 
   const recipient = await tx.workforceEmployee.findFirst({
     where: { id: recipientId, organizationId },
-    select: { id: true },
+    select: { id: true, isActive: true },
   });
-  if (!recipient) return null;
+  if (!recipient || recipient.isActive === false) return null;
 
   const toStage = await tx.recruitmentStage.findFirst({
     where: { id: toStageId, organizationId },
@@ -268,4 +271,171 @@ export async function markAllWorkforceRecruitmentNovedadesRead(
     data: { readAt: now },
   });
   return { ok: true, marked: result.count };
+}
+
+export const STAGE_NOVEDAD_DELAY_MS = 2 * 60 * 60 * 1000;
+const STAGE_NOVEDAD_SWEEP_MS = 5 * 60 * 1000;
+
+export function stageNovedadEligibleAt(movedAt, delayMs = STAGE_NOVEDAD_DELAY_MS) {
+  return new Date(new Date(movedAt).getTime() + delayMs);
+}
+
+export async function cancelOpenStageNovedadWaits(tx, applicationId, exceptEventId = null) {
+  if (!applicationId) return { count: 0 };
+  return tx.recruitmentApplicationStageEvent.updateMany({
+    where: {
+      applicationId,
+      novedadNotifiedAt: null,
+      novedadEligibleAt: { not: null },
+      ...(exceptEventId ? { id: { not: exceptEventId } } : {}),
+    },
+    data: { novedadEligibleAt: null },
+  });
+}
+
+/** Arma la espera solo para un movimiento manual con origen y destino distintos. */
+export async function armManualStageNovedadWait(tx, stageEvent, movedAt = new Date()) {
+  if (!stageEvent?.id || !stageEvent.applicationId) return null;
+  if (!stageEvent.fromStageId || !stageEvent.toStageId || stageEvent.fromStageId === stageEvent.toStageId) {
+    return null;
+  }
+  if (!stageEvent.changedByUserId) return null;
+  await cancelOpenStageNovedadWaits(tx, stageEvent.applicationId, stageEvent.id);
+  return tx.recruitmentApplicationStageEvent.update({
+    where: { id: stageEvent.id },
+    data: { novedadEligibleAt: stageNovedadEligibleAt(movedAt) },
+  });
+}
+
+async function stageNovedadPendingInvalid(tx, fresh) {
+  const app = await tx.recruitmentApplication.findFirst({
+    where: { id: fresh.applicationId, organizationId: fresh.organizationId },
+    select: {
+      id: true,
+      stageId: true,
+      organizationId: true,
+      candidate: {
+        select: {
+          id: true,
+          organizationId: true,
+          archivedAt: true,
+          registeredByWorkforceEmployeeId: true,
+        },
+      },
+      vacancy: { select: { organizationId: true } },
+    },
+  });
+  if (!app?.candidate?.id) return true;
+  if (app.candidate.archivedAt) return true;
+  if (app.candidate.organizationId !== fresh.organizationId || app.vacancy?.organizationId !== fresh.organizationId) {
+    return true;
+  }
+  if (app.stageId !== fresh.toStageId) return true;
+  if (!app.candidate.registeredByWorkforceEmployeeId) return true;
+  const later = await tx.recruitmentApplicationStageEvent.findFirst({
+    where: {
+      applicationId: fresh.applicationId,
+      organizationId: fresh.organizationId,
+      createdAt: { gt: fresh.createdAt },
+    },
+    select: { id: true },
+  });
+  if (later) return true;
+  const recipient = await tx.workforceEmployee.findFirst({
+    where: { id: app.candidate.registeredByWorkforceEmployeeId, organizationId: fresh.organizationId },
+    select: { id: true, isActive: true },
+  });
+  return !recipient || recipient.isActive === false;
+}
+
+async function cancelStageNovedadWithoutNotice(tx, eventId) {
+  await tx.recruitmentApplicationStageEvent.update({
+    where: { id: eventId },
+    data: { novedadEligibleAt: null, novedadNotifiedAt: null },
+  });
+}
+
+async function deliverOneStageNovedad(tx, eventId, now) {
+  const fresh = await tx.recruitmentApplicationStageEvent.findFirst({ where: { id: eventId } });
+  if (!fresh?.novedadEligibleAt || fresh.novedadNotifiedAt) return false;
+  if (fresh.novedadEligibleAt > now) return false;
+
+  if (await stageNovedadPendingInvalid(tx, fresh)) {
+    await cancelStageNovedadWithoutNotice(tx, fresh.id);
+    return false;
+  }
+
+  const reserved = await tx.recruitmentApplicationStageEvent.updateMany({
+    where: {
+      id: fresh.id,
+      novedadNotifiedAt: null,
+      novedadEligibleAt: { lte: now },
+    },
+    data: { novedadNotifiedAt: now },
+  });
+  if (reserved.count !== 1) return false;
+
+  const created = await emitWorkforceRecruitmentNovedadForStageEvent(tx, {
+    stageEvent: fresh,
+    applicationId: fresh.applicationId,
+    organizationId: fresh.organizationId,
+  });
+  if (created) return true;
+
+  const existing = await tx.workforceRecruitmentNovedad.findFirst({
+    where: { organizationId: fresh.organizationId, dedupeKey: fresh.id },
+    select: { id: true },
+  });
+  if (existing) return true;
+  await cancelStageNovedadWithoutNotice(tx, fresh.id);
+  return false;
+}
+
+export async function deliverDueRecruitmentStageNovedades({ now = new Date(), db = prisma, limit = 40 } = {}) {
+  const due = await db.recruitmentApplicationStageEvent.findMany({
+    where: {
+      novedadNotifiedAt: null,
+      novedadEligibleAt: { lte: now },
+    },
+    orderBy: [{ novedadEligibleAt: 'asc' }, { id: 'asc' }],
+    take: limit,
+    select: { id: true },
+  });
+  let sent = 0;
+  for (const row of due) {
+    try {
+      const did = await db.$transaction((tx) => deliverOneStageNovedad(tx, row.id, now));
+      if (did) sent += 1;
+    } catch (err) {
+      if (err?.code !== 'STAGE_NOVEDAD_CLAIM') console.error('[stage-novedad]', err?.message || err);
+    }
+  }
+  return { sent, scanned: due.length };
+}
+
+let stageNovedadTimer = null;
+let stageNovedadRunning = false;
+
+export function runRecruitmentStageNovedadSweepTick(task = () => deliverDueRecruitmentStageNovedades()) {
+  if (stageNovedadRunning) return Promise.resolve({ skipped: true });
+  stageNovedadRunning = true;
+  return Promise.resolve()
+    .then(() => task())
+    .catch((err) => {
+      console.error('[stage-novedad]', err?.message || err);
+      return { failed: true };
+    })
+    .finally(() => {
+      stageNovedadRunning = false;
+    });
+}
+
+export function startRecruitmentStageNovedadSweep() {
+  if (stageNovedadTimer) return;
+  const tick = () => {
+    runRecruitmentStageNovedadSweepTick().catch(() => {});
+  };
+  tick();
+  stageNovedadTimer = setInterval(tick, STAGE_NOVEDAD_SWEEP_MS);
+  if (typeof stageNovedadTimer.unref === 'function') stageNovedadTimer.unref();
 }

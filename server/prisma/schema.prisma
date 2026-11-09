@@ -991,9 +991,12 @@ model RecruitmentApplicationStageEvent {
   changedByUserId String?
   changedBy       User? @relation("RecruitmentStageEventUser", fields: [changedByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
+  novedadEligibleAt DateTime? @db.Timestamptz(6)
+  novedadNotifiedAt DateTime? @db.Timestamptz(6)
 
   @@index([applicationId, createdAt])
   @@index([organizationId])
+  @@index([novedadEligibleAt])
 }
 
 /// Novedad de reclutamiento para el colaborador que registró al candidato (portal checador).

@@ -42,7 +42,10 @@ check(/WorkforceRecruitmentNovedadEventType/.test(schema), 'enum eventType');
 check(/@@unique\(\[organizationId, dedupeKey\]\)/.test(schema), 'unique dedupe org');
 check(/WrNovedad_org_recipient_created/.test(schema), 'índice listado');
 check(/WrNovedad_org_recipient_readAt/.test(schema), 'índice no leídas');
-check(/emitWorkforceRecruitmentNovedadForStageEvent/.test(appSvc), 'hook en recordStageEvent');
+check(/cancelOpenStageNovedadWaits/.test(appSvc) && /novedadEligibleAt: armWait/.test(appSvc), 'el PATCH crea el evento con la espera');
+check(/scheduleNovedad: true/.test(appSvc), 'solo el PATCH manual programa aviso');
+check((appSvc.match(/scheduleNovedad: true/g) || []).length === 1, 'el alta no programa aviso de etapa');
+check(!/emitWorkforceRecruitmentNovedadForStageEvent/.test(appSvc), 'el movimiento no emite el aviso al instante');
 check(/fromStageId \|\| !toStageId/.test(novedadSvc) || /!fromStageId/.test(novedadSvc), 'excluye fromStage null');
 check(/!changedByUserId/.test(novedadSvc), 'excluye changedByUserId null');
 check(/registeredByWorkforceEmployeeId/.test(novedadSvc), 'destinatario registeredBy');
@@ -119,9 +122,18 @@ if (dbOk) {
   const { hashPassword } = await import('../src/services/auth.service.js');
   const { generateTimeclockAccessToken } = await import('../src/services/timeclockToken.service.js');
   const { ensureOrganizationRecruitmentStages } = await import('../src/services/recruitmentStage.service.js');
-  const { emitWorkforceRecruitmentNovedadForStageEvent } = await import(
+  const { emitWorkforceRecruitmentNovedadForStageEvent, deliverDueRecruitmentStageNovedades } = await import(
     '../src/services/workforceRecruitmentNovedad.service.js',
   );
+
+  const cols = await prisma.$queryRaw`
+    SELECT column_name FROM information_schema.columns
+    WHERE table_name = 'RecruitmentApplicationStageEvent'
+      AND column_name IN ('novedadEligibleAt', 'novedadNotifiedAt')
+  `;
+  if (!Array.isArray(cols) || cols.length < 2) {
+    console.log('  SKIP integration: migración de espera de etapa no aplicada en PostgreSQL local');
+  } else {
 
   const suffix = crypto.randomBytes(4).toString('hex');
   const org = await prisma.organization.create({
@@ -251,6 +263,22 @@ if (dbOk) {
     novCount = await prisma.workforceRecruitmentNovedad.count({
       where: { organizationId: org.id, recipientWorkforceEmployeeId: empReg.id },
     });
+    check(novCount === 0, '1 el movimiento reciente no avisa');
+    await deliverDueRecruitmentStageNovedades({
+      now: new Date(Date.now() + 30 * 60 * 1000),
+      db: prisma,
+    });
+    novCount = await prisma.workforceRecruitmentNovedad.count({
+      where: { organizationId: org.id, recipientWorkforceEmployeeId: empReg.id },
+    });
+    check(novCount === 0, '1 antes de dos horas no avisa');
+    await deliverDueRecruitmentStageNovedades({
+      now: new Date(Date.now() + 2 * 60 * 60 * 1000 + 5000),
+      db: prisma,
+    });
+    novCount = await prisma.workforceRecruitmentNovedad.count({
+      where: { organizationId: org.id, recipientWorkforceEmployeeId: empReg.id },
+    });
     check(novCount === 1, '1 exactamente una novedad STAGE_CHANGED');
 
     const sameStage = await jsonFetch(base, `/api/org/recruitment/applications/${appId}`, {
@@ -281,7 +309,19 @@ if (dbOk) {
       body: { stageId: hired.id },
     });
     check(moveHired.res.status === 200, '2 move HIRED');
-    const hiredNov = await prisma.workforceRecruitmentNovedad.findFirst({
+    let hiredNov = await prisma.workforceRecruitmentNovedad.findFirst({
+      where: {
+        organizationId: org.id,
+        recipientWorkforceEmployeeId: empReg.id,
+        eventType: 'HIRED',
+      },
+    });
+    check(!hiredNov, '2 HIRED espera dos horas');
+    await deliverDueRecruitmentStageNovedades({
+      now: new Date(Date.now() + 2 * 60 * 60 * 1000 + 5000),
+      db: prisma,
+    });
+    hiredNov = await prisma.workforceRecruitmentNovedad.findFirst({
       where: {
         organizationId: org.id,
         recipientWorkforceEmployeeId: empReg.id,
@@ -306,6 +346,10 @@ if (dbOk) {
       method: 'PATCH',
       cookie: adminCookie,
       body: { stageId: rejected.id },
+    });
+    await deliverDueRecruitmentStageNovedades({
+      now: new Date(Date.now() + 2 * 60 * 60 * 1000 + 5000),
+      db: prisma,
     });
     const rejNov = await prisma.workforceRecruitmentNovedad.findFirst({
       where: {
@@ -338,6 +382,10 @@ if (dbOk) {
       method: 'PATCH',
       cookie: adminCookie,
       body: { stageId: contact.id },
+    });
+    await deliverDueRecruitmentStageNovedades({
+      now: new Date(Date.now() + 2 * 60 * 60 * 1000 + 5000),
+      db: prisma,
     });
     const novNoReg = await prisma.workforceRecruitmentNovedad.count({
       where: { candidateId: candNoReg },
@@ -414,6 +462,7 @@ if (dbOk) {
     server.close();
     await cleanupOrg(org.id);
     await cleanupOrg(orgB.id);
+  }
   }
 }
 

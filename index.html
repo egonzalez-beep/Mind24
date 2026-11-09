@@ -5478,6 +5478,10 @@ function mind24ResetUiBlockers(){
 }
 function showView(name) {
   if(!canAccessView(name))return;
+  if(name!=='dash-recruitment'&&window.__REC_STATE&&typeof recKanbanAutoScrollStop==='function'){
+    window.__REC_STATE.kanbanDragging=false;
+    recKanbanAutoScrollStop();
+  }
   if(name!=='evaluacion') mind24ResetUiBlockers();
   mind24PersistLastView(name);
   const t=mind24ViewEl(name);
@@ -9039,7 +9043,6 @@ function recKanbanSetHideEmpty(on){
 function recKanbanColumnShouldCollapse(vacancyId, stageId, count){
   const st=recEnsureState();
   const key=recKanbanColCollapseKey(vacancyId, stageId);
-  if(st.kanbanDragging&&count===0) return false;
   if(count===0&&recKanbanHideEmptyEnabled()) return !(st.kanbanEmptyPinnedOpen&&st.kanbanEmptyPinnedOpen[key]);
   return !!(st.kanbanColCollapsed&&st.kanbanColCollapsed[key]);
 }
@@ -9103,10 +9106,56 @@ function recKanbanToggleEmptyStages(){
   const st=recEnsureState();
   if(st.selectedId) recKanbanRender(st.selectedId);
 }
-function recKanbanRevealEmptyForDrag(){
-  document.querySelectorAll('#rec-kanban-board .rec-kanban-col').forEach(function(col){
-    if(recKanbanColCardCount(col)===0) col.classList.remove('rec-kanban-col--collapsed');
-  });
+function recKanbanPrefersReducedMotion(){
+  try{
+    return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }catch(_e){
+    return false;
+  }
+}
+function recKanbanAutoScrollStop(){
+  const st=recEnsureState();
+  st.kanbanAutoScrollX=0;
+  if(st.kanbanAutoScrollRaf){
+    cancelAnimationFrame(st.kanbanAutoScrollRaf);
+    st.kanbanAutoScrollRaf=0;
+  }
+}
+function recKanbanAutoScrollTick(){
+  const st=recEnsureState();
+  st.kanbanAutoScrollRaf=0;
+  const board=document.getElementById('rec-kanban-board');
+  const vx=st.kanbanAutoScrollX||0;
+  if(!st.kanbanDragging||!board||!vx) return;
+  const max=Math.max(0, board.scrollWidth-board.clientWidth);
+  const next=Math.max(0, Math.min(max, board.scrollLeft+vx));
+  if(next!==board.scrollLeft) board.scrollLeft=next;
+  if(st.kanbanDragging&&st.kanbanAutoScrollX){
+    st.kanbanAutoScrollRaf=requestAnimationFrame(recKanbanAutoScrollTick);
+  }
+}
+function recKanbanAutoScrollFromPointer(clientX){
+  const st=recEnsureState();
+  const board=document.getElementById('rec-kanban-board');
+  if(!st.kanbanDragging||!board||typeof clientX!=='number'){
+    st.kanbanAutoScrollX=0;
+    return;
+  }
+  const rect=board.getBoundingClientRect();
+  const zone=80;
+  const maxSpeed=recKanbanPrefersReducedMotion()?3:16;
+  let speed=0;
+  if(clientX>=rect.left&&clientX<=rect.left+zone){
+    const closeness=Math.min(1, Math.max(0, (zone-(clientX-rect.left))/zone));
+    speed=-(1+closeness*(maxSpeed-1));
+  }else if(clientX<=rect.right&&clientX>=rect.right-zone){
+    const closeness=Math.min(1, Math.max(0, (zone-(rect.right-clientX))/zone));
+    speed=1+closeness*(maxSpeed-1);
+  }
+  st.kanbanAutoScrollX=speed;
+  if(speed&&!st.kanbanAutoScrollRaf){
+    st.kanbanAutoScrollRaf=requestAnimationFrame(recKanbanAutoScrollTick);
+  }
 }
 function recKanbanRestoreEmptyAfterDrag(){
   const st=recEnsureState();
@@ -9180,6 +9229,13 @@ function recBindRecruitmentShell(){
   const st=recEnsureState();
   if(st.recShellBound) return;
   st.recShellBound=true;
+  if(!st.kanbanDragScrollBound){
+    st.kanbanDragScrollBound=true;
+    document.addEventListener('dragover',function(ev){
+      if(!recEnsureState().kanbanDragging) return;
+      recKanbanAutoScrollFromPointer(ev.clientX);
+    });
+  }
   const globalQ=document.getElementById('rec-global-q');
   if(globalQ){
     globalQ.addEventListener('input',function(){
@@ -10685,6 +10741,8 @@ function recKanbanCardLocation(c){
   return [c.city,c.state].filter(Boolean).join(', ');
 }
 async function recKanbanLoad(vacancyId){
+  if(typeof recKanbanAutoScrollStop==='function') recKanbanAutoScrollStop();
+  recEnsureState().kanbanDragging=false;
   const slot=document.getElementById('rec-pipeline-slot');
   const st=recEnsureState();
   if(!vacancyId||!slot){
@@ -10875,12 +10933,16 @@ function recKanbanMoveCardInDom(card,fromCol,toCol,opts){
     if(recKanbanColCardCount(fromCol)===0) recKanbanEnsureDropEmpty(fromCol,true);
   }
 }
-async function recKanbanSilentReconcile(vacancyId){
+async function recKanbanSilentReconcile(vacancyId, epoch){
   const st=recEnsureState();
   if(!vacancyId) return;
+  if(epoch!=null&&st.kanbanEpoch!==epoch) return;
+  if(st.kanbanPendingMoves&&Object.keys(st.kanbanPendingMoves).length) return;
   try{
     const appsJ=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications');
     const apps=appsJ.applications||[];
+    if(epoch!=null&&st.kanbanEpoch!==epoch) return;
+    if(st.kanbanPendingMoves&&Object.keys(st.kanbanPendingMoves).length) return;
     st.kanbanApplications=apps;
     const board=document.getElementById('rec-kanban-board');
     if(!board) return;
@@ -10892,7 +10954,11 @@ async function recKanbanSilentReconcile(vacancyId){
       const stateStage=app&&(app.stageId||(app.stage&&app.stage.id));
       if(!app||String(domStage)!==String(stateStage)) mismatch=true;
     });
-    if(mismatch) recKanbanRender(vacancyId);
+    if(mismatch){
+      if(epoch!=null&&st.kanbanEpoch!==epoch) return;
+      if(st.kanbanPendingMoves&&Object.keys(st.kanbanPendingMoves).length) return;
+      recKanbanRender(vacancyId);
+    }
   }catch(_e){}
 }
 async function recKanbanRefreshRelatedPanels(vacancyId,candidateId){
@@ -10920,7 +10986,6 @@ function recKanbanCardDragStart(ev){
   st.kanbanDragAppId=appId;
   st.kanbanDragging=true;
   card.classList.add('rec-kanban-card--dragging');
-  recKanbanRevealEmptyForDrag();
   if(ev.dataTransfer){
     ev.dataTransfer.setData('text/plain',appId);
     ev.dataTransfer.effectAllowed='move';
@@ -10928,6 +10993,7 @@ function recKanbanCardDragStart(ev){
 }
 function recKanbanCardDragEnd(ev){
   const st=recEnsureState();
+  recKanbanAutoScrollStop();
   st.kanbanDragAppId=null;
   st.kanbanDragging=false;
   st.kanbanSuppressClick=true;
@@ -10937,9 +11003,13 @@ function recKanbanCardDragEnd(ev){
   recKanbanRestoreEmptyAfterDrag();
 }
 function recKanbanColDragOver(ev){
-  ev.preventDefault();
   const col=ev.currentTarget.closest('.rec-kanban-col');
-  if(col&&col.classList.contains('rec-kanban-col--collapsed')) return;
+  recKanbanAutoScrollFromPointer(ev.clientX);
+  if(col&&col.classList.contains('rec-kanban-col--collapsed')){
+    if(ev.dataTransfer) ev.dataTransfer.dropEffect='none';
+    return;
+  }
+  ev.preventDefault();
   if(ev.dataTransfer) ev.dataTransfer.dropEffect='move';
   if(col) col.classList.add('rec-kanban-col--over');
 }
@@ -10949,6 +11019,7 @@ function recKanbanColDragLeave(ev){
 }
 async function recKanbanColDrop(ev){
   ev.preventDefault();
+  recKanbanAutoScrollStop();
   const st=recEnsureState();
   const col=ev.currentTarget.closest('.rec-kanban-col');
   const targetStageId=col&&col.getAttribute('data-stage-id');
@@ -10967,7 +11038,9 @@ async function recKanbanColDrop(ev){
   const fromCol=recKanbanFindCol(fromStageId)||card.closest('.rec-kanban-col');
   const toCol=col;
   if(!st.kanbanPendingMoves) st.kanbanPendingMoves={};
-  st.kanbanPendingMoves[appId]=true;
+  st.kanbanEpoch=(st.kanbanEpoch||0)+1;
+  const moveEpoch=st.kanbanEpoch;
+  st.kanbanPendingMoves[appId]=moveEpoch;
   card.classList.add('rec-kanban-card--pending');
   app.stageId=targetStageId;
   if(app.stage) app.stage.id=targetStageId;
@@ -10979,6 +11052,7 @@ async function recKanbanColDrop(ev){
       method:'PATCH',
       body:JSON.stringify({ stageId:targetStageId }),
     });
+    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return;
     if(out&&out.application){
       Object.assign(app,out.application);
       recKanbanUpdateCardFoot(card,app);
@@ -10990,9 +11064,10 @@ async function recKanbanColDrop(ev){
     if(out&&out.vacancy&&out.vacancy.status) recApplyVacancyStatusLocal(out.vacancy.id, out.vacancy.status);
     if(out&&out.headcount) recRenderHeadcount(out.headcount);
     if(st.detailCandidateId===candidateId) recCandMarkPipelineDirty();
-    recKanbanSilentReconcile(vacancyId);
+    recKanbanSilentReconcile(vacancyId, moveEpoch);
     await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
   }catch(_e){
+    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return;
     app.stageId=fromStageId;
     if(app.stage) app.stage.id=fromStageId;
     recKanbanMoveCardInDom(card,toCol,fromCol,{ animate:false });
@@ -11000,7 +11075,7 @@ async function recKanbanColDrop(ev){
     recKanbanSyncColCounts(toCol);
     recKanbanSetErr('No se pudo cambiar la etapa. Intenta nuevamente.');
   }finally{
-    delete st.kanbanPendingMoves[appId];
+    if(st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]===moveEpoch) delete st.kanbanPendingMoves[appId];
     card.classList.remove('rec-kanban-card--pending');
   }
 }
@@ -11672,6 +11747,10 @@ async function recSubmitVacancy(){
   }
 }
 function recSwitchModuleTab(tab){
+  if(typeof recKanbanAutoScrollStop==='function'){
+    recEnsureState().kanbanDragging=false;
+    recKanbanAutoScrollStop();
+  }
   if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const st=recEnsureState();
   st.moduleTab=tab==='candidates'?'candidates':tab==='metrics'?'metrics':'vacancies';

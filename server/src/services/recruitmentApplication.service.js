@@ -8,7 +8,7 @@ import {
   ensureVacancyRecruitmentStages,
 } from './recruitmentVacancyStage.service.js';
 import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
-import { emitWorkforceRecruitmentNovedadForStageEvent } from './workforceRecruitmentNovedad.service.js';
+import { cancelOpenStageNovedadWaits, stageNovedadEligibleAt } from './workforceRecruitmentNovedad.service.js';
 import {
   HIRED_STAGE_KEY,
   nextHiredStageEnteredAt,
@@ -47,22 +47,31 @@ function serializeApplication(row) {
   };
 }
 
-async function recordStageEvent(tx, { organizationId, applicationId, fromStageId, toStageId, changedByUserId }) {
-  const stageEvent = await tx.recruitmentApplicationStageEvent.create({
+async function recordStageEvent(tx, {
+  organizationId,
+  applicationId,
+  fromStageId,
+  toStageId,
+  changedByUserId,
+  scheduleNovedad = false,
+  movedAt = new Date(),
+}) {
+  const armWait = scheduleNovedad
+    && fromStageId
+    && toStageId
+    && fromStageId !== toStageId
+    && changedByUserId;
+  if (armWait) await cancelOpenStageNovedadWaits(tx, applicationId);
+  return tx.recruitmentApplicationStageEvent.create({
     data: {
       organizationId,
       applicationId,
       fromStageId,
       toStageId,
       changedByUserId: changedByUserId ?? null,
+      novedadEligibleAt: armWait ? stageNovedadEligibleAt(movedAt) : null,
     },
   });
-  await emitWorkforceRecruitmentNovedadForStageEvent(tx, {
-    stageEvent,
-    applicationId,
-    organizationId,
-  });
-  return stageEvent;
 }
 
 export async function assertRecruitmentApplicationInOrg(applicationId, organizationId) {
@@ -138,6 +147,7 @@ export async function createRecruitmentApplication({
       fromStageId: null,
       toStageId: newStage.id,
       changedByUserId,
+      scheduleNovedad: false,
     });
 
     const targetStageId =
@@ -183,6 +193,7 @@ export async function createRecruitmentApplication({
         fromStageId: newStage.id,
         toStageId: targetStageId,
         changedByUserId,
+        scheduleNovedad: false,
       });
       return serializeApplication(moved);
     }
@@ -299,6 +310,7 @@ export async function updateRecruitmentApplication({
         fromStageId: existing.stageId,
         toStageId: stageId,
         changedByUserId,
+        scheduleNovedad: true,
       });
     }
 

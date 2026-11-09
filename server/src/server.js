@@ -4,6 +4,7 @@ import { runBootstrapUsers } from './services/bootstrap.service.js';
 import { ensureEvaluationCatalog } from './services/evaluationCatalog.service.js';
 import { startRecruitmentCoverageSweep } from './services/recruitmentCoverage.service.js';
 import { startDailyGoalsReminderSweep } from './services/workforceDailyGoalsReminder.service.js';
+import { startRecruitmentStageNovedadSweep } from './services/workforceRecruitmentNovedad.service.js';
 import { resolveTimeclockPublicLinkBase } from './services/timeclockToken.service.js';
 
 const app = createApp();
@@ -27,6 +28,7 @@ app.listen(env.PORT, () => {
   console.log(`Mind24 API listening on :${env.PORT}`);
   startRecruitmentCoverageSweep();
   startDailyGoalsReminderSweep();
+  startRecruitmentStageNovedadSweep();
   try {
     console.log(`[timeclock] public link base: ${resolveTimeclockPublicLinkBase()}`);
   } catch (e) {

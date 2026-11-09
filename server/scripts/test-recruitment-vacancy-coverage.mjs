@@ -317,7 +317,7 @@ check(indexHtml.includes('Mostrar todas las etapas') && indexHtml.includes('Ocul
 check(!indexHtml.includes('etapas vacías ocultas') && !indexHtml.includes('etapa vacía oculta'), 'sin contador textual de etapas ocultas');
 check(!indexHtml.includes('id="rec-kanban-empty-toggle-label"'), 'el botón de etapas no tiene texto visible');
 check(!/<path d="M3 6h18"\/><path d="M3 12h18"\/><path d="M3 18h18"\/>/.test(indexHtml.slice(indexHtml.indexOf('id="rec-kanban-empty-toggle"'), indexHtml.indexOf('id="rec-kanban-empty-toggle"') + 700)), 'el control de etapas no usa una hamburguesa');
-check(indexHtml.includes('recKanbanRevealEmptyForDrag') && indexHtml.includes('recKanbanRestoreEmptyAfterDrag'), 'durante el arrastre se muestran y luego se restauran');
+check(!indexHtml.includes('recKanbanRevealEmptyForDrag') && indexHtml.includes('recKanbanRestoreEmptyAfterDrag'), 'el arrastre no abre etapas vacías y conserva el estado al soltar');
 check(indexHtml.includes('rec_kanban_hide_empty'), 'la preferencia vive en la sesión, no en la base');
 check(indexHtml.includes('aria-pressed'), 'el botón es accesible');
 check(indexHtml.includes('if(window.__recHiredPopoverBound) return'), 'el popover no duplica listeners');
