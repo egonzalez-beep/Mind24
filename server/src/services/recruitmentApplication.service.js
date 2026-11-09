@@ -10,6 +10,14 @@ import {
 import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
 import { cancelOpenStageNovedadWaits, stageNovedadEligibleAt } from './workforceRecruitmentNovedad.service.js';
 import {
+  assertRecruitmentProcessStageChangeAllowed,
+  clearCandidateAutoArchive,
+  closurePatchForStageMove,
+  lockRecruitmentCandidateForProcessChange,
+  kanbanVisibleApplicationWhere,
+  syncCandidateAutoArchive,
+} from './recruitmentProcessClosure.service.js';
+import {
   HIRED_STAGE_KEY,
   nextHiredStageEnteredAt,
   reconcileVacancyCoverage,
@@ -40,6 +48,10 @@ function serializeApplication(row) {
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     notes: row.notes,
+    closedAt: row.closedAt ? row.closedAt.toISOString() : null,
+    closureOutcome: row.closureOutcome || null,
+    closureReason: row.closureReason || null,
+    closureNote: row.closureNote || null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     candidate: row.candidate ? serializeRecruitmentCandidate(row.candidate) : undefined,
@@ -99,6 +111,7 @@ export async function createRecruitmentApplication({
 }) {
   const run = async (tx) => {
     await assertRecruitmentVacancyInOrg(vacancyId, organizationId, tx);
+    await lockRecruitmentCandidateForProcessChange(tx, candidateId);
     const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId, tx);
     if (candidate.archivedAt) {
       const err = new Error('VALIDATION_ERROR');
@@ -107,6 +120,7 @@ export async function createRecruitmentApplication({
         'No se puede asignar a vacante un candidato archivado. Desarchívalo antes de crear una nueva postulación.';
       throw err;
     }
+    await clearCandidateAutoArchive(tx, candidateId);
 
     const duplicate = await tx.recruitmentApplication.findUnique({
       where: { candidateId_vacancyId: { candidateId, vacancyId } },
@@ -215,7 +229,7 @@ export async function listRecruitmentApplicationsForVacancy(organizationId, vaca
   await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   await getStageByKeyForOrg(organizationId, 'NEW');
   const rows = await prisma.recruitmentApplication.findMany({
-    where: { organizationId, vacancyId },
+    where: { organizationId, vacancyId, ...kanbanVisibleApplicationWhere() },
     include: { candidate: true, stage: true },
     orderBy: [{ updatedAt: 'desc' }, { position: 'asc' }, { appliedAt: 'desc' }],
   });
@@ -234,7 +248,10 @@ export async function updateRecruitmentApplication({
 }) {
   const existingRow = await prisma.recruitmentApplication.findFirst({
     where: { id: applicationId, organizationId },
-    include: { stage: { select: { key: true } } },
+    include: {
+      stage: { select: { key: true } },
+      candidate: { select: { id: true, archivedAt: true } },
+    },
   });
   if (!existingRow) {
     const err = new Error('NOT_FOUND');
@@ -251,6 +268,17 @@ export async function updateRecruitmentApplication({
 
     const stageChanged = stageId != null && stageId !== existing.stageId;
     let toStageKey = existing.stage?.key ?? null;
+    if (stageChanged && existing.candidate?.archivedAt) {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message = 'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.';
+      throw err;
+    }
+    assertRecruitmentProcessStageChangeAllowed({
+      stageKey: existing.stage?.key,
+      closureOutcome: existing.closureOutcome,
+      stageChanged,
+    });
     if (stageChanged) {
       await assertStageEnabledForVacancy(organizationId, existing.vacancyId, stageId, tx);
       const nextStage = await tx.recruitmentStage.findFirst({
@@ -277,6 +305,17 @@ export async function updateRecruitmentApplication({
       existingInterviewScheduledAt: existing.interviewScheduledAt,
       explicitInterviewScheduledAt: interviewScheduledAt,
     });
+    Object.assign(
+      data,
+      closurePatchForStageMove({
+        stageChanged,
+        fromStageKey: existing.stage?.key,
+        fromOutcome: existing.closureOutcome,
+        toStageKey,
+        now: new Date(),
+      }),
+    );
+
     if (stageChanged || interviewScheduledAt !== undefined) {
       data.interviewScheduledAt = resolvedInterview;
       if (resolvedInterview == null) {
@@ -311,6 +350,13 @@ export async function updateRecruitmentApplication({
         toStageId: stageId,
         changedByUserId,
         scheduleNovedad: true,
+      });
+    }
+    if (stageChanged && written.count === 1) {
+      await syncCandidateAutoArchive(tx, {
+        organizationId,
+        candidateId: existing.candidateId,
+        now: new Date(),
       });
     }
 

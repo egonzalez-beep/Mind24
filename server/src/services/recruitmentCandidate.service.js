@@ -1,5 +1,10 @@
 import { prisma } from '../db/client.js';
 import {
+  assertCandidateCanBeArchived,
+  classifyRecruitmentApplication,
+  lockRecruitmentCandidateForProcessChange,
+} from './recruitmentProcessClosure.service.js';
+import {
   normalizeRecruitmentCandidateCurp,
   normalizeRecruitmentCandidateFullName,
   prepareRecruitmentCandidateWritePayload,
@@ -48,7 +53,7 @@ export function normalizeRecruitmentCandidatePhoneDigits(phone) {
 }
 
 export function emptyRecruitmentCandidateApplicationSummary() {
-  return { total: 0, active: 0, hired: 0, rejected: 0 };
+  return { total: 0, active: 0, hired: 0, rejected: 0, declined: 0 };
 }
 
 export function serializeRegisteredByWorkforceEmployee(emp) {
@@ -125,6 +130,10 @@ function serializeCandidateApplicationProcess(row) {
       key: row.stage.key,
       name: row.stage.name,
     },
+    closedAt: row.closedAt ? row.closedAt.toISOString() : null,
+    closureOutcome: row.closureOutcome || null,
+    closureReason: row.closureReason || null,
+    closureNote: row.closureNote || null,
   };
 }
 
@@ -147,15 +156,16 @@ export async function buildApplicationSummariesByCandidateId(organizationId, can
 
   const rows = await prisma.recruitmentApplication.findMany({
     where: { organizationId, candidateId: { in: candidateIds } },
-    select: { candidateId: true, stage: { select: { key: true } } },
+    select: { candidateId: true, closureOutcome: true, stage: { select: { key: true } } },
   });
 
   for (const row of rows) {
     const summary = map.get(row.candidateId) ?? emptyRecruitmentCandidateApplicationSummary();
     summary.total += 1;
-    const key = row.stage?.key;
-    if (key === 'HIRED') summary.hired += 1;
-    else if (key === 'REJECTED') summary.rejected += 1;
+    const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
+    if (kind === 'declined') summary.declined += 1;
+    else if (kind === 'hired') summary.hired += 1;
+    else if (kind === 'rejected') summary.rejected += 1;
     else summary.active += 1;
     map.set(row.candidateId, summary);
   }
@@ -175,6 +185,7 @@ export async function buildPrimaryActivePreviewByCandidateId(
     where: {
       organizationId,
       candidateId: { in: candidateIds },
+      closureOutcome: null,
       stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
     },
     include: {
@@ -221,7 +232,10 @@ export async function buildLatestTerminalPreviewByCandidateId(organizationId, ca
     where: {
       organizationId,
       candidateId: { in: candidateIds },
-      stage: { key: { in: ['HIRED', 'REJECTED'] } },
+      OR: [
+        { closureOutcome: { not: null } },
+        { stage: { key: { in: ['HIRED', 'REJECTED'] } } },
+      ],
     },
     include: {
       vacancy: { select: { id: true, title: true } },
@@ -232,11 +246,11 @@ export async function buildLatestTerminalPreviewByCandidateId(organizationId, ca
 
   for (const row of rows) {
     if (map.get(row.candidateId)) continue;
-    const key = row.stage?.key;
+    const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
     map.set(row.candidateId, {
-      listPreviewKind: key === 'HIRED' ? 'hired' : 'rejected',
-      stageName: key === 'HIRED' ? 'Contratado' : 'Rechazado',
-      stageKey: key || null,
+      listPreviewKind: kind === 'declined' ? 'declined' : kind === 'hired' ? 'hired' : 'rejected',
+      stageName: kind === 'declined' ? 'Declinó' : kind === 'hired' ? 'Contratado' : 'Rechazado',
+      stageKey: row.stage?.key || null,
       vacancyTitle: row.vacancy?.title || '—',
       vacancyId: row.vacancy?.id || null,
     });
@@ -818,12 +832,27 @@ export async function updateRecruitmentCandidate(organizationId, candidateId, pa
     data.source = sf.source;
     data.sourceOther = sf.sourceOther;
   }
-  if (patch.archived === true) data.archivedAt = new Date();
-  if (patch.archived === false) data.archivedAt = null;
-
-  const row = await prisma.recruitmentCandidate.update({
-    where: { id: candidateId },
-    data,
+  const row = await prisma.$transaction(async (tx) => {
+    await lockRecruitmentCandidateForProcessChange(tx, candidateId);
+    if (patch.archived === true || patch.archived === false) {
+      await tx.recruitmentCandidate.update({
+        where: { id: candidateId },
+        data: { autoArchiveEligibleAt: null },
+      });
+    }
+    if (patch.archived === true) {
+      await assertCandidateCanBeArchived(tx, { organizationId, candidateId });
+      data.archivedAt = new Date();
+      data.autoArchiveEligibleAt = null;
+    }
+    if (patch.archived === false) {
+      data.archivedAt = null;
+      data.autoArchiveEligibleAt = null;
+    }
+    return tx.recruitmentCandidate.update({
+      where: { id: candidateId },
+      data,
+    });
   });
   const summaryMap = await buildApplicationSummariesByCandidateId(organizationId, [candidateId]);
   return serializeRecruitmentCandidate(row, { applicationSummary: summaryMap.get(candidateId) });

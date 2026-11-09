@@ -64,6 +64,7 @@ function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle
   const vacancy = String(vacancyTitle || 'vacante').trim() || 'vacante';
   if (eventType === 'HIRED') return `${name} llegó a contratación en ${vacancy}.`;
   if (eventType === 'REJECTED') return `${name} salió del proceso ${vacancy}.`;
+  if (eventType === 'DECLINED') return `${name} declinó el proceso ${vacancy}.`;
   return `${name} cambió a la etapa ${stage} en ${vacancy}.`;
 }
 
@@ -182,6 +183,85 @@ export async function emitWorkforceRecruitmentNovedadForStageEvent(
         message,
         metadata,
         dedupeKey,
+      },
+    });
+  } catch (e) {
+    if (isOrganizationDedupeKeyConflict(e)) return null;
+    throw e;
+  }
+}
+
+/**
+ * Aviso inmediato de declinación. No arma la espera de dos horas.
+ * El motivo no va en el mensaje. P2002 devuelve null para no duplicar.
+ * Cualquier otro error se propaga y revierte el cierre que llama esta función.
+ */
+export async function emitWorkforceRecruitmentNovedadForDecline(tx, { organizationId, applicationId }) {
+  if (!organizationId || !applicationId) return null;
+  const app = await tx.recruitmentApplication.findFirst({
+    where: { id: applicationId, organizationId },
+    select: {
+      id: true,
+      organizationId: true,
+      candidateId: true,
+      vacancyId: true,
+      stageId: true,
+      candidate: {
+        select: {
+          id: true,
+          organizationId: true,
+          fullName: true,
+          registeredByWorkforceEmployeeId: true,
+          archivedAt: true,
+        },
+      },
+      vacancy: { select: { id: true, organizationId: true, title: true } },
+    },
+  });
+  if (!app?.candidate?.registeredByWorkforceEmployeeId) return null;
+  if (app.candidate.archivedAt) return null;
+  if (
+    app.organizationId !== organizationId ||
+    app.candidate.organizationId !== organizationId ||
+    app.vacancy?.organizationId !== organizationId
+  ) {
+    return null;
+  }
+  const recipient = await tx.workforceEmployee.findFirst({
+    where: { id: app.candidate.registeredByWorkforceEmployeeId, organizationId },
+    select: { id: true, isActive: true },
+  });
+  if (!recipient || recipient.isActive === false) return null;
+  const stage = await tx.recruitmentStage.findFirst({
+    where: { id: app.stageId, organizationId },
+    select: { id: true, key: true, name: true },
+  });
+  if (!stage) return null;
+  const message = buildNovedadMessage('DECLINED', {
+    candidateName: app.candidate.fullName,
+    stageName: stage.name,
+    vacancyTitle: app.vacancy.title,
+  });
+  try {
+    return await tx.workforceRecruitmentNovedad.create({
+      data: {
+        organizationId,
+        recipientWorkforceEmployeeId: recipient.id,
+        candidateId: app.candidateId,
+        applicationId: app.id,
+        vacancyId: app.vacancyId,
+        eventType: 'DECLINED',
+        fromStageId: null,
+        toStageId: stage.id,
+        message,
+        metadata: {
+          candidateName: app.candidate.fullName,
+          vacancyTitle: app.vacancy.title,
+          toStageKey: stage.key,
+          toStageName: stage.name,
+          closureOutcome: 'DECLINED',
+        },
+        dedupeKey: `application_declined:${app.id}`,
       },
     });
   } catch (e) {

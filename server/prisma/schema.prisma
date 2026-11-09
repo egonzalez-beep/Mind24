@@ -86,6 +86,23 @@ enum WorkforceRecruitmentNovedadEventType {
   STAGE_CHANGED
   HIRED
   REJECTED
+  DECLINED
+}
+
+enum RecruitmentApplicationClosureOutcome {
+  REJECTED
+  DECLINED
+}
+
+enum RecruitmentApplicationClosureReason {
+  ACCEPTED_OTHER_OFFER
+  PAY_OR_CONDITIONS
+  LOCATION_OR_TRANSPORT
+  SCHEDULE
+  PERSONAL
+  NO_LONGER_INTERESTED
+  NO_RESPONSE
+  OTHER
 }
 
 enum OrgNotificationType {
@@ -665,6 +682,8 @@ model RecruitmentCandidate {
   registeredByWorkforceEmployeeId String?
   registeredByWorkforceEmployee   WorkforceEmployee? @relation("RecruitmentCandidateRegisteredBy", fields: [registeredByWorkforceEmployeeId], references: [id], onDelete: SetNull)
   archivedAt     DateTime? @db.Timestamptz(6)
+  /// Vencimiento del archivado automático. Nulo = no programado. Sin backfill.
+  autoArchiveEligibleAt DateTime? @db.Timestamptz(6)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -680,6 +699,7 @@ model RecruitmentCandidate {
   @@index([organizationId, email])
   @@index([organizationId, phone])
   @@index([organizationId, archivedAt])
+  @@index([autoArchiveEligibleAt])
   @@index([organizationId, profile])
   @@index([organizationId, source])
   @@index([organizationId, createdAt])
@@ -932,6 +952,11 @@ model RecruitmentApplication {
   interviewTimeSpecified Boolean @default(true)
   /// Entrada real a la etapa HIRED. Se limpia al salir. No lo envía el cliente.
   hiredStageEnteredAt DateTime? @db.Timestamptz(6)
+  /// Cierre del proceso, independiente del nombre visible de la etapa. No lo envía el cliente.
+  closedAt       DateTime? @db.Timestamptz(6)
+  closureOutcome RecruitmentApplicationClosureOutcome?
+  closureReason  RecruitmentApplicationClosureReason?
+  closureNote    String?   @db.VarChar(240)
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

@@ -472,6 +472,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-outcome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .rec-cand-history-outcome--hired{color:#047857;}
 .rec-cand-history-outcome--rej{color:var(--slate-600);}
+.rec-cand-history-outcome--dec{color:#9A3412;}
+.rec-cand-history-detail{font-size:11px;color:var(--slate-600);margin:2px 0 0;white-space:normal;overflow-wrap:anywhere;}
+.rec-cand-aside-row-sub{overflow-wrap:anywhere;}
+.rec-cand-decline-btn{font-size:12px;font-weight:650;color:var(--slate-700);background:#fff;border:1px solid var(--slate-200);border-radius:999px;padding:4px 10px;cursor:pointer;white-space:normal;text-align:center;max-width:100%;}
+.rec-process-dialog{width:min(440px,calc(100vw - 32px));max-width:calc(100vw - 32px);overflow-x:hidden;box-sizing:border-box;}
+.rec-process-dialog h2,.rec-process-dialog p,.rec-process-dialog label{overflow-wrap:anywhere;}
+.rec-process-dialog .form-input,.rec-process-dialog textarea{width:100%;max-width:100%;box-sizing:border-box;}
+.rec-process-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.rec-process-actions .form-submit,.rec-process-actions .rec-stages-ghost-btn{margin:0;flex:1 1 140px;}
 .rec-cand-summary-meta{font-size:11px;color:var(--slate-500);margin:4px 0 0;line-height:1.4;}
 .rec-cand-summary-meta--aside{text-align:left;padding:0 2px;}
 .rec-cand-detail-skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--slate-100),var(--slate-50),var(--slate-100));background-size:200% 100%;animation:recCandShimmer 1.2s ease infinite;margin-bottom:8px;}
@@ -3160,6 +3169,42 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
     </div>
     <p id="rec-cand-add-vac-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
     <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-cand-add-vac-submit" onclick="recCandSubmitAddVacancy()">Guardar</button>
+  </div>
+</div>
+
+<div id="modal-rec-decline" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-decline')">
+  <div class="modal-card rec-process-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-decline-title" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="recCandCloseDecline()" aria-label="Cerrar">✕</button>
+    <h2 id="rec-decline-title" class="modal-title" style="font-size:18px;margin-bottom:8px;">Declinó el proceso</h2>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Vacante</p>
+    <p id="rec-decline-vacancy" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Etapa actual</p>
+    <p id="rec-decline-stage" style="font-size:14px;font-weight:700;margin:0 0 12px;"></p>
+    <label class="form-label" for="rec-decline-reason">Motivo</label>
+    <select id="rec-decline-reason" class="form-input" aria-required="true" onchange="recCandDeclineReasonChanged()"></select>
+    <div id="rec-decline-note-wrap" class="hidden" style="margin-top:12px;">
+      <label class="form-label" for="rec-decline-note">Detalle</label>
+      <textarea id="rec-decline-note" class="form-input" maxlength="240" rows="3" placeholder="Opcional"></textarea>
+    </div>
+    <p id="rec-decline-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
+    <div class="rec-process-actions">
+      <button type="button" class="rec-stages-ghost-btn" onclick="recCandCloseDecline()">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-decline-confirm" onclick="recCandConfirmDecline()">Confirmar cierre</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-rec-archive" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-archive')">
+  <div class="modal-card rec-process-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-archive-title" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="closeModal('modal-rec-archive')" aria-label="Cerrar">✕</button>
+    <h2 id="rec-archive-title" class="modal-title" style="font-size:18px;margin-bottom:8px;">Archivar candidato</h2>
+    <p id="rec-archive-message" style="font-size:14px;color:var(--slate-700);margin:0;"></p>
+    <p id="rec-archive-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
+    <div class="rec-process-actions">
+      <button type="button" class="rec-stages-ghost-btn" id="rec-archive-cancel" onclick="closeModal('modal-rec-archive')">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-archive-confirm" onclick="recCandConfirmArchive()">Archivar candidato</button>
+      <button type="button" class="form-submit form-submit-purple hidden" id="rec-archive-review" onclick="recCandReviewActiveProcesses()">Revisar procesos</button>
+    </div>
   </div>
 </div>
 
@@ -10775,7 +10820,7 @@ function recKanbanRender(vacancyId){
   const st=recEnsureState();
   if(!slot) return;
   const stages=st.kanbanStages||[];
-  const apps=st.kanbanApplications||[];
+  const apps=(st.kanbanApplications||[]).filter(recKanbanApplicationIsVisible);
   if(!stages.length){
     slot.innerHTML='<p class="rec-kanban-empty-msg">Configura las etapas del proceso para esta vacante.</p>';
     return;
@@ -10828,7 +10873,9 @@ function recKanbanRender(vacancyId){
       const contact=recKanbanCardContact(c);
       const prof=typeof recCandProfilePrimaryLabel==='function'?recCandProfilePrimaryLabel(c):(c.profile||'—');
       const updated=recKanbanRelativeUpdated(app.updatedAt||c.updatedAt);
-      html+='<div class="rec-kanban-card" draggable="true" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
+      const stageKey=stage.key||'';
+      const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED';
+      html+='<div class="rec-kanban-card" draggable="'+(canDrag?'true':'false')+'" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-stage-key="'+tcEsc(stageKey)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
         ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
         '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
         '<div class="rec-kanban-card-top">'+
@@ -10850,6 +10897,19 @@ function recKanbanRender(vacancyId){
   slot.innerHTML=html;
   if(st.kanbanError) recKanbanSetErr(st.kanbanError);
   recKanbanSyncEmptyChrome(vacancyId);
+}
+function recKanbanApplicationIsVisible(app){
+  if(!app) return false;
+  return app.closureOutcome!=='DECLINED';
+}
+function recKanbanRemoveApplication(applicationId){
+  const st=recEnsureState();
+  const apps=st.kanbanApplications||[];
+  const idx=apps.findIndex(function(app){ return String(app.id)===String(applicationId); });
+  if(idx<0) return;
+  apps.splice(idx,1);
+  const vacancyId=st.selectedId||st.detailVacancyId;
+  if(vacancyId&&document.getElementById('rec-pipeline-slot')) recKanbanRender(vacancyId);
 }
 function recKanbanFindCol(stageId){
   const board=document.getElementById('rec-kanban-board');
@@ -10978,6 +11038,11 @@ async function recKanbanRefreshRelatedPanels(vacancyId,candidateId){
 function recKanbanCardDragStart(ev){
   const st=recEnsureState();
   const card=ev.currentTarget;
+  const lockedKey=card.getAttribute('data-stage-key');
+  if(lockedKey==='HIRED'||lockedKey==='REJECTED'||card.getAttribute('draggable')==='false'){
+    ev.preventDefault();
+    return;
+  }
   const appId=card.getAttribute('data-app-id');
   if(appId&&st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]){
     ev.preventDefault();
@@ -11056,6 +11121,11 @@ async function recKanbanColDrop(ev){
     if(out&&out.application){
       Object.assign(app,out.application);
       recKanbanUpdateCardFoot(card,app);
+      const landedKey=app.stage&&app.stage.key;
+      if(landedKey==='HIRED'||landedKey==='REJECTED'){
+        card.setAttribute('data-stage-key',landedKey);
+        card.setAttribute('draggable','false');
+      }
     }else{
       app.updatedAt=new Date().toISOString();
       recKanbanUpdateCardFoot(card,app);
@@ -12266,6 +12336,7 @@ function recCandAppStageKey(a){
   return a&&a.stage&&a.stage.key?a.stage.key:'';
 }
 function recCandAppIsClosed(a){
+  if(a&&a.closureOutcome) return true;
   const k=recCandAppStageKey(a);
   return k==='HIRED'||k==='REJECTED';
 }
@@ -12293,10 +12364,12 @@ function recCandSummaryMetaLine(sum){
   const ac=Number(sum.active)||0;
   const h=Number(sum.hired)||0;
   const r=Number(sum.rejected)||0;
+  const d=Number(sum.declined)||0;
   if(t) parts.push(t+' proceso'+(t===1?'':'s'));
   if(ac) parts.push(ac+' activo'+(ac===1?'':'s'));
   if(h) parts.push(h+' contratación'+(h===1?'':'es'));
   if(r) parts.push(r+' rechazo'+(r===1?'':'s'));
+  if(d) parts.push(d+' declinación'+(d===1?'':'es'));
   return parts.join(' · ');
 }
 async function recCandGetStagesCached(vacancyId){
@@ -12433,6 +12506,7 @@ function recCandHeroHtml(app){
     '<span class="rec-cand-stage-pill '+pillCls+'">'+tcEsc(stage.name||'—')+'</span>'+
     '<div class="rec-cand-hero-ctrls">'+
     '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa"><option value="">—</option></select>'+
+    (recCandAppIsClosed(app)?'':'<button type="button" class="rec-cand-decline-btn" onclick="recCandOpenDecline(\''+tcEsc(recCandGetAppId(app))+'\')">Declinó el proceso</button>')+
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
     '<div id="rec-cand-hero-rail"></div>'+ivRow+
@@ -12842,28 +12916,53 @@ async function recCandDeleteNote(noteId){
     await recCandLoadDetailNotes();
   }catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo eliminar.'); }
 }
+function recCandDeclineReasonLabel(key){
+  const labels={
+    ACCEPTED_OTHER_OFFER:'Aceptó otra oferta',
+    PAY_OR_CONDITIONS:'Sueldo o condiciones',
+    LOCATION_OR_TRANSPORT:'Ubicación o transporte',
+    SCHEDULE:'Horario',
+    PERSONAL:'Motivos personales',
+    NO_LONGER_INTERESTED:'Ya no está interesado',
+    NO_RESPONSE:'Sin respuesta después del seguimiento',
+    OTHER:'Otro'
+  };
+  return labels[key]||'';
+}
+function recCandClosureReasonText(a){
+  if(!a||!a.closureReason) return '';
+  const label=recCandDeclineReasonLabel(a.closureReason);
+  if(a.closureReason==='OTHER'&&a.closureNote) return (label?label+': ':'')+String(a.closureNote);
+  return label;
+}
 function recCandAsideRowHtml(a){
   const vac=a.vacancy||{};
   const vacId=vac.id||'';
   const stageName=(a.stage&&a.stage.name)||'—';
-  return '<button type="button" class="rec-cand-aside-row" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">'+
-    '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
-    '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+'</p></span>'+
-    '<span class="rec-cand-aside-pill">'+tcEsc(stageName)+'</span></button>';
+  const appId=recCandGetAppId(a);
+  return '<div class="rec-cand-aside-row" style="cursor:default;">'+
+    '<button type="button" class="rec-cand-aside-row-main" style="background:transparent;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">'+
+    '<p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
+    '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+'</p></button>'+
+    '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;">'+
+    '<span class="rec-cand-aside-pill">'+tcEsc(stageName)+'</span>'+
+    '<button type="button" class="rec-cand-decline-btn" onclick="recCandOpenDecline(\''+tcEsc(appId)+'\')">Declinó el proceso</button></span></div>';
 }
 function recCandHistoryAsideHtml(closedApps){
   if(!closedApps.length) return '';
   return closedApps.map(function(a){
       const vac=a.vacancy||{};
       const sk=recCandAppStageKey(a);
-      const hired=sk==='HIRED';
-      const outcome=hired?'Contratado':'Rechazado';
-      const ocCls=hired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej';
-      const dt=recCandFmtDetailDate(a.updatedAt||a.appliedAt);
+      const outcome=a.closureOutcome==='DECLINED'?'Declinó':(sk==='HIRED'?'Contratado':'Rechazado');
+      const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(sk==='HIRED'?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
+      const started=a.appliedAt?recCandFmtDetailDate(a.appliedAt):'';
+      const stageName=(a.stage&&a.stage.name)||'';
+      const reason=recCandClosureReasonText(a);
+      const detail=[started, stageName, reason].filter(Boolean).join(' · ');
       return '<div class="rec-cand-aside-row" style="cursor:default;padding:8px 0;">'+
         '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
-        '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+' · '+tcEsc(dt)+'</p></span>'+
-        '<span class="rec-cand-history-outcome '+ocCls+'">'+outcome+'</span></div>';
+        '<p class="rec-cand-history-detail">'+tcEsc(detail)+'</p></span>'+
+        '<span class="rec-cand-history-outcome '+ocCls+'">'+tcEsc(outcome)+'</span></div>';
     }).join('');
 }
 function recCandToggleAsidePanel(btn){
@@ -12904,6 +13003,11 @@ async function recCandRenderPipelineSection(c){
   st.detailPrimaryApplication=primary||null;
   st.detailOtherActiveApps=primary?parts.active.filter(function(a){ return a!==primary; }):[];
   if(!primary){
+    if(c.archivedAt){
+      host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
+        '<p class="rec-cand-pipeline-empty-sub">Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.</p></div>';
+      return;
+    }
     host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
       '<p class="rec-cand-pipeline-empty-sub">Este candidato está disponible en cartera.</p>'+
       '<button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button></div>';
@@ -13157,6 +13261,11 @@ function recCandRowProcessHtml(c){
   if(kind==='rejected'){
     return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-terminal rec-cand-process-rejected">'+
       '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
+      '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
+  }
+  if(kind==='declined'){
+    return '<div class="rec-cand-row-block rec-cand-row-block--process rec-cand-process-terminal">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Declinó</span></p>'+
       '<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle||'—')+'</p></div>';
   }
   if(proc&&proc.stageName&&!kind){
@@ -13631,8 +13740,7 @@ async function recCandRenderDetail(c,loading){
   recCandRenderDetailTags(c);
   recCandRenderCvPanel(c);
   recCandLoadDetailNotes();
-  const archBtn=document.getElementById('rec-cand-archive-btn');
-  if(archBtn) archBtn.textContent=c.archivedAt?'Reactivar candidato':'Archivar candidato';
+  recCandSyncArchivedActions(c);
 }
 function recCandSetCvErr(msg){
   const el=document.getElementById('rec-cand-cv-err');
@@ -14660,6 +14768,11 @@ function tcEmpMyCandProcessHtml(proc){
       '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
       (proc.vacancyTitle?'<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle)+'</p>':'')+'</div>';
   }
+  if(kind==='declined'){
+    return '<div class="tc-emp-my-cand-process rec-cand-process-terminal">'+
+      '<p class="rec-cand-process-head"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Declinó</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac">'+tcEsc(proc.vacancyTitle)+'</p>':'')+'</div>';
+  }
   return '<div class="tc-emp-my-cand-process"><p class="rec-cand-process-empty"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso</p></div>';
 }
 function tcEmpMyCandStatusBadgeHtml(proc){
@@ -14667,6 +14780,7 @@ function tcEmpMyCandStatusBadgeHtml(proc){
   if(kind==='active') return '<span class="tc-emp-my-cand-badge"><span class="rec-cand-process-dot" aria-hidden="true"></span>En proceso</span>';
   if(kind==='hired') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--hired"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span>Contratado</span>';
   if(kind==='rejected') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--rejected"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span>Rechazado</span>';
+  if(kind==='declined') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--rejected"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span>Declinó</span>';
   return '';
 }
 function tcEmpMyCandProcessRightHtml(proc){
@@ -14682,6 +14796,10 @@ function tcEmpMyCandProcessRightHtml(proc){
   }
   if(kind==='rejected'){
     return '<p class="rec-cand-process-head" style="margin:0;"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Rechazado</span></p>'+
+      (proc.vacancyTitle?'<p class="rec-cand-process-vac" style="margin:4px 0 0;padding-left:13px;">'+tcEsc(proc.vacancyTitle)+'</p>':'');
+  }
+  if(kind==='declined'){
+    return '<p class="rec-cand-process-head" style="margin:0;"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span><span>Declinó</span></p>'+
       (proc.vacancyTitle?'<p class="rec-cand-process-vac" style="margin:4px 0 0;padding-left:13px;">'+tcEsc(proc.vacancyTitle)+'</p>':'');
   }
   return '<p class="rec-cand-process-empty" style="margin:0;"><span class="rec-cand-process-dot" aria-hidden="true"></span>Sin proceso</p>';
@@ -15567,6 +15685,10 @@ async function recCandCreateAndOpen(body){
 async function recCandOpenAddVacancyModal(){
   const st=recEnsureState();
   if(!st.detailCandidateId) return;
+  if(st.detailCandidate&&st.detailCandidate.archivedAt){
+    recCandSetOpErr('Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.');
+    return;
+  }
   recCandCatalogInits();
   const err=document.getElementById('rec-cand-add-vac-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
@@ -15618,18 +15740,166 @@ async function recCandSubmitAddVacancy(){
     if(btn) btn.disabled=false;
   }
 }
-async function recCandToggleArchive(){
+let recDeclineReturnFocus=null;
+function recCandFillDeclineReasons(){
+  const sel=document.getElementById('rec-decline-reason');
+  if(!sel||sel.__filled) return;
+  const options=[['','Selecciona un motivo'],['ACCEPTED_OTHER_OFFER','Aceptó otra oferta'],['PAY_OR_CONDITIONS','Sueldo o condiciones'],['LOCATION_OR_TRANSPORT','Ubicación o transporte'],['SCHEDULE','Horario'],['PERSONAL','Motivos personales'],['NO_LONGER_INTERESTED','Ya no está interesado'],['NO_RESPONSE','Sin respuesta después del seguimiento'],['OTHER','Otro']];
+  sel.innerHTML=options.map(function(pair){ return '<option value="'+pair[0]+'">'+pair[1]+'</option>'; }).join('');
+  sel.__filled=true;
+}
+function recCandDeclineReasonChanged(){
+  const sel=document.getElementById('rec-decline-reason');
+  const wrap=document.getElementById('rec-decline-note-wrap');
+  if(!wrap) return;
+  const other=sel&&sel.value==='OTHER';
+  wrap.classList.toggle('hidden', !other);
+  if(!other){
+    const note=document.getElementById('rec-decline-note');
+    if(note) note.value='';
+  }
+}
+function recCandCloseDecline(){
+  closeModal('modal-rec-decline');
+  if(recDeclineReturnFocus&&typeof recDeclineReturnFocus.focus==='function') recDeclineReturnFocus.focus();
+  recDeclineReturnFocus=null;
+}
+function recCandOpenDecline(applicationId){
+  const st=recEnsureState();
+  const c=st.detailCandidate;
+  const app=((c&&c.applications)||[]).find(function(row){ return recCandGetAppId(row)===applicationId; });
+  if(!app||recCandAppIsClosed(app)) return;
+  recDeclineReturnFocus=document.activeElement;
+  recCandFillDeclineReasons();
+  const vac=document.getElementById('rec-decline-vacancy');
+  const stage=document.getElementById('rec-decline-stage');
+  const sel=document.getElementById('rec-decline-reason');
+  const note=document.getElementById('rec-decline-note');
+  const err=document.getElementById('rec-decline-err');
+  if(vac) vac.textContent=(app.vacancy&&app.vacancy.title)||'—';
+  if(stage) stage.textContent=(app.stage&&app.stage.name)||'—';
+  if(sel) sel.value='';
+  if(note) note.value='';
+  recCandDeclineReasonChanged();
+  if(err){ err.textContent=''; err.classList.add('hidden'); }
+  const modal=document.getElementById('modal-rec-decline');
+  if(modal) modal.dataset.applicationId=applicationId;
+  openModal('modal-rec-decline');
+  if(sel) sel.focus();
+}
+async function recCandConfirmDecline(){
+  const modal=document.getElementById('modal-rec-decline');
+  const applicationId=modal&&modal.dataset.applicationId;
+  const sel=document.getElementById('rec-decline-reason');
+  const note=document.getElementById('rec-decline-note');
+  const err=document.getElementById('rec-decline-err');
+  const reason=sel?sel.value:'';
+  if(!reason){
+    if(err){ err.textContent='Selecciona un motivo.'; err.classList.remove('hidden'); }
+    if(sel) sel.focus();
+    return;
+  }
+  const btn=document.getElementById('rec-decline-confirm');
+  if(btn) btn.disabled=true;
+  try{
+    const body={ reason:reason };
+    if(reason==='OTHER') body.note=note&&note.value?note.value.trim():null;
+    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/decline',{method:'POST',body:JSON.stringify(body)});
+    recCandCloseDecline();
+    recKanbanRemoveApplication(applicationId);
+    const st=recEnsureState();
+    const fresh=await recCandFetchDetail(st.detailCandidateId);
+    st.detailCandidate=fresh;
+    await recCandRenderDetail(fresh,false);
+    recCandMarkPipelineDirty();
+    await recCandLoadList(false);
+  }catch(e){
+    if(err){ err.textContent=(e&&e.message)||'No se pudo cerrar el proceso.'; err.classList.remove('hidden'); }
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+function recCandOpenArchiveDialog(){
   const st=recEnsureState();
   const c=st.detailCandidate;
   if(!c) return;
-  const next=!c.archivedAt;
-  if(next&&!window.confirm('¿Archivar este candidato? No podrá recibir nuevas postulaciones.')) return;
-  await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(c.id),{method:'PATCH',body:JSON.stringify({archived:next})});
+  if(c.archivedAt){
+    recCandApplyArchive(false);
+    return;
+  }
+  const parts=recCandPartitionApplications(c.applications||[]);
+  const blocked=parts.active.length>0;
+  const title=document.getElementById('rec-archive-title');
+  const message=document.getElementById('rec-archive-message');
+  const confirmBtn=document.getElementById('rec-archive-confirm');
+  const reviewBtn=document.getElementById('rec-archive-review');
+  const err=document.getElementById('rec-archive-err');
+  if(title) title.textContent=blocked?'Este candidato tiene procesos activos':'Archivar candidato';
+  if(message) message.textContent=blocked
+    ?'Antes de archivarlo debes cerrar sus procesos activos. Puedes marcar cada proceso como rechazado o indicar que el candidato declinó.'
+    :'Este candidato dejará de aparecer entre los candidatos activos. Podrás reactivarlo más adelante.';
+  if(confirmBtn) confirmBtn.classList.toggle('hidden', blocked);
+  if(reviewBtn) reviewBtn.classList.toggle('hidden', !blocked);
+  if(err){ err.textContent=''; err.classList.add('hidden'); }
+  openModal('modal-rec-archive');
+  const focusEl=document.getElementById(blocked?'rec-archive-review':'rec-archive-cancel');
+  if(focusEl) focusEl.focus();
+}
+function recCandReviewActiveProcesses(){
+  closeModal('modal-rec-archive');
+}
+async function recCandApplyArchive(nextArchived){
+  const st=recEnsureState();
+  const c=st.detailCandidate;
+  if(!c) return;
+  await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(c.id),{method:'PATCH',body:JSON.stringify({archived:nextArchived})});
   const fresh=await recCandFetchDetail(c.id);
   st.detailCandidate=fresh;
   await recCandRenderDetail(fresh,false);
   recCandMarkPipelineDirty();
   await recCandLoadList(false);
+}
+async function recCandConfirmArchive(){
+  const st=recEnsureState();
+  const c=st.detailCandidate;
+  const err=document.getElementById('rec-archive-err');
+  if(!c) return;
+  const parts=recCandPartitionApplications(c.applications||[]);
+  if(parts.active.length){
+    recCandOpenArchiveDialog();
+    return;
+  }
+  const btn=document.getElementById('rec-archive-confirm');
+  if(btn) btn.disabled=true;
+  try{
+    await recCandApplyArchive(true);
+    closeModal('modal-rec-archive');
+  }catch(e){
+    if(err){ err.textContent=(e&&e.message)||'No se pudo archivar.'; err.classList.remove('hidden'); }
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+function recCandSyncArchivedActions(c){
+  const archBtn=document.getElementById('rec-cand-archive-btn');
+  if(archBtn) archBtn.textContent=c&&c.archivedAt?'Reactivar candidato':'Archivar candidato';
+  const addBtn=document.getElementById('rec-cand-toolbar-add-vac');
+  if(!addBtn) return;
+  const archived=!!(c&&c.archivedAt);
+  addBtn.disabled=archived;
+  addBtn.title=archived?'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.':'Añadir a vacante';
+  addBtn.setAttribute('aria-disabled', archived?'true':'false');
+}
+async function recCandToggleArchive(){
+  const st=recEnsureState();
+  const c=st.detailCandidate;
+  if(!c) return;
+  if(c.archivedAt){
+    try{ await recCandApplyArchive(false); }
+    catch(e){ recCandSetOpErr((e&&e.message)||'No se pudo reactivar.'); }
+    return;
+  }
+  recCandOpenArchiveDialog();
 }
 (function recCandCvFileInit(){
   function bind(){

@@ -4,6 +4,7 @@ import {
   listEnabledVacancyStagesForDistribution,
   seedVacancyStagesFromOrganizationCatalog,
 } from './recruitmentVacancyStage.service.js';
+import { classifyRecruitmentApplication } from './recruitmentProcessClosure.service.js';
 import {
   countDistinctHiredCandidates,
   planVacancyCoverageUpdate,
@@ -23,14 +24,16 @@ function summarizeApplications(applications, now = new Date()) {
   for (const app of applications) {
     summary.total += 1;
     const key = app.stage?.key;
-    if (key === 'HIRED' && app.candidateId && !hiredSeen.has(app.candidateId)) {
+    const kind = classifyRecruitmentApplication(key, app.closureOutcome);
+    if (kind === 'declined') continue;
+    if (kind === 'hired' && app.candidateId && !hiredSeen.has(app.candidateId)) {
       hiredSeen.add(app.candidateId);
       summary.hired += 1;
       if (isHireConfirmedAt(app.hiredStageEnteredAt, now)) summary.hiredConfirmed += 1;
     }
-    if (key === 'FINALIST') summary.finalists += 1;
-    if (key === 'REJECTED') summary.rejected += 1;
-    if (key !== 'HIRED' && key !== 'REJECTED') summary.inProcess += 1;
+    if (kind === 'active' && key === 'FINALIST') summary.finalists += 1;
+    if (kind === 'rejected') summary.rejected += 1;
+    if (kind === 'active') summary.inProcess += 1;
   }
   return summary;
 }
@@ -110,7 +113,11 @@ async function buildStageDistributionForVacancy(organizationId, vacancyId) {
     listEnabledVacancyStagesForDistribution(organizationId, vacancyId),
     prisma.recruitmentApplication.groupBy({
       by: ['stageId'],
-      where: { organizationId, vacancyId },
+      where: {
+        organizationId,
+        vacancyId,
+        NOT: { closureOutcome: 'DECLINED' },
+      },
       _count: { _all: true },
     }),
   ]);
@@ -134,6 +141,7 @@ async function buildApplicationSummariesByVacancyId(organizationId, vacancyIds) 
       vacancyId: true,
       candidateId: true,
       hiredStageEnteredAt: true,
+      closureOutcome: true,
       stage: { select: { key: true } },
     },
   });

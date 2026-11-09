@@ -47,6 +47,10 @@ import {
   updateRecruitmentApplication,
 } from '../services/recruitmentApplication.service.js';
 import {
+  DECLINE_REASON_KEYS,
+  declineRecruitmentApplication,
+} from '../services/recruitmentProcessClosure.service.js';
+import {
   listVacancyAssignees,
   removeVacancyAssignee,
   setVacancyAssignee,
@@ -1076,6 +1080,44 @@ router.patch('/applications/:id', async (req, res, next) => {
       select: { id: true, status: true },
     });
     res.json({ application, vacancy, headcount });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const declineApplicationSchema = z
+  .object({
+    reason: z.enum(DECLINE_REASON_KEYS),
+    note: z.string().max(240).optional().nullable(),
+  })
+  .strict();
+
+router.post('/applications/:id/decline', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = declineApplicationSchema.parse(req.body || {});
+    const result = await declineRecruitmentApplication({
+      organizationId: u.organizationId,
+      applicationId: req.params.id,
+      reason: body.reason,
+      note: body.note,
+    });
+    const application = result.application;
+    res.json({
+      alreadyClosed: result.alreadyClosed === true,
+      application: application
+        ? {
+            id: application.id,
+            candidateId: application.candidateId,
+            vacancyId: application.vacancyId,
+            stageId: application.stageId,
+            closedAt: application.closedAt ? new Date(application.closedAt).toISOString() : null,
+            closureOutcome: application.closureOutcome || null,
+            closureReason: application.closureReason || null,
+            closureNote: application.closureNote || null,
+          }
+        : null,
+    });
   } catch (e) {
     next(e);
   }
