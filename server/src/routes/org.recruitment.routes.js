@@ -1087,7 +1087,7 @@ router.patch('/applications/:id', async (req, res, next) => {
 
 const declineApplicationSchema = z
   .object({
-    reason: z.enum(DECLINE_REASON_KEYS),
+    reason: z.enum(DECLINE_REASON_KEYS).optional().nullable(),
     note: z.string().max(240).optional().nullable(),
   })
   .strict();

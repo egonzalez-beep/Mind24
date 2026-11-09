@@ -475,7 +475,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-outcome--dec{color:#9A3412;}
 .rec-cand-history-detail{font-size:11px;color:var(--slate-600);margin:2px 0 0;white-space:normal;overflow-wrap:anywhere;}
 .rec-cand-aside-row-sub{overflow-wrap:anywhere;}
-.rec-cand-decline-btn{font-size:12px;font-weight:650;color:var(--slate-700);background:#fff;border:1px solid var(--slate-200);border-radius:999px;padding:4px 10px;cursor:pointer;white-space:normal;text-align:center;max-width:100%;}
+.rec-cand-decline-btn{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:650;color:#92400e;background:#fffbeb;border:1px solid rgba(217,119,6,.35);border-radius:999px;padding:3px 8px;cursor:pointer;white-space:nowrap;line-height:1.2;}
+.rec-cand-decline-btn svg{width:14px;height:14px;flex:0 0 auto;}
+.rec-cand-decline-btn:focus-visible,.rec-process-dialog button:focus-visible,.rec-process-dialog select:focus-visible,.rec-process-dialog textarea:focus-visible{outline:2px solid #b45309;outline-offset:2px;}
 .rec-process-dialog{width:min(440px,calc(100vw - 32px));max-width:calc(100vw - 32px);overflow-x:hidden;box-sizing:border-box;}
 .rec-process-dialog h2,.rec-process-dialog p,.rec-process-dialog label{overflow-wrap:anywhere;}
 .rec-process-dialog .form-input,.rec-process-dialog textarea{width:100%;max-width:100%;box-sizing:border-box;}
@@ -1028,6 +1030,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-kanban-col--sem-finalist.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(236,253,245,.55);border-color:rgba(110,231,183,.38);}
 .rec-kanban-col--sem-hired.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(240,253,250,.62);border-color:rgba(45,212,191,.36);}
 .rec-kanban-col--sem-rejected.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(255,247,247,.72);border-color:rgba(251,113,133,.32);}
+.rec-kanban-col--sem-declined{background:rgba(255,251,235,.92);border-color:rgba(217,119,6,.28);box-shadow:inset 3px 0 0 rgba(180,83,9,.28);}
+.rec-kanban-col--sem-declined .rec-kanban-col-title{color:#92400e;}
+.rec-kanban-col--sem-declined .rec-kanban-col-count{color:#b45309;border-color:rgba(217,119,6,.35);}
+.rec-kanban-col--sem-declined .rec-kanban-col-icon-compact{color:#b45309;}
+.rec-kanban-col--sem-declined.rec-kanban-col--collapsed{box-shadow:inset 0 0 0 1px rgba(15,23,42,.04);}
+.rec-kanban-card-reason{margin:4px 0 0;font-size:11px;line-height:1.3;color:#92400e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rec-kanban-card{background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:8px 8px 7px 22px;cursor:grab;position:relative;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:var(--tr-fast);}
 .rec-kanban-card-handle{position:absolute;left:6px;top:10px;color:var(--slate-400);font-size:12px;line-height:1;user-select:none;cursor:grab;}
 .rec-kanban-card:hover{border-color:rgba(124,58,237,.28);box-shadow:0 2px 8px rgba(124,58,237,.06);}
@@ -3175,21 +3183,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 <div id="modal-rec-decline" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-decline')">
   <div class="modal-card rec-process-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-decline-title" onclick="event.stopPropagation()">
     <button type="button" class="modal-close" onclick="recCandCloseDecline()" aria-label="Cerrar">✕</button>
-    <h2 id="rec-decline-title" class="modal-title" style="font-size:18px;margin-bottom:8px;">Declinó el proceso</h2>
+    <h2 id="rec-decline-title" class="modal-title" style="font-size:18px;margin-bottom:8px;">El candidato declinó el proceso</h2>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Candidato</p>
+    <p id="rec-decline-candidate" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
     <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Vacante</p>
     <p id="rec-decline-vacancy" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
-    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Etapa actual</p>
-    <p id="rec-decline-stage" style="font-size:14px;font-weight:700;margin:0 0 12px;"></p>
-    <label class="form-label" for="rec-decline-reason">Motivo</label>
-    <select id="rec-decline-reason" class="form-input" aria-required="true" onchange="recCandDeclineReasonChanged()"></select>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Etapa en la que se encontraba</p>
+    <p id="rec-decline-stage" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
+    <p id="rec-decline-copy" style="font-size:13px;color:var(--slate-700);margin:0 0 12px;">Este proceso se cerrará y aparecerá en la columna Declinó.</p>
+    <label class="form-label" for="rec-decline-reason">Motivo opcional</label>
+    <select id="rec-decline-reason" class="form-input" onchange="recCandDeclineReasonChanged()"></select>
     <div id="rec-decline-note-wrap" class="hidden" style="margin-top:12px;">
       <label class="form-label" for="rec-decline-note">Detalle</label>
-      <textarea id="rec-decline-note" class="form-input" maxlength="240" rows="3" placeholder="Opcional"></textarea>
+      <textarea id="rec-decline-note" class="form-input" maxlength="240" rows="3" placeholder="Describe el motivo"></textarea>
     </div>
     <p id="rec-decline-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
     <div class="rec-process-actions">
       <button type="button" class="rec-stages-ghost-btn" onclick="recCandCloseDecline()">Cancelar</button>
-      <button type="button" class="form-submit form-submit-purple" id="rec-decline-confirm" onclick="recCandConfirmDecline()">Confirmar cierre</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-decline-confirm" onclick="recCandConfirmDecline()">Confirmar declinación</button>
     </div>
   </div>
 </div>
@@ -9226,6 +9237,7 @@ function recKanbanStageIconSvg(stage){
     PSYCHOMETRICS:'<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
     FINALIST:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     HIRED:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+    DECLINED:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     REJECTED:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
   };
   const fallback='<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>';
@@ -9235,6 +9247,7 @@ function recKanbanColSemanticMod(stage){
   const key=String((stage&&stage.key)||'').toUpperCase();
   if(key==='FINALIST') return ' rec-kanban-col--sem-finalist';
   if(key==='HIRED') return ' rec-kanban-col--sem-hired';
+  if(key==='DECLINED') return ' rec-kanban-col--sem-declined';
   if(key==='REJECTED') return ' rec-kanban-col--sem-rejected';
   return '';
 }
@@ -10815,6 +10828,15 @@ async function recKanbanLoad(vacancyId){
     st.kanbanLoading=false;
   }
 }
+var REC_KANBAN_DECLINED_ID='rec-kanban-declined';
+function recKanbanBoardColumns(stages){
+  const cols=(stages||[]).map(function(vs){ return { vs:vs, virtual:false }; });
+  const virtual={ vs:{ stageId:REC_KANBAN_DECLINED_ID, stage:{ id:REC_KANBAN_DECLINED_ID, key:'DECLINED', name:'Declinó' } }, virtual:true };
+  const rejectedAt=cols.findIndex(function(col){ return col.vs.stage&&col.vs.stage.key==='REJECTED'; });
+  if(rejectedAt>=0) cols.splice(rejectedAt,0,virtual);
+  else cols.push(virtual);
+  return cols;
+}
 function recKanbanRender(vacancyId){
   const slot=document.getElementById('rec-pipeline-slot');
   const st=recEnsureState();
@@ -10825,13 +10847,15 @@ function recKanbanRender(vacancyId){
     slot.innerHTML='<p class="rec-kanban-empty-msg">Configura las etapas del proceso para esta vacante.</p>';
     return;
   }
+  const columns=recKanbanBoardColumns(stages);
   const byStage=new Map();
-  stages.forEach(function(vs){
+  columns.forEach(function(col){
+    const vs=col.vs;
     const sid=(vs.stage&&vs.stage.id)||vs.stageId;
     if(sid) byStage.set(sid,[]);
   });
   apps.forEach(function(app){
-    const sid=app.stageId||(app.stage&&app.stage.id);
+    const sid=app.closureOutcome==='DECLINED'?REC_KANBAN_DECLINED_ID:(app.stageId||(app.stage&&app.stage.id));
     if(byStage.has(sid)) byStage.get(sid).push(app);
   });
   const totalApps=apps.length;
@@ -10839,14 +10863,16 @@ function recKanbanRender(vacancyId){
   let html='<p id="rec-kanban-err" class="rec-kanban-err hidden"></p>';
   if(!totalApps) html+='<p class="rec-kanban-empty-msg">Aún no hay candidatos asignados a esta vacante.</p>';
   html+='<div class="rec-kanban-board" id="rec-kanban-board" role="region" aria-label="Pipeline por etapas">';
-  stages.forEach(function(vs){
+  columns.forEach(function(col){
+    const vs=col.vs;
+    const virtual=col.virtual===true;
     const stage=vs.stage||{};
     const sid=stage.id||vs.stageId;
     const stageName=stage.name||stage.key||'Etapa';
     const colApps=byStage.get(sid)||[];
     const collapsed=recKanbanColumnShouldCollapse(vacancyId, sid, colApps.length);
     const colCls='rec-kanban-col'+(collapsed?' rec-kanban-col--collapsed':'')+recKanbanColSemanticMod(stage);
-    const dragAttr=' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
+    const dragAttr=virtual?'':' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
     const collapseLabel=collapsed?'Expandir etapa':'Contraer etapa';
     const colTip=stageName+' · '+colApps.length+' candidatos';
     html+='<div class="'+colCls+'" data-stage-id="'+tcEsc(sid)+'"'+dragAttr+
@@ -10874,7 +10900,8 @@ function recKanbanRender(vacancyId){
       const prof=typeof recCandProfilePrimaryLabel==='function'?recCandProfilePrimaryLabel(c):(c.profile||'—');
       const updated=recKanbanRelativeUpdated(app.updatedAt||c.updatedAt);
       const stageKey=stage.key||'';
-      const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED';
+      const reasonText=app.closureOutcome==='DECLINED'&&typeof recCandClosureReasonText==='function'?recCandClosureReasonText(app):'';
+      const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED';
       html+='<div class="rec-kanban-card" draggable="'+(canDrag?'true':'false')+'" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-stage-key="'+tcEsc(stageKey)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
         ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
         '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
@@ -10883,6 +10910,7 @@ function recKanbanRender(vacancyId){
         '<div class="rec-kanban-card-main">'+
         '<p class="rec-kanban-card-name">'+tcEsc(c.fullName||'—')+'</p>'+
         '<p class="rec-kanban-card-meta">'+tcEsc(prof)+'</p></div></div>'+
+        (reasonText?'<p class="rec-kanban-card-reason" title="'+tcEsc(reasonText)+'">'+tcEsc(reasonText)+'</p>':'')+
         '<div class="rec-kanban-card-row">'+
         (loc?'<span class="rec-kanban-card-loc">'+tcEsc(loc)+'</span>':'')+
         (src?'<span class="rec-kanban-card-source">'+tcEsc(src)+'</span>':'')+
@@ -10899,8 +10927,7 @@ function recKanbanRender(vacancyId){
   recKanbanSyncEmptyChrome(vacancyId);
 }
 function recKanbanApplicationIsVisible(app){
-  if(!app) return false;
-  return app.closureOutcome!=='DECLINED';
+  return !!app;
 }
 function recKanbanRemoveApplication(applicationId){
   const st=recEnsureState();
@@ -10908,6 +10935,20 @@ function recKanbanRemoveApplication(applicationId){
   const idx=apps.findIndex(function(app){ return String(app.id)===String(applicationId); });
   if(idx<0) return;
   apps.splice(idx,1);
+  const vacancyId=st.selectedId||st.detailVacancyId;
+  if(vacancyId&&document.getElementById('rec-pipeline-slot')) recKanbanRender(vacancyId);
+}
+function recKanbanPlaceDeclinedApplication(applicationId, patch){
+  const st=recEnsureState();
+  const apps=st.kanbanApplications||[];
+  const app=apps.find(function(row){ return String(row.id)===String(applicationId); });
+  if(!app) return;
+  app.closureOutcome='DECLINED';
+  if(patch){
+    if(patch.closureReason!==undefined) app.closureReason=patch.closureReason;
+    if(patch.closureNote!==undefined) app.closureNote=patch.closureNote;
+    if(patch.closedAt) app.closedAt=patch.closedAt;
+  }
   const vacancyId=st.selectedId||st.detailVacancyId;
   if(vacancyId&&document.getElementById('rec-pipeline-slot')) recKanbanRender(vacancyId);
 }
@@ -11039,7 +11080,7 @@ function recKanbanCardDragStart(ev){
   const st=recEnsureState();
   const card=ev.currentTarget;
   const lockedKey=card.getAttribute('data-stage-key');
-  if(lockedKey==='HIRED'||lockedKey==='REJECTED'||card.getAttribute('draggable')==='false'){
+  if(lockedKey==='HIRED'||lockedKey==='REJECTED'||lockedKey==='DECLINED'||card.getAttribute('draggable')==='false'){
     ev.preventDefault();
     return;
   }
@@ -12484,6 +12525,13 @@ async function recCandChangePrimaryStage(selectEl){
     selectEl.disabled=false;
   }
 }
+function recCandDeclineButtonHtml(app){
+  if(!app||recCandAppIsClosed(app)) return '';
+  const appId=recCandGetAppId(app);
+  return '<button type="button" class="rec-cand-decline-btn" aria-label="Declinó" onclick="recCandOpenDecline(\''+tcEsc(appId)+'\')">'+
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>'+
+    '<span>Declinó</span></button>';
+}
 function recCandHeroHtml(app){
   const vac=app.vacancy||{};
   const stage=app.stage||{};
@@ -12506,7 +12554,7 @@ function recCandHeroHtml(app){
     '<span class="rec-cand-stage-pill '+pillCls+'">'+tcEsc(stage.name||'—')+'</span>'+
     '<div class="rec-cand-hero-ctrls">'+
     '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa"><option value="">—</option></select>'+
-    (recCandAppIsClosed(app)?'':'<button type="button" class="rec-cand-decline-btn" onclick="recCandOpenDecline(\''+tcEsc(recCandGetAppId(app))+'\')">Declinó el proceso</button>')+
+    recCandDeclineButtonHtml(app)+
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
     '<div id="rec-cand-hero-rail"></div>'+ivRow+
@@ -12939,14 +12987,13 @@ function recCandAsideRowHtml(a){
   const vac=a.vacancy||{};
   const vacId=vac.id||'';
   const stageName=(a.stage&&a.stage.name)||'—';
-  const appId=recCandGetAppId(a);
   return '<div class="rec-cand-aside-row" style="cursor:default;">'+
     '<button type="button" class="rec-cand-aside-row-main" style="background:transparent;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">'+
     '<p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
     '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+'</p></button>'+
     '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;">'+
     '<span class="rec-cand-aside-pill">'+tcEsc(stageName)+'</span>'+
-    '<button type="button" class="rec-cand-decline-btn" onclick="recCandOpenDecline(\''+tcEsc(appId)+'\')">Declinó el proceso</button></span></div>';
+    recCandDeclineButtonHtml(a)+'</span></div>';
 }
 function recCandHistoryAsideHtml(closedApps){
   if(!closedApps.length) return '';
@@ -12955,10 +13002,11 @@ function recCandHistoryAsideHtml(closedApps){
       const sk=recCandAppStageKey(a);
       const outcome=a.closureOutcome==='DECLINED'?'Declinó':(sk==='HIRED'?'Contratado':'Rechazado');
       const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(sk==='HIRED'?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
-      const started=a.appliedAt?recCandFmtDetailDate(a.appliedAt):'';
+      const started=a.appliedAt?('Inicio '+recCandFmtDetailDate(a.appliedAt)):'';
+      const closed=a.closedAt?('Cierre '+recCandFmtDetailDate(a.closedAt)):'';
       const stageName=(a.stage&&a.stage.name)||'';
       const reason=recCandClosureReasonText(a);
-      const detail=[started, stageName, reason].filter(Boolean).join(' · ');
+      const detail=[started, stageName, reason, closed].filter(Boolean).join(' · ');
       return '<div class="rec-cand-aside-row" style="cursor:default;padding:8px 0;">'+
         '<span class="rec-cand-aside-row-main"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
         '<p class="rec-cand-history-detail">'+tcEsc(detail)+'</p></span>'+
@@ -15741,23 +15789,33 @@ async function recCandSubmitAddVacancy(){
   }
 }
 let recDeclineReturnFocus=null;
+let recDeclineEpoch=0;
+document.addEventListener('keydown',function(ev){
+  if(ev.key!=='Escape') return;
+  const modal=document.getElementById('modal-rec-decline');
+  if(!modal||modal.classList.contains('hidden')) return;
+  ev.stopImmediatePropagation();
+  recCandCloseDecline();
+},true);
 function recCandFillDeclineReasons(){
   const sel=document.getElementById('rec-decline-reason');
   if(!sel||sel.__filled) return;
-  const options=[['','Selecciona un motivo'],['ACCEPTED_OTHER_OFFER','Aceptó otra oferta'],['PAY_OR_CONDITIONS','Sueldo o condiciones'],['LOCATION_OR_TRANSPORT','Ubicación o transporte'],['SCHEDULE','Horario'],['PERSONAL','Motivos personales'],['NO_LONGER_INTERESTED','Ya no está interesado'],['NO_RESPONSE','Sin respuesta después del seguimiento'],['OTHER','Otro']];
+  const options=[['','Motivo opcional'],['ACCEPTED_OTHER_OFFER','Aceptó otra oferta'],['PAY_OR_CONDITIONS','Sueldo o condiciones'],['LOCATION_OR_TRANSPORT','Ubicación o transporte'],['SCHEDULE','Horario'],['PERSONAL','Motivos personales'],['NO_LONGER_INTERESTED','Ya no está interesado'],['NO_RESPONSE','Sin respuesta después del seguimiento'],['OTHER','Otro']];
   sel.innerHTML=options.map(function(pair){ return '<option value="'+pair[0]+'">'+pair[1]+'</option>'; }).join('');
   sel.__filled=true;
 }
 function recCandDeclineReasonChanged(){
   const sel=document.getElementById('rec-decline-reason');
   const wrap=document.getElementById('rec-decline-note-wrap');
+  const note=document.getElementById('rec-decline-note');
   if(!wrap) return;
   const other=sel&&sel.value==='OTHER';
   wrap.classList.toggle('hidden', !other);
-  if(!other){
-    const note=document.getElementById('rec-decline-note');
-    if(note) note.value='';
+  if(note){
+    note.required=other;
+    note.setAttribute('aria-required', other?'true':'false');
   }
+  if(!other&&note) note.value='';
 }
 function recCandCloseDecline(){
   closeModal('modal-rec-decline');
@@ -15771,11 +15829,13 @@ function recCandOpenDecline(applicationId){
   if(!app||recCandAppIsClosed(app)) return;
   recDeclineReturnFocus=document.activeElement;
   recCandFillDeclineReasons();
+  const who=document.getElementById('rec-decline-candidate');
   const vac=document.getElementById('rec-decline-vacancy');
   const stage=document.getElementById('rec-decline-stage');
   const sel=document.getElementById('rec-decline-reason');
   const note=document.getElementById('rec-decline-note');
   const err=document.getElementById('rec-decline-err');
+  if(who) who.textContent=(c&&c.fullName)||'—';
   if(vac) vac.textContent=(app.vacancy&&app.vacancy.title)||'—';
   if(stage) stage.textContent=(app.stage&&app.stage.name)||'—';
   if(sel) sel.value='';
@@ -15788,32 +15848,38 @@ function recCandOpenDecline(applicationId){
   if(sel) sel.focus();
 }
 async function recCandConfirmDecline(){
+  const epoch=++recDeclineEpoch;
   const modal=document.getElementById('modal-rec-decline');
   const applicationId=modal&&modal.dataset.applicationId;
   const sel=document.getElementById('rec-decline-reason');
   const note=document.getElementById('rec-decline-note');
   const err=document.getElementById('rec-decline-err');
   const reason=sel?sel.value:'';
-  if(!reason){
-    if(err){ err.textContent='Selecciona un motivo.'; err.classList.remove('hidden'); }
-    if(sel) sel.focus();
+  const detail=note&&note.value?note.value.trim():'';
+  if(reason==='OTHER'&&!detail){
+    if(err){ err.textContent='Escribe el detalle del motivo.'; err.classList.remove('hidden'); }
+    if(note) note.focus();
     return;
   }
   const btn=document.getElementById('rec-decline-confirm');
   if(btn) btn.disabled=true;
   try{
-    const body={ reason:reason };
-    if(reason==='OTHER') body.note=note&&note.value?note.value.trim():null;
-    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/decline',{method:'POST',body:JSON.stringify(body)});
+    const body={};
+    if(reason) body.reason=reason;
+    if(reason==='OTHER') body.note=detail;
+    const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/decline',{method:'POST',body:JSON.stringify(body)});
+    if(epoch!==recDeclineEpoch) return;
+    recKanbanPlaceDeclinedApplication(applicationId, out&&out.application);
     recCandCloseDecline();
-    recKanbanRemoveApplication(applicationId);
     const st=recEnsureState();
     const fresh=await recCandFetchDetail(st.detailCandidateId);
+    if(epoch!==recDeclineEpoch) return;
     st.detailCandidate=fresh;
     await recCandRenderDetail(fresh,false);
     recCandMarkPipelineDirty();
     await recCandLoadList(false);
   }catch(e){
+    if(epoch!==recDeclineEpoch) return;
     if(err){ err.textContent=(e&&e.message)||'No se pudo cerrar el proceso.'; err.classList.remove('hidden'); }
   }finally{
     if(btn) btn.disabled=false;

@@ -51,7 +51,8 @@ export function isRecruitmentApplicationOpen(stageKey, closureOutcome) {
 }
 
 export function isRecruitmentApplicationVisibleInKanban(stageKey, closureOutcome) {
-  return classifyRecruitmentApplication(stageKey, closureOutcome) !== 'declined';
+  const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
+  return kind === 'active' || kind === 'hired' || kind === 'rejected' || kind === 'declined';
 }
 
 export const recruitmentApplicationIsOpen = isRecruitmentApplicationOpen;
@@ -68,14 +69,9 @@ export function openApplicationWhere() {
   };
 }
 
-/** El tablero excluye solo la declinación. Descartado y Contratado siguen visibles. */
+/** El tablero recibe todos los procesos. La columna se decide al pintar. */
 export function kanbanVisibleApplicationWhere() {
-  return {
-    OR: [
-      { closureOutcome: null },
-      { closureOutcome: { not: 'DECLINED' } },
-    ],
-  };
+  return {};
 }
 
 /**
@@ -127,15 +123,17 @@ export async function lockRecruitmentCandidateForProcessChange(tx, candidateId) 
 }
 
 function normalizeDeclineReason(reason, note) {
-  const key = String(reason || '').trim();
+  const key = reason == null ? '' : String(reason).trim();
+  if (!key) return { closureReason: null, closureNote: null };
   if (!DECLINE_REASON_KEYS.includes(key)) {
     throw businessError('VALIDATION_ERROR', 'Selecciona un motivo de declinación.');
   }
-  let closureNote = null;
-  if (key === 'OTHER' && note != null && String(note).trim()) {
-    closureNote = String(note).trim().slice(0, CLOSURE_NOTE_MAX);
+  if (key === 'OTHER') {
+    const text = note == null ? '' : String(note).trim();
+    if (!text) throw businessError('VALIDATION_ERROR', 'Escribe el detalle del motivo.');
+    return { closureReason: 'OTHER', closureNote: text.slice(0, CLOSURE_NOTE_MAX) };
   }
-  return { closureReason: key, closureNote };
+  return { closureReason: key, closureNote: null };
 }
 
 /**

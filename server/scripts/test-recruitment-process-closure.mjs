@@ -253,7 +253,7 @@ check(classifyRecruitmentApplication('REJECTED', null) === 'rejected', 'históri
 check(classifyRecruitmentApplication('CONTACT', 'DECLINED') === 'declined', 'DECLINED no depende del nombre de la etapa');
 check(classifyRecruitmentApplication('FINALIST', null) === 'active', 'etapa no terminal sin cierre sigue activa');
 check(isRecruitmentApplicationOpen('HIRED', null) === false && isRecruitmentApplicationVisibleInKanban('HIRED', null) === true, 'HIRED está cerrado y visible en Contratado');
-check(isRecruitmentApplicationVisibleInKanban('CONTACT', 'DECLINED') === false, 'DECLINED queda fuera del Kanban');
+check(isRecruitmentApplicationVisibleInKanban('CONTACT', 'DECLINED') === true, 'DECLINED sigue visible en su columna');
 check(isRecruitmentApplicationVisibleInKanban('REJECTED', null) === true, 'el REJECTED histórico sigue en Descartado');
 check(isRecruitmentApplicationVisibleInKanban('REJECTED', 'REJECTED') === true, 'el REJECTED cerrado sigue en Descartado');
 check(isRecruitmentApplicationOpen('CONTACT', null) && isRecruitmentApplicationVisibleInKanban('CONTACT', null), 'una etapa ordinaria sigue abierta y visible');
@@ -308,7 +308,39 @@ check(true, 'repetir HIRED no reescribe el cierre');
   } catch (err) {
     threw = err.code === 'VALIDATION_ERROR';
   }
-  check(threw && db.store.applications[0].closureOutcome == null, 'motivo obligatorio');
+  check(!threw && db.store.applications[0].closureOutcome === 'DECLINED' && db.store.applications[0].closureReason == null && db.store.applications[0].closureNote == null, 'declinar sin motivo deja el cierre en blanco');
+}
+
+for (const reason of DECLINE_REASON_KEYS.filter((key) => key !== 'OTHER')) {
+  const db = createMemoryDb();
+  seedOpenApplication(db);
+  const result = await declineRecruitmentApplication({
+    organizationId: 'org-1',
+    applicationId: 'app-1',
+    reason,
+    note: 'no debe guardarse',
+    db,
+  });
+  const app = db.store.applications[0];
+  check(result.alreadyClosed === false && app.closureReason === reason && app.closureNote == null, `motivo ${reason} sin detalle`);
+}
+
+{
+  const db = createMemoryDb();
+  seedOpenApplication(db);
+  let missingDetail = false;
+  try {
+    await declineRecruitmentApplication({
+      organizationId: 'org-1',
+      applicationId: 'app-1',
+      reason: 'OTHER',
+      note: '   ',
+      db,
+    });
+  } catch (err) {
+    missingDetail = err.code === 'VALIDATION_ERROR';
+  }
+  check(missingDetail && db.store.applications[0].closureOutcome == null, 'Otro exige detalle');
 }
 
 {
@@ -717,14 +749,16 @@ check(/kanbanVisibleApplicationWhere\(\)/.test(appSvc), 'el listado del Kanban u
 {
   const whereStart = closureSvc.indexOf('export function kanbanVisibleApplicationWhere');
   const whereBody = closureSvc.slice(whereStart, closureSvc.indexOf('/**', whereStart + 10));
-  check(/not: 'DECLINED'/.test(whereBody) && /closureOutcome: null/.test(whereBody), 'la consulta excluye solo DECLINED e incluye el cierre nulo');
-  check(!/REJECTED/.test(whereBody) && !/archivedAt/.test(whereBody), 'la consulta no filtra Descartado ni candidatos archivados');
+  check(/return \{\s*\};/.test(whereBody), 'la consulta del Kanban incluye declinados, contratados y descartados');
+  check(!/REJECTED|DECLINED|archivedAt/.test(whereBody), 'la consulta no filtra columnas ni candidatos archivados');
 }
 check(/FOR UPDATE/.test(closureSvc), 'el candado es SELECT FOR UPDATE');
 check(/lockRecruitmentCandidateForProcessChange\(tx, candidateId\)/.test(appSvc), 'crear una postulación toma el candado del candidato');
 check(/lockRecruitmentCandidateForProcessChange\(tx, row\.id\)/.test(closureSvc), 'el autoarchivo toma el mismo candado');
 check(/function recKanbanApplicationIsVisible/.test(indexHtml), 'el tablero distingue visibilidad de proceso activo');
-check(indexHtml.includes("const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'") && indexHtml.includes("return app.closureOutcome!=='DECLINED'"), 'Descartado sigue visible y no se arrastra');
+check(indexHtml.includes("const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED'") && indexHtml.includes('return !!app'), 'Declinó, Descartado y Contratado se pintan y no se arrastran');
+check(indexHtml.includes("name:'Declinó'") && indexHtml.includes('recKanbanBoardColumns'), 'la columna Declinó es virtual');
+check(/virtual\?'':' ondragover=/.test(indexHtml), 'Declinó no acepta un arrastre de etapa');
 const candidateCreateSvc = fs.readFileSync(path.join(serverDir, 'src/services/recruitmentCandidateCreate.service.js'), 'utf8');
 check(/createRecruitmentApplication\(/.test(candidateCreateSvc), 'el portal crea la postulación por el orquestador que toma el candado');
 check(!/lockRecruitmentCandidateForProcessChange/.test(candidateCreateSvc), 'el portal no abre otro candado');
@@ -743,8 +777,8 @@ check(!/lockRecruitmentCandidateForProcessChange/.test(candidateCreateSvc), 'el 
   check(/tx\.\$queryRaw/.test(lockBody) && !/prisma\.\$queryRaw/.test(lockBody), 'el candado corre sobre tx');
   check(/\$\{candidateId\}/.test(lockBody) && !/['"`]\s*\+\s*candidateId/.test(lockBody), 'candidateId viaja como parámetro');
 }
-check(/recKanbanRemoveApplication\(applicationId\)/.test(indexHtml), 'declinar quita la tarjeta sin recargar el tablero');
-check(/const started=a\.appliedAt\?recCandFmtDetailDate\(a\.appliedAt\):''/.test(indexHtml), 'sin closedAt no se inventa una fecha de cierre');
+check(/recKanbanPlaceDeclinedApplication\(applicationId/.test(indexHtml) && !/recKanbanLoad\(/.test(indexHtml.slice(indexHtml.indexOf('async function recCandConfirmDecline'), indexHtml.indexOf('function recCandOpenArchiveDialog'))), 'declinar mueve la tarjeta a Declinó sin recargar el tablero');
+check(/a\.closedAt\?\('Cierre '\+recCandFmtDetailDate\(a\.closedAt\)\):''/.test(indexHtml), 'el historial muestra el cierre solo cuando existe');
 check(/closurePatchForStageMove/.test(appSvc), 'el rechazo canónico se escribe en el mismo movimiento');
 check(/syncCandidateAutoArchive/.test(appSvc), 'mover la etapa reevalúa el autoarchivo');
 check(/clearCandidateAutoArchive/.test(appSvc), 'crear una postulación cancela el autoarchivo en la misma transacción');
@@ -759,7 +793,8 @@ check(/startCandidateAutoArchiveSweep/.test(serverJs), 'el barrido arranca con e
 check(/\.strict\(\)/.test(routes) && /\/applications\/:id\/decline/.test(routes), 'la ruta de declinación no acepta campos de más');
 check(!/closedAt:/.test(routes.slice(routes.indexOf('declineApplicationSchema'), routes.indexOf('declineApplicationSchema') + 400)), 'el cliente no envía closedAt');
 
-check(/Declinó el proceso/.test(indexHtml), 'acción de declinación en el expediente');
+check(/aria-label="Declinó"/.test(indexHtml) && /El candidato declinó el proceso/.test(indexHtml) && /Confirmar declinación/.test(indexHtml), 'acción y diálogo de declinación');
+check(/reason: z\.enum\(DECLINE_REASON_KEYS\)\.optional\(\)/.test(routes), 'el motivo de declinación es opcional');
 check(/Este candidato tiene procesos activos/.test(indexHtml), 'archivo con procesos activos');
 check(/Este candidato dejará de aparecer entre los candidatos activos/.test(indexHtml), 'archivo sin procesos activos');
 check(!/No podrá recibir nuevas postulaciones/.test(indexHtml), 'se retiró el aviso engañoso');

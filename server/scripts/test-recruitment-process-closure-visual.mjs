@@ -81,6 +81,10 @@ async function measure(page, width) {
       modal: dialog && dialog.getAttribute('aria-modal'),
       labelled: dialog && dialog.getAttribute('aria-labelledby'),
       vacancy: xss ? xss.textContent : '',
+      candidate: (document.getElementById('rec-decline-candidate') || {}).textContent || '',
+      candidateTags: document.getElementById('rec-decline-candidate') ? document.getElementById('rec-decline-candidate').children.length : -1,
+      title: (document.getElementById('rec-decline-title') || {}).textContent || '',
+      copy: (document.getElementById('rec-decline-copy') || {}).textContent || '',
       childTags: xss ? xss.children.length : -1,
       focused: active && active.id,
       dialogOverflow: dialog ? dialog.scrollWidth - dialog.clientWidth : 999,
@@ -123,9 +127,14 @@ if (!executablePath) {
     }, candidate());
     const desktop = await measure(page, 1280);
     check(desktop.open && desktop.vacancy.includes('<script>') && desktop.childTags === 0, 'escritorio: la vacante se pinta como texto');
+    check(desktop.candidate.includes('<img') && desktop.candidateTags === 0, 'escritorio: el nombre se pinta como texto');
+    check(desktop.title === 'El candidato declinó el proceso' && desktop.copy === 'Este proceso se cerrará y aparecerá en la columna Declinó.', 'escritorio: título y copy de declinación');
     check(desktop.role === 'dialog' && desktop.modal === 'true' && desktop.labelled === 'rec-decline-title', 'escritorio: diálogo con nombre accesible');
     check(desktop.focused === 'rec-decline-reason' && desktop.reasonLabel, 'escritorio: el foco entra al motivo');
-    check(desktop.dialogOverflow <= 1, 'escritorio: el diálogo no desborda');
+    check(desktop.dialogOverflow <= 1 && desktop.pageOverflow <= 1, 'escritorio: el diálogo no desborda');
+
+    const mid = await measure(page, 900);
+    check(mid.open && mid.dialogOverflow <= 1 && mid.pageOverflow <= 1, '900 px: el diálogo no desborda la página');
 
     await page.setViewport({ width: 390, height: 800 });
     const narrow = await measure(page, 390);
@@ -136,9 +145,30 @@ if (!executablePath) {
       return wrap && !wrap.classList.contains('hidden');
     });
     check(noteVisible, '390 px: Otro muestra el detalle');
+    const kept = await page.evaluate(() => {
+      const note = document.getElementById('rec-decline-note');
+      note.value = 'Detalle que debe conservarse';
+      const err = document.getElementById('rec-decline-err');
+      err.textContent = 'Error de prueba';
+      err.classList.remove('hidden');
+      return note.value;
+    });
+    check(kept === 'Detalle que debe conservarse', 'un error conserva el detalle escrito');
+    const opener = await page.evaluate(() => {
+      const button = document.createElement('button');
+      button.id = 'rec-decline-opener';
+      button.textContent = 'Declinó';
+      document.body.appendChild(button);
+      button.focus();
+      recDeclineReturnFocus = button;
+      return document.activeElement && document.activeElement.id;
+    });
     await page.keyboard.press('Escape');
-    const closed = await page.evaluate(() => document.getElementById('modal-rec-decline').classList.contains('hidden'));
-    check(closed, 'Escape cierra la declinación');
+    const closed = await page.evaluate(() => ({
+      hidden: document.getElementById('modal-rec-decline').classList.contains('hidden'),
+      focus: document.activeElement && document.activeElement.id,
+    }));
+    check(opener === 'rec-decline-opener' && closed.hidden && closed.focus === 'rec-decline-opener', 'Escape cierra la declinación y devuelve el foco');
 
     const archive = await page.evaluate(() => {
       recCandOpenArchiveDialog();
@@ -216,7 +246,8 @@ if (!executablePath) {
       st.kanbanApplications = [
         { id: 'a-open', stageId: 's-contact', stage: { key: 'CONTACT' }, candidate: { id: 'c1', fullName: 'Ana Abierta' } },
         { id: 'a-hired', stageId: 's-hired', stage: { key: 'HIRED' }, candidate: { id: 'c2', fullName: 'Beto Contratado' } },
-        { id: 'a-declined', stageId: 's-contact', stage: { key: 'CONTACT' }, closureOutcome: 'DECLINED', candidate: { id: 'c3', fullName: 'Clara Declinó' } },
+        { id: 'a-declined', stageId: 's-contact', stage: { key: 'CONTACT', name: 'Contacto' }, closureOutcome: 'DECLINED', closureReason: 'SCHEDULE', candidate: { id: 'c3', fullName: 'Clara Declinó' } },
+        { id: 'a-declined-archived', stageId: 's-contact', stage: { key: 'FINALIST', name: 'Finalista' }, closureOutcome: 'DECLINED', closureReason: null, candidate: { id: 'c6', fullName: 'Fede Archivado', archivedAt: '2026-11-08T00:00:00.000Z' } },
         { id: 'a-rejected', stageId: 's-rejected', stage: { key: 'REJECTED' }, closureOutcome: 'REJECTED', candidate: { id: 'c4', fullName: 'Diego Rechazado' } },
         { id: 'a-archived', stageId: 's-rejected', stage: { key: 'REJECTED' }, closureOutcome: null, candidate: { id: 'c5', fullName: 'Elena Archivada', archivedAt: '2026-11-08T00:00:00.000Z' } },
       ];
@@ -226,10 +257,38 @@ if (!executablePath) {
       const contactCol = document.querySelector('.rec-kanban-col[data-stage-id="s-contact"]');
       const rejectedCol = document.querySelector('.rec-kanban-col[data-stage-id="s-rejected"]');
       const rejectedCards = rejectedCol ? [...rejectedCol.querySelectorAll('.rec-kanban-card')] : [];
+      const declinedCol = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
+      const declinedCards = declinedCol ? [...declinedCol.querySelectorAll('.rec-kanban-card')] : [];
+      const titles = [...document.querySelectorAll('.rec-kanban-col-title')].map((node) => node.textContent);
       let hiredBlocked = false;
       let rejectedBlocked = false;
+      let declinedBlocked = false;
       if (hiredCard) recKanbanCardDragStart({ currentTarget: hiredCard, preventDefault() { hiredBlocked = true; } });
       if (rejectedCards[0]) recKanbanCardDragStart({ currentTarget: rejectedCards[0], preventDefault() { rejectedBlocked = true; } });
+      if (declinedCards[0]) recKanbanCardDragStart({ currentTarget: declinedCards[0], preventDefault() { declinedBlocked = true; } });
+      const actions = {
+        open: recCandHeroHtml({ stage: { key: 'CONTACT', name: 'Contacto' }, vacancy: { title: 'Vacante' } }).includes('rec-cand-decline-btn'),
+        hired: recCandHeroHtml({ stage: { key: 'HIRED', name: 'Contratado' }, vacancy: { title: 'Vacante' } }).includes('rec-cand-decline-btn'),
+        rejected: recCandHeroHtml({ stage: { key: 'REJECTED', name: 'Descartado' }, closureOutcome: 'REJECTED', vacancy: { title: 'Vacante' } }).includes('rec-cand-decline-btn'),
+        declined: recCandHeroHtml({ stage: { key: 'CONTACT', name: 'Contacto' }, closureOutcome: 'DECLINED', vacancy: { title: 'Vacante' } }).includes('rec-cand-decline-btn'),
+      };
+      st.kanbanApplications = st.kanbanApplications.filter((row) => row.closureOutcome !== 'DECLINED');
+      st.kanbanHideEmpty = true;
+      st.kanbanEmptyPinnedOpen = {};
+      recKanbanRender('vac-visual');
+      const emptyDeclined = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
+      const emptyKey = recKanbanColCollapseKey('vac-visual', 'rec-kanban-declined');
+      st.kanbanEmptyPinnedOpen[emptyKey] = true;
+      recKanbanRender('vac-visual');
+      const pinnedDeclined = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
+      st.kanbanStages = [
+        { stageId: 's-contact', stage: { id: 's-contact', key: 'CONTACT', name: 'Contacto' } },
+        { stageId: 's-finalist', stage: { id: 's-finalist', key: 'FINALIST', name: 'Finalista' } },
+        { stageId: 's-hired', stage: { id: 's-hired', key: 'HIRED', name: 'Contratado' } },
+      ];
+      st.kanbanHideEmpty = false;
+      recKanbanRender('vac-visual');
+      const titlesWithoutRejected = [...document.querySelectorAll('.rec-kanban-col-title')].map((node) => node.textContent);
       return {
         hiredCount: hiredCol ? hiredCol.querySelector('.rec-kanban-col-count').textContent : '',
         hiredName: hiredCard ? hiredCard.querySelector('.rec-kanban-card-name').textContent : '',
@@ -241,14 +300,36 @@ if (!executablePath) {
         rejectedDrag: rejectedCards.map((card) => card.getAttribute('draggable')),
         hiredBlocked,
         rejectedBlocked,
+        declinedBlocked,
         dragging: !!recEnsureState().kanbanDragging,
+        titles,
+        declinedTitle: declinedCol ? declinedCol.querySelector('.rec-kanban-col-title').textContent : '',
+        declinedCount: declinedCol ? declinedCol.querySelector('.rec-kanban-col-count').textContent : '',
+        declinedNames: declinedCards.map((card) => card.querySelector('.rec-kanban-card-name').textContent),
+        declinedReason: declinedCards[0] ? (declinedCards[0].querySelector('.rec-kanban-card-reason') || {}).textContent || '' : '',
+        declinedBlank: declinedCards[1] ? declinedCards[1].querySelectorAll('.rec-kanban-card-reason').length : -1,
+        declinedDrag: declinedCards.map((card) => card.getAttribute('draggable')),
+        declinedDrop: declinedCol ? declinedCol.getAttribute('ondrop') : 'missing',
+        declinedOpens: declinedCards[0] ? String(declinedCards[0].getAttribute('onclick') || '').includes('recKanbanCardClick') : false,
+        titlesWithoutRejected,
+        actions,
+        emptyCollapsed: !!(emptyDeclined && emptyDeclined.classList.contains('rec-kanban-col--collapsed')),
+        pinnedOpen: !!(pinnedDeclined && !pinnedDeclined.classList.contains('rec-kanban-col--collapsed')),
       };
     });
+    check(board.titles.join('|') === 'Contacto|Contratado|Declinó|Descartado', 'Declinó queda entre Contratado y Descartado');
+    check(board.titlesWithoutRejected.join('|') === 'Contacto|Finalista|Contratado|Declinó', 'sin Descartado, Declinó queda al final y el resto no se reordena');
+    check(board.declinedOpens, 'el clic de una tarjeta declinada abre el expediente');
     check(board.hiredName === 'Beto Contratado' && board.hiredCount === '1' && board.hiredDrag === 'false', 'Contratado conserva la tarjeta y su contador');
-    check(board.contactNames.length === 1 && board.contactNames[0] === 'Ana Abierta', 'DECLINED sale de su columna');
+    check(board.contactNames.length === 1 && board.contactNames[0] === 'Ana Abierta', 'DECLINED no cuenta en su etapa anterior');
+    check(board.declinedTitle === 'Declinó' && board.declinedCount === '2' && board.declinedNames.join('|') === 'Clara Declinó|Fede Archivado', 'Declinó muestra cerradas y archivadas');
+    check(board.declinedReason === 'Horario' && board.declinedBlank === 0, 'el motivo se muestra solo cuando existe');
+    check(board.declinedDrag.every((value) => value === 'false') && board.declinedDrop == null, 'las tarjetas de Declinó no se arrastran ni aceptan etapa');
     check(board.rejectedTitle === 'Descartado' && board.rejectedCount === '2' && board.rejectedNames.join('|') === 'Diego Rechazado|Elena Archivada', 'Descartado conserva rechazo cerrado, histórico y archivado');
     check(board.rejectedDrag.every((value) => value === 'false'), 'las tarjetas de Descartado no son arrastrables');
-    check(board.hiredBlocked && board.rejectedBlocked && board.dragging === false, 'Contratado y Descartado no inician el arrastre');
+    check(board.hiredBlocked && board.rejectedBlocked && board.declinedBlocked && board.dragging === false, 'Contratado, Declinó y Descartado no inician el arrastre');
+    check(board.actions.open && !board.actions.hired && !board.actions.rejected && !board.actions.declined, 'Declinó solo aparece en un proceso abierto');
+    check(board.emptyCollapsed && board.pinnedOpen, 'una columna Declinó vacía se oculta y puede abrirse');
   }
   check(pageErrors.length === 0, pageErrors.length ? `errores de página: ${pageErrors[0]}` : 'la página no lanza errores al abrir');
   await browser.close();
