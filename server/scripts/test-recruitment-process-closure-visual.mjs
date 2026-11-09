@@ -57,6 +57,7 @@ function candidate() {
       {
         applicationId: 'app-declined',
         appliedAt: '2026-10-03T15:00:00.000Z',
+        closedAt: '2026-11-09T15:00:00.000Z',
         closureOutcome: 'DECLINED',
         closureReason: 'OTHER',
         closureNote: 'El candidato explicó un motivo personal muy largo que no debe desbordar el panel ni crear una barra horizontal en el expediente.',
@@ -200,18 +201,105 @@ if (!executablePath) {
       host.style.width = '320px';
       host.innerHTML = recCandHistoryAsideHtml(closed);
       document.body.appendChild(host);
-      const text = host.textContent || '';
-      const scripts = host.querySelectorAll('script,img').length;
+      const items = [...host.querySelectorAll('.rec-cand-history-item')];
+      const declined = items.find((item) => item.textContent.includes('Chofer'));
+      const rejected = items.find((item) => item.textContent.includes('Supervisor'));
+      const line = (item, sel) => (item && item.querySelector(sel) ? item.querySelector(sel).textContent : '');
       return {
-        text,
-        scripts,
+        scripts: host.querySelectorAll('script,img').length,
         overflow: host.scrollWidth - host.clientWidth,
-        rejected: text.includes('Rechazado') && text.includes('Descartado'),
-        declined: text.includes('Declinó') && text.includes('Finalista') && text.includes('motivo personal muy largo'),
+        declinedOutcome: line(declined, '.rec-cand-history-outcome'),
+        declinedPeriod: line(declined, '.rec-cand-history-period'),
+        declinedStage: line(declined, '.rec-cand-history-stage'),
+        declinedReason: line(declined, '.rec-cand-history-reason'),
+        declinedNote: line(declined, '.rec-cand-history-note'),
+        rejectedOutcome: line(rejected, '.rec-cand-history-outcome'),
+        rejectedPeriod: line(rejected, '.rec-cand-history-period'),
+        rejectedStage: line(rejected, '.rec-cand-history-stage'),
+        rejectedReason: rejected ? rejected.querySelectorAll('.rec-cand-history-reason').length : -1,
       };
     });
-    check(history.rejected && history.declined, 'el historial muestra resultado, última etapa y motivo');
+    check(
+      history.declinedOutcome === 'Declinó'
+        && /Inicio /.test(history.declinedPeriod)
+        && /Cierre /.test(history.declinedPeriod)
+        && history.declinedStage === 'Última etapa: Finalista'
+        && history.declinedReason === 'Otro'
+        && history.declinedNote.includes('motivo personal muy largo'),
+      'el historial separa resultado, periodo, etapa, motivo y detalle',
+    );
+    check(
+      history.rejectedOutcome === 'Rechazado'
+        && /Inicio /.test(history.rejectedPeriod)
+        && !/Cierre /.test(history.rejectedPeriod)
+        && history.rejectedStage === 'Última etapa: Descartado'
+        && history.rejectedReason === 0,
+      'un histórico sin closedAt no inventa cierre ni motivo',
+    );
     check(history.scripts === 0 && history.overflow <= 1, 'el motivo largo no se ejecuta ni desborda');
+
+    await page.setViewport({ width: 390, height: 800 });
+    const workspace = await page.evaluate((viewport) => {
+      const filters = [...document.querySelectorAll('[data-tc-my-cand-filter]')].map((btn) => btn.textContent.trim());
+      tcEmpMyCandItems = [
+        {
+          id: 'c-dec',
+          fullName: `${'A'.repeat(90)} <img src=x onerror=alert(1)>`,
+          profile: 'Operador',
+          primaryActiveProcess: {
+            listPreviewKind: 'declined',
+            vacancyTitle: 'Almacén nocturno',
+            closureReason: 'ACCEPTED_OTHER_OFFER',
+          },
+        },
+        {
+          id: 'c-plain',
+          fullName: 'Luis Sin Motivo',
+          profile: 'Ayudante',
+          primaryActiveProcess: { listPreviewKind: 'declined', vacancyTitle: 'Caja', closureReason: null },
+        },
+      ];
+      tcEmpMyCandNextCursor = null;
+      document.getElementById('view-timeclock').classList.remove('hidden');
+      document.getElementById('tc-emp-app').classList.remove('hidden');
+      ['modal-rec-decline', 'modal-rec-archive'].forEach((id) => {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('hidden');
+      });
+      tcEmpWorkspaceSetTab('candidates');
+      tcEmpMyCandRenderList();
+      const list = document.getElementById('tc-emp-my-cand-list');
+      const cards = [...list.querySelectorAll('.tc-emp-my-cand-card')].map((card) => card.textContent);
+      const declinedBtn = document.querySelector('[data-tc-my-cand-filter="declined"]');
+      declinedBtn.focus();
+      return {
+        filters,
+        cards,
+        scripts: list.querySelectorAll('script,img').length,
+        focused: document.activeElement === declinedBtn,
+        listOverflow: list.scrollWidth - list.clientWidth,
+        pageOverflow: document.documentElement.scrollWidth - viewport,
+      };
+    }, 390);
+    check(
+      workspace.filters.join('|') === 'Todos|En proceso|Contratados|Rechazados|Declinados',
+      'Espacio de trabajo muestra los cinco filtros',
+    );
+    check(
+      workspace.cards[0].includes('Declinó · Aceptó otra oferta')
+        && workspace.cards[0].includes('Almacén nocturno')
+        && workspace.cards[0].includes('<img')
+        && workspace.scripts === 0,
+      'la tarjeta declinada muestra motivo y escapa el nombre',
+    );
+    check(
+      workspace.cards[1].includes('Declinó')
+        && !workspace.cards[1].includes('Declinó ·')
+        && !workspace.cards[1].includes('Sin motivo')
+        && workspace.cards[1].includes('Caja'),
+      'sin motivo la tarjeta solo dice Declinó',
+    );
+    check(workspace.focused && workspace.listOverflow <= 1 && workspace.pageOverflow <= 1, 'filtros y tarjetas a 390 px no desbordan y el filtro toma foco');
 
     const archived = await page.evaluate(() => {
       const st = recEnsureState();
@@ -257,7 +345,7 @@ if (!executablePath) {
       const contactCol = document.querySelector('.rec-kanban-col[data-stage-id="s-contact"]');
       const rejectedCol = document.querySelector('.rec-kanban-col[data-stage-id="s-rejected"]');
       const rejectedCards = rejectedCol ? [...rejectedCol.querySelectorAll('.rec-kanban-card')] : [];
-      const declinedCol = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
+      const declinedCol = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
       const declinedCards = declinedCol ? [...declinedCol.querySelectorAll('.rec-kanban-card')] : [];
       const titles = [...document.querySelectorAll('.rec-kanban-col-title')].map((node) => node.textContent);
       let hiredBlocked = false;
@@ -276,11 +364,11 @@ if (!executablePath) {
       st.kanbanHideEmpty = true;
       st.kanbanEmptyPinnedOpen = {};
       recKanbanRender('vac-visual');
-      const emptyDeclined = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
-      const emptyKey = recKanbanColCollapseKey('vac-visual', 'rec-kanban-declined');
+      const emptyDeclined = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
+      const emptyKey = recKanbanColCollapseKey('vac-visual', '__DECLINED__');
       st.kanbanEmptyPinnedOpen[emptyKey] = true;
       recKanbanRender('vac-visual');
-      const pinnedDeclined = document.querySelector('.rec-kanban-col[data-stage-id="rec-kanban-declined"]');
+      const pinnedDeclined = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
       st.kanbanStages = [
         { stageId: 's-contact', stage: { id: 's-contact', key: 'CONTACT', name: 'Contacto' } },
         { stageId: 's-finalist', stage: { id: 's-finalist', key: 'FINALIST', name: 'Finalista' } },
@@ -330,6 +418,63 @@ if (!executablePath) {
     check(board.hiredBlocked && board.rejectedBlocked && board.declinedBlocked && board.dragging === false, 'Contratado, Declinó y Descartado no inician el arrastre');
     check(board.actions.open && !board.actions.hired && !board.actions.rejected && !board.actions.declined, 'Declinó solo aparece en un proceso abierto');
     check(board.emptyCollapsed && board.pinnedOpen, 'una columna Declinó vacía se oculta y puede abrirse');
+    const collapsed = await page.evaluate(() => {
+      const st = recEnsureState();
+      st.kanbanHideEmpty = true;
+      st.kanbanStages = [
+        { stageId: 's-contact', stage: { id: 's-contact', key: 'CONTACT', name: 'Contacto' } },
+        { stageId: 's-hired', stage: { id: 's-hired', key: 'HIRED', name: 'Contratado' } },
+        { stageId: 's-rejected', stage: { id: 's-rejected', key: 'REJECTED', name: 'Descartado' } },
+      ];
+      st.kanbanApplications = [
+        { id: 'a-declined', stageId: 's-contact', stage: { key: 'CONTACT' }, closureOutcome: 'DECLINED', closureReason: 'SCHEDULE', candidate: { id: 'c3', fullName: 'Clara <script>alert(1)</script>' } },
+      ];
+      st.kanbanColCollapsed = {};
+      localStorage.removeItem('rec_kanban_cols_vac-visual');
+      recKanbanRender('vac-visual');
+      recKanbanToggleCol('vac-visual', '__DECLINED__');
+      const col = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
+      const stored = JSON.parse(localStorage.getItem('rec_kanban_cols_vac-visual') || '{}');
+      const afterCollapse = {
+        collapsed: !!(col && col.classList.contains('rec-kanban-col--collapsed')),
+        label: col ? col.querySelector('.rec-kanban-col-collapse-btn').getAttribute('aria-label') : '',
+        count: col ? col.querySelector('.rec-kanban-col-count').textContent : '',
+        name: col ? col.querySelector('.rec-kanban-card-name').textContent : '',
+        drop: col ? col.getAttribute('ondrop') : 'missing',
+        stored: stored.__DECLINED__ === true,
+        other: Object.keys(stored).filter((key) => key !== '__DECLINED__').length,
+      };
+      recKanbanRender('vac-visual');
+      document.getElementById('view-dash-recruitment').classList.remove('hidden');
+      document.getElementById('rec-selected-panel').classList.remove('hidden');
+      const again = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
+      const btn = again && again.querySelector('.rec-kanban-col-collapse-btn');
+      if (btn) btn.focus();
+      if (again) again.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true }));
+      const afterDrag = !!(again && again.classList.contains('rec-kanban-col--collapsed'));
+      const focused = document.activeElement === btn;
+      const title = btn ? btn.getAttribute('title') : '';
+      const visible = !!(btn && btn.getClientRects().length);
+      recKanbanToggleCol('vac-visual', '__DECLINED__');
+      const opened = document.querySelector('.rec-kanban-col[data-stage-id="__DECLINED__"]');
+      const otherVacancy = JSON.parse(localStorage.getItem('rec_kanban_cols_vac-otra') || '{}');
+      return {
+        ...afterCollapse,
+        still: !!(again && again.classList.contains('rec-kanban-col--collapsed')),
+        afterDrag,
+        focused,
+        visible,
+        title,
+        opened: !!(opened && !opened.classList.contains('rec-kanban-col--collapsed')),
+        leaked: otherVacancy.__DECLINED__ === true,
+        scripts: col ? col.querySelectorAll('script').length : -1,
+      };
+    });
+    check(collapsed.collapsed && collapsed.label === 'Expandir etapa' && collapsed.count === '1', 'Declinó con tarjetas se contrae y conserva el contador');
+    check(collapsed.still && collapsed.stored && collapsed.other === 0 && collapsed.afterDrag, 'la contracción persiste al repintar, queda en la vacante y el arrastre no la abre');
+    check(collapsed.focused && collapsed.visible && collapsed.title === 'Expandir etapa', 'el control de Declinó toma foco y anuncia el estado');
+    check(collapsed.opened, 'Declinó vuelve a expandirse');
+    check(collapsed.drop == null && collapsed.name.includes('<script>') && collapsed.scripts === 0 && collapsed.leaked === false, 'contraída no acepta drop y el nombre queda como texto');
   }
   check(pageErrors.length === 0, pageErrors.length ? `errores de página: ${pageErrors[0]}` : 'la página no lanza errores al abrir');
   await browser.close();

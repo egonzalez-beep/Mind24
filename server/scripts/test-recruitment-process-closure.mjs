@@ -31,6 +31,11 @@ const {
   runCandidateAutoArchiveSweepTick,
   syncCandidateAutoArchive,
 } = await import('../src/services/recruitmentProcessClosure.service.js');
+const {
+  buildWorkforceRegisteredCandidatesWhere,
+  pickCandidateTerminalListPreview,
+  resolveCandidateListProcessPreview,
+} = await import('../src/services/recruitmentCandidate.service.js');
 
 const schema = fs.readFileSync(path.join(serverDir, 'prisma/schema.prisma'), 'utf8');
 const migration = fs.readFileSync(
@@ -199,6 +204,26 @@ function createMemoryDb({ locking = false } = {}) {
   return db;
 }
 
+function workforceMyCandidateMatches(where, row) {
+  return (where.AND || []).every((clause) => {
+    const keys = Object.keys(clause);
+    if (keys.length === 1 && keys[0] === 'archivedAt') return clause.archivedAt === null && row.archivedAt == null;
+    if (keys.length === 1 && keys[0] === 'organizationId') return row.organizationId === clause.organizationId;
+    if (keys.length === 1 && keys[0] === 'registeredByWorkforceEmployeeId') {
+      return row.registeredByWorkforceEmployeeId === clause.registeredByWorkforceEmployeeId;
+    }
+    if (clause.applications?.some) {
+      const some = clause.applications.some;
+      return (row.applications || []).some((app) => (
+        app.organizationId === some.organizationId
+        && app.closureOutcome == null
+        && !['HIRED', 'REJECTED'].includes(app.stage?.key)
+      ));
+    }
+    return true;
+  });
+}
+
 function seedOpenApplication(db, extras = {}) {
   const now = new Date('2026-11-08T12:00:00.000Z');
   db.store.stages.push({ id: 'stage-contact', organizationId: 'org-1', key: 'CONTACT', name: 'Contacto' });
@@ -257,6 +282,26 @@ check(isRecruitmentApplicationVisibleInKanban('CONTACT', 'DECLINED') === true, '
 check(isRecruitmentApplicationVisibleInKanban('REJECTED', null) === true, 'el REJECTED histórico sigue en Descartado');
 check(isRecruitmentApplicationVisibleInKanban('REJECTED', 'REJECTED') === true, 'el REJECTED cerrado sigue en Descartado');
 check(isRecruitmentApplicationOpen('CONTACT', null) && isRecruitmentApplicationVisibleInKanban('CONTACT', null), 'una etapa ordinaria sigue abierta y visible');
+
+{
+  const open = { stage: { key: 'CONTACT' }, closureOutcome: null, updatedAt: '2026-11-09T12:00:00.000Z', vacancy: { title: 'Activa' } };
+  const oldDecline = { stage: { key: 'CONTACT' }, closureOutcome: 'DECLINED', closureReason: 'SCHEDULE', closedAt: '2026-11-01T12:00:00.000Z', vacancy: { title: 'Vieja' } };
+  const laterReject = { stage: { key: 'REJECTED' }, closureOutcome: 'REJECTED', closedAt: '2026-11-08T12:00:00.000Z', updatedAt: '2026-10-01T12:00:00.000Z', vacancy: { title: 'Descartada' } };
+  const laterDecline = { stage: { key: 'FINALIST' }, closureOutcome: 'DECLINED', closureReason: null, closedAt: '2026-11-09T12:00:00.000Z', vacancy: { title: 'Nueva' } };
+  const hired = { stage: { key: 'HIRED' }, closureOutcome: null, closedAt: null, updatedAt: '2026-10-01T12:00:00.000Z', vacancy: { title: 'Plaza' } };
+  const historical = { stage: { key: 'REJECTED' }, closureOutcome: null, closedAt: null, updatedAt: '2026-09-01T12:00:00.000Z', appliedAt: '2026-08-01T12:00:00.000Z', vacancy: { title: 'Histórica' } };
+  const activeWins = resolveCandidateListProcessPreview({ listPreviewKind: 'active' }, pickCandidateTerminalListPreview([oldDecline]));
+  check(activeWins.listPreviewKind === 'active', 'otro proceso activo conserva En proceso');
+  check(pickCandidateTerminalListPreview([hired, laterDecline]).listPreviewKind === 'hired', 'HIRED tiene prioridad sin proceso abierto');
+  const recent = pickCandidateTerminalListPreview([laterReject, laterDecline]);
+  check(recent.listPreviewKind === 'declined' && recent.vacancyTitle === 'Nueva' && recent.closureReason == null, 'el terminal más reciente decide y no inventa motivo');
+  check(pickCandidateTerminalListPreview([laterDecline, laterReject]).listPreviewKind === 'declined', 'un rechazo antiguo no tapa la declinación posterior');
+  check(pickCandidateTerminalListPreview([oldDecline, { ...laterReject, closedAt: '2026-11-02T12:00:00.000Z' }]).vacancyTitle === 'Descartada', 'una declinación antigua no tapa el rechazo posterior');
+  const hist = pickCandidateTerminalListPreview([historical]);
+  check(hist.listPreviewKind === 'rejected' && hist.closedAt == null, 'el histórico sin closedAt usa updatedAt y no inventa cierre');
+  const two = pickCandidateTerminalListPreview([oldDecline, laterDecline]);
+  check(two.listPreviewKind === 'declined' && two.closureReason == null, 'dos declinaciones de una persona producen un solo resultado');
+}
 
 const rejectedPatch = closurePatchForStageMove({
   stageChanged: true,
@@ -380,6 +425,73 @@ for (const reason of DECLINE_REASON_KEYS.filter((key) => key !== 'OTHER')) {
   check(
     db.store.candidates[0].autoArchiveEligibleAt.getTime() === now.getTime() + AUTO_ARCHIVE_DELAY_MS,
     'el último proceso programa 24 horas',
+  );
+  const early = await deliverDueCandidateAutoArchives({
+    now: new Date(now.getTime() + 23 * 60 * 60 * 1000),
+    db,
+  });
+  const stillDeclined = pickCandidateTerminalListPreview(db.store.applications);
+  const waiting = {
+    id: 'cand-1',
+    organizationId: 'org-1',
+    registeredByWorkforceEmployeeId: 'emp-1',
+    archivedAt: null,
+    applications: db.store.applications,
+  };
+  const openColleague = {
+    id: 'cand-open',
+    organizationId: 'org-1',
+    registeredByWorkforceEmployeeId: 'emp-1',
+    archivedAt: null,
+    applications: [{ organizationId: 'org-1', closureOutcome: null, stage: { key: 'CONTACT' } }],
+  };
+  const otherOrg = { ...waiting, id: 'cand-other-org', organizationId: 'org-2' };
+  const otherEmployee = { ...waiting, id: 'cand-other-emp', registeredByWorkforceEmployeeId: 'emp-2' };
+  const allWhere = buildWorkforceRegisteredCandidatesWhere('org-1', 'emp-1', {
+    previewFilter: 'all',
+    archivedOnly: true,
+    includeArchived: true,
+  });
+  const declinedWhere = buildWorkforceRegisteredCandidatesWhere('org-1', 'emp-1', { previewFilter: 'declined' });
+  const inProcessWhere = buildWorkforceRegisteredCandidatesWhere('org-1', 'emp-1', { previewFilter: 'in_process' });
+  const beforeRows = [waiting, openColleague, otherOrg, otherEmployee].filter((row) => workforceMyCandidateMatches(allWhere, row));
+  const beforeDeclined = beforeRows.filter((row) => pickCandidateTerminalListPreview(row.applications)?.listPreviewKind === 'declined');
+  check(
+    early.archived === 0
+      && db.store.candidates[0].archivedAt == null
+      && stillDeclined?.listPreviewKind === 'declined'
+      && stillDeclined.closureReason === 'OTHER'
+      && beforeDeclined.length === 1
+      && beforeDeclined[0].id === 'cand-1',
+    'antes del vencimiento el declinado sigue en Declinados',
+  );
+  check(beforeRows.map((row) => row.id).join('|') === 'cand-1|cand-open', 'antes de 24 horas aparece una vez en Todos');
+  check(
+    [waiting, openColleague].filter((row) => workforceMyCandidateMatches(inProcessWhere, row)).map((row) => row.id).join('|') === 'cand-open',
+    'un candidato no archivado sigue en En proceso',
+  );
+  const due = await deliverDueCandidateAutoArchives({
+    now: new Date(now.getTime() + AUTO_ARCHIVE_DELAY_MS),
+    db,
+  });
+  const archived = { ...waiting, archivedAt: db.store.candidates[0].archivedAt };
+  check(
+    due.archived === 1
+      && archived.archivedAt != null
+      && db.store.applications.length === 1
+      && db.store.applications[0].closureOutcome === 'DECLINED'
+      && db.store.applications[0].closureReason === 'OTHER'
+      && db.store.novedades.length === 1
+      && isRecruitmentApplicationVisibleInKanban(db.store.applications[0].stage?.key, 'DECLINED'),
+    'al vencer archiva al declinado, la postulación sigue en el Kanban y no hay segundo aviso',
+  );
+  check(!workforceMyCandidateMatches(allWhere, archived), 'después del archivo no entra en Todos');
+  check(!workforceMyCandidateMatches(declinedWhere, archived), 'después del archivo no entra en Declinados');
+  const reactivated = { ...archived, archivedAt: null };
+  check(
+    workforceMyCandidateMatches(allWhere, reactivated)
+      && pickCandidateTerminalListPreview(reactivated.applications)?.listPreviewKind === 'declined',
+    'reactivarlo vuelve a Declinados',
   );
 }
 
@@ -750,6 +862,24 @@ check(/kanbanVisibleApplicationWhere\(\)/.test(appSvc), 'el listado del Kanban u
   const whereStart = closureSvc.indexOf('export function kanbanVisibleApplicationWhere');
   const whereBody = closureSvc.slice(whereStart, closureSvc.indexOf('/**', whereStart + 10));
   check(/return \{\s*\};/.test(whereBody), 'la consulta del Kanban incluye declinados, contratados y descartados');
+  check(/if \(previewFilter === 'in_process'\)[\s\S]{0,280}closureOutcome: null/.test(candidateSvc), 'En proceso exige un proceso abierto');
+  const publicRoutes = fs.readFileSync(path.join(serverDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
+  const myRouteStart = publicRoutes.indexOf("router.get('/recruitment/my-candidates'");
+  const myRoute = publicRoutes.slice(myRouteStart, publicRoutes.indexOf('router.post(', myRouteStart + 20));
+  const workforceWhere = candidateSvc.slice(
+    candidateSvc.indexOf('export function buildWorkforceRegisteredCandidatesWhere'),
+    candidateSvc.indexOf('/** Filtra IDs usando la misma regla de preview'),
+  );
+  check(workforceWhere.includes('archivedAt: null'), 'Mis candidatos exige archivedAt nulo en servidor');
+  check(!/archivedOnly|includeArchived/.test(workforceWhere), 'Mis candidatos no acepta un parámetro de archivados');
+  check(/organizationId/.test(workforceWhere) && /registeredByWorkforceEmployeeId/.test(workforceWhere), 'Mis candidatos filtra organización y colaborador');
+  check(/req\.timeclockEmployee\.organizationId/.test(myRoute) && /req\.timeclockEmployee\.id/.test(myRoute), 'organización y colaborador salen de la sesión');
+  check(!/archivedOnly|includeArchived|req\.query\.archived/.test(myRoute), 'el portal no puede pedir archivados');
+  check(/archivedOnly === true/.test(candidateSvc) && /archivedAt: \{ not: null \}/.test(candidateSvc), 'Archivados administrativos sigue disponible');
+  const detailFn = candidateSvc.slice(candidateSvc.indexOf('export async function getRecruitmentCandidate'), candidateSvc.indexOf('export async function updateRecruitmentCandidate'));
+  check(/where: \{ id: candidateId, organizationId \}/.test(detailFn) && !/archivedAt:\s*null/.test(detailFn), 'el GET administrativo por id incluye archivados');
+  check(/if \(patch\.archived === false\) \{\s*data\.archivedAt = null/.test(candidateSvc), 'reactivar limpia archivedAt');
+  check(/'declined'/.test(publicRoutes), 'el portal acepta el filtro Declinados');
   check(!/REJECTED|DECLINED|archivedAt/.test(whereBody), 'la consulta no filtra columnas ni candidatos archivados');
 }
 check(/FOR UPDATE/.test(closureSvc), 'el candado es SELECT FOR UPDATE');
@@ -800,7 +930,7 @@ check(/Este candidato dejará de aparecer entre los candidatos activos/.test(ind
 check(!/No podrá recibir nuevas postulaciones/.test(indexHtml), 'se retiró el aviso engañoso');
 check(/Este candidato está archivado\. Reactívalo para iniciar un nuevo proceso\./.test(indexHtml), 'alta bloqueada en la ficha');
 check(/addBtn\.disabled=archived/.test(indexHtml), 'la acción de vacante se deshabilita al archivar');
-check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(detail\)/.test(indexHtml), 'el historial escapa etapa y motivo');
+check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(stageName\)/.test(indexHtml) && /tcEsc\(reasonLabel\)/.test(indexHtml) && /tcEsc\(note\)/.test(indexHtml), 'el historial escapa etapa, motivo y detalle');
 check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(outcome\)/.test(indexHtml), 'el historial escapa el resultado');
 check(/vac\.textContent/.test(indexHtml) && /stage\.textContent/.test(indexHtml), 'el diálogo pinta vacante y etapa como texto');
 check(/kind==='declined'/.test(indexHtml), 'la cartera distingue Declinó');
@@ -811,6 +941,30 @@ check(/ADD VALUE 'DECLINED'/.test(migration), 'la migración agrega DECLINED');
 check(!/UPDATE /i.test(migration) && !/DEFAULT/.test(migration), 'sin backfill ni valores por defecto');
 check(/autoArchiveEligibleAt/.test(schema) && /closureOutcome/.test(schema), 'el esquema guarda cierre y vencimiento');
 check(indexHtml === publicHtml, 'index.html y server/public/index.html son idénticos');
+
+{
+  let prisma;
+  try {
+    ({ prisma } = await import('../src/db/client.js'));
+    await prisma.$queryRaw`SELECT 1`;
+    const where = buildWorkforceRegisteredCandidatesWhere(
+      '00000000-0000-0000-0000-000000000000',
+      '00000000-0000-0000-0000-000000000000',
+      { previewFilter: 'declined', archivedOnly: true, includeArchived: true },
+    );
+    const rows = await prisma.recruitmentCandidate.findMany({ where, take: 1 });
+    check(Array.isArray(rows) && rows.length === 0, 'el filtro SQL de Mis candidatos corre en PostgreSQL');
+  } catch (err) {
+    const text = String(err && err.message ? err.message : err);
+    const line = text.split('\n').map((item) => item.trim()).find((item) => /Can't reach|ECONNREFUSED|connect/i.test(item))
+      || 'sin conexión';
+    console.log(`  SKIP  filtro SQL de Mis candidatos: ${line}`);
+  } finally {
+    if (prisma) {
+      try { await prisma.$disconnect(); } catch { /* la suite no depende de la conexión */ }
+    }
+  }
+}
 
 if (failed) {
   console.error(`\n${failed} comprobaciones fallaron\n`);

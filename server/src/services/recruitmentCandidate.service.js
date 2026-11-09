@@ -223,7 +223,52 @@ export async function buildPrimaryActivePreviewByCandidateId(
   return map;
 }
 
-/** Resultado terminal (HIRED / REJECTED) más reciente por candidato para listado cartera. */
+/**
+ * Orden del proceso terminal cuando no hay closedAt.
+ * closedAt es el instante de cierre. Un histórico sin ese campo usa updatedAt,
+ * el último cambio persistido, y solo después appliedAt. No rellena la base.
+ */
+export function recruitmentTerminalRecencyMs(row) {
+  const stamp = row?.closedAt || row?.updatedAt || row?.appliedAt || null;
+  const ms = stamp ? new Date(stamp).getTime() : 0;
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function previewFromTerminalRow(row, kind) {
+  return {
+    listPreviewKind: kind === 'declined' ? 'declined' : kind === 'hired' ? 'hired' : 'rejected',
+    stageName: kind === 'declined' ? 'Declinó' : kind === 'hired' ? 'Contratado' : 'Rechazado',
+    stageKey: row.stage?.key || null,
+    vacancyTitle: row.vacancy?.title || '—',
+    vacancyId: row.vacancy?.id || null,
+    closureReason: kind === 'declined' ? row.closureReason || null : null,
+    closedAt: row.closedAt ? new Date(row.closedAt).toISOString() : null,
+  };
+}
+
+/**
+ * Un candidato, un resultado. Abierto gana fuera de esta función.
+ * Si hay contratación, gana sobre rechazo y declinación.
+ * Si no, gana el terminal más reciente entre DECLINED y REJECTED.
+ */
+export function pickCandidateTerminalListPreview(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const hired = list.filter(
+    (row) => classifyRecruitmentApplication(row.stage?.key, row.closureOutcome) === 'hired',
+  );
+  const pool = hired.length
+    ? hired
+    : list.filter((row) => {
+        const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
+        return kind === 'declined' || kind === 'rejected';
+      });
+  if (!pool.length) return null;
+  const pick = pool.slice().sort((a, b) => recruitmentTerminalRecencyMs(b) - recruitmentTerminalRecencyMs(a))[0];
+  const kind = classifyRecruitmentApplication(pick.stage?.key, pick.closureOutcome);
+  return previewFromTerminalRow(pick, kind);
+}
+
+/** Resultado terminal por candidato para listado de cartera y Espacio de trabajo. */
 export async function buildLatestTerminalPreviewByCandidateId(organizationId, candidateIds) {
   const map = new Map(candidateIds.map((id) => [id, null]));
   if (!candidateIds.length) return map;
@@ -244,16 +289,13 @@ export async function buildLatestTerminalPreviewByCandidateId(organizationId, ca
     orderBy: [{ updatedAt: 'desc' }, { appliedAt: 'desc' }],
   });
 
+  const byCandidate = new Map();
   for (const row of rows) {
-    if (map.get(row.candidateId)) continue;
-    const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
-    map.set(row.candidateId, {
-      listPreviewKind: kind === 'declined' ? 'declined' : kind === 'hired' ? 'hired' : 'rejected',
-      stageName: kind === 'declined' ? 'Declinó' : kind === 'hired' ? 'Contratado' : 'Rechazado',
-      stageKey: row.stage?.key || null,
-      vacancyTitle: row.vacancy?.title || '—',
-      vacancyId: row.vacancy?.id || null,
-    });
+    if (!byCandidate.has(row.candidateId)) byCandidate.set(row.candidateId, []);
+    byCandidate.get(row.candidateId).push(row);
+  }
+  for (const [candidateId, apps] of byCandidate) {
+    map.set(candidateId, pickCandidateTerminalListPreview(apps));
   }
   return map;
 }
@@ -432,15 +474,20 @@ function buildCandidateListWhere(organizationId, options) {
   return { AND: and };
 }
 
-function buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, options = {}) {
+export function buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, options = {}) {
   const { previewFilter, cursor } = options;
-  const and = [{ organizationId }, { registeredByWorkforceEmployeeId: workforceEmployeeId }];
+  const and = [
+    { organizationId },
+    { registeredByWorkforceEmployeeId: workforceEmployeeId },
+    { archivedAt: null },
+  ];
 
   if (previewFilter === 'in_process') {
     and.push({
       applications: {
         some: {
           organizationId,
+          closureOutcome: null,
           stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
         },
       },
@@ -480,7 +527,9 @@ export async function filterCandidateIdsByListPreviewKind(
         ? 'hired'
         : previewFilter === 'rejected'
           ? 'rejected'
-          : null;
+          : previewFilter === 'declined'
+            ? 'declined'
+            : null;
   if (!want) return candidateIds;
 
   const [activeMap, terminalMap] = await Promise.all([
@@ -532,7 +581,7 @@ export async function listCandidatesRegisteredByWorkforceEmployee(
   options = {},
 ) {
   let previewFilter = options.previewFilter || 'all';
-  if (!['all', 'in_process', 'hired', 'rejected'].includes(previewFilter)) {
+  if (!['all', 'in_process', 'hired', 'rejected', 'declined'].includes(previewFilter)) {
     previewFilter = 'all';
   }
 
@@ -542,7 +591,7 @@ export async function listCandidatesRegisteredByWorkforceEmployee(
   }
   limit = Math.min(WORKFORCE_REGISTERED_CANDIDATES_MAX_LIMIT, Math.floor(limit));
 
-  const needsPreviewScan = previewFilter === 'hired' || previewFilter === 'rejected';
+  const needsPreviewScan = previewFilter === 'hired' || previewFilter === 'rejected' || previewFilter === 'declined';
 
   if (!needsPreviewScan) {
     const where = buildWorkforceRegisteredCandidatesWhere(organizationId, workforceEmployeeId, {

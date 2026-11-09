@@ -404,7 +404,7 @@ router.get('/recruitment/my-candidates', requireTimeclockSession, async (req, re
     const orgId = req.timeclockEmployee.organizationId;
     const employeeId = req.timeclockEmployee.id;
     let previewFilter = typeof req.query.previewFilter === 'string' ? req.query.previewFilter.trim() : 'all';
-    if (!['all', 'in_process', 'hired', 'rejected'].includes(previewFilter)) {
+    if (!['all', 'in_process', 'hired', 'rejected', 'declined'].includes(previewFilter)) {
       previewFilter = 'all';
     }
     const result = await listMyCandidatesForWorkforcePortal(orgId, employeeId, {
