@@ -295,9 +295,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-toolbar-field{display:flex;flex-direction:column;gap:4px;}
 .rec-cand-toolbar-field label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
 .rec-cand-toolbar-field .form-input{min-width:128px;max-width:180px;margin:0;font-size:13px;padding:8px 10px;border-radius:10px;}
-.rec-cand-toolbar-arch{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--slate-600);padding-bottom:8px;white-space:nowrap;}
-.rec-cand-toolbar-clear{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:8px 4px;margin-left:auto;white-space:nowrap;}
-.rec-cand-toolbar-clear:hover{text-decoration:underline;}
+.rec-cand-toolbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex:0 0 auto;}
+.rec-cand-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);cursor:pointer;padding:0;}
+.rec-cand-icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.rec-cand-icon-btn:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);background:rgba(245,243,255,.7);}
+.rec-cand-icon-btn:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-cand-icon-btn[aria-pressed="true"]{background:rgba(245,243,255,.95);color:var(--purple-dark);border-color:rgba(124,58,237,.45);box-shadow:inset 0 0 0 1px rgba(124,58,237,.18);}
+.rec-cand-icon-btn:disabled{opacity:.4;cursor:default;background:#fff;color:var(--slate-400);border-color:var(--slate-200);box-shadow:none;}
+.rec-cand-ms{position:relative;min-width:0;}
+.rec-cand-ms-btn{display:flex;align-items:center;gap:8px;min-width:132px;max-width:210px;height:36px;margin:0;padding:0 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-800);font:inherit;font-size:13px;cursor:pointer;}
+.rec-cand-ms-btn:focus-visible,.rec-cand-ms-option:focus-within,.rec-cand-ms-actions button:focus-visible,.rec-cand-ms-search:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-cand-ms-btn[aria-expanded="true"]{border-color:rgba(124,58,237,.45);}
+.rec-cand-ms-kicker{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);line-height:1;}
+.rec-cand-ms-value{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;line-height:1.2;}
+.rec-cand-ms-btn-text{display:flex;flex-direction:column;align-items:flex-start;min-width:0;flex:1;gap:1px;}
+.rec-cand-ms-caret{flex:0 0 auto;color:var(--slate-400);}
+.rec-cand-ms-menu{position:fixed;z-index:80;display:flex;flex-direction:column;min-width:240px;background:#fff;border:1px solid var(--slate-200);border-radius:14px;box-shadow:0 16px 40px rgba(15,23,42,.16);padding:8px;overflow:hidden;}
+.rec-cand-ms-menu.hidden{display:none;}
+.rec-cand-ms-search{width:100%;margin:0 0 6px;font-size:13px;padding:7px 9px;border-radius:8px;}
+.rec-cand-ms-list{overflow:auto;min-height:0;flex:1;max-height:min(280px, calc(70vh - 120px));}
+.rec-cand-ms-option,.rec-cand-ms-all{display:flex;align-items:flex-start;gap:8px;width:100%;margin:0;padding:7px 8px;border-radius:8px;font-size:13px;color:var(--slate-800);cursor:pointer;}
+.rec-cand-ms-option:hover,.rec-cand-ms-all:hover{background:rgba(245,243,255,.85);}
+.rec-cand-ms-option input,.rec-cand-ms-all input{margin-top:2px;flex:0 0 auto;accent-color:#7c3aed;}
+.rec-cand-ms-option-copy{display:flex;flex-direction:column;min-width:0;gap:1px;}
+.rec-cand-ms-option-label{overflow-wrap:anywhere;}
+.rec-cand-ms-option-hint{font-size:11px;color:var(--slate-500);}
+.rec-cand-ms-empty{margin:6px 8px 8px;font-size:12px;color:var(--slate-500);}
+.rec-cand-ms-actions{display:flex;justify-content:flex-end;gap:6px;padding-top:8px;border-top:1px solid var(--slate-100);margin-top:6px;}
+.rec-cand-ms-actions button{border:1px solid var(--slate-200);background:#fff;border-radius:999px;padding:6px 10px;font:inherit;font-size:12px;font-weight:650;color:var(--slate-700);cursor:pointer;}
+.rec-cand-ms-actions .rec-cand-ms-apply{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+@media(max-width:900px){.rec-cand-toolbar-search{flex:1 1 100%;}.rec-cand-toolbar-actions{margin-left:0;}}
+@media(max-width:640px){.rec-cand-ms-btn{min-width:0;max-width:100%;}.rec-cand-toolbar-filters,.rec-cand-toolbar-actions{width:100%;}.rec-cand-toolbar-actions{justify-content:flex-end;}}
 .rec-cand-list-kicker{font-size:12px;font-weight:600;color:var(--slate-500);margin:0 0 8px;}
 .rec-cand-list{display:flex;flex-direction:column;gap:8px;}
 .rec-cand-row{position:relative;display:flex;align-items:stretch;gap:0;padding:0;background:#fff;border:1px solid var(--slate-200);border-radius:12px;cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.03);overflow:hidden;}
@@ -3835,28 +3863,20 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <div id="rec-pane-candidates" class="hidden rec-cand-pane-wrap">
         <div class="rec-cand-toolbar">
           <div class="rec-cand-toolbar-search">
-            <input type="search" id="rec-cand-q" class="form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos">
+            <input type="search" id="rec-cand-q" class="form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos" maxlength="120">
           </div>
-          <div class="rec-cand-toolbar-filters">
-            <div class="rec-cand-toolbar-field">
-              <label for="rec-cand-profile">Perfil</label>
-              <select id="rec-cand-profile" class="form-input"><option value="">Todos</option></select>
-            </div>
-            <div class="rec-cand-toolbar-field">
-              <label for="rec-cand-source">Fuente</label>
-              <select id="rec-cand-source" class="form-input"><option value="">Todas</option></select>
-            </div>
-            <div class="rec-cand-toolbar-field">
-              <label for="rec-cand-tag">Etiqueta</label>
-              <select id="rec-cand-tag" class="form-input"><option value="">Todas</option></select>
-            </div>
-            <div class="rec-cand-toolbar-field">
-              <label for="rec-cand-stage">Etapa</label>
-              <select id="rec-cand-stage" class="form-input"><option value="">Todas</option></select>
-            </div>
-            <label class="rec-cand-toolbar-arch"><input type="checkbox" id="rec-cand-archived"> Archivados</label>
+          <div class="rec-cand-toolbar-filters" id="rec-cand-filter-bar">
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-profile" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-source" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-tag" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-stage" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-recruiter" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
+            <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-vacancy" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
           </div>
-          <button type="button" class="rec-cand-toolbar-clear hidden" id="rec-cand-clear-filters" onclick="recCandClearFilters()">Limpiar filtros</button>
+          <div class="rec-cand-toolbar-actions">
+            <button type="button" class="rec-cand-icon-btn" id="rec-cand-archived" aria-pressed="false" aria-label="Ver archivados" title="Ver archivados" onclick="recCandToggleArchived()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></button>
+            <button type="button" class="rec-cand-icon-btn" id="rec-cand-clear-filters" aria-label="Limpiar filtros" title="Limpiar filtros" disabled onclick="recCandClearFilters()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l-6 7v5l-4 2v-7z"/><path d="m15 15 5 5"/><path d="m20 15-5 5"/></svg></button>
+          </div>
         </div>
         <p class="rec-cand-list-kicker" id="rec-cand-list-kicker">Talento registrado · —</p>
         <div id="rec-cand-list-wrap">
@@ -12365,7 +12385,7 @@ function recCandCatalogInits(){
   window.__REC_CAND_CATALOG_INIT=true;
   function fill(selId,opts,allLabel){
     const el=document.getElementById(selId);
-    if(!el||el.options.length>1) return;
+    if(!el||el.tagName!=='SELECT'||el.options.length>1) return;
     el.innerHTML='<option value="">'+tcEsc(allLabel)+'</option>'+opts.map(function(o){ return '<option value="'+tcEsc(o)+'">'+tcEsc(o)+'</option>'; }).join('');
   }
   fill('rec-cand-profile',REC_CAND_PROFILE_OPTS,'Todos');
@@ -13180,39 +13200,45 @@ function recCandRowTagsHtml(c){
   if(extra>0) inner+='<span class="rec-cand-tag-more">+'+extra+'</span>';
   return '<div class="rec-cand-row-tags">'+inner+'</div>';
 }
-async function recCandEnsureTagCatalog(){
+function recCandEnsureTagCatalog(){
   const st=recEnsureState();
-  if(st.candTagCatalog&&st.candTagCatalog.length) return st.candTagCatalog;
-  try{
-    const j=await apiJson('/api/org/recruitment/candidate-tags');
-    st.candTagCatalog=j.tags||[];
-  }catch(_e){ st.candTagCatalog=[]; }
-  const sel=document.getElementById('rec-cand-tag');
-  if(sel){
-    const cur=sel.value;
-    sel.innerHTML='<option value="">Todas</option>'+(st.candTagCatalog||[]).map(function(t){
-      return '<option value="'+tcEsc(t.id)+'">'+tcEsc(t.name)+'</option>';
-    }).join('');
-    if(cur) sel.value=cur;
-  }
-  return st.candTagCatalog;
+  if(st.candTagCatalogPromise) return st.candTagCatalogPromise;
+  st.candTagCatalogPromise=(async function(){
+    try{
+      if(!(st.candTagCatalog&&st.candTagCatalog.length)){
+        const j=await apiJson('/api/org/recruitment/candidate-tags');
+        st.candTagCatalog=j.tags||[];
+      }
+      st.candTagCatalogReady=true;
+      st.candTagCatalogFailed=false;
+    }catch(_e){
+      st.candTagCatalogFailed=true;
+      if(!st.candTagCatalog) st.candTagCatalog=[];
+    }
+    recCandPaintFilterButtons();
+    return st.candTagCatalog||[];
+  })();
+  return st.candTagCatalogPromise;
 }
-async function recCandEnsureStageCatalog(){
+function recCandEnsureStageCatalog(){
   const st=recEnsureState();
-  if(st.candStageCatalog&&st.candStageCatalog.length) return st.candStageCatalog;
-  try{
-    const j=await apiJson('/api/org/recruitment/stages');
-    st.candStageCatalog=j.stages||[];
-  }catch(_e){ st.candStageCatalog=[]; }
-  const sel=document.getElementById('rec-cand-stage');
-  if(sel){
-    const cur=sel.value;
-    sel.innerHTML='<option value="">Todas</option>'+(st.candStageCatalog||[]).map(function(s){
-      return '<option value="'+tcEsc(s.id)+'">'+tcEsc(s.name||s.key||'Etapa')+'</option>';
-    }).join('');
-    if(cur) sel.value=cur;
-  }
-  return st.candStageCatalog;
+  if(st.candStageCatalogPromise) return st.candStageCatalogPromise;
+  st.candStageCatalogPromise=(async function(){
+    try{
+      if(!(st.candStageCatalog&&st.candStageCatalog.length)){
+        const j=await apiJson('/api/org/recruitment/stages');
+        st.candStageCatalog=j.stages||[];
+      }
+      st.candStageCatalogReady=true;
+      st.candStageCatalogFailed=false;
+    }catch(_e){
+      st.candStageCatalogFailed=true;
+      if(!st.candStageCatalog) st.candStageCatalog=[];
+    }
+    recCandPaintFilterButtons();
+    return st.candStageCatalog||[];
+  })();
+  return st.candStageCatalogPromise;
 }
 function recCandRenderDetailTags(c){
   const box=document.getElementById('rec-cand-detail-tags');
@@ -13628,19 +13654,403 @@ async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFie
     body:JSON.stringify(body),
   });
 }
+function recCandEmptyFilters(){
+  return { q:'', profiles:[], sources:[], tagIds:[], stageIds:[], recruiterIds:[], vacancyIds:[], archivedOnly:false };
+}
+function recCandOrgId(){
+  const u=window.__MIND24_USER;
+  return u&&u.organizationId?String(u.organizationId):'';
+}
+function recCandFilterStorageKey(orgId){
+  const org=orgId!=null?String(orgId):recCandOrgId();
+  return org?('mind24.rec.candFilters.v1.'+org):'';
+}
+function recCandStringList(value){
+  if(!Array.isArray(value)) return [];
+  const seen={};
+  const out=[];
+  value.forEach(function(item){
+    const text=String(item==null?'':item).trim();
+    if(!text||seen[text]) return;
+    seen[text]=1;
+    out.push(text);
+  });
+  return out;
+}
+function recCandNormalizeFilters(raw){
+  const base=recCandEmptyFilters();
+  const src=raw||{};
+  base.q=String(src.q||'').trim();
+  base.profiles=recCandStringList(src.profiles);
+  base.sources=recCandStringList(src.sources);
+  base.tagIds=recCandStringList(src.tagIds);
+  base.stageIds=recCandStringList(src.stageIds);
+  base.recruiterIds=recCandStringList(src.recruiterIds);
+  base.vacancyIds=recCandStringList(src.vacancyIds);
+  base.archivedOnly=!!src.archivedOnly;
+  return base;
+}
+function recCandReadStoredFilters(orgId){
+  const key=recCandFilterStorageKey(orgId);
+  if(!key) return null;
+  try{
+    const raw=sessionStorage.getItem(key);
+    if(!raw) return null;
+    return recCandNormalizeFilters(JSON.parse(raw));
+  }catch(_e){ return null; }
+}
+function recCandWriteStoredFilters(){
+  const key=recCandFilterStorageKey();
+  if(!key) return;
+  if(!recCandHasActiveFilters(recEnsureState().candFilters)){
+    recCandClearStoredFilters();
+    return;
+  }
+  try{ sessionStorage.setItem(key, JSON.stringify(recEnsureState().candFilters)); }catch(_e){}
+}
+function recCandClearStoredFilters(){
+  const key=recCandFilterStorageKey();
+  if(!key) return;
+  try{ sessionStorage.removeItem(key); }catch(_e){}
+}
+function recCandAppendQueryList(qs, key, values){
+  (values||[]).forEach(function(value){ if(value) qs.append(key, value); });
+}
 function recCandBuildListQuery(st, cursor){
-  const f=st.candFilters||{};
+  const f=recCandNormalizeFilters(st.candFilters);
   const qs=new URLSearchParams();
   if(f.q) qs.set('q',f.q);
-  if(f.profile) qs.set('profile',f.profile);
-  if(f.source) qs.set('source',f.source);
+  recCandAppendQueryList(qs,'profiles',f.profiles);
+  recCandAppendQueryList(qs,'sources',f.sources);
+  recCandAppendQueryList(qs,'tagIds',f.tagIds);
+  recCandAppendQueryList(qs,'stageIds',f.stageIds);
+  recCandAppendQueryList(qs,'recruiterIds',f.recruiterIds);
+  recCandAppendQueryList(qs,'vacancyIds',f.vacancyIds);
   if(f.archivedOnly) qs.set('archivedOnly','true');
-  if(f.tagId) qs.set('tagId',f.tagId);
-  if(f.stageId) qs.set('stageId',f.stageId);
   if(st.selectedId) qs.set('contextVacancyId',st.selectedId);
   qs.set('limit','25');
   if(cursor) qs.set('cursor',cursor);
   return qs.toString();
+}
+var REC_CAND_FILTERS=[
+  { id:'rec-cand-profile', key:'profiles', label:'Perfil', all:'Todos' },
+  { id:'rec-cand-source', key:'sources', label:'Fuente', all:'Todas' },
+  { id:'rec-cand-tag', key:'tagIds', label:'Etiqueta', all:'Todas' },
+  { id:'rec-cand-stage', key:'stageIds', label:'Etapa', all:'Todas' },
+  { id:'rec-cand-recruiter', key:'recruiterIds', label:'Reclutador', all:'Todos' },
+  { id:'rec-cand-vacancy', key:'vacancyIds', label:'Vacante', all:'Todas' }
+];
+function recCandVacancyStatusLabel(status){
+  if(status==='ACTIVE') return 'Activa';
+  if(status==='PAUSED') return 'En pausa';
+  if(status==='COVERED') return 'Cubierta';
+  if(status==='CLOSED') return 'Cerrada';
+  return '';
+}
+function recCandFilterOptions(key){
+  const st=recEnsureState();
+  if(key==='profiles') return REC_CAND_PROFILE_OPTS.map(function(name){ return { value:name, label:name }; });
+  if(key==='sources') return REC_CAND_SOURCE_OPTS.map(function(name){ return { value:name, label:name }; });
+  if(key==='tagIds') return (st.candTagCatalog||[]).map(function(tag){ return { value:tag.id, label:tag.name||'Etiqueta' }; });
+  if(key==='stageIds') return (st.candStageCatalog||[]).map(function(stage){ return { value:stage.id, label:stage.name||stage.key||'Etapa' }; });
+  if(key==='recruiterIds'){
+    const rows=(st.candRecruiterCatalog||[]).map(function(row){
+      return { value:row.id, label:row.fullName||'Reclutador', hint:row.isActive===false?'Inactivo':'' };
+    });
+    if(st.candHasUnassignedRecruiter) rows.unshift({ value:'__none__', label:'Sin reclutador' });
+    return rows;
+  }
+  if(key==='vacancyIds') return (st.candVacancyCatalog||[]).map(function(row){
+    return { value:row.id, label:row.title||'Vacante', hint:recCandVacancyStatusLabel(row.status) };
+  });
+  return [];
+}
+function recCandFilterSummary(selected, options, allLabel){
+  if(!selected.length) return allLabel;
+  if(selected.length===1){
+    const hit=options.find(function(option){ return option.value===selected[0]; });
+    return hit?hit.label:'1 seleccionado';
+  }
+  return selected.length+' seleccionados';
+}
+function recCandPaintFilterButtons(){
+  const filters=recCandNormalizeFilters(recEnsureState().candFilters);
+  REC_CAND_FILTERS.forEach(function(def){
+    const btn=document.getElementById(def.id);
+    if(!btn) return;
+    const options=recCandFilterOptions(def.key);
+    const summary=recCandFilterSummary(filters[def.key], options, def.all);
+    btn.innerHTML='<span class="rec-cand-ms-btn-text"><span class="rec-cand-ms-kicker">'+tcEsc(def.label)+'</span><span class="rec-cand-ms-value">'+tcEsc(summary)+'</span></span><span class="rec-cand-ms-caret" aria-hidden="true">▾</span>';
+  });
+}
+function recCandArchiveSvg(){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>';
+}
+function recCandPaintArchiveButton(){
+  const btn=document.getElementById('rec-cand-archived');
+  if(!btn) return;
+  const on=!!(recEnsureState().candFilters&&recEnsureState().candFilters.archivedOnly);
+  btn.setAttribute('aria-pressed', on?'true':'false');
+  const label=on?'Ocultar archivados':'Ver archivados';
+  btn.setAttribute('aria-label', label);
+  btn.title=label;
+}
+function recCandMsMenuEl(){
+  let menu=document.getElementById('rec-cand-ms-menu');
+  if(!menu){
+    menu=document.createElement('div');
+    menu.id='rec-cand-ms-menu';
+    menu.className='rec-cand-ms-menu hidden';
+    menu.setAttribute('role','dialog');
+    menu.setAttribute('aria-modal','false');
+    document.body.appendChild(menu);
+  }
+  return menu;
+}
+function recCandMsIsOpen(){
+  const menu=document.getElementById('rec-cand-ms-menu');
+  return !!(menu&&!menu.classList.contains('hidden'));
+}
+function recCandMsPlace(menu, btn){
+  if(window.innerWidth<=640){
+    menu.style.left='12px';
+    menu.style.right='12px';
+    menu.style.bottom='12px';
+    menu.style.top='auto';
+    menu.style.width='auto';
+    menu.style.maxHeight='70vh';
+    return;
+  }
+  const rect=btn.getBoundingClientRect();
+  const margin=8;
+  const width=Math.min(320, window.innerWidth-margin*2);
+  let left=rect.left;
+  if(left+width>window.innerWidth-margin) left=window.innerWidth-margin-width;
+  if(left<margin) left=margin;
+  const spaceBelow=window.innerHeight-rect.bottom-margin;
+  const spaceAbove=rect.top-margin;
+  menu.style.width=width+'px';
+  menu.style.left=left+'px';
+  menu.style.right='auto';
+  menu.style.bottom='auto';
+  if(spaceBelow<220&&spaceAbove>spaceBelow){
+    menu.style.maxHeight=Math.max(160, spaceAbove-6)+'px';
+    menu.style.top='auto';
+    menu.style.bottom=(window.innerHeight-rect.top+6)+'px';
+  }else{
+    menu.style.top=(rect.bottom+6)+'px';
+    menu.style.bottom='auto';
+    menu.style.maxHeight=Math.max(160, spaceBelow-6)+'px';
+  }
+}
+function recCandMsVisibleOptions(def, query){
+  const q=String(query||'').trim().toLowerCase();
+  return recCandFilterOptions(def.key).filter(function(option){
+    if(!q) return true;
+    return (option.label+' '+(option.hint||'')).toLowerCase().indexOf(q)>=0;
+  });
+}
+function recCandMsRender(){
+  const st=recEnsureState();
+  const menu=recCandMsMenuEl();
+  const def=REC_CAND_FILTERS.find(function(item){ return item.id===st.candMsOpen; });
+  const btn=def?document.getElementById(def.id):null;
+  if(!def||!btn){ menu.classList.add('hidden'); return; }
+  const draft=st.candMsDraft||[];
+  const query=st.candMsQuery||'';
+  const visible=recCandMsVisibleOptions(def, query);
+  const selectedVisible=visible.filter(function(option){ return draft.indexOf(option.value)>=0; }).length;
+  const allChecked=visible.length>0&&selectedVisible===visible.length;
+  const showSearch=recCandFilterOptions(def.key).length>8;
+  let html='';
+  html+='<p id="rec-cand-ms-title" class="rec-cand-ms-kicker" style="margin:2px 8px 6px;">'+tcEsc(def.label)+'</p>';
+  if(showSearch) html+='<input type="search" class="form-input rec-cand-ms-search" id="rec-cand-ms-search" placeholder="Buscar" aria-label="Buscar en '+tcEsc(def.label)+'" value="'+tcEsc(query)+'">';
+  html+='<div class="rec-cand-ms-list" id="rec-cand-ms-list">';
+  html+='<label class="rec-cand-ms-all"><input type="checkbox" id="rec-cand-ms-all"'+(allChecked?' checked':'')+'><span>Seleccionar todo</span></label>';
+  if(!visible.length) html+='<p class="rec-cand-ms-empty">Sin opciones</p>';
+  visible.forEach(function(option){
+    const checked=draft.indexOf(option.value)>=0;
+    html+='<label class="rec-cand-ms-option"><input type="checkbox" data-rec-ms-value="'+tcEsc(option.value)+'"'+(checked?' checked':'')+'><span class="rec-cand-ms-option-copy"><span class="rec-cand-ms-option-label">'+tcEsc(option.label)+'</span>'+(option.hint?'<span class="rec-cand-ms-option-hint">'+tcEsc(option.hint)+'</span>':'')+'</span></label>';
+  });
+  html+='</div><div class="rec-cand-ms-actions">';
+  html+='<button type="button" id="rec-cand-ms-clear">Limpiar</button>';
+  html+='<button type="button" id="rec-cand-ms-cancel">Cancelar</button>';
+  html+='<button type="button" class="rec-cand-ms-apply" id="rec-cand-ms-apply">Aplicar</button>';
+  html+='</div>';
+  menu.innerHTML=html;
+  menu.setAttribute('aria-labelledby','rec-cand-ms-title');
+  const allBox=document.getElementById('rec-cand-ms-all');
+  if(allBox) allBox.indeterminate=selectedVisible>0&&selectedVisible<visible.length;
+  const search=document.getElementById('rec-cand-ms-search');
+  if(search){
+    search.addEventListener('input',function(){
+      st.candMsQuery=search.value;
+      const pos=search.selectionStart;
+      recCandMsRender();
+      const next=document.getElementById('rec-cand-ms-search');
+      if(next){ next.focus(); try{ next.setSelectionRange(pos,pos); }catch(_e){} }
+    });
+  }
+  if(allBox) allBox.addEventListener('change',function(){
+    const values=recCandMsVisibleOptions(def, st.candMsQuery).map(function(option){ return option.value; });
+    if(allBox.checked){
+      values.forEach(function(value){ if(st.candMsDraft.indexOf(value)<0) st.candMsDraft.push(value); });
+    }else{
+      st.candMsDraft=st.candMsDraft.filter(function(value){ return values.indexOf(value)<0; });
+    }
+    recCandMsRender();
+    const again=document.getElementById('rec-cand-ms-all');
+    if(again) again.focus();
+  });
+  menu.querySelectorAll('[data-rec-ms-value]').forEach(function(box){
+    box.addEventListener('change',function(){
+      const value=box.getAttribute('data-rec-ms-value');
+      if(box.checked){ if(st.candMsDraft.indexOf(value)<0) st.candMsDraft.push(value); }
+      else st.candMsDraft=st.candMsDraft.filter(function(item){ return item!==value; });
+      recCandMsRender();
+      const next=menu.querySelector('[data-rec-ms-value="'+CSS.escape(value)+'"]');
+      if(next) next.focus();
+    });
+  });
+  document.getElementById('rec-cand-ms-clear').addEventListener('click',function(){ recCandMsApply([]); });
+  document.getElementById('rec-cand-ms-cancel').addEventListener('click',function(){ recCandMsCancel(true); });
+  document.getElementById('rec-cand-ms-apply').addEventListener('click',function(){ recCandMsApply(st.candMsDraft.slice()); });
+  menu.classList.remove('hidden');
+  recCandMsPlace(menu, btn);
+}
+function recCandMsOpen(id){
+  const st=recEnsureState();
+  const def=REC_CAND_FILTERS.find(function(item){ return item.id===id; });
+  if(!def) return;
+  if(st.candMsOpen&&st.candMsOpen!==id) recCandMsCancel(false);
+  const filters=recCandNormalizeFilters(st.candFilters);
+  st.candMsOpen=id;
+  st.candMsDraft=filters[def.key].slice();
+  st.candMsQuery='';
+  document.querySelectorAll('.rec-cand-ms-btn').forEach(function(btn){ btn.setAttribute('aria-expanded', btn.id===id?'true':'false'); });
+  recCandMsRender();
+  const search=document.getElementById('rec-cand-ms-search');
+  const first=document.querySelector('#rec-cand-ms-menu input');
+  if(search) search.focus();
+  else if(first) first.focus();
+}
+function recCandMsClose(returnFocus){
+  const st=recEnsureState();
+  const menu=document.getElementById('rec-cand-ms-menu');
+  const btn=st.candMsOpen?document.getElementById(st.candMsOpen):null;
+  if(menu) menu.classList.add('hidden');
+  document.querySelectorAll('.rec-cand-ms-btn').forEach(function(item){ item.setAttribute('aria-expanded','false'); });
+  st.candMsOpen=null;
+  st.candMsDraft=[];
+  st.candMsQuery='';
+  if(returnFocus&&btn) btn.focus();
+}
+function recCandMsCancel(returnFocus){ recCandMsClose(returnFocus); }
+function recCandCommitFilters(next, reload){
+  const st=recEnsureState();
+  st.candFilters=recCandNormalizeFilters(next);
+  recCandWriteStoredFilters();
+  recCandPaintFilterButtons();
+  recCandPaintArchiveButton();
+  recCandUpdateFiltersUi();
+  if(reload) recCandLoadList(false);
+}
+function recCandMsApply(values){
+  const st=recEnsureState();
+  const def=REC_CAND_FILTERS.find(function(item){ return item.id===st.candMsOpen; });
+  if(!def) return;
+  const next=recCandNormalizeFilters(st.candFilters);
+  next[def.key]=recCandStringList(values);
+  const btn=document.getElementById(def.id);
+  recCandMsClose(false);
+  recCandCommitFilters(next, true);
+  if(btn) btn.focus();
+}
+function recCandBindMsDismiss(){
+  if(window.__recCandMsDismiss) return;
+  window.__recCandMsDismiss=true;
+  document.addEventListener('mousedown',function(ev){
+    if(!recCandMsIsOpen()) return;
+    const menu=document.getElementById('rec-cand-ms-menu');
+    if(menu&&menu.contains(ev.target)) return;
+    if(ev.target.closest&&ev.target.closest('.rec-cand-ms-btn')) return;
+    recCandMsCancel(false);
+  });
+  document.addEventListener('keydown',function(ev){
+    if(!recCandMsIsOpen()) return;
+    if(ev.key==='Escape'){
+      ev.preventDefault();
+      ev.stopPropagation();
+      recCandMsCancel(true);
+      return;
+    }
+    if(ev.key!=='ArrowDown'&&ev.key!=='ArrowUp') return;
+    const menu=document.getElementById('rec-cand-ms-menu');
+    if(!menu) return;
+    const nodes=[].slice.call(menu.querySelectorAll('input,button'));
+    const index=nodes.indexOf(document.activeElement);
+    if(index<0) return;
+    ev.preventDefault();
+    const next=nodes[index+(ev.key==='ArrowDown'?1:-1)];
+    if(next) next.focus();
+  }, true);
+  window.addEventListener('resize',function(){
+    if(!recCandMsIsOpen()) return;
+    const st=recEnsureState();
+    const btn=document.getElementById(st.candMsOpen||'');
+    const menu=document.getElementById('rec-cand-ms-menu');
+    if(btn&&menu) recCandMsPlace(menu, btn);
+  });
+}
+function recCandEnsureDirectoryCatalogs(){
+  const st=recEnsureState();
+  if(st.candDirectoryCatalogPromise) return st.candDirectoryCatalogPromise;
+  st.candDirectoryCatalogPromise=(async function(){
+    try{
+      if(!st.candDirectoryCatalogLoaded){
+        const j=await apiJson('/api/org/recruitment/candidate-directory-filters');
+        st.candRecruiterCatalog=j.recruiters||[];
+        st.candVacancyCatalog=j.vacancies||[];
+        st.candHasUnassignedRecruiter=!!j.hasUnassignedRecruiter;
+        st.candDirectoryCatalogLoaded=true;
+      }
+      st.candDirectoryCatalogReady=true;
+      st.candDirectoryCatalogFailed=false;
+    }catch(_e){
+      st.candDirectoryCatalogFailed=true;
+      if(!st.candRecruiterCatalog) st.candRecruiterCatalog=[];
+      if(!st.candVacancyCatalog) st.candVacancyCatalog=[];
+    }
+    recCandPaintFilterButtons();
+  })();
+  return st.candDirectoryCatalogPromise;
+}
+function recCandPruneFiltersToCatalogs(){
+  const st=recEnsureState();
+  if(!st.candTagCatalogReady||!st.candStageCatalogReady||!st.candDirectoryCatalogReady) return false;
+  if(st.candTagCatalogFailed||st.candStageCatalogFailed||st.candDirectoryCatalogFailed) return false;
+  const current=recCandNormalizeFilters(st.candFilters);
+  function keep(ids, key){
+    const known={};
+    recCandFilterOptions(key).forEach(function(option){ known[option.value]=1; });
+    return ids.filter(function(id){ return known[id]; });
+  }
+  const next=recCandNormalizeFilters(current);
+  next.q=current.q;
+  next.archivedOnly=current.archivedOnly;
+  next.profiles=keep(current.profiles,'profiles');
+  next.sources=keep(current.sources,'sources');
+  next.tagIds=keep(current.tagIds,'tagIds');
+  next.stageIds=keep(current.stageIds,'stageIds');
+  next.recruiterIds=keep(current.recruiterIds,'recruiterIds');
+  next.vacancyIds=keep(current.vacancyIds,'vacancyIds');
+  if(JSON.stringify(next)===JSON.stringify(current)) return false;
+  st.candFilters=next;
+  const qEl=document.getElementById('rec-cand-q');
+  if(qEl) qEl.value=next.q||'';
+  recCandWriteStoredFilters();
+  recCandUpdateFiltersUi();
+  return true;
 }
 function recCandPortfolioIconSvg(kind){
   if(kind==='briefcase'){
@@ -13706,31 +14116,26 @@ function recCandFormApplyDecorIcons(){
   });
 }
 function recCandHasActiveFilters(f){
-  f=f||{};
-  return !!(f.q||f.profile||f.source||f.archivedOnly||f.tagId||f.stageId);
+  f=recCandNormalizeFilters(f);
+  return !!(f.q||f.profiles.length||f.sources.length||f.tagIds.length||f.stageIds.length||f.recruiterIds.length||f.vacancyIds.length||f.archivedOnly);
 }
 function recCandUpdateFiltersUi(){
-  const st=recEnsureState();
   const clearEl=document.getElementById('rec-cand-clear-filters');
-  if(clearEl) clearEl.classList.toggle('hidden',!recCandHasActiveFilters(st.candFilters));
+  if(clearEl) clearEl.disabled=!recCandHasActiveFilters(recEnsureState().candFilters);
+  recCandPaintFilterButtons();
+  recCandPaintArchiveButton();
 }
 function recCandClearFilters(){
-  const st=recEnsureState();
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'', stageId:'' };
   const qEl=document.getElementById('rec-cand-q');
-  const pEl=document.getElementById('rec-cand-profile');
-  const sEl=document.getElementById('rec-cand-source');
-  const tEl=document.getElementById('rec-cand-tag');
-  const stgEl=document.getElementById('rec-cand-stage');
-  const aEl=document.getElementById('rec-cand-archived');
   if(qEl) qEl.value='';
-  if(pEl) pEl.value='';
-  if(sEl) sEl.value='';
-  if(tEl) tEl.value='';
-  if(stgEl) stgEl.value='';
-  if(aEl) aEl.checked=false;
-  recCandUpdateFiltersUi();
-  recCandLoadList(false);
+  recCandMsCancel(false);
+  recCandClearStoredFilters();
+  recCandCommitFilters(recCandEmptyFilters(), true);
+}
+function recCandToggleArchived(){
+  const next=recCandNormalizeFilters(recEnsureState().candFilters);
+  next.archivedOnly=!next.archivedOnly;
+  recCandCommitFilters(next, true);
 }
 function recCandRowProcessHtml(c){
   const proc=c.primaryActiveProcess;
@@ -13804,49 +14209,93 @@ function recCandBuildPortfolioRowHtml(c, st){
 function recCandBindFilters(){
   const st=recEnsureState();
   recCandCatalogInits();
-  if(st.candFiltersBound) return;
+  const orgId=recCandOrgId();
+  if(st.candFiltersOrgId!==orgId){
+    st.candFiltersOrgId=orgId;
+    st.candFilters=recCandReadStoredFilters(orgId)||recCandEmptyFilters();
+    const qEl=document.getElementById('rec-cand-q');
+    if(qEl) qEl.value=st.candFilters.q||'';
+  }
+  if(!st.candFilters) st.candFilters=recCandEmptyFilters();
+  if(st.candFiltersBound){
+    recCandUpdateFiltersUi();
+    return;
+  }
   st.candFiltersBound=true;
-  st.candFilters={ q:'', profile:'', source:'', archivedOnly:false, tagId:'', stageId:'' };
   recCandEnsureTagCatalog();
   recCandEnsureStageCatalog();
+  recCandEnsureDirectoryCatalogs();
+  recCandBindMsDismiss();
   function scheduleReload(){
     clearTimeout(st.candSearchTimer);
     st.candSearchTimer=setTimeout(function(){ recCandLoadList(false); },300);
   }
   const qEl=document.getElementById('rec-cand-q');
-  const pEl=document.getElementById('rec-cand-profile');
-  const sEl=document.getElementById('rec-cand-source');
-  const tEl=document.getElementById('rec-cand-tag');
-  const stgEl=document.getElementById('rec-cand-stage');
-  const aEl=document.getElementById('rec-cand-archived');
-  if(qEl) qEl.addEventListener('input',function(){ st.candFilters.q=qEl.value.trim(); recCandUpdateFiltersUi(); scheduleReload(); });
-  if(pEl) pEl.addEventListener('change',function(){ st.candFilters.profile=pEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
-  if(sEl) sEl.addEventListener('change',function(){ st.candFilters.source=sEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
-  if(tEl) tEl.addEventListener('change',function(){ st.candFilters.tagId=tEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
-  if(stgEl) stgEl.addEventListener('change',function(){ st.candFilters.stageId=stgEl.value.trim(); recCandUpdateFiltersUi(); recCandLoadList(false); });
-  if(aEl) aEl.addEventListener('change',function(){ st.candFilters.archivedOnly=!!aEl.checked; recCandUpdateFiltersUi(); recCandLoadList(false); });
+  if(qEl&&!qEl.__recCandBound){
+    qEl.__recCandBound=true;
+    qEl.addEventListener('input',function(){
+      const next=recCandNormalizeFilters(st.candFilters);
+      next.q=qEl.value.trim();
+      st.candFilters=next;
+      recCandWriteStoredFilters();
+      recCandUpdateFiltersUi();
+      scheduleReload();
+    });
+  }
+  REC_CAND_FILTERS.forEach(function(def){
+    const btn=document.getElementById(def.id);
+    if(!btn||btn.__recCandBound) return;
+    btn.__recCandBound=true;
+    btn.addEventListener('click',function(){
+      if(st.candMsOpen===def.id) recCandMsCancel(true);
+      else recCandMsOpen(def.id);
+    });
+  });
   recCandUpdateFiltersUi();
 }
 async function recCandLoadList(append){
   const st=recEnsureState();
   recCandBindFilters();
-  if(st.candidatesLoading) return;
+  if(append&&!st.candidatesNextCursor) return;
+  await Promise.all([
+    recCandEnsureTagCatalog(),
+    recCandEnsureStageCatalog(),
+    recCandEnsureDirectoryCatalogs(),
+  ]);
+  if(!append) recCandPruneFiltersToCatalogs();
+  if(append&&!st.candidatesNextCursor) return;
+  const seq=(st.candListSeq||0)+1;
+  st.candListSeq=seq;
   st.candidatesLoading=true;
   st.candidatesError=null;
-  if(!append){ st.candidates=[]; st.candidatesNextCursor=null; recCandRenderList(true); }
+  if(!append){ st.candidates=[]; st.candidatesNextCursor=null; st.candListTotal=null; recCandRenderList(true); }
+  const cursor=append?st.candidatesNextCursor:null;
   try{
-    const qs=recCandBuildListQuery(st, append?st.candidatesNextCursor:null);
+    const qs=recCandBuildListQuery(st, cursor);
     const j=await apiJson('/api/org/recruitment/candidates?'+qs);
+    if(seq!==st.candListSeq) return;
     const rows=j.candidates||[];
-    if(append) st.candidates=st.candidates.concat(rows);
-    else st.candidates=rows;
+    if(append){
+      const seen={};
+      st.candidates.forEach(function(row){ if(row&&row.id) seen[row.id]=1; });
+      rows.forEach(function(row){
+        if(!row||!row.id||seen[row.id]) return;
+        seen[row.id]=1;
+        st.candidates.push(row);
+      });
+    }else st.candidates=rows;
     st.candidatesNextCursor=j.nextCursor||null;
+    st.candListTotal=Number.isFinite(Number(j.total))?Number(j.total):st.candidates.length;
   }catch(e){
+    if(seq!==st.candListSeq) return;
     st.candidatesError=(e&&e.message)||'No se pudo cargar la cartera.';
     if(!append) st.candidates=[];
+    st.candListTotal=null;
   }finally{
-    st.candidatesLoading=false;
-    recCandRenderList();
+    if(seq===st.candListSeq){
+      st.candidatesLoading=false;
+      recCandRenderList();
+    }
   }
 }
 function recCandRenderList(loadingOnly){
@@ -13858,8 +14307,8 @@ function recCandRenderList(loadingOnly){
   recCandUpdateFiltersUi();
   const n=st.candidates.length;
   if(kickerEl){
-    if(st.candidatesLoading&&n===0) kickerEl.textContent='Talento registrado · —';
-    else if(st.candidatesNextCursor) kickerEl.textContent=n+' candidatos cargados';
+    if(st.candidatesLoading&&st.candListTotal==null) kickerEl.textContent='Talento registrado · —';
+    else if(typeof st.candListTotal==='number') kickerEl.textContent='Talento registrado · '+st.candListTotal;
     else kickerEl.textContent='Talento registrado · '+n;
   }
   if(st.candidatesError){
@@ -13874,7 +14323,7 @@ function recCandRenderList(loadingOnly){
   }
   if(!n){
     const f=st.candFilters||{};
-    const hasFilter=!!(f.q||f.profile||f.source||f.archivedOnly||f.tagId);
+    const hasFilter=recCandHasActiveFilters(f);
     let emptyMsg='Aún no hay candidatos en la cartera.';
     if(hasFilter) emptyMsg='No hay candidatos que coincidan con tu búsqueda.';
     list.innerHTML='<div class="rec-cand-empty"><p style="margin:0;color:var(--slate-600);">'+emptyMsg+'</p></div>';

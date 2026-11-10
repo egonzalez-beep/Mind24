@@ -13,6 +13,8 @@ import {
   resolveRecruitmentCandidateProfileFields,
   resolveRecruitmentCandidateProfileSecondary,
   resolveRecruitmentCandidateSourceFields,
+  RECRUITMENT_CANDIDATE_PROFILE_OPTIONS,
+  RECRUITMENT_CANDIDATE_SOURCE_OPTIONS,
 } from './recruitmentCandidateCatalog.service.js';
 
 export { normalizeRecruitmentCandidateFullName } from './recruitmentCandidateCatalog.service.js';
@@ -29,6 +31,10 @@ function serializeResumeMetadata(row) {
     updatedAt: row.updatedAt.toISOString(),
   };
 }
+
+/** Candidato sin WorkforceEmployee de registro. No es un id de otra tabla. */
+export const CANDIDATE_DIRECTORY_UNASSIGNED_RECRUITER = '__none__';
+const CANDIDATE_DIRECTORY_FILTER_LIMIT = 40;
 
 export const RECRUITMENT_CANDIDATE_LIST_DEFAULT_LIMIT = 25;
 export const RECRUITMENT_CANDIDATE_LIST_MAX_LIMIT = 50;
@@ -307,19 +313,121 @@ export function resolveCandidateListProcessPreview(activePreview, terminalPrevie
   return null;
 }
 
-async function assertRecruitmentStageFilterForOrg(organizationId, stageId) {
-  const id = trimOrNull(stageId);
-  if (!id) return;
-  const stage = await prisma.recruitmentStage.findFirst({
-    where: { id, organizationId },
+function directoryFilterError(message) {
+  const err = new Error('VALIDATION_ERROR');
+  err.code = 'VALIDATION_ERROR';
+  err.message = message;
+  return err;
+}
+
+function directoryValueList(value) {
+  if (value == null || value === '') return [];
+  const raw = Array.isArray(value) ? value : [value];
+  const seen = new Set();
+  const out = [];
+  for (const item of raw) {
+    const text = trimOrNull(item);
+    if (!text || seen.has(text)) continue;
+    if (text.length > 80) throw directoryFilterError('Filtro no válido.');
+    seen.add(text);
+    out.push(text);
+  }
+  return out;
+}
+
+function canonicalCatalogValue(value, options, message) {
+  const hit = options.find((option) => option.toLowerCase() === value.toLowerCase());
+  if (!hit) throw directoryFilterError(message);
+  return hit;
+}
+
+/**
+ * El directorio lo abre un User empresa_admin. El registro del candidato
+ * apunta solo a WorkforceEmployee y no hay relación User ↔ colaborador,
+ * así que «Registrados por mí» no tiene una resolución inequívoca.
+ */
+export function normalizeCandidateDirectoryFilters(options = {}) {
+  const profiles = directoryValueList([].concat(options.profiles || [], options.profile || []));
+  const sources = directoryValueList([].concat(options.sources || [], options.source || []));
+  const tagIds = directoryValueList([].concat(options.tagIds || [], options.tagId || []));
+  const stageIds = directoryValueList([].concat(options.stageIds || [], options.stageId || []));
+  const recruiterIds = directoryValueList(options.recruiterIds);
+  const vacancyIds = directoryValueList(options.vacancyIds);
+  const groups = [profiles, sources, tagIds, stageIds, recruiterIds, vacancyIds];
+  if (groups.some((group) => group.length > CANDIDATE_DIRECTORY_FILTER_LIMIT)) {
+    throw directoryFilterError('Selecciona menos filtros a la vez.');
+  }
+  const unique = (values) => [...new Set(values)];
+  return {
+    profiles: unique(profiles.map((value) => canonicalCatalogValue(
+      value,
+      RECRUITMENT_CANDIDATE_PROFILE_OPTIONS,
+      'Perfil no válido.',
+    ))),
+    sources: unique(sources.map((value) => canonicalCatalogValue(
+      value,
+      RECRUITMENT_CANDIDATE_SOURCE_OPTIONS,
+      'Fuente no válida.',
+    ))),
+    tagIds,
+    stageIds,
+    recruiterIds,
+    vacancyIds,
+  };
+}
+
+async function assertIdsInOrg(model, organizationId, ids, message) {
+  if (!ids.length) return;
+  const rows = await prisma[model].findMany({
+    where: { organizationId, id: { in: ids } },
     select: { id: true },
   });
-  if (!stage) {
-    const err = new Error('VALIDATION_ERROR');
-    err.code = 'VALIDATION_ERROR';
-    err.message = 'Etapa no válida para esta organización.';
-    throw err;
-  }
+  if (rows.length !== ids.length) throw directoryFilterError(message);
+}
+
+export async function assertCandidateDirectoryFilterIds(organizationId, filters) {
+  const recruiterIds = filters.recruiterIds.filter(
+    (id) => id !== CANDIDATE_DIRECTORY_UNASSIGNED_RECRUITER,
+  );
+  await Promise.all([
+    assertIdsInOrg('recruitmentStage', organizationId, filters.stageIds, 'Etapa no válida para esta organización.'),
+    assertIdsInOrg('recruitmentCandidateTag', organizationId, filters.tagIds, 'Etiqueta no válida para esta organización.'),
+    assertIdsInOrg('recruitmentVacancy', organizationId, filters.vacancyIds, 'Vacante no válida para esta organización.'),
+    assertIdsInOrg('workforceEmployee', organizationId, recruiterIds, 'Reclutador no válido para esta organización.'),
+  ]);
+}
+
+const VACANCY_STATUS_ORDER = { ACTIVE: 0, PAUSED: 1, COVERED: 2, CLOSED: 3 };
+
+export async function listCandidateDirectoryFilterOptions(organizationId) {
+  const [recruiters, unassignedCount, vacancies] = await Promise.all([
+    prisma.workforceEmployee.findMany({
+      where: {
+        organizationId,
+        recruitmentCandidatesRegistered: { some: { organizationId } },
+      },
+      select: { id: true, fullName: true, isActive: true },
+      orderBy: [{ fullName: 'asc' }, { id: 'asc' }],
+    }),
+    prisma.recruitmentCandidate.count({
+      where: { organizationId, registeredByWorkforceEmployeeId: null },
+    }),
+    prisma.recruitmentVacancy.findMany({
+      where: { organizationId, applications: { some: { organizationId } } },
+      select: { id: true, title: true, status: true },
+    }),
+  ]);
+  vacancies.sort((a, b) => {
+    const byStatus = (VACANCY_STATUS_ORDER[a.status] ?? 9) - (VACANCY_STATUS_ORDER[b.status] ?? 9);
+    if (byStatus) return byStatus;
+    return String(a.title).localeCompare(String(b.title), 'es');
+  });
+  return {
+    registeredByMeAvailable: false,
+    hasUnassignedRecruiter: unassignedCount > 0,
+    recruiters,
+    vacancies,
+  };
 }
 
 /**
@@ -393,17 +501,14 @@ function decodeListCursor(cursor) {
   }
 }
 
-function buildCandidateListWhere(organizationId, options) {
+export function buildCandidateListWhere(organizationId, options) {
   const {
     includeArchived = false,
     archivedOnly = false,
     q,
-    profile,
-    source,
-    tagId,
-    stageId,
     cursor,
   } = options;
+  const filters = options.directoryFilters || normalizeCandidateDirectoryFilters(options);
 
   const and = [{ organizationId }];
   if (archivedOnly === true) {
@@ -413,6 +518,7 @@ function buildCandidateListWhere(organizationId, options) {
   }
 
   const qTrim = trimOrNull(q);
+  if (qTrim && qTrim.length > 120) throw directoryFilterError('La búsqueda es demasiado larga.');
   if (qTrim) {
     and.push({
       OR: [
@@ -427,32 +533,50 @@ function buildCandidateListWhere(organizationId, options) {
     });
   }
 
-  const profileTrim = trimOrNull(profile);
-  if (profileTrim) {
-    and.push({ profile: { equals: profileTrim, mode: 'insensitive' } });
+  if (filters.profiles.length) {
+    and.push({
+      OR: filters.profiles.map((profile) => ({ profile: { equals: profile, mode: 'insensitive' } })),
+    });
   }
 
-  const sourceTrim = trimOrNull(source);
-  if (sourceTrim) {
-    and.push({ source: { equals: sourceTrim, mode: 'insensitive' } });
+  if (filters.sources.length) {
+    and.push({
+      OR: filters.sources.map((source) => ({ source: { equals: source, mode: 'insensitive' } })),
+    });
   }
 
-  const tagTrim = trimOrNull(tagId);
-  if (tagTrim) {
+  if (filters.tagIds.length) {
     and.push({
       tagAssignments: {
-        some: { organizationId, tagId: tagTrim },
+        some: { organizationId, tagId: { in: filters.tagIds } },
       },
     });
   }
 
-  const stageTrim = trimOrNull(stageId);
-  if (stageTrim) {
+  if (filters.stageIds.length) {
     and.push({
       applications: {
-        some: { organizationId, stageId: stageTrim },
+        some: { organizationId, stageId: { in: filters.stageIds } },
       },
     });
+  }
+
+  if (filters.vacancyIds.length) {
+    and.push({
+      applications: {
+        some: { organizationId, vacancyId: { in: filters.vacancyIds } },
+      },
+    });
+  }
+
+  if (filters.recruiterIds.length) {
+    const ids = filters.recruiterIds.filter((id) => id !== CANDIDATE_DIRECTORY_UNASSIGNED_RECRUITER);
+    const includeUnassigned = filters.recruiterIds.includes(CANDIDATE_DIRECTORY_UNASSIGNED_RECRUITER);
+    const or = [];
+    if (ids.length) or.push({ registeredByWorkforceEmployeeId: { in: ids } });
+    if (includeUnassigned) or.push({ registeredByWorkforceEmployeeId: null });
+    if (or.length === 1) and.push(or[0]);
+    else if (or.length > 1) and.push({ OR: or });
   }
 
   const decoded = cursor ? decodeListCursor(cursor) : null;
@@ -700,20 +824,34 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
   if (!Number.isFinite(limit) || limit < 1) limit = RECRUITMENT_CANDIDATE_LIST_DEFAULT_LIMIT;
   limit = Math.min(RECRUITMENT_CANDIDATE_LIST_MAX_LIMIT, Math.floor(limit));
 
-  await assertRecruitmentStageFilterForOrg(organizationId, options.stageId);
+  const directoryFilters = normalizeCandidateDirectoryFilters(options);
+  await assertCandidateDirectoryFilterIds(organizationId, directoryFilters);
 
   const where = buildCandidateListWhere(organizationId, {
     ...options,
     includeArchived,
     archivedOnly,
+    cursor: null,
+    directoryFilters,
   });
+  const pagedWhere = options.cursor
+    ? buildCandidateListWhere(organizationId, {
+      ...options,
+      includeArchived,
+      archivedOnly,
+      directoryFilters,
+    })
+    : where;
 
-  const rows = await prisma.recruitmentCandidate.findMany({
-    where,
-    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-    take: limit + 1,
-    include: registeredByInclude,
-  });
+  const [rows, total] = await Promise.all([
+    prisma.recruitmentCandidate.findMany({
+      where: pagedWhere,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+      include: registeredByInclude,
+    }),
+    prisma.recruitmentCandidate.count({ where }),
+  ]);
 
   let nextCursor = null;
   let page = rows;
@@ -750,6 +888,7 @@ export async function listRecruitmentCandidates(organizationId, options = {}) {
       });
     }),
     nextCursor,
+    total,
   };
 }
 

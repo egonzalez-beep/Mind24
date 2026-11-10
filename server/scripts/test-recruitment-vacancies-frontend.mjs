@@ -121,7 +121,7 @@ console.log('\n=== Recruitment 1D.2 — cartera candidatos ===\n');
 check(/rec-module-nav/.test(indexHtml), 'nav Vacantes/Candidatos');
 check(/recSwitchModuleTab/.test(indexHtml), 'switch módulo recruitment');
 check(/rec-topbar-cand-tools/.test(indexHtml), 'CTA candidatos en topbar');
-check(/Archivados/.test(indexHtml.match(/rec-cand-archived[\s\S]{0,40}/)?.[0] || ''), 'switch archivados');
+check(/id="rec-cand-archived"/.test(indexHtml) && /Ver archivados/.test(indexHtml) && /aria-pressed/.test(indexHtml), 'botón archivados');
 check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
 check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
 check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');
@@ -141,7 +141,7 @@ check(/Teléfono secundario/.test(indexHtml), 'whatsapp prioritario UX');
 check(/rec-cand-form-profile2/.test(indexHtml) && !/Próximamente/.test(indexHtml.match(/rec-cand-form-profile2[\s\S]{0,200}/)?.[0]||''), 'profileSecondary habilitado');
 check(/recCandSetOpErr/.test(indexHtml), 'mensaje fallo parcial vacante');
 check(/Indica el WhatsApp del candidato/.test(indexHtml), 'UI exige WhatsApp');
-check(/id="rec-cand-profile"[^>]*select|select id="rec-cand-profile"/.test(indexHtml), 'filtro profile select');
+check(/id="rec-cand-profile"/.test(indexHtml) && /rec-cand-ms-btn/.test(indexHtml) && !/select id="rec-cand-profile"/.test(indexHtml), 'filtro perfil multiselección');
 
 console.log('\n=== Recruitment 1G.1 — dashboard Vacantes + Pipeline ===\n');
 

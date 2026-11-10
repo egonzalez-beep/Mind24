@@ -7,6 +7,7 @@ import {
   assertRecruitmentCandidateInOrg,
   findPotentialDuplicateRecruitmentCandidates,
   getRecruitmentCandidate,
+  listCandidateDirectoryFilterOptions,
   listRecruitmentCandidates,
   updateRecruitmentCandidate,
 } from '../services/recruitmentCandidate.service.js';
@@ -682,6 +683,16 @@ router.post('/candidates', async (req, res, next) => {
   }
 });
 
+router.get('/candidate-directory-filters', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const options = await listCandidateDirectoryFilterOptions(u.organizationId);
+    res.json(options);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/candidates', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
@@ -704,9 +715,15 @@ router.get('/candidates', async (req, res, next) => {
       archivedOnly,
       q: req.query.q,
       profile: req.query.profile,
+      profiles: req.query.profiles,
       source: req.query.source,
+      sources: req.query.sources,
       tagId,
+      tagIds: req.query.tagIds,
       stageId,
+      stageIds: req.query.stageIds,
+      recruiterIds: req.query.recruiterIds,
+      vacancyIds: req.query.vacancyIds,
       limit: req.query.limit,
       cursor: req.query.cursor,
       contextVacancyId,

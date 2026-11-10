@@ -196,7 +196,7 @@ const publicRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/timeclock.pu
 const publicDupStart = publicRoutes.indexOf("router.post('/recruitment/candidates/check-duplicates'");
 const publicDup = publicRoutes.slice(publicDupStart, publicRoutes.indexOf('router.post(', publicDupStart + 20));
 check(publicDupStart > 0 && !/excludeCandidateId/.test(publicDup), 'portal no acepta excludeCandidateId');
-const qBlock = candidateSvc.slice(candidateSvc.indexOf('const qTrim'), candidateSvc.indexOf('const profileTrim'));
+const qBlock = candidateSvc.slice(candidateSvc.indexOf('const qTrim'), candidateSvc.indexOf('if (filters.profiles.length)'));
 check(!/\bcurp\b/.test(qBlock), 'búsqueda q no filtra por CURP');
 const wfBlock = candidateSvc.slice(
   candidateSvc.indexOf('async function enrichWorkforceRegisteredCandidateRows'),
@@ -353,7 +353,7 @@ check(/recCandClearFilters/.test(indexHtml) && /recCandHasActiveFilters/.test(in
 check(/recCandPortfolioIconSvg/.test(indexHtml) && /recCandBuildPortfolioRowHtml/.test(indexHtml), 'filas premium con SVG');
 check(/Talento registrado/.test(indexHtml) && /rec-cand-list-kicker/.test(indexHtml), 'contador único kicker');
 const renderListFn = indexHtml.match(/function recCandRenderList[\s\S]*?^function /m)?.[0] || '';
-check(/candidatesNextCursor/.test(renderListFn) && /candidatos cargados/.test(renderListFn), 'contador parcial si nextCursor');
+check(/candListTotal/.test(renderListFn) && /Talento registrado/.test(renderListFn), 'contador del resultado filtrado');
 check(/primaryActiveProcess/.test(indexHtml) && /recCandRowProcessHtml/.test(indexHtml), 'proceso activo en fila');
 check(/Sin proceso activo/.test(indexHtml), 'sin proceso activo');
 check(!/rec-cand-pill--active/.test(indexHtml.match(/function recCandRenderList[\s\S]*?^}/m)?.[0] || ''), 'sin pills En proceso/Contratado/Rechazado');
