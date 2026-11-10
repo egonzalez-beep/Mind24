@@ -301,6 +301,72 @@ if (!executablePath) {
     );
     check(workspace.focused && workspace.listOverflow <= 1 && workspace.pageOverflow <= 1, 'filtros y tarjetas a 390 px no desbordan y el filtro toma foco');
 
+    const readCards = (viewport) => page.evaluate((width) => {
+      const rows = [
+        { id: 'hired-plain', fullName: 'Ana Contratada', profile: 'Operador', createdAt: '2026-11-01T15:00:00.000Z', primaryActiveProcess: { listPreviewKind: 'hired', vacancyTitle: 'Almacén' } },
+        { id: 'hired-tags', fullName: 'Beto <img src=x onerror=alert(1)>', profile: 'Supervisor', tags: [{ name: 'Buen perfil', colorKey: 'green' }, { name: 'Contratado', colorKey: 'slate' }], primaryActiveProcess: { listPreviewKind: 'hired', vacancyTitle: 'Vacante <script>alert(1)</script>' } },
+        { id: 'rejected-plain', fullName: 'Clara Rechazada', profile: 'Ayudante', primaryActiveProcess: { listPreviewKind: 'rejected', vacancyTitle: 'Caja' } },
+        { id: 'rejected-tags', fullName: 'Diego', profile: 'Chofer', tags: [{ name: 'Mala actitud', colorKey: 'red' }, { name: 'Referencias negativas', colorKey: 'red' }], primaryActiveProcess: { listPreviewKind: 'rejected', vacancyTitle: 'Ruta' } },
+        { id: 'declined-reason', fullName: 'Elena', profile: 'Analista', primaryActiveProcess: { listPreviewKind: 'declined', vacancyTitle: 'Oficina', closureReason: 'ACCEPTED_OTHER_OFFER' } },
+        { id: 'declined-plain', fullName: 'Fede', profile: 'Auxiliar', primaryActiveProcess: { listPreviewKind: 'declined', vacancyTitle: 'Recepción', closureReason: null } },
+        { id: 'active', fullName: 'Gala', profile: 'Compras', primaryActiveProcess: { listPreviewKind: 'active', stageName: 'Entrevista', vacancyTitle: 'Compras' } },
+      ];
+      tcEmpMyCandItems = rows;
+      tcEmpMyCandNextCursor = null;
+      tcEmpMyCandFilter = 'all';
+      tcEmpMyCandRenderList();
+      const list = document.getElementById('tc-emp-my-cand-list');
+      const byId = {};
+      list.querySelectorAll('.tc-emp-my-cand-card').forEach((card) => {
+        const left = card.querySelector('.tc-emp-my-cand-card-left');
+        const right = card.querySelector('.tc-emp-my-cand-card-right');
+        const tags = left.querySelector('.tc-emp-my-cand-tags');
+        byId[card.getAttribute('data-candidate-id')] = {
+          badges: [...left.querySelectorAll('.tc-emp-my-cand-badge')].map((el) => el.textContent.trim()),
+          tags: tags ? [...tags.querySelectorAll('.rec-cand-tag')].map((el) => el.textContent.trim()) : [],
+          tagsRow: !!tags,
+          right: right.textContent.replace(/\s+/g, ' ').trim(),
+          nodes: card.querySelectorAll('script,img,b').length,
+        };
+      });
+      const base = list.innerHTML;
+      const sameHtml = ['hired', 'rejected', 'declined', 'in_process'].every((filter) => {
+        tcEmpMyCandFilter = filter;
+        tcEmpMyCandRenderList();
+        return document.getElementById('tc-emp-my-cand-list').innerHTML === base;
+      });
+      tcEmpMyCandFilter = 'all';
+      tcEmpMyCandRenderList();
+      return {
+        byId,
+        sameHtml,
+        listOverflow: list.scrollWidth - list.clientWidth,
+        pageOverflow: document.documentElement.scrollWidth - width,
+      };
+    }, viewport);
+    await page.setViewport({ width: 1280, height: 800 });
+    const desktopCards = await readCards(1280);
+    await page.setViewport({ width: 390, height: 800 });
+    const mobileCards = await readCards(390);
+    const cards = { desktop: desktopCards, mobile: mobileCards };
+    const hiredPlain = cards.desktop.byId['hired-plain'];
+    const hiredTags = cards.desktop.byId['hired-tags'];
+    const rejectedPlain = cards.desktop.byId['rejected-plain'];
+    const rejectedTags = cards.desktop.byId['rejected-tags'];
+    const declinedReason = cards.desktop.byId['declined-reason'];
+    const declinedPlain = cards.desktop.byId['declined-plain'];
+    const active = cards.desktop.byId.active;
+    const once = (text, needle) => text.split(needle).length - 1 === 1;
+    check(hiredPlain.badges.length === 0 && !hiredPlain.tagsRow && once(hiredPlain.right, 'Contratado') && hiredPlain.right.includes('Almacén'), 'contratado sin etiquetas muestra Contratado una sola vez, a la derecha');
+    check(hiredTags.badges.length === 0 && once(hiredTags.right, 'Contratado') && hiredTags.tags.join('|') === 'Buen perfil|Contratado' && hiredTags.nodes === 0, 'contratado conserva Contratado a la derecha y las etiquetas administrativas, aunque una se llame Contratado');
+    check(rejectedPlain.badges.length === 0 && !rejectedPlain.tagsRow && once(rejectedPlain.right, 'Rechazado'), 'rechazado sin etiquetas muestra Rechazado una sola vez');
+    check(rejectedTags.badges.length === 0 && once(rejectedTags.right, 'Rechazado') && rejectedTags.tags.join('|') === 'Mala actitud|Referencias negativas', 'rechazado conserva solo sus etiquetas administrativas abajo');
+    check(declinedReason.badges.length === 0 && !declinedReason.tagsRow && once(declinedReason.right, 'Declinó · Aceptó otra oferta') && declinedReason.right.includes('Oficina'), 'declinado con motivo lo muestra una sola vez, a la derecha');
+    check(declinedPlain.badges.length === 0 && !declinedPlain.tagsRow && once(declinedPlain.right, 'Declinó') && !declinedPlain.right.includes('Declinó ·'), 'declinado sin motivo muestra únicamente Declinó a la derecha');
+    check(active.badges.join('|') === 'En proceso' && active.right.includes('Etapa actual') && active.right.includes('Entrevista') && !active.tagsRow, 'En proceso conserva su pastilla y la etapa, sin fila vacía');
+    check(cards.desktop.sameHtml && cards.mobile.sameHtml, 'Todos, Contratados, Rechazados, Declinados y En proceso usan el mismo render de tarjeta');
+    check(cards.desktop.listOverflow <= 1 && cards.desktop.pageOverflow <= 1 && cards.mobile.listOverflow <= 1 && cards.mobile.pageOverflow <= 1, 'las tarjetas no desbordan en escritorio ni en móvil');
+
     const archived = await page.evaluate(() => {
       const st = recEnsureState();
       st.detailCandidate = { id: 'cand-archived', archivedAt: '2026-11-08T00:00:00.000Z', applications: [] };

@@ -15266,9 +15266,6 @@ function tcEmpMyCandProcessHtml(proc){
 function tcEmpMyCandStatusBadgeHtml(proc){
   const kind=proc&&proc.listPreviewKind;
   if(kind==='active') return '<span class="tc-emp-my-cand-badge"><span class="rec-cand-process-dot" aria-hidden="true"></span>En proceso</span>';
-  if(kind==='hired') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--hired"><span class="rec-cand-process-dot rec-cand-process-dot--hired" aria-hidden="true"></span>Contratado</span>';
-  if(kind==='rejected') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--rejected"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span>Rechazado</span>';
-  if(kind==='declined') return '<span class="tc-emp-my-cand-badge tc-emp-my-cand-badge--rejected"><span class="rec-cand-process-dot rec-cand-process-dot--rejected" aria-hidden="true"></span>'+tcEsc(tcEmpMyCandDeclineStatusText(proc))+'</span>';
   return '';
 }
 function tcEmpMyCandProcessRightHtml(proc){
