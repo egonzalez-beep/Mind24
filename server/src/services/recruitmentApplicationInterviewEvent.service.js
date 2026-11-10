@@ -655,6 +655,50 @@ async function rescheduleInterviewRow(tx, app, source, scheduledAt, timeSpecifie
   };
 }
 
+async function editScheduledInterview(tx, app, source, {
+  label,
+  comment,
+  scheduledAt = null,
+  timeSpecified = true,
+  createdByUserId,
+  now,
+}) {
+  if (!source || source.eventType !== 'SCHEDULED') {
+    throw conflictError('Esta entrevista ya tiene un resultado.');
+  }
+  const nextLabel = label !== undefined ? normalizeInterviewLabel(label) : (source.label || null);
+  const nextComment = comment !== undefined ? normalizeInterviewComment(comment) : (source.comment || null);
+  const slotChanges = scheduledAt && !interviewScheduleSlotsEqual(
+    new Date(source.scheduledAt),
+    source.scheduledTimeSpecified !== false,
+    new Date(scheduledAt),
+    timeSpecified !== false,
+  );
+  if (!slotChanges) {
+    const sameLabel = (nextLabel || null) === (source.label || null);
+    const sameComment = (nextComment || null) === (source.comment || null);
+    if (sameLabel && sameComment) {
+      return { interview: serializeRecruitmentApplicationInterviewEvent(source), alreadyApplied: true };
+    }
+    const updated = await tx.recruitmentApplicationInterviewEvent.update({
+      where: { id: source.id },
+      data: { label: nextLabel, comment: nextComment },
+      include: eventInclude,
+    });
+    return { interview: serializeRecruitmentApplicationInterviewEvent(updated), alreadyApplied: false };
+  }
+  const moved = await rescheduleInterviewRow(
+    tx, app, source, scheduledAt, timeSpecified !== false, createdByUserId, now,
+  );
+  if (moved.alreadyApplied || !moved.interview?.id) return moved;
+  const patched = await tx.recruitmentApplicationInterviewEvent.update({
+    where: { id: moved.interview.id },
+    data: { label: nextLabel, comment: nextComment },
+    include: eventInclude,
+  });
+  return { interview: serializeRecruitmentApplicationInterviewEvent(patched), alreadyApplied: false };
+}
+
 /**
  * El formulario anterior edita la próxima cita y deja las filas sincronizadas.
  * clearInterview cancela solo esa cita. Una fecha distinta la reprograma.
@@ -770,13 +814,7 @@ export async function scheduleRecruitmentApplicationInterview({
       },
       include: eventInclude,
     });
-    if (existing) {
-      await recalculateInterviewScheduledAt(tx, app, now);
-      return {
-        interview: serializeRecruitmentApplicationInterviewEvent(existing),
-        alreadyScheduled: true,
-      };
-    }
+    if (existing) throw conflictError(INTERVIEW_SLOT_TAKEN_MESSAGE);
     const event = await tx.recruitmentApplicationInterviewEvent.create({
       data: {
         organizationId,
@@ -798,31 +836,7 @@ export async function scheduleRecruitmentApplicationInterview({
     };
   });
 
-  try {
-    return await run();
-  } catch (err) {
-    if (!isScheduledInterviewSlotConflict(err)) throw err;
-    try {
-      return await run();
-    } catch (retryErr) {
-      if (!isScheduledInterviewSlotConflict(retryErr)) throw retryErr;
-      const existing = await db.recruitmentApplicationInterviewEvent.findFirst({
-        where: {
-          organizationId,
-          applicationId,
-          eventType: 'SCHEDULED',
-          scheduledAt: parsed.scheduledAt,
-          scheduledTimeSpecified: parsed.timeSpecified,
-        },
-        include: eventInclude,
-      });
-      if (!existing) throw retryErr;
-      return {
-        interview: serializeRecruitmentApplicationInterviewEvent(existing),
-        alreadyScheduled: true,
-      };
-    }
-  }
+  return runInterviewWrite(run);
 }
 
 async function applyLegacyInterviewAction(tx, app, {
@@ -879,6 +893,24 @@ async function applyLegacyInterviewAction(tx, app, {
     });
     return { interview: serializeRecruitmentApplicationInterviewEvent(created), alreadyApplied: false };
   }
+  if (type === 'EDIT') {
+    const parsed = interviewDate != null && String(interviewDate).trim()
+      ? parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone)
+      : null;
+    if (interviewDate != null && String(interviewDate).trim() && !parsed?.scheduledAt) {
+      throw validationError('Indica la fecha de entrevista.');
+    }
+    const source = await materializeLegacySnapshot(tx, app, createdByUserId);
+    if (!source?.id) throw conflictError('No hay entrevista programada para reprogramar.');
+    return editScheduledInterview(tx, app, source, {
+      label,
+      comment,
+      scheduledAt: parsed?.scheduledAt || null,
+      timeSpecified: parsed ? parsed.timeSpecified : true,
+      createdByUserId,
+      now,
+    });
+  }
   if (type === 'RESCHEDULED') {
     const parsed = parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone);
     if (!parsed?.scheduledAt) throw validationError('Indica la nueva fecha de entrevista.');
@@ -926,6 +958,9 @@ async function updateMatchedInterview(tx, app, event, {
   now,
 }) {
   if (type === 'COMMENT') {
+    if (event.eventType !== 'SCHEDULED' && label !== undefined) {
+      throw conflictError('Esta entrevista ya tiene un resultado.');
+    }
     const data = {};
     if (comment !== undefined) data.comment = normalizeInterviewComment(comment);
     if (label !== undefined) data.label = normalizeInterviewLabel(label);
@@ -938,6 +973,23 @@ async function updateMatchedInterview(tx, app, event, {
       include: eventInclude,
     });
     return { interview: serializeRecruitmentApplicationInterviewEvent(updated), alreadyApplied: false };
+  }
+  if (type === 'EDIT') {
+    if (event.eventType !== 'SCHEDULED') throw conflictError('Esta entrevista ya tiene un resultado.');
+    const parsed = interviewDate != null && String(interviewDate).trim()
+      ? parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone)
+      : null;
+    if (interviewDate != null && String(interviewDate).trim() && !parsed?.scheduledAt) {
+      throw validationError('Indica la fecha de entrevista.');
+    }
+    return editScheduledInterview(tx, app, event, {
+      label,
+      comment,
+      scheduledAt: parsed?.scheduledAt || null,
+      timeSpecified: parsed ? parsed.timeSpecified : event.scheduledTimeSpecified !== false,
+      createdByUserId,
+      now,
+    });
   }
   if (type === 'RESCHEDULED') {
     const parsed = parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone);
@@ -979,7 +1031,7 @@ export async function updateRecruitmentApplicationInterview({
   db = prisma,
 }) {
   const type = String(action || '').trim();
-  if (!['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT'].includes(type)) {
+  if (!['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT', 'EDIT'].includes(type)) {
     throw validationError('Acción de entrevista no válida.');
   }
   const timeZone = explicitTimeZone || (await resolveOrganizationIanaTimezone(organizationId));
@@ -1003,6 +1055,9 @@ export async function updateRecruitmentApplicationInterview({
     });
     if (!event) throw notFound('Entrevista no encontrada.');
     if (type === 'COMMENT') {
+      if (event.eventType !== 'SCHEDULED' && label !== undefined) {
+        throw conflictError('Esta entrevista ya tiene un resultado.');
+      }
       const data = {};
       if (comment !== undefined) data.comment = normalizeInterviewComment(comment);
       if (label !== undefined) data.label = normalizeInterviewLabel(label);
@@ -1016,9 +1071,26 @@ export async function updateRecruitmentApplicationInterview({
       });
       return { interview: serializeRecruitmentApplicationInterviewEvent(updated), alreadyApplied: false };
     }
-    if (type === 'RESCHEDULED') {
-      const parsed = parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone);
-      if (!parsed?.scheduledAt) throw validationError('Indica la nueva fecha de entrevista.');
+    if (type === 'EDIT' || type === 'RESCHEDULED') {
+      if (type === 'EDIT' && event.eventType !== 'SCHEDULED') {
+        throw conflictError('Esta entrevista ya tiene un resultado.');
+      }
+      const dated = type === 'RESCHEDULED' || (interviewDate != null && String(interviewDate).trim());
+      const parsed = dated
+        ? parseInterviewScheduleFields({ interviewDate, interviewTime }, timeZone)
+        : null;
+      if (type === 'RESCHEDULED' && !parsed?.scheduledAt) throw validationError('Indica la nueva fecha de entrevista.');
+      if (type === 'EDIT') {
+        if (dated && !parsed?.scheduledAt) throw validationError('Indica la fecha de entrevista.');
+        return editScheduledInterview(tx, app, event, {
+          label,
+          comment,
+          scheduledAt: dated ? parsed.scheduledAt : null,
+          timeSpecified: dated ? parsed.timeSpecified : event.scheduledTimeSpecified !== false,
+          createdByUserId,
+          now,
+        });
+      }
       return rescheduleInterviewRow(
         tx, app, event, parsed.scheduledAt, parsed.timeSpecified, createdByUserId, now,
       );

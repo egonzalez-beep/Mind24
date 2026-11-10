@@ -1051,7 +1051,7 @@ router.post('/applications/:applicationId/interviews/:eventId/actions', async (r
     const u = await assertEmpresaAdmin(req.session.userId);
     const body = z
       .object({
-        action: z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT']),
+        action: z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT', 'EDIT']),
         interviewDate: z.string().max(10).optional().nullable(),
         interviewTime: z.string().max(5).optional().nullable(),
         label: z.string().max(80).optional().nullable(),

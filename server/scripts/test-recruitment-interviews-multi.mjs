@@ -226,10 +226,11 @@ check(indexHtml.includes('aria-expanded'), 'el acordeón expone aria-expanded');
 check(indexHtml.includes('__recInterviewEscape'), 'un repintado no registra otro Escape');
 check(indexHtml.includes("e.name==='AbortError'"), 'AbortError no se muestra como fallo');
 check(indexHtml.includes('recCandInterviewEpoch'), 'una respuesta vieja no pisa una entrevista más reciente');
-check(indexHtml.includes('tcEsc(preview)') && indexHtml.includes('tcEsc(comment)'), 'el comentario se escapa en el resumen y el detalle');
+check(indexHtml.includes('tcEsc(comment)') && indexHtml.includes('rec-iv-comment-box'), 'el comentario se escapa dentro del diálogo');
 check(!indexHtml.includes('Sin comentarios'), 'no aparece el texto Sin comentarios');
 check(routesSrc.includes(".strict()"), 'el alta de entrevista rechaza campos ajenos');
-check(routesSrc.includes("z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT'])"), 'las acciones son un estado canónico');
+check(routesSrc.includes("z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT', 'EDIT'])"), 'las acciones son un estado canónico');
+check(indexHtml.includes("form.dataset.pending==='1'"), 'Guardar queda deshabilitado mientras la petición sigue en curso');
 check(!/\/interviews/.test(publicRoutes), 'el portal público no escribe entrevistas');
 check(!/novedad|setInterval|recordatorio/i.test(interviewSrc), 'esta fase no crea avisos ni un scheduler de recordatorios');
 check(migration.includes("ADD VALUE 'SCHEDULED'") && migration.includes("ADD VALUE 'CANCELLED'"), 'la migración agrega los estados');
@@ -282,17 +283,31 @@ check(
 );
 check(app.notes === 'nota general', 'el comentario no se copia a las notas del candidato');
 
-const again = await scheduleRecruitmentApplicationInterview({
-  organizationId: 'org-1',
-  applicationId: 'app-1',
-  createdByUserId: 'user-1',
-  interviewDate: '2026-11-12',
-  interviewTime: '10:30',
-  label: 'Otro nombre',
-  timeZone: TZ,
-  db,
-});
-check(again.alreadyScheduled === true && db.events.length === 1 && again.interview.id === first.interview.id, 'K un doble clic no crea dos entrevistas iguales');
+let againCode = null;
+let againMessage = null;
+try {
+  await scheduleRecruitmentApplicationInterview({
+    organizationId: 'org-1',
+    applicationId: 'app-1',
+    createdByUserId: 'user-1',
+    interviewDate: '2026-11-12',
+    interviewTime: '10:30',
+    label: 'Otro nombre',
+    timeZone: TZ,
+    db,
+  });
+} catch (err) {
+  againCode = err.code;
+  againMessage = err.message;
+}
+check(
+  againCode === 'CONFLICT'
+    && againMessage === INTERVIEW_SLOT_TAKEN_MESSAGE
+    && db.events.length === 1
+    && db.events[0].label === 'Entrevista con supervisor'
+    && db.events[0].id === first.interview.id,
+  'K un horario ocupado responde 409 y no sustituye la entrevista',
+);
 
 const second = await scheduleRecruitmentApplicationInterview({
   organizationId: 'org-1',
@@ -1107,6 +1122,122 @@ check(
   'el formulario anterior tampoco fusiona dos entrevistas independientes',
 );
 
+const editDb = memoryDb();
+const editApp = openApp(editDb, { id: 'app-edit' });
+const editNow = new Date('2026-11-09T18:00:00.000Z');
+const editable = await scheduleRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', createdByUserId: 'user-1',
+  interviewDate: '2026-11-12', interviewTime: '10:30', label: 'Inicial', comment: 'Nota',
+  timeZone: TZ, now: editNow, db: editDb,
+});
+const renamed = await updateRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', eventId: editable.interview.id,
+  action: 'EDIT', createdByUserId: 'user-1', label: '3ª Entrevista con Dirección',
+  comment: 'Validar disponibilidad', interviewDate: '2026-11-12', interviewTime: '10:30',
+  timeZone: TZ, now: editNow, db: editDb,
+});
+check(
+  renamed.alreadyApplied === false
+    && renamed.interview.id === editable.interview.id
+    && renamed.interview.eventType === 'SCHEDULED'
+    && renamed.interview.label === '3ª Entrevista con Dirección'
+    && renamed.interview.comment === 'Validar disponibilidad'
+    && editDb.events.length === 1
+    && appointmentCount(editDb) === 1,
+  'C editar nombre o comentario conserva la misma Programada y N',
+);
+const unchangedEdit = await updateRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', eventId: editable.interview.id,
+  action: 'EDIT', createdByUserId: 'user-1', label: '3ª Entrevista con Dirección',
+  comment: 'Validar disponibilidad', interviewDate: '2026-11-12', interviewTime: '10:30',
+  timeZone: TZ, now: editNow, db: editDb,
+});
+check(unchangedEdit.alreadyApplied === true && editDb.events.length === 1, 'E guardar los mismos valores es no-op');
+const shifted = await updateRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', eventId: editable.interview.id,
+  action: 'EDIT', createdByUserId: 'user-1', label: '3ª Entrevista con Dirección',
+  comment: 'Nuevo comentario', interviewDate: '2026-11-18', interviewTime: '11:00',
+  timeZone: TZ, now: editNow, db: editDb,
+});
+check(
+  shifted.interview.eventType === 'SCHEDULED'
+    && shifted.interview.id !== editable.interview.id
+    && shifted.interview.comment === 'Nuevo comentario'
+    && editDb.events.find((row) => row.id === editable.interview.id).eventType === 'RESCHEDULED'
+    && editDb.events.find((row) => row.id === editable.interview.id).comment === 'Validar disponibilidad'
+    && editDb.events.filter((row) => row.eventType === 'SCHEDULED').length === 1
+    && appointmentCount(editDb) === 1,
+  'D editar fecha u hora reprograma y N no aumenta',
+);
+await updateRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+  action: 'ATTENDED', createdByUserId: 'user-1', timeZone: TZ, now: editNow, db: editDb,
+});
+let terminalCode = null;
+try {
+  await updateRecruitmentApplicationInterview({
+    organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+    action: 'EDIT', createdByUserId: 'user-1', interviewDate: '2026-11-19', interviewTime: '09:00',
+    timeZone: TZ, now: editNow, db: editDb,
+  });
+} catch (err) {
+  terminalCode = err.code;
+}
+const commented = await updateRecruitmentApplicationInterview({
+  organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+  action: 'COMMENT', createdByUserId: 'user-1', comment: 'Solo el comentario',
+  timeZone: TZ, now: editNow, db: editDb,
+});
+let terminalLabelCode = null;
+try {
+  await updateRecruitmentApplicationInterview({
+    organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+    action: 'COMMENT', createdByUserId: 'user-1', label: 'Otro nombre',
+    timeZone: TZ, now: editNow, db: editDb,
+  });
+} catch (err) {
+  terminalLabelCode = err.code;
+}
+check(
+  terminalCode === 'CONFLICT'
+    && commented.interview.eventType === 'ATTENDED'
+    && commented.interview.comment === 'Solo el comentario'
+    && terminalLabelCode === 'CONFLICT'
+    && editDb.events.filter((row) => row.eventType === 'SCHEDULED').length === 0,
+  'F un estado terminal no cambia fecha, hora ni nombre',
+);
+editApp.stage.key = 'HIRED';
+editApp.closureOutcome = 'HIRED';
+let closedCode = null;
+try {
+  await updateRecruitmentApplicationInterview({
+    organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+    action: 'COMMENT', createdByUserId: 'user-1', comment: 'No debe guardarse',
+    timeZone: TZ, now: editNow, db: editDb,
+  });
+} catch (err) {
+  closedCode = err.code;
+}
+editApp.stage.key = 'CONTACT';
+editApp.closureOutcome = null;
+editApp.candidate.archivedAt = new Date('2026-11-09T18:00:00.000Z');
+let archivedEditCode = null;
+try {
+  await updateRecruitmentApplicationInterview({
+    organizationId: 'org-1', applicationId: 'app-edit', eventId: shifted.interview.id,
+    action: 'COMMENT', createdByUserId: 'user-1', comment: 'Tampoco',
+    timeZone: TZ, now: editNow, db: editDb,
+  });
+} catch (err) {
+  archivedEditCode = err.code;
+}
+check(
+  closedCode === 'CONFLICT'
+    && archivedEditCode === 'CONFLICT'
+    && editDb.events.find((row) => row.id === shifted.interview.id).comment === 'Solo el comentario',
+  'G un proceso cerrado o un candidato archivado queda en solo lectura',
+);
+
 function chromePath() {
   return [
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -1137,7 +1268,7 @@ if (!executablePath) {
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const xss = '<script>alert(1)</script>';
   const interviews = [
-    { id: 'n1', eventType: 'SCHEDULED', scheduledAt: '2026-11-12T16:30:00.000Z', scheduledTimeSpecified: true, label: 'Entrevista con supervisor', comment: null, stageName: 'Contacto' },
+    { id: 'n1', eventType: 'SCHEDULED', scheduledAt: '2027-11-12T16:30:00.000Z', scheduledTimeSpecified: true, label: 'Entrevista con supervisor', comment: null, stageName: 'Contacto' },
     { id: 'n2', eventType: 'NO_SHOW', scheduledAt: '2026-11-09T22:00:00.000Z', scheduledTimeSpecified: true, label: 'Entrevista inicial', comment: 'No confirmó su asistencia.', stageName: 'Contacto' },
     { id: 'n3', eventType: 'ATTENDED', scheduledAt: '2026-11-08T18:00:00.000Z', scheduledTimeSpecified: true, label: `Nombre ${'largo '.repeat(20)}`, comment: `${'comentario '.repeat(40)}${xss}`, stageName: 'Contacto' },
     { id: 'n4', eventType: 'CANCELLED', scheduledAt: '2026-11-07T17:00:00.000Z', scheduledTimeSpecified: true, label: 'Entrevista cancelada', comment: null, stageName: 'Contacto' },
@@ -1145,7 +1276,7 @@ if (!executablePath) {
   ];
   for (const width of [1280, 900, 390]) {
     await page.setViewport({ width, height: 800 });
-    const view = await page.evaluate((payload) => {
+    const view = await page.evaluate(async (payload) => {
       const host = document.createElement('div');
       host.id = 'interview-host';
       host.style.width = '100%';
@@ -1158,37 +1289,54 @@ if (!executablePath) {
         stage: { key: 'CONTACT', name: 'Contacto' },
         interviews: payload.interviews,
       };
+      const st = recEnsureState();
+      st.detailCandidate = { id: 'cand-visual', archivedAt: null, applications: [app] };
+      st.recruitmentOrgTimeZone = 'America/Mexico_City';
       host.innerHTML = recCandInterviewsBlockHtml(app);
       const toggle = host.querySelector('.rec-cand-interviews-toggle');
       toggle.focus();
       toggle.click();
       const list = host.querySelector('.rec-cand-interviews-list');
       const text = host.textContent;
+      const listHeight = list.getBoundingClientRect().height;
       const row = host.querySelector('.rec-cand-interview-row');
       row.focus();
       row.click();
-      const detail = host.querySelector('.rec-cand-interview-detail');
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      const dialog = document.querySelector('.rec-cand-interview-detail');
+      const listHeightAfter = list.getBoundingClientRect().height;
+      const buttons = dialog ? [...dialog.querySelectorAll('button')] : [];
+      const unstyled = buttons.filter((button) => !/(^|\s)(rec-|form-)/.test(button.className || ''));
       const before = document.activeElement;
+      const focusedInside = !!(before && before.isConnected && before.closest('#rec-iv-overlay'));
+      const dialogWidth = dialog && dialog.querySelector('.rec-iv-dialog')
+        ? dialog.querySelector('.rec-iv-dialog').getBoundingClientRect().width
+        : 0;
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       return {
-        scripts: host.querySelectorAll('script').length,
+        scripts: document.querySelectorAll('#rec-iv-overlay script, #interview-host script').length,
         expanded: toggle.getAttribute('aria-expanded'),
-        hasNext: text.includes('Entrevista con supervisor'),
-        hasAbsent: text.includes('No asistió') && text.includes('No confirmó su asistencia.'),
+        hasNext: text.includes('Entrevistas · 4') && text.includes('Próxima:'),
+        commentStaysOut: !text.includes('No confirmó su asistencia.'),
         noEmpty: !text.includes('Sin comentarios') && !text.includes('—'),
         schedule: !!host.querySelector('.rec-cand-interviews-add'),
-        listScroll: list.scrollHeight > list.clientHeight,
         sectionWidth: host.scrollWidth - host.clientWidth,
         pageOverflow: document.documentElement.scrollWidth - payload.width,
-        detailHidden: detail.classList.contains('hidden'),
+        detailInside: !!list.querySelector('.rec-cand-interview-detail, textarea, form'),
+        listStable: Math.abs(listHeightAfter - listHeight) < 1,
+        unstyled: unstyled.length,
+        buttonCount: buttons.length,
+        dialogWidth,
+        detailHidden: !!(dialog && dialog.classList.contains('hidden')),
         focusBack: document.activeElement === row,
-        focusedToggle: before && before.closest('.rec-cand-interview-detail'),
+        focusedInside,
       };
     }, { interviews, width });
-    check(view.scripts === 0 && view.noEmpty && view.hasAbsent, `J a ${width}px el comentario largo queda como texto`);
-    check(view.expanded === 'true' && view.hasNext && view.schedule, `el bloque a ${width}px abre y conserva Programar otra`);
-    check(view.sectionWidth <= 1 && view.pageOverflow <= 1, `a ${width}px no hay scroll horizontal`);
-    check(view.detailHidden && view.focusBack, `Escape a ${width}px cierra el detalle y devuelve el foco`);
+    check(view.scripts === 0 && view.noEmpty && view.commentStaysOut, `O a ${width}px el comentario no se vuelca en la lista`);
+    check(view.expanded === 'true' && view.hasNext && view.schedule, `el bloque a ${width}px separa el contador y conserva Programar otra`);
+    check(view.sectionWidth <= 1 && view.pageOverflow <= 1 && view.dialogWidth > 0 && view.dialogWidth <= 640, `N a ${width}px no hay desborde`);
+    check(view.listStable && !view.detailInside && view.unstyled === 0 && view.buttonCount > 0, `A y B a ${width}px el detalle es un diálogo con botones del sistema`);
+    check(view.detailHidden && view.focusBack && view.focusedInside, `L Escape a ${width}px cierra el detalle y devuelve el foco`);
   }
   const many = await page.evaluate(() => {
     const host = document.getElementById('interview-host');
@@ -1221,12 +1369,13 @@ if (!executablePath) {
       count: host.textContent.includes('Entrevistas · 10'),
       scrolls: list.scrollHeight > list.clientHeight,
       bounded: list.clientHeight <= 180,
-      closedSchedule: closedHost.querySelectorAll('.rec-cand-interviews-add,button.rec-cand-interview-row').length,
+      closedSchedule: closedHost.querySelectorAll('.rec-cand-interviews-add').length,
+      closedRows: closedHost.querySelectorAll('button.rec-cand-interview-row').length,
       closedText: closedHost.textContent.includes('Entrevistas · 10'),
     };
   });
   check(many.count && many.scrolls && many.bounded, 'diez entrevistas usan scroll interno y no crecen sin límite');
-  check(many.closedSchedule === 0 && many.closedText, 'O el historial cerrado es solo lectura');
+  check(many.closedSchedule === 0 && many.closedRows > 0 && many.closedText, 'G el historial cerrado no ofrece programar otra');
 
   const abort = await page.evaluate(async () => {
     const err = document.createElement('p');
@@ -1255,7 +1404,7 @@ if (!executablePath) {
   });
   const chainView = await page.evaluate(() => {
     const host = document.getElementById('interview-host');
-    host.innerHTML = recCandInterviewsBlockHtml({
+    const chainApp = {
       applicationId: 'app-chain',
       closureOutcome: null,
       stage: { key: 'CONTACT', name: 'Contacto' },
@@ -1269,21 +1418,113 @@ if (!executablePath) {
           scheduledTimeSpecified: true, label: 'Entrevista inicial', comment: null, stageName: 'Contacto',
         },
       ],
-    });
+    };
+    host.innerHTML = recCandInterviewsBlockHtml(chainApp);
+    const st = recEnsureState();
+    st.detailCandidate = { id: 'cand-chain', archivedAt: null, applications: [chainApp] };
     host.querySelector('.rec-cand-interviews-toggle').click();
     const history = host.querySelector('.rec-cand-interview-row--history');
+    history.click();
+    const dialogText = document.querySelector('.rec-iv-dialog').textContent;
     const scheduled = host.querySelector('.rec-cand-interview-status--scheduled');
     return {
       count: host.textContent.includes('Entrevistas · 1'),
-      history: !!history && history.textContent.includes('Reprogramada') && history.textContent.includes('Se movió'),
+      history: !!history && history.textContent.includes('Reprogramada') && !!history.querySelector('.rec-cand-interview-has-note'),
+      moved: dialogText.includes('Se movió') && !dialogText.includes('<'),
       scheduled: !!scheduled && scheduled.textContent.includes('Programada'),
       comments: host.querySelectorAll('.rec-cand-interview-comment').length,
     };
   });
   check(
-    chainView.count && chainView.history && chainView.scheduled && chainView.comments === 1,
-    'P una reprogramación se ve como antecedente y el encabezado queda en 1',
+    chainView.count && chainView.history && chainView.moved && chainView.scheduled && chainView.comments === 0,
+    'Q una reprogramación se ve como antecedente y el encabezado queda en 1',
   );
+  const dialogFlow = await page.evaluate(async () => {
+    const host = document.getElementById('interview-host');
+    const xss = '<script>alert(1)</script>';
+    const app = {
+      applicationId: 'app-visual',
+      closureOutcome: null,
+      stage: { key: 'CONTACT', name: 'Contacto' },
+      interviews: [
+        { id: 'n1', eventType: 'SCHEDULED', scheduledAt: '2027-11-12T16:30:00.000Z', scheduledTimeSpecified: true, label: 'Primera cita', comment: null, stageName: 'Contacto' },
+        { id: 'n2', eventType: 'SCHEDULED', scheduledAt: '2027-11-20T16:00:00.000Z', scheduledTimeSpecified: true, label: 'Segunda cita', comment: `${'comentario '.repeat(40)}${xss}`, stageName: 'Contacto' },
+      ],
+    };
+    host.innerHTML = recCandInterviewsBlockHtml(app);
+    recEnsureState().detailCandidate = { id: 'cand-visual', archivedAt: null, applications: [app] };
+    host.querySelector('.rec-cand-interviews-toggle').click();
+    const rows = [...host.querySelectorAll('.rec-cand-interview-row')];
+    rows[1].click();
+    const safeDialog = document.querySelector('.rec-iv-dialog');
+    const safeText = safeDialog.textContent.includes('alert(1)');
+    const safeEscaped = safeDialog.innerHTML.includes('&lt;script');
+    const safeScripts = document.querySelectorAll('#rec-iv-overlay script').length;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    let calls = 0;
+    apiJson = () => {
+      calls += 1;
+      return Promise.reject(Object.assign(
+        new Error('Ya existe una entrevista programada en ese horario para este proceso.'),
+        { code: 'CONFLICT', httpStatus: 409 },
+      ));
+    };
+    host.querySelector('.rec-cand-interviews-add').click();
+    const form = document.getElementById('rec-iv-form');
+    form.label.value = 'Conservar';
+    form.date.value = '2027-11-21';
+    form.time.value = '09:15';
+    form.comment.value = '<b>seguro</b>';
+    await recCandScheduleInterview({ preventDefault() {}, target: form }, 'app-visual');
+    const overlay = document.getElementById('rec-iv-overlay');
+    const conflict = {
+      open: overlay && !overlay.classList.contains('hidden'),
+      message: document.getElementById('rec-iv-error').textContent,
+      label: form.label.value,
+      date: form.date.value,
+      time: form.time.value,
+      comment: form.comment.value,
+    };
+    calls = 0;
+    apiJson = () => {
+      calls += 1;
+      return new Promise(() => {});
+    };
+    const first = recCandScheduleInterview({ preventDefault() {}, target: form }, 'app-visual');
+    const second = recCandScheduleInterview({ preventDefault() {}, target: form }, 'app-visual');
+    await Promise.resolve();
+    let release;
+    apiJson = () => new Promise((resolve) => { release = resolve; });
+    rows[0].click();
+    const pending = recCandInterviewAction('app-visual', 'n1', 'COMMENT', { comment: 'tarde' });
+    rows[1].click();
+    release({});
+    await pending;
+    const dialog = document.querySelector('.rec-iv-dialog');
+    return {
+      safeText: safeText && safeEscaped,
+      safeScripts,
+      conflict,
+      calls,
+      firstPending: !!first,
+      secondPending: !!second,
+      staleOpen: overlay && !overlay.classList.contains('hidden'),
+      showsSecond: dialog.textContent.includes('Segunda cita'),
+      hidesFirst: !dialog.textContent.includes('Primera cita'),
+    };
+  });
+  check(dialogFlow.safeText && dialogFlow.safeScripts === 0, 'O un comentario largo con HTML se muestra como texto');
+  check(
+    dialogFlow.conflict.open
+      && dialogFlow.conflict.message === 'Ya existe una entrevista programada en ese horario para este proceso.'
+      && dialogFlow.conflict.label === 'Conservar'
+      && dialogFlow.conflict.date === '2027-11-21'
+      && dialogFlow.conflict.time === '09:15'
+      && dialogFlow.conflict.comment === '<b>seguro</b>',
+    'H e I el 409 permanece en el diálogo y conserva los campos',
+  );
+  check(dialogFlow.calls === 1, 'J un doble clic no envía dos solicitudes');
+  check(dialogFlow.staleOpen && dialogFlow.showsSecond && dialogFlow.hidesFirst, 'M una respuesta vieja no pisa la entrevista recién abierta');
   check(abort.abortText === '', 'AbortError no muestra fallo');
   check(abort.epoch > 0, 'una respuesta vieja queda descartada');
   check(pageErrors.length === 0, pageErrors.length ? `errores de página: ${pageErrors[0]}` : 'la página no lanza errores');

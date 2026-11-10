@@ -483,6 +483,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-interviews-toggle{display:flex;align-items:center;gap:6px;flex:1;min-width:0;border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;color:var(--slate-700);}
 .rec-cand-interviews-toggle:focus-visible,.rec-cand-interviews-add:focus-visible,.rec-cand-interview-row:focus-visible,.rec-cand-interview-detail button:focus-visible,.rec-cand-interview-detail textarea:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
 .rec-cand-interviews-kicker{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--slate-500);}
+.rec-cand-interviews-next{font-weight:500;color:var(--slate-500);min-width:0;}
+.rec-cand-interviews-chevron{color:var(--slate-400);margin-left:2px;}
 .rec-cand-interviews-next{font-size:12px;color:var(--slate-600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .rec-cand-interviews-add{flex:0 0 auto;font-size:11px;font-weight:650;border:1px solid var(--slate-200);background:#fff;border-radius:999px;padding:3px 8px;cursor:pointer;color:var(--slate-700);}
 .rec-cand-interviews-panel{margin-top:6px;}
@@ -494,14 +496,48 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-interview-title{font-size:12px;font-weight:700;color:var(--slate-800);overflow-wrap:anywhere;}
 .rec-cand-interview-meta{font-size:11px;color:var(--slate-600);overflow-wrap:anywhere;}
 .rec-cand-interview-comment{font-size:11px;color:var(--slate-500);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rec-cand-interview-status{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;}
-.rec-cand-interview-status--scheduled{color:#9a3412;}
-.rec-cand-interview-status--attended{color:#047857;}
-.rec-cand-interview-status--rescheduled,.rec-cand-interview-status--cancelled{color:var(--slate-500);}
-.rec-cand-interview-status--noshow{color:#b91c1c;}
-.rec-cand-interview-form,.rec-cand-interview-detail{margin-top:6px;padding:8px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;min-width:0;}
-.rec-cand-interview-form .form-input,.rec-cand-interview-detail textarea{width:100%;max-width:100%;box-sizing:border-box;}
-.rec-cand-interview-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.rec-cand-interview-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;min-width:0;}
+.rec-cand-interview-status{display:inline-flex;align-items:center;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:var(--slate-100);}
+.rec-cand-interview-status--scheduled{color:#9a3412;background:#fff7ed;}
+.rec-cand-interview-status--attended{color:#047857;background:#ecfdf5;}
+.rec-cand-interview-status--rescheduled,.rec-cand-interview-status--cancelled{color:var(--slate-500);background:var(--slate-50);}
+.rec-cand-interview-status--noshow{color:#b91c1c;background:#fef2f2;}
+.rec-cand-interview-has-note{font-size:10px;font-weight:650;color:var(--slate-400);}
+.rec-iv-overlay{z-index:2200;align-items:center;padding:20px;}
+.rec-iv-dialog{width:min(620px,calc(100vw - 32px));max-height:min(640px,calc(100vh - 32px));overflow:auto;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.18);padding:20px 22px 16px;box-sizing:border-box;}
+.rec-iv-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.rec-iv-title{margin:0;font-size:18px;font-weight:750;color:var(--slate-800);}
+.rec-iv-close{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--slate-500);font-size:20px;line-height:1;cursor:pointer;font-family:inherit;}
+.rec-iv-kicker{display:inline-flex;margin-top:10px;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;}
+.rec-iv-name{margin:8px 0 0;font-size:22px;line-height:1.2;font-weight:750;color:var(--slate-900);overflow-wrap:anywhere;}
+.rec-iv-when{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.rec-iv-field{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px 10px;}
+.rec-iv-field .form-input{border:0;padding:0;min-width:0;width:100%;background:transparent;}
+.rec-iv-label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--slate-700);}
+.rec-iv-comment-box{border:1px solid var(--slate-200);border-radius:12px;background:#fafafa;padding:10px 12px;font-size:14px;line-height:1.4;color:var(--slate-700);white-space:pre-wrap;overflow-wrap:anywhere;}
+textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
+.rec-iv-edit{display:inline-flex;align-items:center;gap:6px;margin-top:12px;border:0;background:transparent;padding:0;color:#7c3aed;font-family:inherit;font-size:14px;font-weight:650;cursor:pointer;}
+.rec-iv-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-100);}
+.rec-iv-btn{font-family:inherit;font-size:13px;font-weight:650;border-radius:999px;padding:8px 12px;cursor:pointer;background:#fff;border:1px solid #ddd6fe;color:#6d28d9;}
+.rec-iv-btn--ok{background:#ecfdf5;border-color:#86efac;color:#047857;}
+.rec-iv-btn--warn{background:#fffbeb;border-color:#fcd34d;color:#b45309;}
+.rec-iv-btn--danger{background:#fff;border-color:#fecaca;color:#b91c1c;}
+.rec-iv-form-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.rec-iv-form-actions .form-submit{width:auto;margin:0;padding:10px 16px;font-size:13px;}
+.rec-iv-error{margin:8px 0 0;color:#b91c1c;font-size:13px;font-weight:650;}
+.rec-iv-error:not(:empty){padding:8px 10px;border-radius:10px;background:#fef2f2;}
+.rec-iv-error:focus{outline:2px solid #b91c1c;outline-offset:2px;}
+.rec-iv-note{margin:10px 0 0;font-size:13px;line-height:1.4;color:var(--slate-600);}
+.rec-iv-confirm{margin:0 0 12px;color:var(--slate-700);font-size:14px;}
+.rec-iv-dialog button:focus-visible,.rec-iv-dialog input:focus-visible,.rec-iv-dialog textarea:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+@media(max-width:520px){
+  .rec-iv-overlay{align-items:flex-end;padding:0;}
+  .rec-iv-dialog{width:100%;max-height:92vh;border-radius:18px 18px 0 0;}
+  .rec-iv-when{grid-template-columns:1fr;}
+  .rec-iv-foot{display:grid;grid-template-columns:1fr 1fr;}
+  .rec-cand-interviews-toggle{flex-wrap:wrap;}
+  .rec-cand-interviews-next{flex-basis:100%;}
+}
 .rec-cand-interviews--readonly .rec-cand-interview-row{cursor:default;}
 .rec-cand-aside-row-sub{overflow-wrap:anywhere;}
 .rec-cand-decline-btn{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:650;color:#92400e;background:#fffbeb;border:1px solid rgba(217,119,6,.35);border-radius:999px;padding:3px 8px;cursor:pointer;white-space:nowrap;line-height:1.2;}
@@ -12148,7 +12184,8 @@ function recCandFormatInterviewScheduledAt(iso,timeSpecified){
   if(Number.isNaN(dt.getTime())) return '';
   const d=new Intl.DateTimeFormat('es-MX',{timeZone:tz,day:'numeric',month:'short',year:'numeric'}).format(dt);
   if(timeSpecified===false) return d;
-  const t=new Intl.DateTimeFormat('es-MX',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(dt);
+  const t=new Intl.DateTimeFormat('es-MX',{timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true}).format(dt)
+    .replace(/a\. ?m\./gi,'a. m.').replace(/p\. ?m\./gi,'p. m.');
   return d+' · '+t;
 }
 function recCandInterviewLocalPartsFromIso(iso,timeSpecified){
@@ -12611,22 +12648,20 @@ function recCandOrderInterviews(rows, now){
 }
 function recCandInterviewRowHtml(row, appId, readonly, highlight){
   const when=recCandFormatInterviewScheduledAt(row.scheduledAt,row.scheduledTimeSpecified!==false);
-  const preview=recCandInterviewCommentPreview(row.comment);
   const title=recCandInterviewTitle(row);
   const status=recCandInterviewStatusLabel(row.eventType);
   const cls=recCandInterviewStatusClass(row.eventType);
   const next=highlight?' rec-cand-interview-row--next':'';
   const history=row.eventType==='RESCHEDULED'?' rec-cand-interview-row--history':'';
   const eventId=row.id||(row.legacy?'legacy':'');
-  const click=readonly||!eventId?'':' onclick="recCandOpenInterviewDetail(this,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')"';
-  const tag=readonly?'div':'button';
-  const typeAttr=readonly?'':' type="button"';
-  return '<'+tag+typeAttr+' class="rec-cand-interview-row'+next+history+'"'+click+(row.comment?' title="'+tcEsc(row.comment)+'"':'')+'>'+
+  const click=eventId?' onclick="recCandOpenInterviewDetail(this,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')"':'';
+  return '<button type="button" class="rec-cand-interview-row'+next+history+'"'+click+'>'+
     '<span class="rec-cand-interview-title">'+tcEsc(title)+'</span>'+
+    '<span class="rec-cand-interview-line">'+
     '<span class="rec-cand-interview-meta">'+tcEsc(when||'')+'</span>'+
     '<span class="rec-cand-interview-status rec-cand-interview-status--'+cls+'">'+tcEsc(status)+'</span>'+
-    (preview?'<span class="rec-cand-interview-comment">'+tcEsc(preview)+'</span>':'')+
-    '</'+tag+'>';
+    (row.comment?'<span class="rec-cand-interview-has-note">Nota</span>':'')+
+    '</span></button>';
 }
 function recCandInterviewsBlockHtml(app, opts){
   opts=opts||{};
@@ -12641,13 +12676,12 @@ function recCandInterviewsBlockHtml(app, opts){
   const next=ordered.upcoming[0];
   const nextText=next?((recCandFormatInterviewScheduledAt(next.scheduledAt,next.scheduledTimeSpecified!==false)||'')):'';
   const panelId='rec-cand-interviews-panel-'+appId;
-  const formId='rec-cand-interviews-form-'+appId;
-  let html='<section class="rec-cand-interviews'+(readonly?' rec-cand-interviews--readonly':'')+'" data-app-id="'+tcEsc(appId)+'">'+
+  let html='<section class="rec-cand-interviews'+(readonly?' rec-cand-interviews--readonly':'')+'" data-app-id="'+tcEsc(appId)+'" data-readonly="'+(readonly?'1':'0')+'">'+
     '<div class="rec-cand-interviews-head">'+
     '<button type="button" class="rec-cand-interviews-toggle" aria-expanded="false" aria-controls="'+tcEsc(panelId)+'" onclick="recCandToggleInterviews(this)">'+
     '<span class="rec-cand-interviews-kicker">Entrevistas · '+ordered.total+'</span>'+
-    (nextText?'<span class="rec-cand-interviews-next">'+tcEsc(nextText)+'</span>':'')+
-    '<span aria-hidden="true">▾</span></button>';
+    (nextText?'<span class="rec-cand-interviews-next">Próxima: '+tcEsc(nextText)+'</span>':'')+
+    '<span class="rec-cand-interviews-chevron" aria-hidden="true">▾</span></button>';
   if(!readonly){
     html+='<button type="button" class="rec-cand-interviews-add" onclick="recCandToggleInterviewForm(\''+tcEsc(appId)+'\')">Programar otra</button>';
   }
@@ -12656,24 +12690,7 @@ function recCandInterviewsBlockHtml(app, opts){
     ordered.upcoming.map(function(row,index){ return recCandInterviewRowHtml(row,appId,readonly,index===0); }).join('')+
     (ordered.overdue||[]).map(function(row){ return recCandInterviewRowHtml(row,appId,readonly,false); }).join('')+
     ordered.past.map(function(row){ return recCandInterviewRowHtml(row,appId,readonly); }).join('')+
-    '</div>';
-  if(!readonly){
-    html+='<form class="rec-cand-interview-form hidden" id="'+tcEsc(formId)+'" onsubmit="return recCandScheduleInterview(event,\''+tcEsc(appId)+'\')">'+
-      '<label class="form-label">Nombre <span class="rec-cand-form-optional">Opcional</span></label>'+
-      '<input type="text" class="form-input" maxlength="80" name="label" aria-label="Nombre de la entrevista">'+
-      '<div class="rec-cand-form-interview-row" style="margin-top:8px;">'+
-      '<input type="date" class="form-input" name="date" required aria-label="Fecha de entrevista">'+
-      '<input type="time" class="form-input" name="time" step="60" aria-label="Hora de entrevista">'+
-      '</div>'+
-      '<label class="form-label" style="margin-top:8px;">Comentario <span class="rec-cand-form-optional">Opcional</span></label>'+
-      '<textarea class="form-input" name="comment" maxlength="500" rows="2" aria-label="Comentario de la entrevista"></textarea>'+
-      '<div class="rec-cand-interview-actions">'+
-      '<button type="submit" class="rec-stages-ghost-btn">Guardar entrevista</button>'+
-      '<button type="button" class="rec-stages-ghost-btn" onclick="recCandToggleInterviewForm(\''+tcEsc(appId)+'\')">Cancelar</button>'+
-      '</div></form>'+
-      '<div class="rec-cand-interview-detail hidden" id="rec-cand-interview-detail-'+tcEsc(appId)+'" role="dialog" aria-modal="false" aria-label="Detalle de entrevista"></div>';
-  }
-  html+='</div></section>';
+    '</div></div></section>';
   return html;
 }
 var recCandInterviewEpoch=0;
@@ -12686,18 +12703,12 @@ function recCandToggleInterviews(btn){
   if(panel) panel.classList.toggle('hidden',!open);
 }
 function recCandToggleInterviewForm(appId){
-  const form=document.getElementById('rec-cand-interviews-form-'+appId);
   const panel=document.getElementById('rec-cand-interviews-panel-'+appId);
   const toggle=panel&&panel.parentElement?panel.parentElement.querySelector('.rec-cand-interviews-toggle'):null;
   if(panel) panel.classList.remove('hidden');
   if(toggle) toggle.setAttribute('aria-expanded','true');
-  if(!form) return;
-  const show=form.classList.contains('hidden');
-  form.classList.toggle('hidden',!show);
-  if(show){
-    const date=form.querySelector('[name="date"]');
-    if(date) date.focus();
-  }
+  const add=panel&&panel.parentElement?panel.parentElement.querySelector('.rec-cand-interviews-add'):null;
+  recCandOpenInterviewDetail(add, appId, null);
 }
 function recCandFindInterview(appId, eventId){
   const c=recEnsureState().detailCandidate;
@@ -12709,14 +12720,44 @@ function recCandFindInterview(appId, eventId){
     return row.id===eventId;
   })||null;
 }
-function recCandCloseInterviewDetail(appId){
+function recCandEnsureInterviewDialog(){
+  let overlay=document.getElementById('rec-iv-overlay');
+  if(overlay) return overlay;
+  overlay=document.createElement('div');
+  overlay.id='rec-iv-overlay';
+  overlay.className='modal-overlay rec-modal-glass rec-iv-overlay rec-cand-interview-detail hidden';
+  overlay.onclick=function(ev){ if(ev.target===overlay) recCandCloseInterviewDetail(); };
+  overlay.innerHTML='<div class="rec-iv-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-iv-title" onclick="event.stopPropagation()"></div>';
+  document.body.appendChild(overlay);
+  return overlay;
+}
+function recCandInterviewSetError(message){
+  const el=document.getElementById('rec-iv-error');
+  if(!el) return;
+  el.textContent=message||'';
+  if(message&&typeof el.focus==='function') el.focus();
+}
+function recCandInterviewSetBusy(busy){
+  const form=document.getElementById('rec-iv-form');
+  if(form) form.dataset.pending=busy?'1':'';
+  document.querySelectorAll('#rec-iv-overlay [data-iv-submit]').forEach(function(btn){ btn.disabled=!!busy; });
+}
+function recCandCloseInterviewDetail(){
   const st=recEnsureState();
-  const detail=document.getElementById('rec-cand-interview-detail-'+(appId||st.interviewDetailAppId||''));
-  if(detail){ detail.classList.add('hidden'); detail.innerHTML=''; }
+  recCandInterviewEpoch+=1;
+  if(recCandInterviewAbort){ try{ recCandInterviewAbort.abort(); }catch(_e){} recCandInterviewAbort=null; }
   const back=st.interviewDetailReturn;
   st.interviewDetailReturn=null;
   st.interviewDetailAppId=null;
-  if(back&&typeof back.focus==='function') back.focus();
+  st.interviewDetailEventId=null;
+  st.interviewDialogMode=null;
+  if(back&&document.contains(back)&&typeof back.focus==='function') back.focus();
+  const overlay=document.getElementById('rec-iv-overlay');
+  if(overlay){
+    overlay.classList.add('hidden');
+    const dialog=overlay.querySelector('.rec-iv-dialog');
+    if(dialog) dialog.innerHTML='';
+  }
 }
 function recCandBindInterviewEscape(){
   if(window.__recInterviewEscape) return;
@@ -12726,53 +12767,120 @@ function recCandBindInterviewEscape(){
     const open=document.querySelector('.rec-cand-interview-detail:not(.hidden)');
     if(!open) return;
     ev.preventDefault();
-    ev.stopPropagation();
+    ev.stopImmediatePropagation();
     recCandCloseInterviewDetail();
   },true);
 }
+function recCandInterviewMode(mode){
+  const st=recEnsureState();
+  st.interviewDialogMode=mode;
+  recCandPaintInterviewDialog();
+  recCandFocusInterviewDialog();
+}
+function recCandInterviewFormFields(row, focusDate){
+  const parts=row?recCandInterviewLocalPartsFromIso(row.scheduledAt,row.scheduledTimeSpecified!==false):{date:'',time:''};
+  const label=row&&row.label?String(row.label):'';
+  const comment=row&&row.comment?String(row.comment):'';
+  return '<label class="rec-iv-label" for="rec-iv-label">Nombre</label>'+
+    '<input id="rec-iv-label" class="form-input" name="label" maxlength="80" value="'+tcEsc(label)+'"'+(focusDate?'':' data-iv-focus')+'>'+
+    '<div class="rec-iv-when">'+
+    '<label class="rec-iv-field"><span aria-hidden="true">📅</span><input class="form-input" type="date" name="date" required aria-label="Fecha" value="'+tcEsc(parts.date)+'"'+(focusDate?' data-iv-focus':'')+'></label>'+
+    '<label class="rec-iv-field"><span aria-hidden="true">🕒</span><input class="form-input" type="time" name="time" step="60" aria-label="Hora" value="'+tcEsc(parts.time)+'"></label>'+
+    '</div>'+
+    '<label class="rec-iv-label" for="rec-iv-comment">Comentario</label>'+
+    '<textarea id="rec-iv-comment" class="form-input rec-iv-comment" name="comment" maxlength="500" rows="3">'+tcEsc(comment)+'</textarea>';
+}
+function recCandPaintInterviewDialog(){
+  const overlay=recCandEnsureInterviewDialog();
+  const dialog=overlay.querySelector('.rec-iv-dialog');
+  const st=recEnsureState();
+  const appId=st.interviewDetailAppId;
+  const eventId=st.interviewDetailEventId;
+  const mode=st.interviewDialogMode||'detail';
+  const row=eventId?recCandFindInterview(appId,eventId):null;
+  const readonly=!!st.interviewDialogReadonly;
+  const statusCls=row?recCandInterviewStatusClass(row.eventType):'scheduled';
+  const title=mode==='schedule'?'Programar entrevista':(mode==='edit'?'Editar entrevista':(mode==='reschedule'?'Reprogramar entrevista':'Detalle de entrevista'));
+  let body='<div class="rec-iv-head"><h2 class="rec-iv-title" id="rec-iv-title">'+tcEsc(title)+'</h2>'+
+    '<button type="button" class="rec-iv-close" aria-label="Cerrar"'+(mode==='detail'?' data-iv-focus="1"':'')+' onclick="recCandCloseInterviewDetail()">×</button></div>';
+  if(mode==='schedule'||mode==='edit'||mode==='reschedule'){
+    const submit=mode==='schedule'?'recCandScheduleInterview(event,\''+tcEsc(appId)+'\')':'recCandSubmitInterviewEdit(event,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')';
+    if(mode==='reschedule') body+='<p class="rec-iv-note">Vas a cambiar el horario. La cita actual se conserva como antecedente y se programa la nueva.</p>';
+    body+='<form id="rec-iv-form" onsubmit="return '+submit+'">'+recCandInterviewFormFields(mode==='schedule'?null:row, mode==='reschedule')+
+      '<p id="rec-iv-error" class="rec-iv-error" role="alert" tabindex="-1"></p>'+
+      '<div class="rec-iv-form-actions">'+
+      '<button type="button" class="rec-iv-btn" onclick="recCandCloseInterviewDetail()">Cancelar</button>'+
+      '<button type="submit" class="form-submit form-submit-purple" data-iv-submit>'+(mode==='schedule'?'Guardar entrevista':'Guardar cambios')+'</button>'+
+      '</div></form>';
+  }else if(mode==='comment'){
+    body+='<form id="rec-iv-form" onsubmit="return recCandSaveInterviewComment(event,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')">'+
+      '<label class="rec-iv-label" for="rec-iv-comment">Comentario</label>'+
+      '<textarea id="rec-iv-comment" class="form-input rec-iv-comment" name="comment" maxlength="500" rows="3" data-iv-focus>'+tcEsc(row&&row.comment?String(row.comment):'')+'</textarea>'+
+      '<p id="rec-iv-error" class="rec-iv-error" role="alert" tabindex="-1"></p>'+
+      '<div class="rec-iv-form-actions"><button type="button" class="rec-iv-btn" onclick="recCandCloseInterviewDetail()">Cancelar</button>'+
+      '<button type="submit" class="form-submit form-submit-purple" data-iv-submit>Guardar comentario</button></div></form>';
+  }else if(mode==='confirm'){
+    const pending=st.interviewPendingAction||'ATTENDED';
+    const ask=pending==='NO_SHOW'?'¿Registrar que no asistió?':(pending==='CANCELLED'?'¿Cancelar esta entrevista?':'¿Marcar esta entrevista como realizada?');
+    const tone=pending==='NO_SHOW'?'rec-iv-btn--warn':(pending==='CANCELLED'?'rec-iv-btn--danger':'rec-iv-btn--ok');
+    body+='<p class="rec-iv-name">'+tcEsc(recCandInterviewTitle(row||{}))+'</p><p class="rec-iv-confirm">'+ask+'</p><p id="rec-iv-error" class="rec-iv-error" role="alert" tabindex="-1"></p>'+
+      '<div class="rec-iv-form-actions"><button type="button" class="rec-iv-btn" onclick="recCandInterviewMode(\'detail\')">Volver</button>'+
+      '<button type="button" class="rec-iv-btn '+tone+'" data-iv-submit data-iv-focus onclick="recCandInterviewAction(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\',\''+pending+'\')">Confirmar</button></div>';
+  }else if(row){
+    const when=recCandFormatInterviewScheduledAt(row.scheduledAt,row.scheduledTimeSpecified!==false);
+    const comment=row.comment?String(row.comment):'';
+    body+='<span class="rec-iv-kicker rec-cand-interview-status rec-cand-interview-status--'+statusCls+'">'+tcEsc(recCandInterviewStatusLabel(row.eventType))+'</span>'+
+      '<p class="rec-iv-name">'+tcEsc(recCandInterviewTitle(row))+'</p>'+
+      '<div class="rec-iv-when"><div class="rec-iv-field"><span aria-hidden="true">📅</span><span>'+tcEsc((when||'').split(' · ')[0]||'')+'</span></div>'+
+      '<div class="rec-iv-field"><span aria-hidden="true">🕒</span><span>'+tcEsc((when||'').split(' · ')[1]||'Sin hora')+'</span></div></div>'+
+      '<p class="rec-iv-label">Comentario</p><div class="rec-iv-comment-box">'+(comment?tcEsc(comment):'Sin comentario')+'</div>';
+    if(!readonly&&row.eventType==='SCHEDULED'){
+      body+='<button type="button" class="rec-iv-edit" onclick="recCandInterviewMode(\'edit\')">✎ Editar entrevista</button>'+
+        '<div class="rec-iv-foot">'+
+        '<button type="button" class="rec-iv-btn" onclick="recCandInterviewMode(\'reschedule\')">Reprogramar</button>'+
+        '<button type="button" class="rec-iv-btn rec-iv-btn--ok" onclick="recCandAskInterviewResult(\'ATTENDED\')">✓ Realizada</button>'+
+        '<button type="button" class="rec-iv-btn rec-iv-btn--warn" onclick="recCandAskInterviewResult(\'NO_SHOW\')">No asistió</button>'+
+        '<button type="button" class="rec-iv-btn rec-iv-btn--danger" onclick="recCandAskInterviewResult(\'CANCELLED\')">Cancelar entrevista</button>'+
+        '</div>';
+    }else if(!readonly){
+      body+='<button type="button" class="rec-iv-edit" onclick="recCandInterviewMode(\'comment\')">✎ Editar comentario</button>';
+    }
+  }
+  dialog.innerHTML=body;
+}
 function recCandOpenInterviewDetail(btn, appId, eventId){
   recCandBindInterviewEscape();
-  const row=recCandFindInterview(appId,eventId);
-  const detail=document.getElementById('rec-cand-interview-detail-'+appId);
-  if(!row||!detail) return;
+  recCandInterviewEpoch+=1;
+  if(recCandInterviewAbort){ try{ recCandInterviewAbort.abort(); }catch(_e){} recCandInterviewAbort=null; }
   const st=recEnsureState();
-  st.interviewDetailReturn=btn;
+  st.interviewDetailReturn=btn||null;
   st.interviewDetailAppId=appId;
-  const when=recCandFormatInterviewScheduledAt(row.scheduledAt,row.scheduledTimeSpecified!==false);
-  const comment=row.comment?String(row.comment):'';
-  let actions='';
-  if(row.eventType==='SCHEDULED'){
-    actions='<div class="rec-cand-interview-actions">'+
-      '<button type="button" onclick="recCandInterviewAction(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\',\'ATTENDED\')">Realizada</button>'+
-      '<button type="button" onclick="recCandInterviewAction(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\',\'NO_SHOW\')">No asistió</button>'+
-      '<button type="button" onclick="recCandInterviewAction(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\',\'CANCELLED\')">Cancelar</button>'+
-      '<button type="button" onclick="recCandShowInterviewReschedule(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')">Reprogramar</button>'+
-      '</div>'+
-      '<form class="hidden" id="rec-cand-interview-reschedule-'+tcEsc(eventId)+'" onsubmit="return recCandSubmitInterviewReschedule(event,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')">'+
-      '<div class="rec-cand-form-interview-row">'+
-      '<input type="date" class="form-input" name="date" required aria-label="Nueva fecha">'+
-      '<input type="time" class="form-input" name="time" step="60" aria-label="Nueva hora">'+
-      '</div>'+
-      '<div class="rec-cand-interview-actions"><button type="submit">Guardar nueva fecha</button></div></form>';
-  }
-  detail.innerHTML='<p class="rec-cand-interview-title">'+tcEsc(recCandInterviewTitle(row))+'</p>'+
-    '<p class="rec-cand-interview-meta">'+tcEsc(when||'')+' · '+tcEsc(recCandInterviewStatusLabel(row.eventType))+'</p>'+
-    (comment?'<p class="rec-cand-interview-comment" style="-webkit-line-clamp:unset;display:block;">'+tcEsc(comment)+'</p>':'')+
-    '<label class="form-label" style="margin-top:8px;">Comentario</label>'+
-    '<textarea class="form-input" id="rec-cand-interview-comment-'+tcEsc(eventId)+'" maxlength="500" rows="3" aria-label="Comentario de esta entrevista">'+tcEsc(comment)+'</textarea>'+
-    '<div class="rec-cand-interview-actions"><button type="button" onclick="recCandSaveInterviewComment(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')">Guardar comentario</button>'+
-    '<button type="button" onclick="recCandCloseInterviewDetail(\''+tcEsc(appId)+'\')">Cerrar</button></div>'+
-    actions;
-  detail.classList.remove('hidden');
-  const area=detail.querySelector('textarea');
-  if(area) area.focus();
+  st.interviewDetailEventId=eventId||null;
+  st.interviewDialogMode=eventId?'detail':'schedule';
+  st.interviewDialogReadonly=!!(btn&&btn.closest&&btn.closest('[data-readonly="1"]'));
+  st.interviewPendingAction=null;
+  if(eventId&&!recCandFindInterview(appId,eventId)) return;
+  const overlay=recCandEnsureInterviewDialog();
+  recCandPaintInterviewDialog();
+  overlay.classList.remove('hidden');
+  recCandFocusInterviewDialog();
 }
-function recCandShowInterviewReschedule(appId,eventId){
-  const form=document.getElementById('rec-cand-interview-reschedule-'+eventId);
-  if(!form) return;
-  form.classList.remove('hidden');
-  const date=form.querySelector('[name="date"]');
-  if(date) date.focus();
+function recCandFocusInterviewDialog(){
+  const overlay=document.getElementById('rec-iv-overlay');
+  if(!overlay||overlay.classList.contains('hidden')) return;
+  setTimeout(function(){
+    if(!overlay||overlay.classList.contains('hidden')) return;
+    const focus=overlay.querySelector('[data-iv-focus]')||overlay.querySelector('button, input, textarea');
+    if(focus) focus.focus();
+  },0);
+}
+function recCandAskInterviewResult(action){
+  const st=recEnsureState();
+  st.interviewPendingAction=action;
+  recCandInterviewMode('confirm');
+}
+function recCandShowInterviewReschedule(){
+  recCandInterviewMode('reschedule');
 }
 async function recCandRefreshInterviewDetail(appId){
   const st=recEnsureState();
@@ -12784,57 +12892,80 @@ async function recCandRefreshInterviewDetail(appId){
   st.detailCandidate=c;
   await recCandRenderDetail(c,false);
 }
-async function recCandScheduleInterview(ev, appId){
-  ev.preventDefault();
-  const form=ev.target;
+function recCandBeginInterviewRequest(){
   const epoch=++recCandInterviewEpoch;
-  recCandSetOpErr('');
+  if(recCandInterviewAbort){ try{ recCandInterviewAbort.abort(); }catch(_e){} }
+  recCandInterviewAbort=new AbortController();
+  recCandInterviewSetBusy(true);
+  recCandInterviewSetError('');
+  return { epoch:epoch, signal:recCandInterviewAbort.signal };
+}
+async function recCandScheduleInterview(ev, appId){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const form=ev&&ev.target;
+  if(form&&form.dataset&&form.dataset.pending==='1') return false;
+  const req=recCandBeginInterviewRequest();
   try{
     await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId)+'/interviews',{
       method:'POST',
+      signal:req.signal,
       body:JSON.stringify({
         interviewDate:form.date.value,
         interviewTime:form.time.value||null,
-        label:form.label.value||null,
-        comment:form.comment.value||null
+        label:form.label&&form.label.value?form.label.value:null,
+        comment:form.comment&&form.comment.value?form.comment.value:null
       })
     });
-    if(epoch!==recCandInterviewEpoch) return false;
+    if(req.epoch!==recCandInterviewEpoch) return false;
+    recCandCloseInterviewDetail();
     await recCandRefreshInterviewDetail(appId);
   }catch(e){
     if(e&&e.name==='AbortError') return false;
-    if(epoch!==recCandInterviewEpoch) return false;
-    recCandSetOpErr((e&&e.message)||'No se pudo programar la entrevista.');
+    if(req.epoch!==recCandInterviewEpoch) return false;
+    recCandInterviewSetBusy(false);
+    recCandInterviewSetError((e&&e.message)||'No se pudo programar la entrevista.');
   }
   return false;
 }
 async function recCandInterviewAction(appId, eventId, action, extra){
-  const epoch=++recCandInterviewEpoch;
-  recCandSetOpErr('');
+  const req=recCandBeginInterviewRequest();
   try{
     await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId)+'/interviews/'+encodeURIComponent(eventId)+'/actions',{
       method:'POST',
+      signal:req.signal,
       body:JSON.stringify(Object.assign({ action:action }, extra||{}))
     });
-    if(epoch!==recCandInterviewEpoch) return;
+    if(req.epoch!==recCandInterviewEpoch) return;
+    recCandCloseInterviewDetail();
     await recCandRefreshInterviewDetail(appId);
   }catch(e){
     if(e&&e.name==='AbortError') return;
-    if(epoch!==recCandInterviewEpoch) return;
-    recCandSetOpErr((e&&e.message)||'No se pudo actualizar la entrevista.');
+    if(req.epoch!==recCandInterviewEpoch) return;
+    recCandInterviewSetBusy(false);
+    recCandInterviewSetError((e&&e.message)||'No se pudo actualizar la entrevista.');
   }
 }
-function recCandSaveInterviewComment(appId, eventId){
-  const area=document.getElementById('rec-cand-interview-comment-'+eventId);
-  recCandInterviewAction(appId,eventId,'COMMENT',{ comment:area?area.value:'' });
+function recCandSaveInterviewComment(ev, appId, eventId){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const form=ev&&ev.target;
+  if(form&&form.dataset&&form.dataset.pending==='1') return false;
+  recCandInterviewAction(appId,eventId,'COMMENT',{ comment:form&&form.comment?form.comment.value:'' });
+  return false;
 }
-function recCandSubmitInterviewReschedule(ev, appId, eventId){
-  ev.preventDefault();
-  recCandInterviewAction(appId,eventId,'RESCHEDULED',{
-    interviewDate:ev.target.date.value,
-    interviewTime:ev.target.time.value||null
+function recCandSubmitInterviewEdit(ev, appId, eventId){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const form=ev&&ev.target;
+  if(form&&form.dataset&&form.dataset.pending==='1') return false;
+  recCandInterviewAction(appId,eventId,'EDIT',{
+    label:form.label?form.label.value:null,
+    comment:form.comment?form.comment.value:null,
+    interviewDate:form.date?form.date.value:null,
+    interviewTime:form.time&&form.time.value?form.time.value:null
   });
   return false;
+}
+function recCandSubmitInterviewReschedule(ev, appId, eventId){
+  return recCandSubmitInterviewEdit(ev, appId, eventId);
 }
 function recCandHeroHtml(app){
   const vac=app.vacancy||{};
