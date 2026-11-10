@@ -197,6 +197,7 @@ export async function declineRecruitmentApplication({
   reason,
   note,
   now = new Date(),
+  createdByUserId = null,
   db = prisma,
 }) {
   const { closureReason, closureNote } = normalizeDeclineReason(reason, note);
@@ -247,6 +248,17 @@ export async function declineRecruitmentApplication({
     await cancelOpenStageNovedadWaits(tx, applicationId);
     await emitWorkforceRecruitmentNovedadForDecline(tx, { organizationId, applicationId });
     await syncCandidateAutoArchive(tx, { organizationId, candidateId: app.candidateId, now });
+    const { cancelScheduledInterviewsForClosedApplication } = await import(
+      './recruitmentApplicationInterviewEvent.service.js'
+    );
+    await cancelScheduledInterviewsForClosedApplication(tx, {
+      organizationId,
+      applicationId,
+      createdByUserId,
+      legacyScheduledAt: app.interviewScheduledAt,
+      legacyTimeSpecified: app.interviewTimeSpecified,
+      stageId: app.stageId,
+    });
     const closed = await tx.recruitmentApplication.findFirst({
       where: { id: applicationId, organizationId },
       include: { candidate: true, stage: true, vacancy: { select: { id: true, title: true } } },

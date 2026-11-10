@@ -78,8 +78,8 @@ const {
   resolveInterviewScheduledAtForApplicationUpdate,
 } = await import('../src/services/recruitmentInterviewSchedule.service.js');
 check(
-  /resolveInterviewScheduledAtForApplicationUpdate/.test(appSvc),
-  'application service usa regla centralizada',
+  /applyRecruitmentInterviewFormChange/.test(appSvc),
+  'application service sincroniza el formulario con las filas',
 );
 
 const sampleIv = new Date('2026-10-29T16:30:00.000Z');
@@ -99,9 +99,9 @@ check(
       existingInterviewScheduledAt: sampleIv,
       explicitInterviewScheduledAt: undefined,
     }),
-    null,
+    sampleIv,
   ),
-  'INITIAL_INTERVIEW + fecha → FINALIST → null',
+  'INITIAL_INTERVIEW + fecha → FINALIST conserva la cita',
 );
 check(
   ivSame(
@@ -112,9 +112,9 @@ check(
       existingInterviewScheduledAt: sampleIv,
       explicitInterviewScheduledAt: undefined,
     }),
-    null,
+    sampleIv,
   ),
-  'CLIENT_INTERVIEW + fecha → HIRED → null',
+  'CLIENT_INTERVIEW → HIRED no borra la cita en el cambio de etapa',
 );
 check(
   ivSame(
@@ -125,9 +125,9 @@ check(
       existingInterviewScheduledAt: sampleIv,
       explicitInterviewScheduledAt: undefined,
     }),
-    null,
+    sampleIv,
   ),
-  'INITIAL → CLIENT sin nueva fecha → null',
+  'INITIAL → CLIENT sin nueva fecha conserva la cita',
 );
 check(
   ivSame(
@@ -353,11 +353,12 @@ if (dbOk) {
     });
     const toFinalistJson = await toFinalist.json();
     check(
-      toFinalist.status === 200 && toFinalistJson.application?.interviewScheduledAt == null,
-      'integración: entrevista → FINALIST limpia fecha',
+      toFinalist.status === 200
+        && toFinalistJson.application?.interviewScheduledAt === patchJson.application?.interviewScheduledAt,
+      'integración: entrevista → FINALIST conserva fecha',
     );
 
-    await fetch(`${base}/api/org/recruitment/applications/${appId}`, {
+    const backToInitial = await fetch(`${base}/api/org/recruitment/applications/${appId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Cookie: adminCookie },
       body: JSON.stringify({
@@ -366,6 +367,7 @@ if (dbOk) {
         interviewTime: '10:30',
       }),
     });
+    const backToInitialJson = await backToInitial.json();
 
     const toClientNoDate = await fetch(`${base}/api/org/recruitment/applications/${appId}`, {
       method: 'PATCH',
@@ -374,8 +376,10 @@ if (dbOk) {
     });
     const toClientNoDateJson = await toClientNoDate.json();
     check(
-      toClientNoDate.status === 200 && toClientNoDateJson.application?.interviewScheduledAt == null,
-      'integración: INITIAL → CLIENT sin fecha → null',
+      toClientNoDate.status === 200
+        && toClientNoDateJson.application?.interviewScheduledAt
+        && toClientNoDateJson.application.interviewScheduledAt === backToInitialJson.application?.interviewScheduledAt,
+      'integración: INITIAL → CLIENT sin fecha conserva la cita',
     );
 
     const toClientWithDate = await fetch(`${base}/api/org/recruitment/applications/${appId}`, {

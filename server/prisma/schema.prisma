@@ -978,6 +978,8 @@ enum RecruitmentApplicationInterviewEventType {
   ATTENDED
   NO_SHOW
   RESCHEDULED
+  SCHEDULED
+  CANCELLED
 }
 
 /// Resultado histórico de una cita de entrevista (snapshot; no reemplaza stage history).
@@ -994,6 +996,11 @@ model RecruitmentApplicationInterviewEvent {
   scheduledTimeSpecified     Boolean  @default(true)
   rescheduledToAt            DateTime? @db.Timestamptz(6)
   rescheduledToTimeSpecified Boolean?
+  /// Nombre corto de esta cita. Nulo en históricos: se muestra la etapa.
+  label                      String?  @db.VarChar(80)
+  /// Comentario de esta entrevista. No se copia a las notas del candidato.
+  comment                    String?  @db.VarChar(500)
+  /// Índice parcial: una sola cita Programada por horario de la postulación.
   createdByUserId            String
   createdBy                  User @relation("RecruitmentInterviewEventUser", fields: [createdByUserId], references: [id], onDelete: Restrict)
   createdAt                  DateTime @default(now())

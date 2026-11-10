@@ -16,31 +16,20 @@ export function stageKeyAllowsInterviewSchedule(stageKey) {
 }
 
 /**
- * Próxima entrevista programada (no histórico) al actualizar una postulación.
- * Centraliza la regla cuando cambia la etapa.
+ * Conserva el apuntador al cambiar de etapa.
+ * La vigencia no depende del nombre de la etapa: Finalista, Evaluaciones
+ * o Psicometría no borran la cita. HIRED y REJECTED la limpian en el cierre,
+ * después de cancelar las filas SCHEDULED.
+ * Una fecha enviada por el formulario antiguo sí sustituye o limpia el apuntador.
  */
 export function resolveInterviewScheduledAtForApplicationUpdate({
-  stageChanged,
-  fromStageKey,
-  toStageKey,
   existingInterviewScheduledAt,
   explicitInterviewScheduledAt,
 }) {
-  if (!stageChanged) {
-    if (explicitInterviewScheduledAt !== undefined) {
-      return explicitInterviewScheduledAt;
-    }
-    return existingInterviewScheduledAt ?? null;
-  }
-
-  if (!stageKeyAllowsInterviewSchedule(toStageKey)) {
-    return null;
-  }
-
   if (explicitInterviewScheduledAt !== undefined) {
     return explicitInterviewScheduledAt;
   }
-  return null;
+  return existingInterviewScheduledAt ?? null;
 }
 
 /** @returns {{ scheduledAt: Date, timeSpecified: boolean } | null} */

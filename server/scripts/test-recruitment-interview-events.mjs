@@ -50,7 +50,8 @@ console.log('\n=== Servicio / API ===\n');
 check(/\$transaction/.test(eventSvc), 'transacción Prisma');
 check(/updateMany/.test(eventSvc), 'update condicional atómico');
 check(/INTERVIEW_EVENT_STALE_MESSAGE/.test(eventSvc), 'mensaje stale 409');
-check(/debe ser diferente a la actual/.test(eventSvc), 'RESCHEDULE no-op');
+check(/Ya existe una entrevista programada en ese horario/.test(eventSvc), 'un horario ocupado responde 409');
+check(/unchanged: true/.test(eventSvc), 'RESCHEDULE del mismo horario es no-op');
 check(/interviewScheduledAt: null/.test(eventSvc), 'ATTENDED/NO_SHOW limpian cita');
 check(/eventType: 'RESCHEDULED'/.test(eventSvc), 'RESCHEDULED actualiza cita');
 check(/createdByUserId/.test(eventSvc) && !/req\.body\.createdByUserId/.test(routes), 'autor desde sesión');
@@ -195,12 +196,7 @@ if (dbOk) {
       interviewDate: '2026-10-29',
       interviewTime: '10:30',
     });
-    check(noopRes.status === 400, 'RESCHEDULE misma fecha/hora → 400');
-    const noopBody = await noopRes.json();
-    check(
-      String(noopBody.message || '').includes('diferente'),
-      'mensaje no-op reschedule',
-    );
+    check(noopRes.status === 200, 'RESCHEDULE misma fecha/hora es no-op');
     check((await evCount()) === 0, 'no-op sin evento');
 
     const [att1, att2] = await Promise.all([
@@ -238,7 +234,7 @@ if (dbOk) {
     check(rsStatuses[0] === 201 && rsStatuses[1] === 409, 'RESCHEDULE concurrente: 201 + 409');
     const afterParallel = await prisma.recruitmentApplication.findUnique({ where: { id: applicationId } });
     check(afterParallel.interviewTimeSpecified === false, 'RESCHEDULE ganador deja fecha sin hora');
-    check((await evCount()) === 2, 'RESCHEDULE concurrente: +1 evento (total 2)');
+    check((await evCount()) === 3, 'RESCHEDULE concurrente: antecedente y la nueva Programada');
 
     const orgTz = await (
       await import('../src/services/organizationTimezone.service.js')
@@ -259,8 +255,8 @@ if (dbOk) {
       interviewDate: '2026-11-15',
       interviewTime: '',
     });
-    check(noopDateOnly.status === 400, 'RESCHEDULE misma fecha sin hora → 400');
-    check((await evCount()) === 2, 'no-op fecha sin hora sin evento extra');
+    check(noopDateOnly.status === 200, 'RESCHEDULE misma fecha sin hora es no-op');
+    check((await evCount()) === 3, 'no-op fecha sin hora sin evento extra');
 
     await prisma.recruitmentApplication.update({
       where: { id: applicationId },
@@ -318,7 +314,7 @@ if (dbOk) {
         headers: { 'Content-Type': 'application/json', Cookie: cookie },
         body: JSON.stringify({
           eventType: 'RESCHEDULED',
-          interviewDate: '2026-11-01',
+          interviewDate: '2026-11-20',
           interviewTime: '',
         }),
       },

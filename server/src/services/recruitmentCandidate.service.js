@@ -807,7 +807,7 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
   ]);
 
   const appIds = applications.map((a) => a.id);
-  const { listInterviewEventsForApplications } = await import(
+  const { buildApplicationInterviewRows, listInterviewEventsForApplications } = await import(
     './recruitmentApplicationInterviewEvent.service.js'
   );
   const interviewEventsByAppId = await listInterviewEventsForApplications(organizationId, appIds);
@@ -829,6 +829,7 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
       return {
         ...serializeCandidateApplicationProcess(row),
         interviewEvents,
+        interviews: buildApplicationInterviewRows(row, interviewEvents),
         lastInterviewEvent: interviewEvents[0] || null,
       };
     }),

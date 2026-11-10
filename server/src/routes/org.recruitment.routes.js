@@ -1009,7 +1009,71 @@ router.post('/applications/:applicationId/interview-events', async (req, res, ne
       interviewDate: body.interviewDate,
       interviewTime: body.interviewTime,
     });
-    res.status(201).json(result);
+    res.status(result.unchanged ? 200 : 201).json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+const interviewScheduleSchema = z
+  .object({
+    interviewDate: z.string().max(10).optional().nullable(),
+    interviewTime: z.string().max(5).optional().nullable(),
+    label: z.string().max(80).optional().nullable(),
+    comment: z.string().max(500).optional().nullable(),
+  })
+  .strict();
+
+router.post('/applications/:applicationId/interviews', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = interviewScheduleSchema.parse(req.body || {});
+    const { scheduleRecruitmentApplicationInterview } = await import(
+      '../services/recruitmentApplicationInterviewEvent.service.js'
+    );
+    const result = await scheduleRecruitmentApplicationInterview({
+      organizationId: u.organizationId,
+      applicationId: req.params.applicationId,
+      createdByUserId: u.id,
+      interviewDate: body.interviewDate,
+      interviewTime: body.interviewTime,
+      label: body.label,
+      comment: body.comment,
+    });
+    res.status(result.alreadyScheduled ? 200 : 201).json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/applications/:applicationId/interviews/:eventId/actions', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = z
+      .object({
+        action: z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT']),
+        interviewDate: z.string().max(10).optional().nullable(),
+        interviewTime: z.string().max(5).optional().nullable(),
+        label: z.string().max(80).optional().nullable(),
+        comment: z.string().max(500).optional().nullable(),
+      })
+      .strict()
+      .parse(req.body || {});
+    const { updateRecruitmentApplicationInterview } = await import(
+      '../services/recruitmentApplicationInterviewEvent.service.js'
+    );
+    const result = await updateRecruitmentApplicationInterview({
+      organizationId: u.organizationId,
+      applicationId: req.params.applicationId,
+      eventId: req.params.eventId,
+      action: body.action,
+      createdByUserId: u.id,
+      interviewDate: body.interviewDate,
+      interviewTime: body.interviewTime,
+      label: body.label,
+      comment: body.comment,
+    });
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -1101,6 +1165,7 @@ router.post('/applications/:id/decline', async (req, res, next) => {
       applicationId: req.params.id,
       reason: body.reason,
       note: body.note,
+      createdByUserId: u.id,
     });
     const application = result.application;
     res.json({

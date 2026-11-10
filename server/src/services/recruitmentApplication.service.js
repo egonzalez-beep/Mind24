@@ -7,7 +7,12 @@ import {
   assertStageEnabledForVacancy,
   ensureVacancyRecruitmentStages,
 } from './recruitmentVacancyStage.service.js';
-import { resolveInterviewScheduledAtForApplicationUpdate } from './recruitmentInterviewSchedule.service.js';
+import {
+  applyRecruitmentInterviewFormChange,
+  recordUnattributedInterviewSnapshot,
+  isScheduledInterviewSlotConflict,
+  INTERVIEW_SLOT_TAKEN_MESSAGE,
+} from './recruitmentApplicationInterviewEvent.service.js';
 import { cancelOpenStageNovedadWaits, stageNovedadEligibleAt } from './workforceRecruitmentNovedad.service.js';
 import {
   assertRecruitmentProcessStageChangeAllowed,
@@ -144,14 +149,6 @@ export async function createRecruitmentApplication({
         stageId: newStage.id,
         position,
         appliedAt,
-        ...(interviewScheduledAt != null
-          ? {
-              interviewScheduledAt,
-              ...(interviewTimeSpecified !== undefined
-                ? { interviewTimeSpecified }
-                : {}),
-            }
-          : {}),
       },
       include: { candidate: true, stage: true },
     });
@@ -168,6 +165,7 @@ export async function createRecruitmentApplication({
       initialStageId && String(initialStageId).trim() && initialStageId !== newStage.id
         ? initialStageId
         : null;
+    let current = app;
     if (targetStageId) {
       await assertStageEnabledForVacancy(organizationId, vacancyId, targetStageId, tx);
       const targetStage = await tx.recruitmentStage.findFirst({
@@ -175,17 +173,9 @@ export async function createRecruitmentApplication({
         select: { key: true },
       });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
-      const resolvedAt = resolveInterviewScheduledAtForApplicationUpdate({
-        stageChanged: true,
-        fromStageKey: newStage.key,
-        toStageKey: targetStage?.key,
-        existingInterviewScheduledAt: null,
-        explicitInterviewScheduledAt: interviewScheduledAt,
-      });
       const moveData = {
         stageId: targetStageId,
         position,
-        interviewScheduledAt: resolvedAt,
         hiredStageEnteredAt: nextHiredStageEnteredAt({
           fromKey: newStage.key,
           toKey: targetStage?.key ?? null,
@@ -193,9 +183,6 @@ export async function createRecruitmentApplication({
           now: new Date(),
         }),
       };
-      if (resolvedAt != null && interviewTimeSpecified !== undefined) {
-        moveData.interviewTimeSpecified = interviewTimeSpecified;
-      }
       const moved = await tx.recruitmentApplication.update({
         where: { id: app.id },
         data: moveData,
@@ -209,12 +196,44 @@ export async function createRecruitmentApplication({
         changedByUserId,
         scheduleNovedad: false,
       });
-      return serializeApplication(moved);
+      current = moved;
     }
-
-    return serializeApplication(app);
+    if (interviewScheduledAt != null && changedByUserId) {
+      await applyRecruitmentInterviewFormChange(tx, {
+        organizationId,
+        applicationId: current.id,
+        createdByUserId: changedByUserId,
+        scheduledAt: interviewScheduledAt,
+        timeSpecified: interviewTimeSpecified !== false,
+      });
+      current = await tx.recruitmentApplication.findFirst({
+        where: { id: current.id, organizationId },
+        include: { candidate: true, stage: true },
+      });
+    } else if (interviewScheduledAt != null) {
+      await recordUnattributedInterviewSnapshot(tx, {
+        organizationId,
+        applicationId: current.id,
+        scheduledAt: interviewScheduledAt,
+        timeSpecified: interviewTimeSpecified !== false,
+      });
+      current = await tx.recruitmentApplication.findFirst({
+        where: { id: current.id, organizationId },
+        include: { candidate: true, stage: true },
+      });
+    }
+    return serializeApplication(current);
   };
-  const serialized = db ? await run(db) : await prisma.$transaction(run);
+  let serialized;
+  try {
+    serialized = db ? await run(db) : await prisma.$transaction(run);
+  } catch (err) {
+    if (!isScheduledInterviewSlotConflict(err)) throw err;
+    const error = new Error('CONFLICT');
+    error.code = 'CONFLICT';
+    error.message = INTERVIEW_SLOT_TAKEN_MESSAGE;
+    throw error;
+  }
   if (!db && serialized.stage?.key === HIRED_STAGE_KEY) {
     try {
       await reconcileVacancyCoverage(organizationId, vacancyId);
@@ -261,7 +280,9 @@ export async function updateRecruitmentApplication({
   }
   const existing = existingRow;
 
-  const serialized = await prisma.$transaction(async (tx) => {
+  let serialized;
+  try {
+    serialized = await prisma.$transaction(async (tx) => {
     const data = {};
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;
@@ -298,13 +319,6 @@ export async function updateRecruitmentApplication({
       }
     }
 
-    const resolvedInterview = resolveInterviewScheduledAtForApplicationUpdate({
-      stageChanged,
-      fromStageKey: existing.stage?.key ?? null,
-      toStageKey,
-      existingInterviewScheduledAt: existing.interviewScheduledAt,
-      explicitInterviewScheduledAt: interviewScheduledAt,
-    });
     Object.assign(
       data,
       closurePatchForStageMove({
@@ -316,19 +330,13 @@ export async function updateRecruitmentApplication({
       }),
     );
 
-    if (stageChanged || interviewScheduledAt !== undefined) {
-      data.interviewScheduledAt = resolvedInterview;
-      if (resolvedInterview == null) {
-        data.interviewTimeSpecified = true;
-      } else if (interviewTimeSpecified !== undefined) {
-        data.interviewTimeSpecified = interviewTimeSpecified;
-      }
-    }
-
     const where = stageChanged
       ? { id: applicationId, organizationId, stageId: existing.stageId }
       : { id: applicationId, organizationId };
-    const written = await tx.recruitmentApplication.updateMany({ where, data });
+    let written = { count: 1 };
+    if (Object.keys(data).length) {
+      written = await tx.recruitmentApplication.updateMany({ where, data });
+    }
     if (!shouldRecordStageEvent({ stageChanged, updatedCount: written.count })) {
       if (stageChanged || written.count !== 1) {
         const err = new Error('CONFLICT');
@@ -337,7 +345,7 @@ export async function updateRecruitmentApplication({
         throw err;
       }
     }
-    const updated = await tx.recruitmentApplication.findFirst({
+    let updated = await tx.recruitmentApplication.findFirst({
       where: { id: applicationId, organizationId },
       include: { candidate: true, stage: true },
     });
@@ -358,10 +366,49 @@ export async function updateRecruitmentApplication({
         candidateId: existing.candidateId,
         now: new Date(),
       });
+      if (toStageKey === 'HIRED' || toStageKey === 'REJECTED') {
+        const { cancelScheduledInterviewsForClosedApplication } = await import(
+          './recruitmentApplicationInterviewEvent.service.js'
+        );
+        await cancelScheduledInterviewsForClosedApplication(tx, {
+          organizationId,
+          applicationId,
+          createdByUserId: changedByUserId,
+          legacyScheduledAt: existing.interviewScheduledAt,
+          legacyTimeSpecified: existing.interviewTimeSpecified,
+          stageId: existing.stageId,
+        });
+        updated = await tx.recruitmentApplication.findFirst({
+          where: { id: applicationId, organizationId },
+          include: { candidate: true, stage: true },
+        });
+      }
+    }
+    const closedByMove = stageChanged && written.count === 1
+      && (toStageKey === 'HIRED' || toStageKey === 'REJECTED');
+    if (interviewScheduledAt !== undefined && !closedByMove) {
+      await applyRecruitmentInterviewFormChange(tx, {
+        organizationId,
+        applicationId,
+        createdByUserId: changedByUserId,
+        scheduledAt: interviewScheduledAt,
+        timeSpecified: interviewTimeSpecified !== false,
+      });
+      updated = await tx.recruitmentApplication.findFirst({
+        where: { id: applicationId, organizationId },
+        include: { candidate: true, stage: true },
+      });
     }
 
     return serializeApplication(updated);
-  });
+    });
+  } catch (err) {
+    if (!isScheduledInterviewSlotConflict(err)) throw err;
+    const error = new Error('CONFLICT');
+    error.code = 'CONFLICT';
+    error.message = INTERVIEW_SLOT_TAKEN_MESSAGE;
+    throw error;
+  }
   const touchedHired =
     existing.stage?.key === HIRED_STAGE_KEY || serialized.stage?.key === HIRED_STAGE_KEY;
   if (stageId != null && stageId !== existing.stageId && touchedHired) {
