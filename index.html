@@ -21,6 +21,17 @@
   --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:24px; --r-2xl:32px;
   --tr:all 0.3s cubic-bezier(0.4,0,0.2,1);
   --tr-fast:all 0.15s cubic-bezier(0.4,0,0.2,1);
+  --nov-hired-bg:rgba(8,145,178,.13);
+  --nov-hired-bg-read:rgba(8,145,178,.05);
+  --nov-hired-accent:#0891b2;
+  --nov-hired-accent-read:#7dd3fc;
+  --nov-hired-border:rgba(8,145,178,.34);
+  --nov-hired-border-read:rgba(8,145,178,.16);
+  --nov-hired-icon:#0e7490;
+  --nov-hired-icon-read:#0f766e;
+  --nov-hired-icon-bg:rgba(34,211,238,.24);
+  --nov-hired-icon-bg-read:rgba(34,211,238,.12);
+  --nov-hired-pip:#0891b2;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -1901,6 +1912,18 @@ button.tc-dir-status:focus-visible{outline:2px solid var(--purple);outline-offse
 .tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.4);}
 .tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--unread{background:color-mix(in srgb, var(--purple) 7%, transparent);border-color:color-mix(in srgb, var(--purple) 16%, transparent);}
 .tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--read{background:transparent;border-color:transparent;}
+.tc-ws-novedades-item--hired{background:var(--nov-hired-bg-read);border-color:var(--nov-hired-border-read);box-shadow:inset 3px 0 0 var(--nov-hired-accent-read);}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread{background:var(--nov-hired-bg);border-color:var(--nov-hired-border);box-shadow:inset 3px 0 0 var(--nov-hired-accent);}
+.tc-ws-novedades-item--hired:hover{background:var(--nov-hired-bg);}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--read:hover{background:var(--nov-hired-bg-read);}
+.tc-ws-novedades-item--hired:focus-visible{outline:2px solid var(--nov-hired-accent);outline-offset:2px;}
+.tc-ws-novedades-item-trophy{position:relative;width:28px;height:28px;margin-top:1px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;background:var(--nov-hired-icon-bg-read);color:var(--nov-hired-icon-read);}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .tc-ws-novedades-item-trophy{background:var(--nov-hired-icon-bg);color:var(--nov-hired-icon);}
+.tc-ws-novedades-item-trophy svg{width:15px;height:15px;display:block;}
+.tc-ws-novedades-hired-pip{position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--nov-hired-pip);box-shadow:0 0 0 2px #fff;}
+.tc-ws-novedades-item--hired .tc-ws-novedades-item-msg{color:var(--primary);font-weight:600;}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
+.tc-ws-novedades-item--hired .tc-ws-novedades-item-time{color:var(--slate-500);}
 .tc-ws-novedades-item-mark{width:18px;height:18px;margin-top:1px;flex-shrink:0;color:var(--purple-dark);display:inline-flex;}
 .tc-ws-novedades-item-mark svg{width:18px;height:18px;display:block;}
 .tc-ws-novedades-item-body{flex:1;min-width:0;}
@@ -16321,6 +16344,9 @@ function tcWsSvgUserCheck(){
 function tcWsSvgTarget(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
 }
+function tcWsSvgTrophy(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+}
 function tcSvgPlusOutline(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
 }
@@ -16765,14 +16791,17 @@ function tcEmpNovedadesRenderList(){
   }
   body.innerHTML=tcEmpNovedadesItems.map(function(n){
     const reminder=n.eventType==='WORKFORCE_DAILY_GOALS_REMINDER';
-    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'');
+    const hired=n.eventType==='HIRED';
+    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'')+(hired?' tc-ws-novedades-item--hired':'');
     const meta=n.metadata||{};
     const title=reminder&&typeof meta.title==='string'?meta.title:'';
     const bodyText=reminder&&typeof meta.body==='string'?meta.body:'';
     const copy=title&&bodyText
       ? '<p class="tc-ws-novedades-item-title">'+tcEsc(title)+'</p><p class="tc-ws-novedades-item-msg tc-ws-novedades-item-msg--soft">'+tcEsc(bodyText)+'</p>'
       : '<p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>';
-    const mark=reminder
+    const mark=hired
+      ? '<span class="tc-ws-novedades-item-trophy" aria-hidden="true">'+tcWsSvgTrophy()+(n.read?'':'<span class="tc-ws-novedades-hired-pip"></span>')+'</span>'
+      : reminder
       ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
       : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
