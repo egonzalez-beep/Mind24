@@ -12,6 +12,7 @@ import {
   timeclockCheckInLimiter,
   timeclockExchangeLimiter,
   timeclockHeartbeatLimiter,
+  timeclockPersonaLimiter,
 } from '../middleware/rateLimit.middleware.js';
 import {
   hashTimeclockToken,
@@ -42,7 +43,19 @@ import {
   patchWorkforceTaskAsEmployee,
   WORKFORCE_TASK_STATUSES,
 } from '../services/workforceTask.service.js';
-import { streamWorkforceProfilePhoto } from '../services/workforceAvatar.service.js';
+import {
+  clearWorkforceEmployeeProfilePhoto,
+  createWorkforceAvatarUpload,
+  publicProfilePhotoDto,
+  saveWorkforceEmployeeProfilePhoto,
+  streamWorkforceProfilePhoto,
+} from '../services/workforceAvatar.service.js';
+import {
+  clearWorkforcePersonalStatus,
+  personalStatusBodySchema,
+  publicPersonalStatusDto,
+  saveWorkforcePersonalStatus,
+} from '../services/workforcePersonalStatus.service.js';
 import { notifyShiftCheckIn, notifyShiftCheckOut } from '../services/orgNotification.service.js';
 import {
   analyzeRecruitmentResumeUpload,
@@ -79,6 +92,7 @@ import {
 } from '../services/workforceRecruitmentPortal.service.js';
 
 const router = Router();
+const workforceAvatarUpload = createWorkforceAvatarUpload();
 
 const workforceCandidateResumeFileFilter = (_req, file, cb) => {
   cb(
@@ -110,9 +124,6 @@ function saveSession(req) {
 function sessionToPublicMe(emp, openSession) {
   const now = new Date();
   const webSignal = openSession ? resolveCurrentWebSignal(openSession, now) : 'no_signal';
-  const hasProfilePhoto = !!emp.profilePhotoPath;
-  const profilePhotoVersion =
-    hasProfilePhoto && emp.updatedAt ? new Date(emp.updatedAt).getTime() : null;
   return {
     employeeId: emp.id,
     organizationId: emp.organizationId,
@@ -126,8 +137,8 @@ function sessionToPublicMe(emp, openSession) {
     openSession: summarizeOpenSession(openSession, now),
     attendanceEnabled: employeeAttendanceEnabled(emp),
     expectedWorkMinutes: employeeAttendanceEnabled(emp) ? emp.expectedWorkMinutes : null,
-    hasProfilePhoto,
-    profilePhotoVersion,
+    ...publicProfilePhotoDto(emp),
+    ...publicPersonalStatusDto(emp),
     serverTime: now.toISOString(),
   };
 }
@@ -182,6 +193,103 @@ router.get('/photo', requireTimeclockSession, async (req, res, next) => {
     next(e);
   }
 });
+
+router.post(
+  '/photo',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockPersonaLimiter,
+  workforceAvatarUpload.single('photo'),
+  async (req, res, next) => {
+    try {
+      const emp = req.timeclockEmployee;
+      if (!req.file?.buffer?.length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'Selecciona una imagen JPG, PNG o WEBP.';
+        throw err;
+      }
+      const updated = await saveWorkforceEmployeeProfilePhoto({
+        organizationId: emp.organizationId,
+        employeeId: emp.id,
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalName: req.file.originalname,
+      });
+      res.json(publicProfilePhotoDto(updated));
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.delete(
+  '/photo',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockPersonaLimiter,
+  async (req, res, next) => {
+    try {
+      const emp = req.timeclockEmployee;
+      if (req.body && typeof req.body === 'object' && Object.keys(req.body).length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'La solicitud no admite campos.';
+        throw err;
+      }
+      const updated = await clearWorkforceEmployeeProfilePhoto(emp.organizationId, emp.id);
+      res.json(publicProfilePhotoDto(updated));
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.put(
+  '/status',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockPersonaLimiter,
+  async (req, res, next) => {
+    try {
+      const emp = req.timeclockEmployee;
+      const body = personalStatusBodySchema.parse(req.body);
+      const updated = await saveWorkforcePersonalStatus({
+        employeeId: emp.id,
+        organizationId: emp.organizationId,
+        message: body.message,
+      });
+      res.json(publicPersonalStatusDto(updated));
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.delete(
+  '/status',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockPersonaLimiter,
+  async (req, res, next) => {
+    try {
+      const emp = req.timeclockEmployee;
+      if (req.body && typeof req.body === 'object' && Object.keys(req.body).length) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'La solicitud no admite campos.';
+        throw err;
+      }
+      const updated = await clearWorkforcePersonalStatus({
+        employeeId: emp.id,
+        organizationId: emp.organizationId,
+      });
+      res.json(publicPersonalStatusDto(updated));
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.post(
   '/check-in',

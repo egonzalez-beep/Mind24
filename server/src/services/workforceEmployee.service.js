@@ -25,6 +25,7 @@ import {
   buildWorkScheduleDto,
   resolveWorkSchedulePersistence,
 } from '../utils/workforceWorkSchedule.util.js';
+import { workforceProfilePhotoVersion } from '../utils/workforcePhotoVersion.js';
 
 export { employeeAttendanceEnabled, assertEmployeeAttendanceEligible } from './workforceExpectedWork.service.js';
 
@@ -70,6 +71,9 @@ export function sanitizeEmployeeForAdmin(emp) {
     isActive: emp.isActive,
     tokenVersion: emp.tokenVersion,
     profilePhotoPath: emp.profilePhotoPath ?? null,
+    profilePhotoVersion: workforceProfilePhotoVersion(emp.profilePhotoPath),
+    personalStatusMessage: emp.personalStatusMessage ?? null,
+    personalStatusUpdatedAt: emp.personalStatusUpdatedAt ?? null,
     expectedWorkMinutes: emp.expectedWorkMinutes ?? null,
     attendanceEnabled: employeeAttendanceEnabled(emp),
     workSchedule: buildWorkScheduleDto(emp),

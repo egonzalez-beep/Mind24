@@ -76,6 +76,29 @@ export const recruitmentVacancyExtractLimiter = rateLimit({
   },
 });
 
+/**
+ * Solo las mutaciones de foto y estado del portal.
+ * No se monta en login, checador, candidatos ni notificaciones.
+ * La clave une al colaborador de la sesión con su IP: un colaborador no gasta el cupo de otro.
+ * MemoryStore rota sus mapas al cerrar la ventana, así que las claves vencidas se descartan.
+ */
+export function timeclockPersonaRateKey(req) {
+  const rawId = req.timeclockEmployee && req.timeclockEmployee.id != null ? String(req.timeclockEmployee.id) : '';
+  const employeeId = rawId && rawId.length <= 128 && !/[\r\n]/.test(rawId) ? rawId : 'anonymous';
+  const ip = String(req.ip || '').replace(/[\r\n]/g, '').slice(0, 80) || 'unknown';
+  return `persona:${employeeId}:${ip}`;
+}
+
+export const timeclockPersonaLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  statusCode: 429,
+  message: { error: 'RATE_LIMIT', message: 'Demasiadas solicitudes. Espera un momento.' },
+  keyGenerator: timeclockPersonaRateKey,
+});
+
 /** ~45 s entre heartbeats → hasta ~2/min; margen amplio para reintentos. */
 export const timeclockHeartbeatLimiter = rateLimit({
   windowMs: 60 * 1000,

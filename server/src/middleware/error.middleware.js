@@ -44,10 +44,33 @@ const STATUS = {
   WORK_LOG_ALREADY_SUBMITTED: 409,
 };
 
+/** Foto administrativa o foto propia del portal. No alcanza otras rutas que contengan "photo". */
+export function isWorkforceEmployeePhotoRequest(req) {
+  const raw = String(req?.originalUrl || req?.url || '');
+  const pathOnly = raw.split('?')[0].split('#')[0];
+  if (pathOnly === '/api/timeclock/public/photo') return true;
+  return /^\/api\/org\/timeclock\/employees\/[^/]+\/photo$/.test(pathOnly);
+}
+
 export function errorHandler(err, req, res, next) {
   if (res.headersSent) return next(err);
   if (err instanceof ZodError) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Datos inválidos', details: err.flatten() });
+  }
+  // Multer de la foto del colaborador comparte este manejador.
+  // La traducción queda en esas dos rutas; un 500 sigue ocultando el mensaje interno.
+  if (
+    err.code === 'LIMIT_UNEXPECTED_FILE' ||
+    err.code === 'LIMIT_FILE_COUNT' ||
+    err.code === 'LIMIT_FIELD_COUNT' ||
+    err.code === 'LIMIT_UNEXPECTED_FIELD'
+  ) {
+    if (isWorkforceEmployeePhotoRequest(req)) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Envía una sola imagen, sin campos adicionales.',
+      });
+    }
   }
   if (err.code === 'LIMIT_FILE_SIZE') {
     const isDoc = String(req.originalUrl || '').includes('/documents');

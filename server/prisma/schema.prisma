@@ -173,6 +173,10 @@ model WorkforceEmployee {
   accessTokenHash String   @unique
   tokenVersion    Int      @default(1)
   profilePhotoPath String?
+  /// Mensaje corto del colaborador. Nulo si no hay estado. Sin valor por defecto.
+  personalStatusMessage   String?   @db.VarChar(80)
+  /// Momento del último guardado del mensaje. Nulo cuando no hay estado.
+  personalStatusUpdatedAt DateTime? @db.Timestamptz(6)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

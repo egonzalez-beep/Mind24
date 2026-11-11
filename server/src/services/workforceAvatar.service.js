@@ -1,9 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import multer from 'multer';
 import { prisma } from '../db/client.js';
 import { resolveUploadsRootAbs, resolveWorkforceAvatarsDirAbs } from '../utils/uploadPaths.js';
 import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
+import { workforceProfilePhotoEtag, workforceProfilePhotoVersion } from '../utils/workforcePhotoVersion.js';
 
 export const WORKFORCE_AVATAR_MAX_BYTES = 3 * 1024 * 1024;
 export const WORKFORCE_AVATAR_SUBDIR = 'workforce-avatars';
@@ -27,6 +29,106 @@ export function workforceAvatarExtForMime(mimetype, originalName = '') {
 
 export function isAllowedWorkforceAvatarFile(mimetype, originalName = '') {
   return workforceAvatarExtForMime(mimetype, originalName) != null;
+}
+
+/** Una sola imagen, sin campos de texto. La validación de bytes sigue en el servicio. */
+export function createWorkforceAvatarUpload() {
+  return multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: WORKFORCE_AVATAR_MAX_BYTES, files: 1, fields: 0 },
+    fileFilter: (_req, file, cb) => {
+      const allowed = isAllowedWorkforceAvatarFile(file.mimetype, file.originalname);
+      cb(allowed ? null : new Error('INVALID_AVATAR_FILE'), allowed);
+    },
+  });
+}
+
+const workforcePhotoQueues = new Map();
+
+function enqueueWorkforcePhoto(employeeId, task) {
+  const previous = workforcePhotoQueues.get(employeeId) || Promise.resolve();
+  const run = previous.catch(() => {}).then(task);
+  const tracked = run.finally(() => {
+    if (workforcePhotoQueues.get(employeeId) === tracked) workforcePhotoQueues.delete(employeeId);
+  });
+  workforcePhotoQueues.set(employeeId, tracked);
+  return tracked;
+}
+
+export function workforcePhotoQueueSize() {
+  return workforcePhotoQueues.size;
+}
+
+/** Serializa operaciones de foto del mismo colaborador dentro de este proceso. */
+export function withWorkforcePhotoLock(employeeId, task) {
+  return enqueueWorkforcePhoto(employeeId, task);
+}
+
+let workforceAvatarPersistHook = null;
+
+/** Solo pruebas: se ejecuta después de escribir el archivo y antes de actualizar la base. */
+export function setWorkforceAvatarPersistHookForTests(fn) {
+  workforceAvatarPersistHook = typeof fn === 'function' ? fn : null;
+}
+
+export function publicProfilePhotoDto(emp) {
+  const hasProfilePhoto = !!emp?.profilePhotoPath;
+  return {
+    hasProfilePhoto,
+    profilePhotoVersion: hasProfilePhoto ? workforceProfilePhotoVersion(emp.profilePhotoPath) : null,
+    photoUrl: hasProfilePhoto ? '/api/timeclock/public/photo' : null,
+  };
+}
+
+function logAvatarCleanup(organizationId, relativePath) {
+  console.error('[workforce-avatar] cleanup-pending', {
+    organizationId,
+    relativePath,
+  });
+}
+
+/**
+ * Escribe el archivo nuevo y confirma la ruta solo si previousPath sigue vigente.
+ * Si la confirmación falla, borra únicamente el archivo nuevo.
+ * Si borrar el archivo anterior falla después de confirmar, lo registra y no revierte.
+ */
+export async function placeWorkforceAvatarFile({
+  organizationId,
+  previousPath,
+  buffer,
+  ext,
+  commit,
+  removePrevious,
+}) {
+  const orgDir = path.join(resolveWorkforceAvatarsDirAbs(), organizationId);
+  await fs.promises.mkdir(orgDir, { recursive: true });
+  const relativePath = `${WORKFORCE_AVATAR_SUBDIR}/${organizationId}/${crypto.randomUUID()}${ext}`;
+  const abs = resolveWorkforceProfilePhotoAbs(relativePath, organizationId);
+  await fs.promises.writeFile(abs, buffer);
+
+  let persisted = false;
+  try {
+    if (workforceAvatarPersistHook) await workforceAvatarPersistHook();
+    persisted = await commit(relativePath, previousPath);
+    if (!persisted) {
+      const err = new Error('CONFLICT');
+      err.code = 'CONFLICT';
+      err.message = 'La fotografía cambió mientras se guardaba. Intenta de nuevo.';
+      throw err;
+    }
+  } catch (e) {
+    if (!persisted) await fs.promises.unlink(abs).catch(() => {});
+    throw e;
+  }
+
+  if (previousPath && previousPath !== relativePath) {
+    try {
+      await removePrevious(previousPath);
+    } catch (e) {
+      if (e?.code !== 'ENOENT') logAvatarCleanup(organizationId, previousPath);
+    }
+  }
+  return relativePath;
 }
 
 /** Magic-byte sniff — source of truth for stored extension (V1, no image decoder). */
@@ -85,7 +187,7 @@ export async function removeWorkforceProfilePhotoFile(relativePath, organization
   }
 }
 
-export async function saveWorkforceEmployeeProfilePhoto({
+async function saveWorkforceEmployeeProfilePhotoNow({
   organizationId,
   employeeId,
   buffer,
@@ -93,7 +195,7 @@ export async function saveWorkforceEmployeeProfilePhoto({
   originalName,
 }) {
   const existing = await assertWorkforceEmployeeInOrg(employeeId, organizationId);
-  const previousPath = existing.profilePhotoPath;
+  const previousPath = existing.profilePhotoPath ?? null;
 
   if (!buffer || buffer.length > WORKFORCE_AVATAR_MAX_BYTES) {
     const err = new Error('VALIDATION_ERROR');
@@ -117,40 +219,51 @@ export async function saveWorkforceEmployeeProfilePhoto({
     throw err;
   }
 
-  const orgDir = path.join(resolveWorkforceAvatarsDirAbs(), organizationId);
-  await fs.promises.mkdir(orgDir, { recursive: true });
-  const fileName = `${crypto.randomUUID()}${ext}`;
-  const relativePath = `${WORKFORCE_AVATAR_SUBDIR}/${organizationId}/${fileName}`;
-  const abs = resolveWorkforceProfilePhotoAbs(relativePath, organizationId);
-  await fs.promises.writeFile(abs, buffer);
-
-  let updated;
-  try {
-    updated = await prisma.workforceEmployee.update({
-      where: { id: employeeId },
-      data: { profilePhotoPath: relativePath },
-    });
-  } catch (e) {
-    await fs.promises.unlink(abs).catch(() => {});
-    throw e;
-  }
-
-  if (previousPath && previousPath !== relativePath) {
-    await removeWorkforceProfilePhotoFile(previousPath, organizationId);
-  }
-
-  return updated;
+  const relativePath = await placeWorkforceAvatarFile({
+    organizationId,
+    previousPath,
+    buffer,
+    ext,
+    commit: async (nextPath, expectedPath) => {
+      const result = await prisma.workforceEmployee.updateMany({
+        where: { id: employeeId, organizationId, profilePhotoPath: expectedPath },
+        data: { profilePhotoPath: nextPath },
+      });
+      return result.count === 1;
+    },
+    removePrevious: (prev) => removeWorkforceProfilePhotoFile(prev, organizationId),
+  });
+  return prisma.workforceEmployee.findFirst({
+    where: { id: employeeId, organizationId, profilePhotoPath: relativePath },
+  });
 }
 
-export async function clearWorkforceEmployeeProfilePhoto(organizationId, employeeId) {
+export function saveWorkforceEmployeeProfilePhoto(args) {
+  return enqueueWorkforcePhoto(args.employeeId, () => saveWorkforceEmployeeProfilePhotoNow(args));
+}
+
+async function clearWorkforceEmployeeProfilePhotoNow(organizationId, employeeId) {
   const existing = await assertWorkforceEmployeeInOrg(employeeId, organizationId);
-  const prev = existing.profilePhotoPath;
-  const updated = await prisma.workforceEmployee.update({
-    where: { id: employeeId },
+  const prev = existing.profilePhotoPath ?? null;
+  if (!prev) return existing;
+  const result = await prisma.workforceEmployee.updateMany({
+    where: { id: employeeId, organizationId, profilePhotoPath: prev },
     data: { profilePhotoPath: null },
   });
-  if (prev) await removeWorkforceProfilePhotoFile(prev, organizationId);
-  return updated;
+  if (result.count === 1) {
+    try {
+      await removeWorkforceProfilePhotoFile(prev, organizationId);
+    } catch (e) {
+      if (e?.code !== 'ENOENT') logAvatarCleanup(organizationId, prev);
+    }
+  }
+  return prisma.workforceEmployee.findFirst({
+    where: { id: employeeId, organizationId },
+  });
+}
+
+export function clearWorkforceEmployeeProfilePhoto(organizationId, employeeId) {
+  return enqueueWorkforcePhoto(employeeId, () => clearWorkforceEmployeeProfilePhotoNow(organizationId, employeeId));
 }
 
 export function profilePhotoContentType(relativePath) {
@@ -168,8 +281,7 @@ export async function streamWorkforceProfilePhoto(req, res, emp, organizationId)
   }
   const abs = resolveWorkforceProfilePhotoAbs(emp.profilePhotoPath, organizationId);
   const stat = await fs.promises.stat(abs);
-  const updatedMs = emp.updatedAt instanceof Date ? emp.updatedAt.getTime() : Number(emp.updatedAt) || 0;
-  const etag = `"${emp.id}-${updatedMs}"`;
+  const etag = workforceProfilePhotoEtag(emp.profilePhotoPath);
   if (req.headers['if-none-match'] === etag) {
     res.status(304).end();
     return;

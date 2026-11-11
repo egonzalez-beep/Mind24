@@ -20,10 +20,9 @@ import {
 } from '../services/workforceEmployee.service.js';
 import {
   clearWorkforceEmployeeProfilePhoto,
-  isAllowedWorkforceAvatarFile,
+  createWorkforceAvatarUpload,
   saveWorkforceEmployeeProfilePhoto,
   streamWorkforceProfilePhoto,
-  WORKFORCE_AVATAR_MAX_BYTES,
 } from '../services/workforceAvatar.service.js';
 import { resolveWorkforceTaskDueAtFromInput } from '../utils/workforceDueDate.js';
 import {
@@ -59,18 +58,7 @@ import {
 
 const router = Router();
 
-const workforceAvatarUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: WORKFORCE_AVATAR_MAX_BYTES },
-  fileFilter: (_req, file, cb) => {
-    cb(
-      isAllowedWorkforceAvatarFile(file.mimetype, file.originalname)
-        ? null
-        : new Error('INVALID_AVATAR_FILE'),
-      isAllowedWorkforceAvatarFile(file.mimetype, file.originalname),
-    );
-  },
-});
+const workforceAvatarUpload = createWorkforceAvatarUpload();
 
 const workforceDocumentUpload = multer({
   storage: multer.memoryStorage(),

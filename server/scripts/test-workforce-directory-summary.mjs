@@ -76,9 +76,9 @@ async function jsonFetch(base, urlPath, { method = 'GET', body, cookie } = {}) {
 
 console.log('\n=== Directorio — estático ===\n');
 
-check(/<th class="tc-emp-th-num">Pendientes<\/th>/.test(indexHtml), 'header Pendientes');
-check(/<th class="tc-emp-th-num">En progreso<\/th>/.test(indexHtml), 'header En progreso');
-check(/<th class="tc-emp-th-num">Completadas<\/th>/.test(indexHtml), 'header Completadas');
+check(/aria-label="Pendientes"/.test(indexHtml), 'header Pendientes');
+check(/aria-label="En progreso"/.test(indexHtml), 'header En progreso');
+check(/aria-label="Completadas"/.test(indexHtml), 'header Completadas');
 check(!/<th>Zona horaria<\/th>/.test(indexHtml), 'sin columna Zona horaria en directorio');
 check(/tcDirTaskChipHtml/.test(indexHtml) && /tc-dir-task-chip/.test(indexHtml), 'microchips directorio');
 {

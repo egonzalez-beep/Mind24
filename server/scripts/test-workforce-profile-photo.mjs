@@ -76,13 +76,13 @@ check(/resolveAudiosDirAbs/.test(evalRoutes), 'audios sin cambios en evaluations
 check(/router\.get\('\/employees\/:id\/photo'/.test(orgRoutes), 'GET photo autenticado');
 check(/router\.post\('\/employees\/:id\/photo'/.test(orgRoutes), 'POST photo multipart');
 check(/router\.delete\('\/employees\/:id\/photo'/.test(orgRoutes), 'DELETE photo');
-check(/WORKFORCE_AVATAR_MAX_BYTES/.test(orgRoutes), 'límite 3MB en ruta');
+check(/createWorkforceAvatarUpload/.test(orgRoutes) && /WORKFORCE_AVATAR_MAX_BYTES/.test(fs.readFileSync(path.join(rootDir, 'src/services/workforceAvatar.service.js'), 'utf8')), 'límite 3MB centralizado');
 check(/tcEmpAvatarCellHtml/.test(indexHtml) && /tc-emp-avatar--initials/.test(indexHtml), 'avatar directorio + iniciales');
 check(/tc-emp-edit-backdrop/.test(indexHtml) && /Quitar foto/.test(indexHtml), 'modal editar foto');
-check(/tcEmpPhotoUrl/.test(indexHtml) && /\?v=/.test(indexHtml), 'cache bust updatedAt');
+check(/function tcEmpPhotoUrl\(emp\)\{[\s\S]{0,240}profilePhotoVersion/.test(indexHtml) && /function tcEmpPublicPhotoUrl\(me\)\{[\s\S]{0,240}profilePhotoVersion/.test(indexHtml) && !/function tcEmpPhotoUrl\(emp\)\{[\s\S]{0,240}updatedAt/.test(indexHtml), 'la versión de la foto no usa updatedAt');
 check(/router\.get\('\/photo'/.test(publicRoutes) && /requireTimeclockSession/.test(publicRoutes), 'GET photo público con sesión checador');
 check(/streamWorkforceProfilePhoto/.test(publicRoutes) && !/\/employees\/:id\/photo/.test(publicRoutes), 'photo público sin id en URL');
-check(/hasProfilePhoto/.test(publicRoutes) && /profilePhotoVersion/.test(publicRoutes), '/me metadata foto sin path');
+check(/publicProfilePhotoDto/.test(publicRoutes) && /function publicProfilePhotoDto/.test(fs.readFileSync(path.join(rootDir, 'src/services/workforceAvatar.service.js'), 'utf8')) && /hasProfilePhoto/.test(fs.readFileSync(path.join(rootDir, 'src/services/workforceAvatar.service.js'), 'utf8')), '/me metadata foto sin path');
 const meReturnBody =
   publicRoutes.match(/function sessionToPublicMe[\s\S]*?return \{([\s\S]*?)\};\n\}/)?.[1] || '';
 check(!/profilePhotoPath/.test(meReturnBody), '/me no expone profilePhotoPath');
