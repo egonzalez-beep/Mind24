@@ -512,8 +512,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-sub{color:var(--slate-600);}
 .rec-cand-history-outcome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .rec-cand-history-outcome--hired{color:#047857;}
-.rec-cand-history-outcome--rej{color:var(--slate-600);}
+.rec-cand-history-outcome--rej{color:#b91c1c;}
 .rec-cand-history-outcome--dec{color:#9A3412;}
+.rec-cand-history-result{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:0 1 auto;max-width:46%;min-width:0;}
+.rec-cand-history-terminal-date{margin:0;font-size:11px;font-weight:600;line-height:1.2;color:var(--slate-500);font-variant-numeric:tabular-nums;}
+.rec-cand-history-top .rec-cand-aside-row-title{flex:1;min-width:0;overflow-wrap:anywhere;}
 .rec-cand-history-item{display:flex;flex-direction:column;gap:3px;padding:8px 0;min-width:0;border-bottom:1px solid var(--slate-100);}
 .rec-cand-history-item:last-child{border-bottom:none;padding-bottom:0;}
 .rec-cand-history-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0;}
@@ -12973,6 +12976,28 @@ function recCandProfileSecondaryLabel(c){
   if(typeof REC_CAND_PROFILE_OPTS!=='undefined'&&REC_CAND_PROFILE_OPTS.indexOf(v)>=0) return v;
   return v;
 }
+function recCandFmtTerminalDate(iso,timeZone){
+  if(!iso) return '';
+  const tz=timeZone||'America/Mexico_City';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime())) return '';
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:tz,day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(dt);
+  function pick(type){
+    const part=parts.find(function(item){ return item.type===type; });
+    return part?part.value:'';
+  }
+  const day=pick('day');
+  const month=pick('month');
+  const year=pick('year');
+  if(!/^\d{2}$/.test(day)||!/^\d{2}$/.test(month)||!/^\d{4}$/.test(year)) return '';
+  return day+'/'+month+'/'+year;
+}
+function recCandTerminalDateKey(iso,timeZone){
+  const label=recCandFmtTerminalDate(iso,timeZone);
+  if(!label) return '';
+  const bits=label.split('/');
+  return bits[2]+'-'+bits[1]+'-'+bits[0];
+}
 function recCandFmtDetailDate(iso){
   if(!iso) return '—';
   try{
@@ -13984,13 +14009,21 @@ function recCandHistoryAsideHtml(closedApps){
       const sk=recCandAppStageKey(a);
       const outcome=a.closureOutcome==='DECLINED'?'Declinó':(sk==='HIRED'?'Contratado':'Rechazado');
       const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(sk==='HIRED'?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
-      const period=[a.appliedAt?('Inicio '+recCandFmtDetailDate(a.appliedAt)):'', a.closedAt?('Cierre '+recCandFmtDetailDate(a.closedAt)):''].filter(Boolean).join(' · ');
+      const terminalKind=a.closureOutcome==='DECLINED'?'':(sk==='HIRED'?'hired':(a.closureOutcome==='REJECTED'||sk==='REJECTED'?'rejected':''));
+      const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
+      const terminalLabel=terminalKind?recCandFmtTerminalDate(a.terminalOutcomeAt,tz):'';
+      const terminalKey=terminalLabel?recCandTerminalDateKey(a.terminalOutcomeAt,tz):'';
+      const dateId=terminalLabel?('rec-hist-date-'+String(a.applicationId||'').replace(/[^a-zA-Z0-9_-]/g,'')):'';
+      const period=[a.appliedAt?('Inicio '+recCandFmtDetailDate(a.appliedAt)):'', terminalKind?'':(a.closedAt?('Cierre '+recCandFmtDetailDate(a.closedAt)):'' )].filter(Boolean).join(' · ');
       const stageName=(a.stage&&a.stage.name)||'';
       const reasonLabel=a.closureReason?recCandDeclineReasonLabel(a.closureReason):'';
       const note=a.closureReason==='OTHER'&&a.closureNote?String(a.closureNote):'';
       return '<div class="rec-cand-history-item">'+
         '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
-        '<span class="rec-cand-history-outcome '+ocCls+'">'+tcEsc(outcome)+'</span></div>'+
+        '<div class="rec-cand-history-result">'+
+        '<span class="rec-cand-history-outcome '+ocCls+'"'+(dateId?' aria-describedby="'+dateId+'"':'')+'>'+tcEsc(outcome)+'</span>'+
+        (terminalLabel?'<time class="rec-cand-history-terminal-date" id="'+dateId+'" datetime="'+tcEsc(terminalKey)+'">'+tcEsc(terminalLabel)+'</time>':'')+
+        '</div></div>'+
         (period?'<p class="rec-cand-history-period">'+tcEsc(period)+'</p>':'')+
         (stageName?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
         (reasonLabel?'<p class="rec-cand-history-reason">'+tcEsc(reasonLabel)+'</p>':'')+

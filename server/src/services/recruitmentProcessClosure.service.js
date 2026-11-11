@@ -46,6 +46,53 @@ export function classifyRecruitmentApplication(stageKey, closureOutcome) {
   return 'active';
 }
 
+function terminalEventInstant(value) {
+  if (!value) return null;
+  const instant = value instanceof Date ? value : new Date(value);
+  return Number.isFinite(instant.getTime()) ? instant : null;
+}
+
+/**
+ * Fecha de lectura del resultado Contratado o Rechazado.
+ * closedAt gana. Si no existe, el último ingreso al estado terminal que el
+ * historial no abandona después. Una contratación sin eventos usa la entrada
+ * registrada en hiredStageEnteredAt. No consulta updatedAt, appliedAt ni el archivo.
+ */
+export function recruitmentTerminalOutcomeAt(row) {
+  const stageKey = row?.stageKey ?? row?.stage?.key ?? null;
+  const closureOutcome = row?.closureOutcome ?? null;
+  const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
+  if (kind !== 'hired' && kind !== 'rejected') return null;
+
+  const closedAt = terminalEventInstant(row?.closedAt);
+  if (closedAt) return closedAt;
+
+  const target = kind === 'hired' ? 'HIRED' : 'REJECTED';
+  const events = (Array.isArray(row?.stageEvents) ? row.stageEvents : [])
+    .map((event, index) => ({
+      at: terminalEventInstant(event?.createdAt),
+      toKey: String(event?.toStageKey || event?.toStage?.key || ''),
+      order: event?.id != null ? String(event.id) : String(index),
+    }))
+    .filter((event) => event.at)
+    .sort((a, b) => a.at.getTime() - b.at.getTime() || (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
+
+  let definitive = null;
+  for (const event of events) {
+    if (event.toKey === target) definitive = event.at;
+    else definitive = null;
+  }
+  if (definitive) return definitive;
+
+  if (kind === 'hired' && stageKey === 'HIRED') {
+    const entered = terminalEventInstant(row?.hiredStageEnteredAt);
+    if (!entered) return null;
+    const leftAfterwards = events.some((event) => event.at.getTime() > entered.getTime() && event.toKey !== 'HIRED');
+    return leftAfterwards ? null : entered;
+  }
+  return null;
+}
+
 export function isRecruitmentApplicationOpen(stageKey, closureOutcome) {
   return classifyRecruitmentApplication(stageKey, closureOutcome) === 'active';
 }

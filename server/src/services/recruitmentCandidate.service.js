@@ -3,6 +3,7 @@ import {
   assertCandidateCanBeArchived,
   classifyRecruitmentApplication,
   lockRecruitmentCandidateForProcessChange,
+  recruitmentTerminalOutcomeAt,
 } from './recruitmentProcessClosure.service.js';
 import {
   normalizeRecruitmentCandidateCurp,
@@ -137,6 +138,10 @@ function serializeCandidateApplicationProcess(row) {
       name: row.stage.name,
     },
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
+    terminalOutcomeAt: (() => {
+      const at = recruitmentTerminalOutcomeAt(row);
+      return at ? at.toISOString() : null;
+    })(),
     closureOutcome: row.closureOutcome || null,
     closureReason: row.closureReason || null,
     closureNote: row.closureNote || null,
@@ -937,6 +942,10 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
       include: {
         vacancy: { select: { id: true, title: true, clientName: true, status: true } },
         stage: { select: { id: true, key: true, name: true } },
+        stageEvents: {
+          select: { id: true, createdAt: true, toStage: { select: { key: true } } },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
       },
       orderBy: [{ updatedAt: 'desc' }, { appliedAt: 'desc' }],
     }),

@@ -55,6 +55,23 @@ function candidate() {
         stage: { id: 'stage-2', key: 'REJECTED', name: 'Descartado' },
       },
       {
+        applicationId: 'app-hired',
+        appliedAt: '2026-09-01T15:00:00.000Z',
+        terminalOutcomeAt: '2026-11-08T18:00:00.000Z',
+        closureOutcome: null,
+        vacancy: { id: 'vac-4', title: 'Coordinación de almacén', clientName: 'Planta Norte' },
+        stage: { id: 'stage-4', key: 'HIRED', name: 'Contratado' },
+      },
+      {
+        applicationId: 'app-rejected-dated',
+        appliedAt: '2026-08-01T15:00:00.000Z',
+        terminalOutcomeAt: '2026-11-09T06:30:00.000Z',
+        closureOutcome: 'REJECTED',
+        closureReason: null,
+        vacancy: { id: 'vac-5', title: 'Auxiliar de patio', clientName: 'Logística' },
+        stage: { id: 'stage-5', key: 'REJECTED', name: 'Descartado' },
+      },
+      {
         applicationId: 'app-declined',
         appliedAt: '2026-10-03T15:00:00.000Z',
         closedAt: '2026-11-09T15:00:00.000Z',
@@ -217,6 +234,7 @@ if (!executablePath) {
         rejectedPeriod: line(rejected, '.rec-cand-history-period'),
         rejectedStage: line(rejected, '.rec-cand-history-stage'),
         rejectedReason: rejected ? rejected.querySelectorAll('.rec-cand-history-reason').length : -1,
+        rejectedDate: rejected ? rejected.querySelectorAll('time').length : -1,
       };
     });
     check(
@@ -236,7 +254,77 @@ if (!executablePath) {
         && history.rejectedReason === 0,
       'un histórico sin closedAt no inventa cierre ni motivo',
     );
-    check(history.scripts === 0 && history.overflow <= 1, 'el motivo largo no se ejecuta ni desborda');
+    check(history.scripts === 0 && history.overflow <= 1 && history.rejectedDate === 0, 'el motivo largo no se ejecuta ni desborda y un rechazo sin fecha no inventa una');
+
+    const dates = await page.evaluate((applications) => {
+      const st = recEnsureState();
+      st.recruitmentOrgTimeZone = 'America/Mexico_City';
+      const closed = recCandPartitionApplications(applications).closed;
+      const host = document.createElement('div');
+      host.id = 'rec-hist-dates';
+      host.style.width = '320px';
+      host.innerHTML = recCandHistoryAsideHtml(closed);
+      document.body.appendChild(host);
+      const item = (title) => [...host.querySelectorAll('.rec-cand-history-item')].find((node) => node.textContent.includes(title));
+      const hired = item('Coordinación');
+      const rejected = item('Auxiliar');
+      const hiredOutcome = hired.querySelector('.rec-cand-history-outcome');
+      const rejectedOutcome = rejected.querySelector('.rec-cand-history-outcome');
+      const hiredTime = hired.querySelector('time');
+      const rejectedTime = rejected.querySelector('time');
+      return {
+        hiredText: hiredOutcome.textContent,
+        rejectedText: rejectedOutcome.textContent,
+        hiredDate: hiredTime.textContent,
+        rejectedDate: rejectedTime.textContent,
+        hiredColor: getComputedStyle(hiredOutcome).color,
+        rejectedColor: getComputedStyle(rejectedOutcome).color,
+        dateColor: getComputedStyle(hiredTime).color,
+        described: hiredOutcome.getAttribute('aria-describedby') === hiredTime.id,
+        hiredBelow: hiredTime.getBoundingClientRect().top >= hiredOutcome.getBoundingClientRect().bottom - 1,
+        hiredDatetime: hiredTime.getAttribute('datetime'),
+        rejectedDatetime: rejectedTime.getAttribute('datetime'),
+        midnightBefore: recCandFmtTerminalDate('2026-11-09T05:30:00.000Z', 'America/Mexico_City'),
+        midnightAfter: recCandFmtTerminalDate('2026-11-09T06:30:00.000Z', 'America/Mexico_City'),
+        repeated: (hired.textContent.match(/08\/11\/2026/g) || []).length,
+        resultText: hired.querySelector('.rec-cand-history-result').textContent.replace(/\s+/g, ''),
+        noCierre: !/Cierre|Contratado el|Rechazado el|Fecha de contratación|\bFecha\b/.test(hired.textContent + rejected.textContent),
+        startKept: /Inicio /.test(hired.querySelector('.rec-cand-history-period').textContent),
+        companyKept: hired.textContent.includes('Coordinación de almacén'),
+        activeTimes: (recCandHistoryAsideHtml(recCandPartitionApplications([{
+          applicationId: 'open-1',
+          vacancy: { title: 'Proceso abierto' },
+          stage: { key: 'INTERVIEW', name: 'Entrevista' },
+          terminalOutcomeAt: '2026-11-08T18:00:00.000Z',
+          appliedAt: '2026-01-01T12:00:00.000Z',
+          closureOutcome: null,
+        }]).closed).match(/<time/g) || []).length,
+      };
+    }, candidate().applications);
+    check(dates.hiredText === 'Contratado' && dates.hiredDate === '08/11/2026' && dates.hiredColor === 'rgb(4, 120, 87)', 'Contratado permanece en verde con la fecha debajo');
+    check(dates.rejectedText === 'Rechazado' && dates.rejectedDate === '09/11/2026' && dates.rejectedColor === 'rgb(185, 28, 28)', 'Rechazado queda en rojo con la fecha debajo');
+    check(dates.midnightBefore === '08/11/2026' && dates.midnightAfter === '09/11/2026', 'la medianoche usa la zona de la organización');
+    check(dates.hiredDatetime === '2026-11-08' && dates.rejectedDatetime === '2026-11-09', 'el datetime coincide con el día mostrado');
+    check(dates.hiredBelow && dates.described && dates.dateColor !== dates.hiredColor && dates.repeated === 1 && dates.resultText === 'Contratado08/11/2026' && dates.noCierre && dates.startKept && dates.companyKept && dates.activeTimes === 0, 'la fecha es secundaria, única y no aparece en un proceso activo');
+
+    const widths = {};
+    for (const width of [1280, 900, 390]) {
+      await page.setViewport({ width, height: 800 });
+      widths[width] = await page.evaluate((viewport) => {
+        const host = document.getElementById('rec-hist-dates');
+        host.style.width = `${Math.max(280, viewport - 32)}px`;
+        const card = host.getBoundingClientRect();
+        const item = host.querySelector('.rec-cand-history-item');
+        return {
+          overflow: host.scrollWidth - host.clientWidth,
+          page: document.documentElement.scrollWidth - viewport,
+          itemH: Math.round(item.getBoundingClientRect().height),
+          cardW: Math.round(card.width),
+        };
+      }, width);
+    }
+    check(widths[1280].overflow <= 1 && widths[900].overflow <= 1 && widths[390].overflow <= 1, '1280, 900 y 390 no desbordan el historial');
+    check(widths[390].page <= 1 && widths[390].itemH < 220, 'el expediente móvil no desborda y la fecha no infla la tarjeta');
 
     await page.setViewport({ width: 390, height: 800 });
     const workspace = await page.evaluate((viewport) => {

@@ -29,6 +29,7 @@ const {
   isRecruitmentApplicationVisibleInKanban,
   recruitmentApplicationIsOpen,
   runCandidateAutoArchiveSweepTick,
+  recruitmentTerminalOutcomeAt,
   syncCandidateAutoArchive,
 } = await import('../src/services/recruitmentProcessClosure.service.js');
 const {
@@ -83,6 +84,223 @@ function matchWhere(row, where) {
     }
     return value === expected;
   });
+}
+
+console.log('\n=== Fecha terminal del historial ===\n');
+
+{
+  const hiredClose = new Date('2026-11-08T18:00:00.000Z');
+  const fromClose = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    closedAt: hiredClose,
+    updatedAt: new Date('2026-12-01T00:00:00.000Z'),
+    stageEvents: [{ id: 'later', createdAt: new Date('2026-11-20T00:00:00.000Z'), toStageKey: 'HIRED' }],
+  });
+  check(fromClose && fromClose.toISOString() === hiredClose.toISOString(), 'Contratado con closedAt usa ese cierre');
+
+  const rejectedClose = new Date('2026-11-09T18:00:00.000Z');
+  const fromRejected = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: 'REJECTED',
+    closedAt: rejectedClose,
+    stageEvents: [{ id: 'old', createdAt: new Date('2026-10-01T00:00:00.000Z'), toStageKey: 'REJECTED' }],
+  });
+  check(fromRejected && fromRejected.toISOString() === rejectedClose.toISOString(), 'Rechazado con closedAt usa ese cierre');
+
+  const firstHire = new Date('2026-03-01T15:00:00.000Z');
+  const definitiveHire = new Date('2026-08-11T15:00:00.000Z');
+  const hiredEvent = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    hiredStageEnteredAt: new Date('2026-01-01T00:00:00.000Z'),
+    stageEvents: [
+      { id: 'a', createdAt: firstHire, toStageKey: 'HIRED' },
+      { id: 'b', createdAt: new Date('2026-04-01T00:00:00.000Z'), toStageKey: 'INTERVIEW' },
+      { id: 'c', createdAt: definitiveHire, toStageKey: 'HIRED' },
+    ],
+  });
+  check(hiredEvent && hiredEvent.toISOString() === definitiveHire.toISOString(), 'varios ingresos a HIRED usan el cierre que permanece');
+
+  const definitiveReject = new Date('2026-09-11T15:00:00.000Z');
+  const rejectedEvent = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: null,
+    updatedAt: new Date('2026-12-02T00:00:00.000Z'),
+    appliedAt: new Date('2026-01-02T00:00:00.000Z'),
+    stageEvents: [
+      { id: 'r1', createdAt: new Date('2026-02-01T00:00:00.000Z'), toStageKey: 'REJECTED' },
+      { id: 'r2', createdAt: new Date('2026-05-01T00:00:00.000Z'), toStageKey: 'CONTACT' },
+      { id: 'r3', createdAt: definitiveReject, toStageKey: 'REJECTED' },
+    ],
+  });
+  check(rejectedEvent && rejectedEvent.toISOString() === definitiveReject.toISOString(), 'el rechazo histórico sin closedAt usa el evento REJECTED definitivo');
+
+  const entered = new Date('2026-07-04T16:00:00.000Z');
+  const hiredEntry = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    hiredStageEnteredAt: entered,
+    stageEvents: [],
+    updatedAt: new Date('2026-12-03T00:00:00.000Z'),
+  });
+  check(hiredEntry && hiredEntry.toISOString() === entered.toISOString(), 'una contratación sin eventos usa la entrada registrada a HIRED');
+
+  const missing = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    updatedAt: new Date('2026-11-08T18:00:00.000Z'),
+    appliedAt: new Date('2026-01-08T18:00:00.000Z'),
+    archivedAt: new Date('2026-11-10T18:00:00.000Z'),
+  });
+  const missingRejected = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: null,
+    updatedAt: new Date('2026-11-09T18:00:00.000Z'),
+    appliedAt: new Date('2026-01-09T18:00:00.000Z'),
+  });
+  check(missing == null && missingRejected == null, 'sin fecha terminal no usa updatedAt, appliedAt ni el archivo');
+
+  const left = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    hiredStageEnteredAt: new Date('2026-01-01T00:00:00.000Z'),
+    stageEvents: [
+      { id: 'h', createdAt: new Date('2026-02-01T00:00:00.000Z'), toStageKey: 'HIRED' },
+      { id: 'out', createdAt: new Date('2026-03-01T00:00:00.000Z'), toStageKey: 'CONTACT' },
+    ],
+  });
+  check(left == null, 'un ingreso a HIRED que el historial abandona no se presenta como cierre');
+
+  const declined = recruitmentTerminalOutcomeAt({
+    stageKey: 'FINALIST',
+    closureOutcome: 'DECLINED',
+    closedAt: new Date('2026-11-09T15:00:00.000Z'),
+  });
+  check(declined == null, 'Declinó no recibe la fecha compacta de contratación o rechazo');
+
+  const older = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: 'REJECTED',
+    closedAt: new Date('2026-05-02T12:00:00.000Z'),
+    archivedAt: new Date('2026-05-03T12:00:00.000Z'),
+  });
+  const newer = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    hiredStageEnteredAt: new Date('2026-11-08T12:00:00.000Z'),
+  });
+  check(older.toISOString() !== newer.toISOString(), 'cada postulación conserva su propia fecha');
+
+  const oldHire = new Date('2026-02-02T15:00:00.000Z');
+  const finalReject = new Date('2026-11-09T15:00:00.000Z');
+  const hiredThenRejected = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: null,
+    hiredStageEnteredAt: oldHire,
+    stageEvents: [
+      { id: 'old-hire', createdAt: oldHire, toStageKey: 'HIRED' },
+      { id: 'final-reject', createdAt: finalReject, toStageKey: 'REJECTED' },
+    ],
+  });
+  check(
+    hiredThenRejected && hiredThenRejected.toISOString() === finalReject.toISOString(),
+    'un HIRED antiguo no fecha el rechazo definitivo',
+  );
+
+  const oldReject = new Date('2026-03-03T15:00:00.000Z');
+  const finalHire = new Date('2026-11-08T15:00:00.000Z');
+  const rejectedThenHired = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    stageEvents: [
+      { id: 'old-reject', createdAt: oldReject, toStageKey: 'REJECTED' },
+      { id: 'final-hire', createdAt: finalHire, toStageKey: 'HIRED' },
+    ],
+  });
+  check(
+    rejectedThenHired && rejectedThenHired.toISOString() === finalHire.toISOString(),
+    'un REJECTED antiguo no fecha la contratación definitiva',
+  );
+
+  const tied = new Date('2026-11-09T12:00:00.000Z');
+  const rejectedWinsById = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: null,
+    stageEvents: [
+      { id: 'b', createdAt: tied, toStage: { key: 'REJECTED' } },
+      { id: 'a', createdAt: tied, toStage: { key: 'HIRED' } },
+    ],
+  });
+  const hiredWinsById = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    stageEvents: [
+      { id: 'b', createdAt: tied, toStageKey: 'HIRED' },
+      { id: 'a', createdAt: tied, toStageKey: 'REJECTED' },
+    ],
+  });
+  const laterIdAbandonsHire = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    hiredStageEnteredAt: new Date('2026-01-01T00:00:00.000Z'),
+    stageEvents: [
+      { id: 'b', createdAt: tied, toStageKey: 'REJECTED' },
+      { id: 'a', createdAt: tied, toStageKey: 'HIRED' },
+    ],
+  });
+  check(
+    rejectedWinsById && rejectedWinsById.toISOString() === tied.toISOString()
+      && hiredWinsById && hiredWinsById.toISOString() === tied.toISOString()
+      && laterIdAbandonsHire == null,
+    'dos eventos con el mismo instante se ordenan por id',
+  );
+
+  const fallbackReject = new Date('2026-09-09T15:00:00.000Z');
+  const invalidClosedAt = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: 'REJECTED',
+    closedAt: 'no-es-fecha',
+    updatedAt: new Date('2026-12-09T00:00:00.000Z'),
+    stageEvents: [{ id: 'valid-reject', createdAt: fallbackReject, toStageKey: 'REJECTED' }],
+  });
+  const invalidDateObject = recruitmentTerminalOutcomeAt({
+    stageKey: 'HIRED',
+    closureOutcome: null,
+    closedAt: new Date(NaN),
+    hiredStageEnteredAt: finalHire,
+    stageEvents: [],
+  });
+  check(
+    invalidClosedAt && invalidClosedAt.toISOString() === fallbackReject.toISOString()
+      && invalidDateObject && invalidDateObject.toISOString() === finalHire.toISOString(),
+    'un closedAt inválido se ignora y sigue el fallback confiable',
+  );
+
+  const parkedHire = recruitmentTerminalOutcomeAt({
+    stageKey: 'REJECTED',
+    closureOutcome: null,
+    hiredStageEnteredAt: oldHire,
+    stageEvents: [],
+  });
+  const active = recruitmentTerminalOutcomeAt({
+    stageKey: 'INTERVIEW',
+    closureOutcome: null,
+    hiredStageEnteredAt: oldHire,
+    closedAt: finalHire,
+  });
+  check(parkedHire == null && active == null, 'hiredStageEnteredAt no fecha un rechazo ni un proceso activo');
+
+  const detailFn = candidateSvc.slice(candidateSvc.indexOf('export async function getRecruitmentCandidate'), candidateSvc.indexOf('export async function updateRecruitmentCandidate'));
+  const eventSelect = detailFn.slice(detailFn.indexOf('stageEvents:'), detailFn.indexOf('orderBy:', detailFn.indexOf('stageEvents:')));
+  const serializeFn = candidateSvc.slice(candidateSvc.indexOf('function serializeCandidateApplicationProcess'), candidateSvc.indexOf('export async function assertRecruitmentCandidateInOrg'));
+  check(/stageEvents:/.test(detailFn) && /terminalOutcomeAt/.test(serializeFn) && !/recruitmentApplication\.update/.test(detailFn), 'el expediente lee la fecha y no reescribe el histórico');
+  check(
+    /id:\s*true/.test(eventSelect) && /createdAt:\s*true/.test(eventSelect) && /key:\s*true/.test(eventSelect)
+      && !/changedBy|fromStage|novedad|notes|candidate|vacancy|application/.test(eventSelect),
+    'los eventos del expediente solo traen id, instante y clave de etapa',
+  );
+  check(!/stageEvents/.test(serializeFn) && (detailFn.match(/stageEvents:/g) || []).length === 1, 'el JSON no expone stageEvents y no hay una consulta por postulación');
 }
 
 function createMemoryDb({ locking = false } = {}) {
@@ -908,7 +1126,8 @@ check(!/lockRecruitmentCandidateForProcessChange/.test(candidateCreateSvc), 'el 
   check(/\$\{candidateId\}/.test(lockBody) && !/['"`]\s*\+\s*candidateId/.test(lockBody), 'candidateId viaja como parámetro');
 }
 check(/recKanbanPlaceDeclinedApplication\(applicationId/.test(indexHtml) && !/recKanbanLoad\(/.test(indexHtml.slice(indexHtml.indexOf('async function recCandConfirmDecline'), indexHtml.indexOf('function recCandOpenArchiveDialog'))), 'declinar mueve la tarjeta a Declinó sin recargar el tablero');
-check(/a\.closedAt\?\('Cierre '\+recCandFmtDetailDate\(a\.closedAt\)\):''/.test(indexHtml), 'el historial muestra el cierre solo cuando existe');
+check(/terminalKind\?'':\(a\.closedAt\?\('Cierre '\+recCandFmtDetailDate\(a\.closedAt\)\)/.test(indexHtml), 'Declinó conserva el cierre y Contratado o Rechazado no lo repiten');
+check(/recCandFmtTerminalDate\(a\.terminalOutcomeAt/.test(indexHtml) && /\.rec-cand-history-outcome--hired\{color:#047857;\}/.test(indexHtml) && /\.rec-cand-history-outcome--rej\{color:#b91c1c;\}/.test(indexHtml), 'la fecha compacta queda bajo el resultado, verde o rojo');
 check(/closurePatchForStageMove/.test(appSvc), 'el rechazo canónico se escribe en el mismo movimiento');
 check(/syncCandidateAutoArchive/.test(appSvc), 'mover la etapa reevalúa el autoarchivo');
 check(/clearCandidateAutoArchive/.test(appSvc), 'crear una postulación cancela el autoarchivo en la misma transacción');
