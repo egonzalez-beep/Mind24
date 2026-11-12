@@ -97,7 +97,11 @@ check(/\/api\/timeclock\/public\/photo/.test(indexHtml) && /\/api\/timeclock\/pu
 check(/textContent=text/.test(indexHtml) && /tcDirStatusBubbleHtml/.test(indexHtml) && /tcEsc\(value\)/.test(indexHtml), 'el estado se pinta como texto');
 check(/aria-label","Escribe un estado"/.test(indexHtml) || /aria-label','Escribe un estado'/.test(indexHtml), 'nombre accesible de estado vacío');
 check(/Editar estado:/.test(indexHtml), 'nombre accesible para editar estado');
-check(/Leer estado completo:/.test(indexHtml), 'nombre accesible para leer el estado');
+check(!/Leer estado completo:/.test(indexHtml), 'el directorio ya no ofrece lectura expandida del estado');
+check(!/tc-dir-status-read/.test(indexHtml) && !/tcDirStatusReadOpen|tcDirStatusBind|tcDirStatusReturn/.test(indexHtml), 'sin pop-up ni listeners de lectura en Directorio');
+check(/return '<span class="tc-dir-status">'\+tcEsc\(value\)\+'<\/span>'/.test(indexHtml), 'el estado del Directorio es un span no interactivo');
+check(!/button\.tc-dir-status|type="button" class="tc-dir-status"/.test(indexHtml), 'el estado del Directorio no es un botón');
+check(/id="tc-status-pop"/.test(indexHtml) && /tcPersonalStatusOpen|tcPersonalStatusSave/.test(indexHtml), 'el editor de Mi espacio de trabajo se conserva');
 check(/Agregar foto/.test(indexHtml) && /Cambiar foto/.test(indexHtml) && /Quitar foto/.test(indexHtml), 'nombres accesibles de fotografía');
 check(/prefers-reduced-motion: reduce/.test(indexHtml), 'respeta reduced motion');
 check(!/router\.(post|put|patch|delete)\([^)]*status/.test(orgRoutes), 'el directorio administrativo no edita el estado');
@@ -674,6 +678,169 @@ if (dbOk && schemaOk) {
     await prisma.organization.deleteMany({ where: { id: { in: [orgA.id, orgB.id] } } });
   }
 }
+
+console.log('\n=== Directorio — estado informativo (visual) ===\n');
+
+function chromePath() {
+  const candidates = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ];
+  return candidates.find((item) => fs.existsSync(item)) || null;
+}
+
+async function runDirectoryStatusVisual() {
+  const http = await import('http');
+  const executablePath = chromePath();
+  if (!executablePath) {
+    check(false, 'Chrome o Edge local para la validación visual del Directorio');
+    return;
+  }
+  const puppeteer = await import('puppeteer-core');
+  const browser = await puppeteer.default.launch({
+    executablePath,
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+  const server = http.createServer((_req, res) => {
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    res.end(indexHtml);
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const { port } = server.address();
+  const page = await browser.newPage();
+  try {
+    await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const ready = await page.evaluate(
+      () => typeof tcDirStatusBubbleHtml === 'function' && !!document.getElementById('tc-emp-tbody'),
+    );
+    check(ready, 'HTML real expone el Directorio y el helper de estado');
+    if (!ready) return;
+
+    const fixtures = [
+      { id: 'e-short', fullName: 'Ana Corto', personalStatusMessage: '🔥 Dándole con todo', employeeCode: 'A1' },
+      {
+        id: 'e-long',
+        fullName: 'Luis Largo',
+        personalStatusMessage: 'En foco profundo con entregables urgentes del cierre semanal',
+        employeeCode: 'A2',
+      },
+      { id: 'e-empty', fullName: 'Carla Sin', personalStatusMessage: null, employeeCode: 'A3' },
+      {
+        id: 'e-html',
+        fullName: 'Pedro Html',
+        personalStatusMessage: '<script>alert(1)</script> & "hola"',
+        employeeCode: 'A4',
+      },
+    ];
+
+    async function paintDirectory(emps) {
+      return page.evaluate((rows) => {
+        const tbody = document.getElementById('tc-emp-tbody');
+        const view = document.getElementById('view-timeclock');
+        if (view) view.classList.remove('hidden');
+        tbody.innerHTML = rows
+          .map((emp) => {
+            const name = typeof tcEmpAvatarCellHtml === 'function'
+              ? tcEmpAvatarCellHtml(emp)
+              : '<div class="tc-emp-name-cell"><div class="tc-emp-name-stack"><strong>' +
+                tcEsc(emp.fullName) +
+                '</strong><div class="tc-dir-status-inline">' +
+                tcDirStatusBubbleHtml(emp.personalStatusMessage) +
+                '</div></div></div>';
+            return (
+              '<tr data-emp-id="' +
+              tcEsc(emp.id) +
+              '"><td>' +
+              name +
+              '</td><td>—</td><td>0</td><td>0</td><td>0</td><td>—</td><td class="tc-emp-actions">' +
+              '<button type="button" class="tc-icon-btn tc-icon-btn--view" data-action="hist">Historial</button>' +
+              '<button type="button" class="tc-icon-btn" data-action="edit">Editar</button>' +
+              '</td></tr>'
+            );
+          })
+          .join('');
+        return tbody.children.length;
+      }, emps);
+    }
+
+    await paintDirectory(fixtures);
+
+    for (const width of [1280, 900, 390]) {
+      await page.setViewport({ width, height: 900 });
+      const shot = await page.evaluate((viewport) => {
+        const statuses = [...document.querySelectorAll('.tc-dir-status')].map((el) => ({
+          tag: el.tagName,
+          text: el.textContent,
+          role: el.getAttribute('role'),
+          tabindex: el.getAttribute('tabindex'),
+          ariaExpanded: el.getAttribute('aria-expanded'),
+          cursor: getComputedStyle(el).cursor,
+          overflow: el.scrollWidth - el.clientWidth,
+        }));
+        const empty = document.querySelector('.tc-dir-status-empty');
+        const row = document.querySelector('#tc-emp-tbody tr');
+        return {
+          popup: !!document.getElementById('tc-dir-status-read'),
+          buttonStatus: document.querySelectorAll('button.tc-dir-status').length,
+          statuses,
+          emptyText: empty ? empty.textContent : null,
+          pageOverflow: document.documentElement.scrollWidth - viewport,
+          rowOverflow: row ? row.scrollWidth - row.clientWidth : 999,
+          editorAlive: !!document.getElementById('tc-status-pop') && typeof tcPersonalStatusOpen === 'function',
+        };
+      }, width);
+      check(!shot.popup && shot.buttonStatus === 0, `${width}px: sin pop-up ni botón de estado en Directorio`);
+      check(
+        shot.statuses.length >= 3 &&
+          shot.statuses.every((s) => s.tag === 'SPAN' && !s.role && s.tabindex == null && !s.ariaExpanded),
+        `${width}px: estados son span informativos sin semántica interactiva`,
+      );
+      check(shot.statuses.some((s) => s.text.includes('🔥 Dándole con todo')), `${width}px: conserva emoji y texto corto`);
+      check(shot.statuses.some((s) => s.text.includes('<script>alert(1)</script>')), `${width}px: HTML se muestra como texto`);
+      check(shot.emptyText === '—', `${width}px: sin estado muestra guion`);
+      check(shot.pageOverflow <= 1 && shot.rowOverflow <= 2, `${width}px: sin desborde de fila/página`);
+      check(shot.editorAlive, `${width}px: editor de Mi espacio sigue presente`);
+    }
+
+    const interaction = await page.evaluate(async () => {
+      const status = document.querySelector('.tc-dir-status');
+      const beforePopups = document.querySelectorAll('.tc-status-pop:not(.hidden)').length;
+      status.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      status.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      const afterClick = {
+        popups: document.querySelectorAll('.tc-status-pop:not(.hidden)').length,
+        read: !!document.getElementById('tc-dir-status-read'),
+      };
+      const hist = document.querySelector('[data-action="hist"]');
+      hist.click();
+      const edit = document.querySelector('[data-action="edit"]');
+      edit.click();
+      return {
+        beforePopups,
+        afterClick,
+        residual: !!document.getElementById('tc-dir-status-read') || document.querySelectorAll('.tc-status-pop:not(.hidden)').length > 0,
+      };
+    });
+    check(
+      interaction.beforePopups === 0 &&
+        interaction.afterClick.popups === 0 &&
+        !interaction.afterClick.read &&
+        !interaction.residual,
+      'clic en estado e historial/edición no abren ni dejan panel flotante',
+    );
+  } finally {
+    await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+  }
+}
+
+await runDirectoryStatusVisual().catch((err) => {
+  console.error('  FAIL  visual Directorio:', err && err.message ? err.message : err);
+  failed += 1;
+});
 
 console.log(failed === 0 ? '\n✓ Estado personal y foto propia OK.\n' : `\n✗ ${failed} fallo(s).\n`);
 process.exit(failed === 0 ? 0 : 1);

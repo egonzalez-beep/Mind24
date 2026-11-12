@@ -97,6 +97,8 @@ check(/tcDirJornadaStatusHtml/.test(indexHtml) && /En jornada/.test(indexHtml) &
 check(!/tcDirJornadaStatusHtml[\s\S]{0,200}Activo/.test(indexHtml), 'sin Activo como estado laboral');
 check(!/Actualizar directorio de colaboradores/.test(indexHtml), 'directorio sin botón Actualizar');
 check(/async function tcViewJornada[\s\S]*tcLoadEmployees/.test(indexHtml) || /tcViewJornada/.test(indexHtml), 'carga colaborador vía tcViewJornada intacta');
+check(/tcDirStatusBubbleHtml/.test(indexHtml) && /class="tc-dir-status"/.test(indexHtml), 'estado personal debajo del nombre');
+check(!/tc-dir-status-read|tcDirStatusReadOpen|Leer estado completo:/.test(indexHtml), 'Directorio sin pop-up de lectura del estado');
 
 console.log('\n=== Directorio — unit merge ===\n');
 
