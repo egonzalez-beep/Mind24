@@ -961,6 +961,11 @@ model RecruitmentApplication {
   closureOutcome RecruitmentApplicationClosureOutcome?
   closureReason  RecruitmentApplicationClosureReason?
   closureNote    String?   @db.VarChar(240)
+  /// Protege reaplicación en la misma vacante. No sustituye classifyRecruitmentApplication.
+  /// true = activo o HIRED (u ambiguo); false = Declinó o Rechazado.
+  /// Unique parcial en SQL (Prisma no lo modela): RecruitmentApplication_candidate_vacancy_blocks_reapplication_key
+  /// WHERE blocksReapplication = true. El unique absoluto candidateId+vacancyId ya no existe en el schema.
+  blocksReapplication Boolean @default(true)
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -969,13 +974,14 @@ model RecruitmentApplication {
   interviewEvents RecruitmentApplicationInterviewEvent[]
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
-  @@unique([candidateId, vacancyId])
+  /// Índice de consulta; el UNIQUE parcial vive solo en migration.sql (nombre arriba).
   @@index([organizationId])
   @@index([organizationId, vacancyId])
   @@index([organizationId, stageId])
   @@index([vacancyId, stageId, position])
   @@index([organizationId, candidateId])
   @@index([hiredStageEnteredAt])
+  @@index([candidateId, vacancyId, blocksReapplication])
 }
 
 enum RecruitmentApplicationInterviewEventType {

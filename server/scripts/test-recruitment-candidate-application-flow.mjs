@@ -82,7 +82,14 @@ check(/stageId: z\.string/.test(routes) && /initialStageId: body\.stageId/.test(
 check(/RECRUITMENT_CANDIDATE_SOURCE_OPTIONS/.test(catalogSvc), 'catálogo source');
 check(/RECRUITMENT_CANDIDATE_PROFILE_OPTIONS/.test(catalogSvc), 'catálogo profile');
 check(/normalizeRecruitmentCandidateFullName/.test(catalogSvc), 'normalización fullName');
-check(/@@unique\(\[candidateId, vacancyId\]\)/.test(schema), 'unique candidate+vacancy en schema');
+check(/blocksReapplication/.test(schema), 'blocksReapplication en schema');
+check(!/@@unique\(\[candidateId, vacancyId\]\)/.test(schema), 'sin unique absoluto candidate+vacancy');
+check(
+  fs.existsSync(
+    path.join(rootDir, 'prisma/migrations/20261111194500_recruitment_application_blocks_reapplication/migration.sql'),
+  ),
+  'migración blocksReapplication',
+);
 check(/profileSecondary/.test(schema), 'schema profileSecondary');
 check(/profileOther/.test(schema) && /sourceOther/.test(schema), 'schema profileOther y sourceOther');
 check(

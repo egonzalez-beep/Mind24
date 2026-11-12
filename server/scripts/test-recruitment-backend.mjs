@@ -103,7 +103,17 @@ check(/model RecruitmentApplicationStageEvent/.test(schema), 'modelo StageEvent'
 const recruitmentCandidateBlock = schema.match(/model RecruitmentCandidate \{[\s\S]*?\n\}/)?.[0] || '';
 check(!/\bstatus\b/.test(recruitmentCandidateBlock), 'sin status en Candidate');
 check(/enum RecruitmentVacancyStatus/.test(schema), 'enum vacancy status');
-check(/@@unique\(\[candidateId, vacancyId\]\)/.test(schema), 'unique application');
+check(/blocksReapplication/.test(schema), 'blocksReapplication en schema');
+check(!/@@unique\(\[candidateId, vacancyId\]\)/.test(schema), 'sin unique absoluto candidate+vacancy');
+check(
+  /RecruitmentApplication_candidate_vacancy_blocks_reapplication_key/.test(
+    fs.readFileSync(
+      path.join(rootDir, 'prisma/migrations/20261111194500_recruitment_application_blocks_reapplication/migration.sql'),
+      'utf8',
+    ),
+  ),
+  'migración índice parcial blocksReapplication',
+);
 check(/CREATE TABLE "RecruitmentCandidate"/.test(migrationSql), 'migración candidatos');
 check(/CREATE TABLE "RecruitmentApplicationStageEvent"/.test(migrationSql), 'migración stage events');
 check(/router\.use\('\/recruitment'/.test(orgRoutes), 'mount /recruitment');
@@ -118,9 +128,14 @@ check(/applicationSummary/.test(vacancySvc) && /buildApplicationSummariesByVacan
 check(/@@unique\(\[organizationId, key\]\)/.test(schema), 'unique organizationId+key en Stage');
 check(/skipDuplicates:\s*true/.test(recruitmentStageServiceSrc), 'seed stages skipDuplicates');
 check(
-  /candidato archivado/.test(recruitmentApplicationServiceSrc) &&
-    /VALIDATION_ERROR/.test(recruitmentApplicationServiceSrc),
-  'bloqueo candidato archivado en servicio',
+  /archivedAt: null/.test(recruitmentApplicationServiceSrc) &&
+    /blocksReapplication:\s*true/.test(recruitmentApplicationServiceSrc),
+  'alta desarchiva y crea con blocksReapplication true',
+);
+check(
+  /blocksReapplication:\s*true/.test(recruitmentApplicationServiceSrc) &&
+    /isBlocksReapplicationUniqueViolation/.test(recruitmentApplicationServiceSrc),
+  'alta traduce P2002 del índice parcial a 409',
 );
 
 console.log('\n=== Recruitment 1A — integración (DB) ===\n');

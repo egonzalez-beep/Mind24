@@ -466,8 +466,8 @@ if (!executablePath) {
       };
     });
     check(
-      archived.text.includes('Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.') && archived.buttons === 0,
-      'el candidato archivado no ofrece añadir vacante',
+      archived.text.includes('Al añadir una vacante se creará un nuevo proceso') && archived.buttons === 1,
+      'el candidato archivado ofrece añadir vacante para reabrir proceso',
     );
     const toolbar = await page.evaluate(() => {
       recCandSyncArchivedActions(recEnsureState().detailCandidate);
@@ -475,8 +475,8 @@ if (!executablePath) {
       return { disabled: !!addBtn.disabled, title: addBtn.title };
     });
     check(
-      toolbar.disabled && toolbar.title === 'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.',
-      'la acción de vacante del expediente queda deshabilitada',
+      !toolbar.disabled && toolbar.title === 'Añadir a vacante',
+      'la acción de vacante del expediente permanece disponible si está archivado',
     );
     const board = await page.evaluate(() => {
       const st = recEnsureState();

@@ -18,6 +18,8 @@ import {
   assertRecruitmentProcessStageChangeAllowed,
   clearCandidateAutoArchive,
   closurePatchForStageMove,
+  expectedBlocksReapplication,
+  isBlocksReapplicationUniqueViolation,
   lockRecruitmentCandidateForProcessChange,
   kanbanVisibleApplicationWhere,
   syncCandidateAutoArchive,
@@ -57,6 +59,7 @@ function serializeApplication(row) {
     closureOutcome: row.closureOutcome || null,
     closureReason: row.closureReason || null,
     closureNote: row.closureNote || null,
+    blocksReapplication: row.blocksReapplication !== false,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     candidate: row.candidate ? serializeRecruitmentCandidate(row.candidate) : undefined,
@@ -115,26 +118,30 @@ export async function createRecruitmentApplication({
   db = null,
 }) {
   const run = async (tx) => {
-    await assertRecruitmentVacancyInOrg(vacancyId, organizationId, tx);
+    // Orden: candado → tenant/vacante → bloqueo reaplicación → desarchivo → create.
+    // Un rollback restaura archivedAt porque el desarchivo vive en la misma TX.
     await lockRecruitmentCandidateForProcessChange(tx, candidateId);
+    await assertRecruitmentVacancyInOrg(vacancyId, organizationId, tx);
     const candidate = await assertRecruitmentCandidateInOrg(candidateId, organizationId, tx);
-    if (candidate.archivedAt) {
-      const err = new Error('VALIDATION_ERROR');
-      err.code = 'VALIDATION_ERROR';
-      err.message =
-        'No se puede asignar a vacante un candidato archivado. Desarchívalo antes de crear una nueva postulación.';
-      throw err;
-    }
-    await clearCandidateAutoArchive(tx, candidateId);
 
-    const duplicate = await tx.recruitmentApplication.findUnique({
-      where: { candidateId_vacancyId: { candidateId, vacancyId } },
+    const blocking = await tx.recruitmentApplication.findFirst({
+      where: { candidateId, vacancyId, blocksReapplication: true },
+      select: { id: true },
     });
-    if (duplicate) {
+    if (blocking) {
       const err = new Error('CONFLICT');
       err.code = 'CONFLICT';
       err.message = 'El candidato ya está asignado a esta vacante.';
       throw err;
+    }
+
+    if (candidate.archivedAt) {
+      await tx.recruitmentCandidate.update({
+        where: { id: candidateId },
+        data: { archivedAt: null, autoArchiveEligibleAt: null },
+      });
+    } else {
+      await clearCandidateAutoArchive(tx, candidateId);
     }
 
     await ensureVacancyRecruitmentStages(organizationId, vacancyId, tx);
@@ -149,6 +156,7 @@ export async function createRecruitmentApplication({
         stageId: newStage.id,
         position,
         appliedAt,
+        blocksReapplication: true,
       },
       include: { candidate: true, stage: true },
     });
@@ -173,15 +181,25 @@ export async function createRecruitmentApplication({
         select: { key: true },
       });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
+      const toKey = targetStage?.key ?? null;
+      const closurePatch = closurePatchForStageMove({
+        stageChanged: true,
+        fromStageKey: newStage.key,
+        fromOutcome: null,
+        toStageKey: toKey,
+        now: new Date(),
+      });
       const moveData = {
         stageId: targetStageId,
         position,
         hiredStageEnteredAt: nextHiredStageEnteredAt({
           fromKey: newStage.key,
-          toKey: targetStage?.key ?? null,
+          toKey,
           previousEnteredAt: null,
           now: new Date(),
         }),
+        blocksReapplication: expectedBlocksReapplication(toKey, closurePatch.closureOutcome ?? null),
+        ...closurePatch,
       };
       const moved = await tx.recruitmentApplication.update({
         where: { id: app.id },
@@ -222,12 +240,23 @@ export async function createRecruitmentApplication({
         include: { candidate: true, stage: true },
       });
     }
+    await syncCandidateAutoArchive(tx, {
+      organizationId,
+      candidateId,
+      now: new Date(),
+    });
     return serializeApplication(current);
   };
   let serialized;
   try {
     serialized = db ? await run(db) : await prisma.$transaction(run);
   } catch (err) {
+    if (isBlocksReapplicationUniqueViolation(err)) {
+      const error = new Error('CONFLICT');
+      error.code = 'CONFLICT';
+      error.message = 'El candidato ya está asignado a esta vacante.';
+      throw error;
+    }
     if (!isScheduledInterviewSlotConflict(err)) throw err;
     const error = new Error('CONFLICT');
     error.code = 'CONFLICT';

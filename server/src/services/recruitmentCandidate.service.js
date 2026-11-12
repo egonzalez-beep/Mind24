@@ -145,6 +145,7 @@ function serializeCandidateApplicationProcess(row) {
     closureOutcome: row.closureOutcome || null,
     closureReason: row.closureReason || null,
     closureNote: row.closureNote || null,
+    blocksReapplication: row.blocksReapplication !== false,
   };
 }
 

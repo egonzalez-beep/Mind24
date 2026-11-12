@@ -990,32 +990,33 @@ function hasArchivedWithOpenProcess(db, candidateId) {
   );
   return !!(candidate && candidate.archivedAt && open);
 }
+/**
+ * Espejo conceptual de createRecruitmentApplication: candado → (si archivado) desarchivo → create → clear autoarchivo.
+ * El alta ya no rechaza por archivedAt; un rollback de TX restauraría archivedAt.
+ */
 async function attemptNewApplication(db, candidateId) {
-  try {
-    await db.$transaction(async (tx) => {
-      await lockRecruitmentCandidateForProcessChange(tx, candidateId);
-      const candidate = await tx.recruitmentCandidate.findFirst({ where: { id: candidateId } });
-      if (candidate?.archivedAt) {
-        const err = new Error('archivado');
-        err.code = 'ARCHIVED';
-        throw err;
-      }
-      await tx.recruitmentApplication.create({
-        data: {
-          id: `app-new-${candidateId}`,
-          organizationId: 'org-1',
-          candidateId,
-          closureOutcome: null,
-          stage: { key: 'NEW' },
-        },
+  await db.$transaction(async (tx) => {
+    await lockRecruitmentCandidateForProcessChange(tx, candidateId);
+    const candidate = await tx.recruitmentCandidate.findFirst({ where: { id: candidateId } });
+    if (candidate?.archivedAt) {
+      await tx.recruitmentCandidate.update({
+        where: { id: candidateId },
+        data: { archivedAt: null, autoArchiveEligibleAt: null },
       });
+    } else {
       await clearCandidateAutoArchive(tx, candidateId);
+    }
+    await tx.recruitmentApplication.create({
+      data: {
+        id: `app-new-${candidateId}`,
+        organizationId: 'org-1',
+        candidateId,
+        closureOutcome: null,
+        stage: { key: 'NEW' },
+      },
     });
-    return 'created';
-  } catch (err) {
-    if (err.code === 'ARCHIVED') return 'blocked';
-    throw err;
-  }
+  });
+  return 'created';
 }
 
 {
@@ -1031,7 +1032,14 @@ async function attemptNewApplication(db, candidateId) {
   const createPromise = attemptNewApplication(db, 'cand-archive-wins');
   release();
   const [archiveResult, createResult] = await Promise.all([archivePromise, createPromise]);
-  check(archiveResult.archived === 1 && createResult === 'blocked', 'si el autoarchivo gana, la postulación nueva se rechaza');
+  const cand = db.store.candidates.find((row) => row.id === 'cand-archive-wins');
+  const openApps = db.store.applications.filter(
+    (row) => row.candidateId === 'cand-archive-wins' && recruitmentApplicationIsOpen(row.stage?.key, row.closureOutcome),
+  );
+  check(
+    archiveResult.archived === 1 && createResult === 'created' && !cand.archivedAt && openApps.length === 1,
+    'si el autoarchivo gana el candado, el alta posterior desarchiva y crea el proceso',
+  );
   check(!hasArchivedWithOpenProcess(db, 'cand-archive-wins'), 'no queda archivado con un proceso activo');
 }
 
@@ -1113,7 +1121,17 @@ check(!/lockRecruitmentCandidateForProcessChange/.test(candidateCreateSvc), 'el 
 {
   const createBody = appSvc.slice(appSvc.indexOf('export async function createRecruitmentApplication'), appSvc.indexOf('export async function listRecruitmentApplicationsForVacancy'));
   const lockAt = createBody.indexOf('lockRecruitmentCandidateForProcessChange(tx, candidateId)');
-  check(lockAt >= 0 && lockAt < createBody.indexOf('candidate.archivedAt') && lockAt < createBody.indexOf('recruitmentApplication.create'), 'el alta bloquea la fila antes de leer y de insertar');
+  const vacAssertAt = createBody.indexOf('assertRecruitmentVacancyInOrg');
+  const blockFindAt = createBody.indexOf('blocksReapplication: true');
+  const unarchiveAt = createBody.indexOf('archivedAt: null');
+  const createAt = createBody.indexOf('recruitmentApplication.create');
+  const syncAt = createBody.indexOf('syncCandidateAutoArchive');
+  check(lockAt >= 0 && lockAt < createAt, 'el alta bloquea la fila antes de insertar');
+  check(lockAt >= 0 && lockAt < vacAssertAt, 'el alta toma el candado antes de validar vacante');
+  check(lockAt >= 0 && blockFindAt > vacAssertAt && blockFindAt < unarchiveAt, 'busca bloqueo de reaplicación antes de desarchivar');
+  check(unarchiveAt >= 0 && unarchiveAt < createAt, 'desarchiva antes de create');
+  check(createAt >= 0 && syncAt > createAt, 'sincroniza autoarchivo después del create');
+  check(lockAt >= 0 && lockAt < createBody.indexOf('blocksReapplication: true'), 'el alta bloquea antes de crear con blocksReapplication');
   check(!/prisma\.\$queryRaw/.test(createBody), 'el alta no usa el cliente global para el candado');
   const sweepBody = closureSvc.slice(closureSvc.indexOf('export async function deliverDueCandidateAutoArchives'));
   const sweepLock = sweepBody.indexOf('lockRecruitmentCandidateForProcessChange(tx, row.id)');
@@ -1131,8 +1149,10 @@ check(/recCandFmtTerminalDate\(a\.terminalOutcomeAt/.test(indexHtml) && /\.rec-c
 check(/closurePatchForStageMove/.test(appSvc), 'el rechazo canónico se escribe en el mismo movimiento');
 check(/syncCandidateAutoArchive/.test(appSvc), 'mover la etapa reevalúa el autoarchivo');
 check(/clearCandidateAutoArchive/.test(appSvc), 'crear una postulación cancela el autoarchivo en la misma transacción');
-check(/candidato archivado/.test(appSvc), 'el alta sigue rechazando candidato archivado');
+check(/archivedAt: null/.test(appSvc) && /autoArchiveEligibleAt: null/.test(appSvc), 'el alta desarchiva en la misma transacción');
 check(/Este candidato está archivado/.test(appSvc), 'un archivado no se mueve de etapa');
+check(/blocksReapplication: false/.test(closureSvc), 'declinar libera blocksReapplication');
+check(/expectedBlocksReapplication/.test(closureSvc), 'helper esperado de blocksReapplication');
 check(closureSvc.includes(CLOSED_PROCESS_STAGE_MESSAGE), 'un proceso cerrado no se reabre al arrastrarlo');
 check(/assertCandidateCanBeArchived/.test(candidateSvc), 'el archivo manual valida procesos activos en servidor');
 check(/autoArchiveEligibleAt: null/.test(candidateSvc), 'archivar o reactivar cancela el autoarchivo');
@@ -1147,8 +1167,8 @@ check(/reason: z\.enum\(DECLINE_REASON_KEYS\)\.optional\(\)/.test(routes), 'el m
 check(/Este candidato tiene procesos activos/.test(indexHtml), 'archivo con procesos activos');
 check(/Este candidato dejará de aparecer entre los candidatos activos/.test(indexHtml), 'archivo sin procesos activos');
 check(!/No podrá recibir nuevas postulaciones/.test(indexHtml), 'se retiró el aviso engañoso');
-check(/Este candidato está archivado\. Reactívalo para iniciar un nuevo proceso\./.test(indexHtml), 'alta bloqueada en la ficha');
-check(/addBtn\.disabled=archived/.test(indexHtml), 'la acción de vacante se deshabilita al archivar');
+check(/Al añadir una vacante se creará un nuevo proceso/.test(indexHtml), 'archivado puede iniciar nuevo proceso desde la ficha');
+check(/addBtn\.disabled=false/.test(indexHtml) && /addBtn\.title='Añadir a vacante'/.test(indexHtml), 'la acción de vacante permanece disponible si está archivado');
 check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(stageName\)/.test(indexHtml) && /tcEsc\(reasonLabel\)/.test(indexHtml) && /tcEsc\(note\)/.test(indexHtml), 'el historial escapa etapa, motivo y detalle');
 check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(outcome\)/.test(indexHtml), 'el historial escapa el resultado');
 check(/vac\.textContent/.test(indexHtml) && /stage\.textContent/.test(indexHtml), 'el diálogo pinta vacante y etapa como texto');

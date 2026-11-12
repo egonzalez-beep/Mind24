@@ -27,6 +27,10 @@ export const CLOSED_PROCESS_STAGE_MESSAGE =
 export const HIRED_STAGE_MOVE_MESSAGE =
   'Este candidato ya está contratado. Liberar la contratación es una operación aparte.';
 
+/** Índice único parcial: como máximo una postulación que bloquea reaplicación por par candidato–vacante. */
+export const BLOCKS_REAPPLICATION_UNIQUE_INDEX =
+  'RecruitmentApplication_candidate_vacancy_blocks_reapplication_key';
+
 function businessError(code, message) {
   const err = new Error(message);
   err.code = code;
@@ -44,6 +48,41 @@ export function classifyRecruitmentApplication(stageKey, closureOutcome) {
   if (closureOutcome === 'REJECTED' || stageKey === 'REJECTED') return 'rejected';
   if (stageKey === 'HIRED') return 'hired';
   return 'active';
+}
+
+/**
+ * Valor esperado de blocksReapplication. No redefine “proceso abierto”:
+ * HIRED bloquea reaplicación aunque no esté abierto y nunca debe ser false.
+ */
+export function expectedBlocksReapplication(stageKey, closureOutcome) {
+  if (stageKey === 'HIRED') return true;
+  const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
+  if (kind === 'declined' || kind === 'rejected') return false;
+  return true;
+}
+
+/**
+ * Prisma suele poner en meta.target el nombre del índice parcial o los campos
+ * (candidateId, vacancyId). Solo ese unique existe sobre ese par tras la migración;
+ * otros P2002 (p. ej. organizationId+dedupeKey) no deben mapearse a este 409.
+ */
+export function isBlocksReapplicationUniqueViolation(err) {
+  if (!err || err.code !== 'P2002') return false;
+  const target = err.meta?.target;
+  const parts = Array.isArray(target)
+    ? target.map((t) => String(t))
+    : target != null
+      ? [String(target)]
+      : [];
+  if (!parts.length) return false;
+  if (parts.some((p) => p === BLOCKS_REAPPLICATION_UNIQUE_INDEX || p.includes('blocks_reapplication'))) {
+    return true;
+  }
+  const joined = parts.join(',');
+  if (joined.includes('organizationId') || joined.includes('dedupeKey') || joined.includes('email')) {
+    return false;
+  }
+  return parts.includes('candidateId') && parts.includes('vacancyId');
 }
 
 function terminalEventInstant(value) {
@@ -140,9 +179,12 @@ export function closurePatchForStageMove({
       closedAt: now,
       closureReason: null,
       closureNote: null,
+      blocksReapplication: false,
     };
   }
-  return {};
+  return {
+    blocksReapplication: expectedBlocksReapplication(toStageKey, null),
+  };
 }
 
 export function assertRecruitmentProcessStageChangeAllowed({ stageKey, closureOutcome, stageChanged }) {
@@ -277,6 +319,7 @@ export async function declineRecruitmentApplication({
         closureReason,
         closureNote,
         closedAt: now,
+        blocksReapplication: false,
       },
     });
     if (won.count !== 1) {

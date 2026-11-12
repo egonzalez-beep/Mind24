@@ -32,6 +32,9 @@
   --nov-hired-icon-bg:rgba(34,211,238,.24);
   --nov-hired-icon-bg-read:rgba(34,211,238,.12);
   --nov-hired-pip:#0891b2;
+  --nov-scroll-thumb:rgba(124,58,237,.28);
+  --nov-scroll-thumb-hover:rgba(124,58,237,.42);
+  --nov-scroll-thumb-active:rgba(124,58,237,.56);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -1905,6 +1908,19 @@ button.tc-dir-status:focus-visible{outline:2px solid var(--purple);outline-offse
 .mind24-mark-all-read-btn:disabled{opacity:.45;cursor:not-allowed;background:transparent;border-color:var(--slate-200);color:var(--slate-400);}
 .mind24-mark-all-read-btn--done{background:var(--purple-light);border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
 .tc-ws-novedades-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:72px;max-height:min(calc(70vh - 52px),428px);}
+@media (forced-colors: none){
+  .tc-ws-novedades-popover-body{scrollbar-width:thin;scrollbar-color:var(--nov-scroll-thumb) transparent;}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar{width:5px;height:5px;}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-track{background:transparent;}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb{background:var(--nov-scroll-thumb);border-radius:999px;}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb:hover{background:var(--nov-scroll-thumb-hover);}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb:active{background:var(--nov-scroll-thumb-active);}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-button{display:none;width:0;height:0;}
+  .tc-ws-novedades-popover-body::-webkit-scrollbar-corner{background:transparent;}
+}
+@media (forced-colors: active){
+  .tc-ws-novedades-popover-body{scrollbar-width:auto;scrollbar-color:auto;}
+}
 .tc-ws-novedades-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
 .tc-ws-novedades-item:hover{background:var(--slate-50);}
 .tc-ws-novedades-item--unread{background:rgba(254,242,242,.45);border-color:rgba(239,68,68,.12);}
@@ -3364,7 +3380,9 @@ button.tc-dir-status:focus-visible{outline:2px solid var(--purple);outline-offse
     <h2 class="modal-title" style="font-size:18px;margin-bottom:12px;">Añadir a vacante</h2>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div><label class="form-label">Vacante</label><select id="rec-cand-add-vac-select" class="form-input"></select></div>
-      <div><label class="form-label">Etapa inicial</label><select id="rec-cand-add-vac-stage" class="form-input"></select></div>
+      <p id="rec-cand-add-vac-hint" class="hidden" style="font-size:12px;color:var(--slate-500);margin:0;line-height:1.4;"></p>
+      <p id="rec-cand-add-vac-reapply-note" class="hidden" style="font-size:12px;color:var(--slate-600);margin:0;line-height:1.45;">Se creará un nuevo proceso en esta vacante. La participación anterior permanecerá en el historial.</p>
+      <div id="rec-cand-add-vac-stage-wrap"><label class="form-label">Etapa inicial</label><select id="rec-cand-add-vac-stage" class="form-input"></select></div>
     </div>
     <p id="rec-cand-add-vac-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
     <button type="button" class="form-submit form-submit-purple" style="margin-top:16px;" id="rec-cand-add-vac-submit" onclick="recCandSubmitAddVacancy()">Guardar</button>
@@ -14093,13 +14111,11 @@ async function recCandRenderPipelineSection(c){
   st.detailPrimaryApplication=primary||null;
   st.detailOtherActiveApps=primary?parts.active.filter(function(a){ return a!==primary; }):[];
   if(!primary){
-    if(c.archivedAt){
-      host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
-        '<p class="rec-cand-pipeline-empty-sub">Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.</p></div>';
-      return;
-    }
+    const sub=c.archivedAt
+      ?'Este candidato está archivado. Al añadir una vacante se creará un nuevo proceso y volverá a estar visible.'
+      :'Este candidato está disponible en cartera.';
     host.innerHTML='<div class="rec-cand-pipeline-empty"><p class="rec-cand-pipeline-empty-title">Sin proceso activo</p>'+
-      '<p class="rec-cand-pipeline-empty-sub">Este candidato está disponible en cartera.</p>'+
+      '<p class="rec-cand-pipeline-empty-sub">'+tcEsc(sub)+'</p>'+
       '<button type="button" class="rec-btn-new rec-btn-new--sm" onclick="recCandOpenAddVacancyModal()">+ Añadir a vacante</button></div>';
     return;
   }
@@ -17203,13 +17219,69 @@ async function recCandCreateAndOpen(body){
     await recCandOpenDetail(j.candidate.id);
   }
 }
+function recCandVacancyPriorParticipation(apps,vacancyId){
+  const rows=(apps||[]).filter(function(a){ return a&&a.vacancy&&String(a.vacancy.id)===String(vacancyId); });
+  if(!rows.length) return { blocking:false, canReapply:false, label:'' };
+  const blocking=rows.some(function(a){
+    if(a.blocksReapplication===true) return true;
+    if(a.blocksReapplication===false) return false;
+    if(a.closureOutcome==='DECLINED'||a.closureOutcome==='REJECTED') return false;
+    const k=a.stage&&a.stage.key;
+    if(k==='REJECTED') return false;
+    return true;
+  });
+  if(blocking) return { blocking:true, canReapply:false, label:'Ya tiene un proceso vigente en esta vacante.' };
+  let latest=null;
+  let latestMs=-1;
+  rows.forEach(function(a){
+    const ms=a.closedAt?new Date(a.closedAt).getTime():(a.updatedAt?new Date(a.updatedAt).getTime():0);
+    if(ms>=latestMs){ latestMs=ms; latest=a; }
+  });
+  let label='Participó antes';
+  if(latest){
+    if(latest.closureOutcome==='DECLINED') label='Participó antes · Declinó';
+    else if(latest.closureOutcome==='REJECTED'||(latest.stage&&latest.stage.key==='REJECTED')) label='Participó antes · Rechazado';
+  }
+  return { blocking:false, canReapply:true, label:label };
+}
+function recCandSyncAddVacancyParticipationUi(){
+  const vacId=(document.getElementById('rec-cand-add-vac-select')?.value||'').trim();
+  const hint=document.getElementById('rec-cand-add-vac-hint');
+  const note=document.getElementById('rec-cand-add-vac-reapply-note');
+  const stageWrap=document.getElementById('rec-cand-add-vac-stage-wrap');
+  const stageSel=document.getElementById('rec-cand-add-vac-stage');
+  const btn=document.getElementById('rec-cand-add-vac-submit');
+  const err=document.getElementById('rec-cand-add-vac-err');
+  const st=recEnsureState();
+  const apps=(st.detailCandidate&&st.detailCandidate.applications)||[];
+  if(!vacId){
+    if(hint){ hint.classList.add('hidden'); hint.textContent=''; }
+    if(note) note.classList.add('hidden');
+    if(stageWrap) stageWrap.classList.remove('hidden');
+    if(btn) btn.disabled=false;
+    return { ok:true, reapply:false };
+  }
+  const info=recCandVacancyPriorParticipation(apps,vacId);
+  if(hint){
+    if(info.label){ hint.textContent=info.label; hint.classList.remove('hidden'); }
+    else{ hint.textContent=''; hint.classList.add('hidden'); }
+  }
+  if(note) note.classList.toggle('hidden',!info.canReapply);
+  if(info.blocking){
+    if(stageWrap) stageWrap.classList.add('hidden');
+    if(stageSel) stageSel.innerHTML='';
+    if(btn) btn.disabled=true;
+    if(err){ err.textContent=info.label||'El candidato ya está asignado a esta vacante.'; err.classList.remove('hidden'); }
+    return { ok:false, reapply:false };
+  }
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(stageWrap) stageWrap.classList.remove('hidden');
+  if(btn) btn.disabled=false;
+  return { ok:true, reapply:!!info.canReapply };
+}
 async function recCandOpenAddVacancyModal(){
   const st=recEnsureState();
   if(!st.detailCandidateId) return;
-  if(st.detailCandidate&&st.detailCandidate.archivedAt){
-    recCandSetOpErr('Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.');
-    return;
-  }
   recCandCatalogInits();
   const err=document.getElementById('rec-cand-add-vac-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
@@ -17220,6 +17292,7 @@ async function recCandOpenAddVacancyModal(){
   else{
     const stageSel=document.getElementById('rec-cand-add-vac-stage');
     if(stageSel) stageSel.innerHTML='';
+    recCandSyncAddVacancyParticipationUi();
   }
   if(vacSel&&!vacSel.__addBound){
     vacSel.__addBound=true;
@@ -17229,7 +17302,8 @@ async function recCandOpenAddVacancyModal(){
 async function recCandAddVacancySelectChanged(){
   const vacId=(document.getElementById('rec-cand-add-vac-select')?.value||'').trim();
   const stageSel=document.getElementById('rec-cand-add-vac-stage');
-  if(!vacId||!stageSel) return;
+  const ui=recCandSyncAddVacancyParticipationUi();
+  if(!vacId||!stageSel||!ui.ok) return;
   const rows=await recCandLoadEnabledStagesForVacancy(vacId);
   recCandFillStageSelect(stageSel,rows,null);
 }
@@ -17245,6 +17319,9 @@ async function recCandSubmitAddVacancy(){
     if(err){ err.textContent='Selecciona una vacante.'; err.classList.remove('hidden'); }
     return;
   }
+  const ui=recCandSyncAddVacancyParticipationUi();
+  if(!ui.ok) return;
+  if(ui.reapply&&!window.confirm('Se creará un nuevo proceso en esta vacante. La participación anterior permanecerá en el historial.')) return;
   if(btn) btn.disabled=true;
   try{
     await recCandAssignToVacancy(candidateId,vacId,stageId||null);
@@ -17424,10 +17501,9 @@ function recCandSyncArchivedActions(c){
   if(archBtn) archBtn.textContent=c&&c.archivedAt?'Reactivar candidato':'Archivar candidato';
   const addBtn=document.getElementById('rec-cand-toolbar-add-vac');
   if(!addBtn) return;
-  const archived=!!(c&&c.archivedAt);
-  addBtn.disabled=archived;
-  addBtn.title=archived?'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.':'Añadir a vacante';
-  addBtn.setAttribute('aria-disabled', archived?'true':'false');
+  addBtn.disabled=false;
+  addBtn.title='Añadir a vacante';
+  addBtn.setAttribute('aria-disabled','false');
 }
 async function recCandToggleArchive(){
   const st=recEnsureState();
