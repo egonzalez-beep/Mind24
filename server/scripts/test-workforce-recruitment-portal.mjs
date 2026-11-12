@@ -4,6 +4,7 @@
  */
 import dotenv from 'dotenv';
 import fs from 'fs';
+import http from 'http';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
@@ -211,6 +212,30 @@ check(/scrollTop\s*=\s*0/.test(resetScrollFn), 'reset scrollTop panel');
 check(/tcEmpWorkspaceResetPanelScroll\(next\)/.test(indexHtml.match(/function tcEmpWorkspaceSetTab[\s\S]*?^function /m)?.[0] || ''), 'cambio tab resetea scroll panel');
 check(/tcEmpWorkspaceResetPanelScroll\('candidates'\)/.test(indexHtml.match(/function tcEmpMyCandSetFilter[\s\S]*?^function /m)?.[0] || ''), 'cambio filtro resetea scroll candidatos');
 check(/\.tc-emp-my-cand-empty\{[^}]*min-height:120px/.test(indexHtml), 'empty state conserva altura');
+
+console.log('\n=== Mis candidatos — nota de archivado (vacío) ===\n');
+const rejectedNoteCopy =
+  'Los candidatos rechazados dejan de mostrarse aquí cuando su proceso es archivado. Su historial permanece disponible para el administrador.';
+const declinedNoteCopy =
+  'Los candidatos que declinaron dejan de mostrarse aquí cuando su proceso es archivado. Su historial permanece disponible para el administrador.';
+const archiveNoteFn = indexHtml.match(/function tcEmpMyCandArchiveNoteText[\s\S]*?^function /m)?.[0] || '';
+const emptyHtmlFn = indexHtml.match(/function tcEmpMyCandEmptyHtml[\s\S]*?^function /m)?.[0] || '';
+check(/function tcEmpMyCandArchiveNoteText/.test(indexHtml) && /function tcEmpMyCandEmptyHtml/.test(indexHtml), 'helpers de vacío y nota');
+check(indexHtml.includes(rejectedNoteCopy) && indexHtml.includes(declinedNoteCopy), 'copy exacto Rechazados y Declinados');
+check(!/se eliminan|se borran|desaparecen automáticamente después de 24 horas/i.test(archiveNoteFn), 'sin copy de borrado ni plazo fijo de 24 h');
+check(/tcEmpMyCandEmptyHtml\(tcEmpMyCandFilter\)/.test(indexHtml), 'el vacío de Mis candidatos usa el helper con nota');
+check(/tcSvgInfoCircle\(\)/.test(emptyHtmlFn) && /role="note"/.test(emptyHtmlFn), 'nota con SVG informativo y role=note');
+check(/tcEsc\(msg\)/.test(emptyHtmlFn) && /tcEsc\(note\)/.test(emptyHtmlFn), 'mensaje y nota pasan por tcEsc');
+check(/stroke="currentColor"/.test(indexHtml.match(/function tcSvgInfoCircle[\s\S]*?\n}/)?.[0] || ''), 'SVG informativo usa currentColor');
+check(
+  /archivedAt:\s*null/.test(candSvc.match(/export function buildWorkforceRegisteredCandidatesWhere[\s\S]*?\n}/)?.[0] || ''),
+  'consulta portal excluye archivados',
+);
+check(
+  indexHtml === fs.readFileSync(path.join(root, 'server/public/index.html'), 'utf8'),
+  'index.html y server/public/index.html son idénticos',
+);
+
 const humanFnBlock = indexHtml.match(/function tcFmtDurationHuman[\s\S]*?^function /m)?.[0] || '';
 check(/Math\.floor\(n\/60\)/.test(humanFnBlock), 'duración humana por minutos completos');
 check(/return tcFmtDurationHuman\(sec\)/.test(indexHtml.match(/function tcEmpElapsed[\s\S]*?^function /m)?.[0] || ''), 'jornada en curso sin segundos HH:MM:SS');
@@ -588,6 +613,154 @@ if (dbOk) {
   } finally {
     server.close();
     await prisma.organization.delete({ where: { id: org.id } });
+  }
+}
+
+console.log('\n=== Mis candidatos — vacío visual (overflow) ===\n');
+
+function chromePath() {
+  const candidates = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ];
+  return candidates.find((item) => fs.existsSync(item)) || null;
+}
+
+{
+  const executablePath = chromePath();
+  if (!executablePath) {
+    check(false, 'Chrome o Edge local para overflow vacío');
+  } else {
+    const puppeteer = await import('puppeteer-core');
+    const browser = await puppeteer.default.launch({
+      executablePath,
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const server = http.createServer((_req, res) => {
+      res.setHeader('content-type', 'text/html; charset=utf-8');
+      res.end(indexHtml);
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const page = await browser.newPage();
+    try {
+      await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      const ready = await page.evaluate(
+        () => typeof tcEmpMyCandEmptyHtml === 'function' && typeof tcEmpMyCandRenderList === 'function',
+      );
+      check(ready, 'HTML real expone helpers de Mis candidatos');
+      if (ready) {
+        const painted = await page.evaluate((copies) => {
+          const list = document.getElementById('tc-emp-my-cand-list');
+          const panel = document.getElementById('tc-ws-panel-candidates');
+          if (panel) panel.hidden = false;
+          const snap = (filter) => {
+            tcEmpMyCandFilter = filter;
+            tcEmpMyCandItems = [];
+            tcEmpMyCandRenderList();
+            const note = list.querySelector('.tc-emp-my-cand-empty-note');
+            const msg = list.querySelector('.tc-emp-my-cand-empty-msg');
+            const noteText = note && note.querySelector('.tc-emp-my-cand-empty-note-text');
+            const ico = note && note.querySelector('.tc-emp-my-cand-empty-note-ico');
+            const svg = ico && ico.querySelector('svg');
+            return {
+              hasEmpty: !!list.querySelector('.tc-emp-my-cand-empty'),
+              hasNote: !!note,
+              msg: msg ? msg.textContent : '',
+              note: noteText ? noteText.textContent : '',
+              noteChildren: noteText ? noteText.children.length : -1,
+              imgTags: list.querySelectorAll('img,script').length,
+              svgHidden: ico ? ico.getAttribute('aria-hidden') : null,
+              svgCurrentColor: svg ? svg.getAttribute('stroke') === 'currentColor' : false,
+            };
+          };
+          const out = {
+            rejected: snap('rejected'),
+            declined: snap('declined'),
+            all: snap('all'),
+            in_process: snap('in_process'),
+            hired: snap('hired'),
+          };
+          tcEmpMyCandFilter = 'rejected';
+          tcEmpMyCandItems = [{ id: 'c1', fullName: 'Ana <b>Test</b>', profile: 'Ventas', tags: [], createdAt: null }];
+          tcEmpMyCandRenderList();
+          out.rejectedWithRows = {
+            cards: list.querySelectorAll('.tc-emp-my-cand-card').length,
+            hasNote: !!list.querySelector('.tc-emp-my-cand-empty-note'),
+            nameText: (list.querySelector('.tc-emp-my-cand-name') || {}).textContent || '',
+            nameChildren: (list.querySelector('.tc-emp-my-cand-name') || { children: [] }).children.length,
+          };
+          out.copies = copies;
+          return out;
+        }, { rejected: rejectedNoteCopy, declined: declinedNoteCopy });
+
+        check(
+          painted.rejected.hasEmpty &&
+            painted.rejected.hasNote &&
+            painted.rejected.msg === 'No hay candidatos rechazados.' &&
+            painted.rejected.note === painted.copies.rejected,
+          'DOM Rechazados vacío: mensaje + nota',
+        );
+        check(
+          painted.declined.hasEmpty &&
+            painted.declined.hasNote &&
+            painted.declined.msg === 'No hay candidatos declinados.' &&
+            painted.declined.note === painted.copies.declined,
+          'DOM Declinados vacío: mensaje + nota',
+        );
+        check(
+          !painted.all.hasNote && !painted.in_process.hasNote && !painted.hired.hasNote,
+          'DOM: nota ausente en Todos / En proceso / Contratados',
+        );
+        check(
+          painted.rejectedWithRows.cards === 1 && !painted.rejectedWithRows.hasNote,
+          'con resultados no hay nota al pie',
+        );
+        check(
+          painted.rejected.noteChildren === 0 &&
+            painted.declined.noteChildren === 0 &&
+            painted.rejected.imgTags === 0 &&
+            painted.rejected.svgHidden === 'true' &&
+            painted.rejected.svgCurrentColor &&
+            painted.rejectedWithRows.nameText.includes('<b>') &&
+            painted.rejectedWithRows.nameChildren === 0,
+          'texto seguro + SVG currentColor/aria-hidden',
+        );
+
+        const widths = {};
+        for (const width of [1280, 900, 390]) {
+          await page.setViewport({ width, height: 800 });
+          widths[width] = await page.evaluate((viewport) => {
+            const list = document.getElementById('tc-emp-my-cand-list');
+            const panel = document.getElementById('tc-ws-panel-candidates');
+            if (panel) panel.hidden = false;
+            tcEmpMyCandFilter = 'rejected';
+            tcEmpMyCandItems = [];
+            tcEmpMyCandRenderList();
+            const empty = list.querySelector('.tc-emp-my-cand-empty');
+            const note = list.querySelector('.tc-emp-my-cand-empty-note');
+            return {
+              page: document.documentElement.scrollWidth - viewport,
+              empty: empty ? empty.scrollWidth - empty.clientWidth : 999,
+              note: note ? note.scrollWidth - note.clientWidth : 999,
+              noteRight: note ? note.getBoundingClientRect().right - viewport : 999,
+            };
+          }, width);
+        }
+        check(
+          [1280, 900, 390].every(
+            (w) => widths[w].page <= 1 && widths[w].empty <= 1 && widths[w].note <= 1 && widths[w].noteRight <= 1,
+          ),
+          '1280, 900 y 390: vacío/nota sin desborde horizontal',
+        );
+      }
+    } finally {
+      await browser.close();
+      server.close();
+    }
   }
 }
 
