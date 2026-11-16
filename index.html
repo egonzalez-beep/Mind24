@@ -16542,6 +16542,7 @@ let tcEmpNovedadesPollInFlight=false;
 let tcEmpNovedadesListInFlight=false;
 let tcEmpNovedadesLastUnreadCount=0;
 let tcEmpNovedadesMarkAllInFlight=false;
+const tcEmpNovedadesMarkInFlight={};
 let tcEmpNovedadesVisibilityBound=false;
 const TC_EMP_NOVEDADES_POLL_MS=20000;
 const TC_EMP_WS_POLL_MS=20000;
@@ -16867,11 +16868,42 @@ function tcEmpNovedadesParseCompositeId(compositeId){
   if(s.indexOf('recruitment:')===0) return { source:'recruitment', rawId:s.slice('recruitment:'.length) };
   return null;
 }
+function tcEmpNovedadesEnsureItemRead(item){
+  if(!item||item.read) return Promise.resolve({ ok:true, skipped:true });
+  const compositeId=item.id;
+  if(tcEmpNovedadesMarkInFlight[compositeId]) return tcEmpNovedadesMarkInFlight[compositeId];
+  const parsed=tcEmpNovedadesParseCompositeId(compositeId);
+  const source=(parsed&&parsed.source)||item.source;
+  const rawId=parsed&&parsed.rawId;
+  if(!rawId||(source!=='workplace'&&source!=='recruitment')){
+    return Promise.resolve({ ok:false });
+  }
+  item.read=true;
+  if(!item.readAt) item.readAt=new Date().toISOString();
+  tcEmpNovedadesItems=(tcEmpNovedadesItems||[]).map(function(n){
+    return n.id===compositeId?Object.assign({},n,{ read:true, readAt:item.readAt }):n;
+  });
+  tcEmpNovedadesUpdateBadge(Math.max(0,(tcEmpNovedadesLastUnreadCount||0)-1));
+  if(tcEmpNovedadesOpen) tcEmpNovedadesRenderList();
+  const path=source==='workplace'
+    ?'/api/timeclock/public/novedades/workplace/'+encodeURIComponent(rawId)+'/read'
+    :'/api/timeclock/public/novedades/recruitment/'+encodeURIComponent(rawId)+'/read';
+  const req=tcPublicJson(path,{ method:'POST', body:'{}' }).then(function(){
+    return { ok:true };
+  }).catch(function(){
+    return { ok:false };
+  }).finally(function(){
+    delete tcEmpNovedadesMarkInFlight[compositeId];
+  });
+  tcEmpNovedadesMarkInFlight[compositeId]=req;
+  return req;
+}
 function tcEmpNovedadesOpenItem(id){
   const item=tcEmpNovedadesItems.find(function(n){ return n.id===id; });
   if(!item) return;
   const parsed=tcEmpNovedadesParseCompositeId(item.id);
   const source=(parsed&&parsed.source)||item.source;
+  void tcEmpNovedadesEnsureItemRead(item);
   tcEmpNovedadesClose(false);
   if(source==='workplace'){
     if(item.eventType==='TASK_ASSIGNED') tcEmpQuickGoActivities();
@@ -20241,24 +20273,13 @@ function tcEmpFocusGoalCard(goalId){
 }
 async function tcEmpOpenDailyGoalsReminder(item){
   const seq=++tcEmpGoalsReminderNavSeq;
-  const parsed=tcEmpNovedadesParseCompositeId(item&&item.id);
-  const rawId=parsed&&parsed.rawId;
-  if(rawId){
-    try{
-      await tcPublicJson('/api/timeclock/public/novedades/workplace/'+encodeURIComponent(rawId)+'/read',{method:'POST',body:'{}'});
-      if(item&&!item.read){
-        item.read=true;
-        tcEmpNovedadesUpdateBadge(Math.max(0,(tcEmpNovedadesLastUnreadCount||0)-1));
-      }
-    }catch(_){}
-  }
-  if(seq!==tcEmpGoalsReminderNavSeq) return;
   const meta=item&&item.metadata||{};
   tcEmpGoalsSetView('todo');
   const pendingCount=Number(meta.pendingCount)||0;
   tcEmpGoalsPendingFocusId=pendingCount===1&&typeof meta.goalId==='string'?meta.goalId:'';
   if(tcEmpWorkspaceTab!=='goals') tcEmpWorkspaceSetTab('goals');
   await tcEmpLoadGoals(false,true);
+  if(seq!==tcEmpGoalsReminderNavSeq) return;
 }
 async function tcEmpLoadGoals(showLoading,force){
   const body=document.getElementById('tc-emp-goals-body');

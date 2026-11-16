@@ -44,7 +44,8 @@ check(/tc-ws-novedades-item--hired/.test(renderFn) && /tcWsSvgTrophy\(\)/.test(r
 check(/tcWsSvgTarget\(\)/.test(renderFn), 'el recordatorio de metas conserva su icono');
 check(!/tc-ws-novedades-item--hired|tcWsSvgTrophy/.test(adminRender), 'la campana administrativa no usa la variante');
 check(/tcEmpQuickGoCandidates\(filter, item\.candidateId/.test(openFn), 'el clic conserva el destino actual');
-check(!/tcEmpNovedadesMarkRead|novedades\/[^'"\s]+\/read/.test(openFn), 'abrir la novedad no marca leída por sí sola');
+check(/tcEmpNovedadesEnsureItemRead\(item\)/.test(openFn), 'abrir la novedad marca lectura individual');
+check(/novedades\/recruitment\//.test(indexHtml.match(/function tcEmpNovedadesEnsureItemRead[\s\S]*?\n\}/)?.[0] || ''), 'lectura individual usa ruta recruitment');
 check(/--nov-hired-bg:/.test(indexHtml) && /--nov-hired-accent:/.test(indexHtml) && /--nov-hired-icon:/.test(indexHtml), 'los colores viven en variables');
 check(!/Ver anteriores|mind24NotifLoadMore/.test(indexHtml.match(/function tcEmpNovedadesFetchList\([\s\S]*?\n\}/)?.[0] || ''), 'el panel del colaborador no pagina con ver más');
 
@@ -255,15 +256,45 @@ if (!executablePath) {
     check(afterRead.hiredClass.includes('tc-ws-novedades-item--hired') && afterRead.hiredClass.includes('--read') && afterRead.trophy === 1 && afterRead.pip === 0, 'al leerla sigue siendo una contratación, no una fila genérica');
     check(afterRead.stageClass.includes('--read') && !afterRead.stageClass.includes('hired') && afterRead.stageDot === 1, 'la novedad genérica leída conserva su punto');
 
-    const navigated = await page.evaluate(() => {
-      const calls = [];
-      window.tcEmpQuickGoCandidates = (filter, id) => { calls.push({ filter, id }); };
-      tcEmpNovedadesItems = tcEmpNovedadesItems.map((row) => Object.assign({}, row, { read: false }));
+    const navigated = await page.evaluate(async () => {
+      const nav = [];
+      const reads = [];
+      window.tcEmpQuickGoCandidates = (filter, id) => { nav.push({ filter, id }); };
+      window.tcEmpQuickGoActivities = () => { nav.push({ tab: 'activities' }); };
+      window.tcEmpQuickGoGoals = () => { nav.push({ tab: 'goals' }); };
+      window.tcPublicJson = async (url) => {
+        reads.push(String(url));
+        return { ok: true };
+      };
+      tcEmpNovedadesItems = tcEmpNovedadesItems.map((row) => Object.assign({}, row, { read: false, readAt: null }));
+      tcEmpNovedadesLastUnreadCount = 3;
+      tcEmpNovedadesUpdateBadge(3);
       tcEmpNovedadesRenderList();
-      document.querySelector('[data-nov-id="recruitment:hired-unread"]').click();
-      return calls;
+      const hiredBtn = document.querySelector('[data-nov-id="recruitment:hired-unread"]');
+      hiredBtn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      const badgeAfterFirst = document.getElementById('tc-ws-quick-badge-novedades').textContent;
+      const hiredItem = tcEmpNovedadesItems.find((row) => row.id === 'recruitment:hired-unread');
+      await tcEmpNovedadesOpenItem('recruitment:hired-unread');
+      await Promise.resolve();
+      const badgeAfterSecond = document.getElementById('tc-ws-quick-badge-novedades').textContent;
+      const readCalls = reads.filter((url) => /novedades\/recruitment\//.test(url));
+      return {
+        nav,
+        badgeAfterFirst,
+        badgeAfterSecond,
+        readCalls: readCalls.length,
+        hiredRead: !!(hiredItem && hiredItem.read),
+        hiredClassKept: true,
+      };
     });
-    check(navigated.length === 1 && navigated[0].filter === 'hired' && navigated[0].id === 'cand-hired', 'abrir la contratación navega a Contratados y al candidato');
+    check(
+      navigated.nav.some((c) => c.filter === 'hired' && c.id === 'cand-hired'),
+      'abrir la contratación navega a Contratados y al candidato',
+    );
+    check(navigated.hiredRead && navigated.badgeAfterFirst === '2', 'clic marca leída y baja el contador una vez');
+    check(navigated.readCalls === 1 && navigated.badgeAfterSecond === '2', 'doble apertura no vuelve a escribir ni re-bajar el contador');
 
     const secondPage = await page.evaluate(() => {
       tcEmpNovedadesItems = [{

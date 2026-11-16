@@ -61,7 +61,8 @@ check(!/location\.reload|window\.reload/.test(quickGoAct), 'navegación activida
 check(!/setInterval/.test(quickGoAct), 'navegación actividades sin nuevo polling');
 check(/GOAL_ASSIGNED[\s\S]*tcEmpQuickGoGoals/.test(novedadesOpen), 'GOAL_ASSIGNED sigue yendo a Metas');
 check(/tcEmpQuickGoCandidates/.test(novedadesOpen), 'Reclutamiento sigue yendo a Candidatos');
-check(!/tcEmpNovedadesMarkRead|novedades.*\/read/i.test(novedadesOpen), 'clic novedad no marca leída individual');
+check(/tcEmpNovedadesEnsureItemRead\(item\)/.test(novedadesOpen), 'abrir novedad marca lectura individual');
+check(/novedades\/workplace\//.test(indexHtml) && /novedades\/recruitment\//.test(indexHtml), 'UI usa ambas rutas read');
 const publicHtml = fs.readFileSync(path.join(serverDir, 'public/index.html'), 'utf8');
 check(publicHtml === indexHtml, 'index.html idéntico a server/public/index.html');
 
@@ -220,8 +221,34 @@ if (dbOk) {
 
     const list = await jsonFetch(base, '/api/timeclock/public/novedades?limit=30', { cookie: tcCookie });
     check(list.data.novedades?.length >= 3, 'feed combinado listado');
+    check((list.data.novedades || []).length <= 30, 'feed limitado a 30');
     const sources = new Set((list.data.novedades || []).map((n) => n.source));
     check(sources.has('workplace'), 'feed incluye workplace');
+
+    const wpItem = (list.data.novedades || []).find((n) => n.source === 'workplace' && !n.read);
+    check(!!wpItem, 'hay workplace sin leer');
+    const wpRaw = String(wpItem.id).slice('workplace:'.length);
+    const uBeforeWp = unread.data.unreadCount;
+    const wpRead = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/workplace/${encodeURIComponent(wpRaw)}/read`,
+      { method: 'POST', cookie: tcCookie, body: {} },
+    );
+    check(wpRead.res.status === 200 && wpRead.data?.ok === true, 'lectura individual workplace');
+    const uAfterWp = await jsonFetch(base, '/api/timeclock/public/novedades/unread-count', {
+      cookie: tcCookie,
+    });
+    check(uAfterWp.data.unreadCount === uBeforeWp - 1, 'unread workplace baja uno');
+    const wpReadAgain = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/workplace/${encodeURIComponent(wpRaw)}/read`,
+      { method: 'POST', cookie: tcCookie, body: {} },
+    );
+    check(wpReadAgain.res.status === 200 && wpReadAgain.data?.ok === true, 'workplace read idempotente');
+    const uAfterWpIdem = await jsonFetch(base, '/api/timeclock/public/novedades/unread-count', {
+      cookie: tcCookie,
+    });
+    check(uAfterWpIdem.data.unreadCount === uBeforeWp - 1, 'idempotente workplace no re-baja');
 
     await jsonFetch(base, '/api/timeclock/public/novedades/read-all', {
       method: 'POST',

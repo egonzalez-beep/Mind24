@@ -53,11 +53,33 @@ check(/dedupeKey = stageEvent\.id/.test(novedadSvc) || /dedupeKey = stageEvent.i
 check(/P2002/.test(novedadSvc), 'idempotente unique violation');
 check(/router\.get\('\/novedades'/.test(publicRoutes), 'GET listado');
 check(/\/novedades\/unread-count/.test(publicRoutes), 'GET unread-count');
-check(!/\/novedades\/:id\/read/.test(publicRoutes), 'sin POST read individual');
+check(/\/novedades\/recruitment\/:id\/read/.test(publicRoutes), 'POST read individual reclutamiento');
+check(/\/novedades\/workplace\/:id\/read/.test(publicRoutes), 'POST read individual workplace');
+check(/markWorkforceRecruitmentNovedadRead/.test(publicRoutes), 'ruta reclutamiento usa servicio existente');
+{
+  const wpBlock = publicRoutes.split("'/novedades/workplace/:id/read'")[1]?.split('router.post')[0] || '';
+  const recBlock = publicRoutes.split("'/novedades/recruitment/:id/read'")[1]?.split('router.post')[0] || '';
+  check(
+    /requireTimeclockSession/.test(wpBlock) &&
+      /requireTimeclockMutationOrigin/.test(wpBlock) &&
+      /requireTimeclockSession/.test(recBlock) &&
+      /requireTimeclockMutationOrigin/.test(recBlock) &&
+      !/Limiter/.test(wpBlock) &&
+      !/Limiter/.test(recBlock),
+    'ambas rutas read: sesión + origen, sin limiter extra',
+  );
+  check(!/req\.body/.test(recBlock), 'recruitment read no lee body para destinatario');
+}
 check(/\/novedades\/read-all/.test(publicRoutes), 'POST read-all');
 check(/listCollaboratorNovedadesFeed/.test(publicRoutes), 'feed combinado en rutas');
-check(!/tcEmpNovedadesMarkRead/.test(indexHtml), 'sin lectura individual en UI');
+check(/function tcEmpNovedadesEnsureItemRead/.test(indexHtml), 'UI lectura individual al abrir');
+check(/novedades\/recruitment\/'\+encodeURIComponent\(rawId\)\+'\/read/.test(indexHtml), 'UI llama read reclutamiento');
+check(/novedades\/workplace\/'\+encodeURIComponent\(rawId\)\+'\/read/.test(indexHtml), 'UI llama read workplace');
 check(/tcEmpNovedadesParseCompositeId/.test(indexHtml) && /source==='workplace'/.test(indexHtml), 'navegación workplace');
+check(
+  indexHtml === fs.readFileSync(path.join(root, 'server/public/index.html'), 'utf8'),
+  'index.html y server/public/index.html son idénticos',
+);
 check(!/req\.query\.organizationId/.test(publicRoutes.match(/router\.get\('\/novedades'[\s\S]*?}\);/)?.[0] || ''), 'no orgId en query');
 check(/TC_EMP_NOVEDADES_POLL_MS=20000/.test(indexHtml), 'polling 20s');
 check(/tcEmpNovedadesStopPolling[\s\S]*clearInterval/.test(indexHtml), 'un solo intervalo');
@@ -419,7 +441,10 @@ if (dbOk) {
 
     const listReg = await jsonFetch(base, '/api/timeclock/public/novedades?limit=30', { cookie: tcReg });
     check(listReg.res.status === 200 && listReg.data.novedades?.length >= 3, 'listado destinatario');
-    const firstId = listReg.data.novedades[0]?.id;
+    const recItem = (listReg.data.novedades || []).find(
+      (n) => n.source === 'recruitment' || String(n.id || '').startsWith('recruitment:'),
+    );
+    const firstId = recItem?.id || listReg.data.novedades[0]?.id;
 
     const crossList = await jsonFetch(base, '/api/timeclock/public/novedades?limit=30', {
       cookie: tcOther,
@@ -436,6 +461,69 @@ if (dbOk) {
     check(u0 > 0, 'unread inicial > 0');
 
     check(firstId && String(firstId).includes(':'), '12 id compuesto en feed');
+    const rawRecId = String(firstId).startsWith('recruitment:')
+      ? String(firstId).slice('recruitment:'.length)
+      : null;
+    check(!!rawRecId, '12 raw id reclutamiento');
+
+    const readOwn = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/recruitment/${encodeURIComponent(rawRecId)}/read`,
+      { method: 'POST', cookie: tcReg, body: {} },
+    );
+    check(readOwn.res.status === 200 && readOwn.data?.ok === true, 'lectura individual propia');
+    const unreadAfterOne = await jsonFetch(base, '/api/timeclock/public/novedades/unread-count', {
+      cookie: tcReg,
+    });
+    check(unreadAfterOne.data.unreadCount === u0 - 1, 'unread baja exactamente uno');
+
+    const readAgain = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/recruitment/${encodeURIComponent(rawRecId)}/read`,
+      { method: 'POST', cookie: tcReg, body: {} },
+    );
+    check(readAgain.res.status === 200 && readAgain.data?.ok === true, 'lectura individual idempotente');
+    const unreadAfterIdem = await jsonFetch(base, '/api/timeclock/public/novedades/unread-count', {
+      cookie: tcReg,
+    });
+    check(unreadAfterIdem.data.unreadCount === u0 - 1, 'idempotente no vuelve a bajar el contador');
+
+    const crossRead = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/recruitment/${encodeURIComponent(rawRecId)}/read`,
+      { method: 'POST', cookie: tcOther, body: {} },
+    );
+    check(crossRead.res.status === 404, 'otro colaborador no marca novedad ajena');
+
+    const exB = await jsonFetch(base, '/api/timeclock/public/exchange', {
+      method: 'POST',
+      body: { token: tokB },
+    });
+    const tcB = cookieHeaderFromResponse(exB.res, 'mind24.tc.sid');
+    const crossOrgRead = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/recruitment/${encodeURIComponent(rawRecId)}/read`,
+      { method: 'POST', cookie: tcB, body: {} },
+    );
+    check(crossOrgRead.res.status === 404, 'otra organización no marca novedad ajena');
+
+    const missingRead = await jsonFetch(
+      base,
+      '/api/timeclock/public/novedades/recruitment/nov-inexistente/read',
+      { method: 'POST', cookie: tcReg, body: {} },
+    );
+    check(missingRead.res.status === 404, 'id inexistente → 404 sin filtración');
+
+    const spoofBody = await jsonFetch(
+      base,
+      `/api/timeclock/public/novedades/recruitment/${encodeURIComponent(rawRecId)}/read`,
+      {
+        method: 'POST',
+        cookie: tcReg,
+        body: { organizationId: orgB.id, employeeId: empOther.id, recipientWorkforceEmployeeId: empOther.id },
+      },
+    );
+    check(spoofBody.res.status === 200 && spoofBody.data?.ok === true, 'body spoof ignorado; sesión manda');
 
     await jsonFetch(base, '/api/timeclock/public/novedades/read-all', {
       method: 'POST',
@@ -456,6 +544,11 @@ if (dbOk) {
       cookie: tcReg,
     });
     check(unreadNoTasks.res.status === 200, '15 funciona sin actividades');
+
+    check(
+      Array.isArray(listReg.data.novedades) && listReg.data.novedades.length <= 30,
+      'feed limitado a 30',
+    );
 
     check(stNew && contact && hired && rejected, 'stages seed OK');
   } finally {

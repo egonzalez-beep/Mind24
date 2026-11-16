@@ -530,13 +530,16 @@ const loadFn = indexHtml.match(/async function tcEmpLoadGoals\([\s\S]*?\n\}/)?.[
 const adminOpen = indexHtml.match(/function mind24NotifOpenItem\([\s\S]*?\n\}/)?.[0] || '';
 check(/GOAL_ASSIGNED[\s\S]*tcEmpQuickGoGoals/.test(openItem), 'asignar meta sigue abriendo Metas');
 check(/WORKFORCE_DAILY_GOALS_REMINDER[\s\S]*tcEmpOpenDailyGoalsReminder/.test(openItem), 'el recordatorio abre su deep-link');
-check(!/tcEmpNovedadesMarkRead|novedades.*\/read/i.test(openItem), 'el clic genérico de novedades no marca leída');
+check(/tcEmpNovedadesEnsureItemRead\(item\)/.test(openItem), 'el clic genérico marca leída individual');
 check(/tcEmpGoalsSetView\('todo'\)/.test(reminderFn), 'el deep-link abre Por cumplir');
 check(!/goalsView|Completadas|'done'/.test(reminderFn), 'el deep-link no abre Completadas');
 check(!/tcEmpGoalsSetView\(/.test(loadFn), 'si la meta ya no está en Por cumplir no cambia de subvista');
 check(/tcEmpWorkspaceSetTab\('goals'\)/.test(reminderFn), 'el deep-link selecciona la pestaña Metas');
-check(/novedades\/workplace\//.test(reminderFn), 'el deep-link marca leída la fila del colaborador');
+check(!/novedades\/workplace\//.test(reminderFn), 'el deep-link no duplica el mark read');
 check(!/location\.reload|window\.reload/.test(reminderFn), 'el deep-link no recarga la página');
+const ensureReadFn = indexHtml.match(/function tcEmpNovedadesEnsureItemRead\([\s\S]*?\n\}/)?.[0] || '';
+check(/novedades\/workplace\//.test(ensureReadFn) && /novedades\/recruitment\//.test(ensureReadFn), 'EnsureItemRead cubre workplace y reclutamiento');
+check(/tcEmpNovedadesMarkInFlight/.test(ensureReadFn), 'doble clic controlado por inFlight');
 check(/seq!==tcEmpGoalsLoadSeq/.test(loadFn), 'una respuesta vieja no pinta la vista nueva');
 check(/tcEmpFocusGoalCard/.test(loadFn), 'una sola meta puede enfocarse después de cargar');
 check(/data-goal-id/.test(indexHtml), 'la tarjeta de meta se puede localizar');

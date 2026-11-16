@@ -66,6 +66,7 @@ import {
   listCollaboratorNovedadesFeed,
   markAllCollaboratorNovedadesRead,
 } from '../services/workforceCollaboratorNovedadesFeed.service.js';
+import { markWorkforceRecruitmentNovedadRead } from '../services/workforceRecruitmentNovedad.service.js';
 import { markWorkplaceInboxItemRead } from '../services/workforceWorkplaceInbox.service.js';
 import {
   listWorkforceGoalPeriodsForEmployee,
@@ -671,6 +672,25 @@ router.post(
     try {
       const emp = req.timeclockEmployee;
       const result = await markWorkplaceInboxItemRead(emp.organizationId, emp.id, req.params.id);
+      res.json(result);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.post(
+  '/novedades/recruitment/:id/read',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  async (req, res, next) => {
+    try {
+      const emp = req.timeclockEmployee;
+      const result = await markWorkforceRecruitmentNovedadRead(
+        emp.organizationId,
+        emp.id,
+        req.params.id,
+      );
       res.json(result);
     } catch (e) {
       next(e);
