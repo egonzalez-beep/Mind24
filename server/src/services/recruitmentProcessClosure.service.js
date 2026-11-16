@@ -161,6 +161,81 @@ export function kanbanVisibleApplicationWhere() {
 }
 
 /**
+ * Antigüedad del intento operativo.
+ * Autoridad: createdAt (nacimiento de la fila RecruitmentApplication).
+ * Fallback: appliedAt solo si createdAt falta (fixtures o payloads incompletos).
+ * Nunca updatedAt, closedAt ni fechas terminales.
+ */
+export function recruitmentApplicationRecencyMs(app) {
+  if (!app) return 0;
+  const hasCreated = app.createdAt != null && app.createdAt !== '';
+  const raw = hasCreated ? app.createdAt : (app.appliedAt ?? null);
+  if (!raw) return 0;
+  const ms = raw instanceof Date ? raw.getTime() : new Date(raw).getTime();
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+/** Más reciente primero; empate por id descendente (estable y determinista). */
+export function compareRecruitmentApplicationsNewestFirst(a, b) {
+  const d = recruitmentApplicationRecencyMs(b) - recruitmentApplicationRecencyMs(a);
+  if (d !== 0) return d;
+  const idA = String(a?.id ?? '');
+  const idB = String(b?.id ?? '');
+  if (idA === idB) return 0;
+  return idA < idB ? 1 : -1;
+}
+
+/**
+ * Proceso visible del par candidato–vacante (regla canónica):
+ * 1) aplicación abierta actual (si hay varias, la más reciente);
+ * 2) si no hay abierta, el intento más reciente;
+ * 3) desempate: createdAt (fallback appliedAt) y luego id.
+ *
+ * Autoridad del Kanban operativo: selectOperationalApplicationsForVacancyKanban
+ * (listRecruitmentApplicationsForVacancy). El frontend solo puede espejar esta regla.
+ */
+export function pickOperationalApplicationForCandidateVacancy(appsForSamePair) {
+  const rows = (Array.isArray(appsForSamePair) ? appsForSamePair : []).filter(Boolean);
+  if (!rows.length) return null;
+  const open = rows.filter((app) => {
+    const stageKey = app?.stage?.key ?? app?.stageKey ?? null;
+    return isRecruitmentApplicationOpen(stageKey, app?.closureOutcome ?? null);
+  });
+  const pool = open.length ? open : rows;
+  return [...pool].sort(compareRecruitmentApplicationsNewestFirst)[0] ?? null;
+}
+
+/**
+ * Autoridad del tablero: una tarjeta operativa por candidateId en la vacante.
+ * Agrupa solo por IDs canónicos; no fusiona personas distintas.
+ */
+export function selectOperationalApplicationsForVacancyKanban(applications) {
+  const rows = Array.isArray(applications) ? applications : [];
+  if (rows.length <= 1) return rows;
+  const byCandidate = new Map();
+  for (const app of rows) {
+    const cid = String(app?.candidateId ?? app?.candidate?.id ?? '');
+    if (!cid) continue;
+    if (!byCandidate.has(cid)) byCandidate.set(cid, []);
+    byCandidate.get(cid).push(app);
+  }
+  const chosenIds = new Set();
+  for (const group of byCandidate.values()) {
+    const pick = pickOperationalApplicationForCandidateVacancy(group);
+    if (pick?.id != null) chosenIds.add(String(pick.id));
+  }
+  return rows.filter((app) => chosenIds.has(String(app?.id)));
+}
+
+/** Mensajes 409 de reaplicación (activo vs contratado). */
+export function reapplicationConflictMessage(stageKey, closureOutcome) {
+  if (classifyRecruitmentApplication(stageKey, closureOutcome) === 'hired') {
+    return 'El candidato ya fue contratado en esta vacante.';
+  }
+  return 'El candidato ya tiene un proceso activo en esta vacante.';
+}
+
+/**
  * El primer paso a la clave REJECTED guarda el cierre.
  * Repetir la etapa no reescribe nada. Un cierre ya existente no se limpia.
  */

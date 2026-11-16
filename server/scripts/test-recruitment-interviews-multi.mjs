@@ -212,6 +212,12 @@ function openApp(db, patch = {}) {
 }
 
 const TZ = 'America/Mexico_City';
+/**
+ * Reloj congelado del escenario A–H (primera cadena).
+ * Las fechas civiles del fixture se interpretan como futuras respecto a este
+ * instante; no dependen del calendario del host ni caducan con el paso del tiempo.
+ */
+const EARLY_CHAIN_NOW = new Date('2026-11-09T18:00:00.000Z');
 
 console.log('\n=== Entrevistas múltiples ===\n');
 
@@ -264,6 +270,9 @@ check(
 
 const db = memoryDb();
 const app = openApp(db);
+const expectedFirstIso = utcInstantFromLocalParts('2026-11-12', 10, 30, TZ).toISOString();
+const expectedSecondIso = utcInstantFromLocalParts('2026-11-20', 16, 0, TZ).toISOString();
+const expectedMovedIso = utcInstantFromLocalParts('2026-11-21', 11, 0, TZ).toISOString();
 const first = await scheduleRecruitmentApplicationInterview({
   organizationId: 'org-1',
   applicationId: 'app-1',
@@ -273,10 +282,11 @@ const first = await scheduleRecruitmentApplicationInterview({
   label: 'Entrevista con supervisor',
   comment: null,
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(first.alreadyScheduled === false && first.interview.eventType === 'SCHEDULED', 'A la primera entrevista queda Programada');
-check(first.interview.scheduledAt === '2026-11-12T16:30:00.000Z', 'Q la hora se guarda como instante canónico');
+check(first.interview.scheduledAt === expectedFirstIso, 'Q la hora se guarda como instante canónico');
 check(
   formatInterviewScheduledAtLabel(first.interview.scheduledAt, TZ).includes('10:30'),
   'Q el formateo de esa cita vuelve a las 10:30',
@@ -294,6 +304,7 @@ try {
     interviewTime: '10:30',
     label: 'Otro nombre',
     timeZone: TZ,
+    now: EARLY_CHAIN_NOW,
     db,
   });
 } catch (err) {
@@ -318,10 +329,15 @@ const second = await scheduleRecruitmentApplicationInterview({
   label: 'Entrevista final',
   comment: 'Traer identificación',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(second.alreadyScheduled === false && db.events.filter((row) => row.applicationId === 'app-1').length === 2, 'B la segunda entrevista no borra la primera');
-check(app.interviewScheduledAt.toISOString() === first.interview.scheduledAt, 'la cita visible sigue siendo la más próxima');
+check(
+  second.interview.scheduledAt === expectedSecondIso
+    && app.interviewScheduledAt.toISOString() === first.interview.scheduledAt,
+  'la cita visible sigue siendo la más próxima',
+);
 
 const other = openApp(db, { id: 'app-2', vacancyId: 'vac-2' });
 await scheduleRecruitmentApplicationInterview({
@@ -332,6 +348,7 @@ await scheduleRecruitmentApplicationInterview({
   interviewTime: '09:00',
   label: 'Otra vacante',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(
@@ -342,7 +359,7 @@ check(
 );
 
 const rows = buildApplicationInterviewRows(app, db.events.filter((row) => row.applicationId === 'app-1').map(decorate));
-const ordered = orderInterviewsForDisplay(rows);
+const ordered = orderInterviewsForDisplay(rows, EARLY_CHAIN_NOW);
 check(ordered.upcoming.map((row) => row.label).join('|') === 'Entrevista con supervisor|Entrevista final', 'D la próxima queda antes que la posterior');
 check(ordered.total === 2 && rows.filter((row) => row.legacy).length === 0, 'una cita ya registrada no se duplica con la columna');
 
@@ -354,6 +371,7 @@ const attended = await updateRecruitmentApplicationInterview({
   createdByUserId: 'user-1',
   comment: 'Buena impresión',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(attended.interview.eventType === 'ATTENDED' && attended.interview.comment === 'Buena impresión', 'E e I realizada conserva su comentario');
@@ -364,6 +382,7 @@ const attendedAgain = await updateRecruitmentApplicationInterview({
   action: 'ATTENDED',
   createdByUserId: 'user-1',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(attendedAgain.alreadyApplied === true && db.events.filter((row) => row.eventType === 'ATTENDED').length === 1, 'E repetir realizada no crea otra fila');
@@ -378,6 +397,7 @@ const moved = await updateRecruitmentApplicationInterview({
   interviewDate: '2026-11-21',
   interviewTime: '11:00',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 const previous = db.events.find((row) => row.id === second.interview.id);
@@ -385,7 +405,7 @@ check(
   previous.eventType === 'RESCHEDULED'
     && previous.scheduledAt.toISOString() === oldInstant
     && moved.interview.eventType === 'SCHEDULED'
-    && moved.interview.scheduledAt === '2026-11-21T17:00:00.000Z',
+    && moved.interview.scheduledAt === expectedMovedIso,
   'F reprogramar conserva la fecha anterior y crea la cita nueva',
 );
 
@@ -398,6 +418,7 @@ await scheduleRecruitmentApplicationInterview({
   label: 'Entrevista de cierre',
   comment: 'Sala 2',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 const cancelTarget = db.events.find((row) => row.label === 'Entrevista de cierre');
@@ -409,6 +430,7 @@ const cancelled = await updateRecruitmentApplicationInterview({
   createdByUserId: 'user-1',
   comment: 'El cliente canceló',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(cancelled.interview.eventType === 'CANCELLED' && cancelled.interview.comment === 'El cliente canceló', 'G cancelada conserva el motivo');
@@ -421,6 +443,7 @@ await scheduleRecruitmentApplicationInterview({
   interviewTime: '13:00',
   label: 'Entrevista inicial',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 const absentTarget = db.events.find((row) => row.label === 'Entrevista inicial');
@@ -432,11 +455,12 @@ const absent = await updateRecruitmentApplicationInterview({
   createdByUserId: 'user-1',
   comment: 'No confirmó su asistencia.',
   timeZone: TZ,
+  now: EARLY_CHAIN_NOW,
   db,
 });
 check(absent.interview.eventType === 'NO_SHOW' && absent.interview.comment === 'No confirmó su asistencia.', 'H no asistió conserva el comentario');
 
-const past = orderInterviewsForDisplay(db.events.filter((row) => row.applicationId === 'app-1').map(decorate));
+const past = orderInterviewsForDisplay(db.events.filter((row) => row.applicationId === 'app-1').map(decorate), EARLY_CHAIN_NOW);
 check(
   past.upcoming.every((row) => row.eventType === 'SCHEDULED')
     && past.past.every((row) => row.eventType !== 'SCHEDULED')
@@ -454,6 +478,7 @@ try {
     interviewDate: '2026-11-24',
     interviewTime: '10:00',
     timeZone: TZ,
+    now: EARLY_CHAIN_NOW,
     db,
   });
 } catch (err) { missing = err.code; }
@@ -474,6 +499,7 @@ for (const [label, patch] of [
       interviewDate: '2026-11-24',
       interviewTime: '10:00',
       timeZone: TZ,
+      now: EARLY_CHAIN_NOW,
       db,
     });
   } catch (err) { code = err.code; }
@@ -490,6 +516,7 @@ try {
     interviewDate: '2026-11-24',
     interviewTime: '10:00',
     timeZone: TZ,
+    now: EARLY_CHAIN_NOW,
     db,
   });
 } catch (err) { archivedCode = err.code; }

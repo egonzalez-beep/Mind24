@@ -33,6 +33,9 @@ const {
   classifyRecruitmentApplication,
   expectedBlocksReapplication,
   isBlocksReapplicationUniqueViolation,
+  pickOperationalApplicationForCandidateVacancy,
+  reapplicationConflictMessage,
+  selectOperationalApplicationsForVacancyKanban,
   BLOCKS_REAPPLICATION_UNIQUE_INDEX,
 } = await import('../src/services/recruitmentProcessClosure.service.js');
 
@@ -169,7 +172,31 @@ check(lockAt >= 0 && lockAt < vacAt && vacAt < blockAt && blockAt < unarchiveAt 
   'orden TX: candado → vacante → bloqueo → desarchivo → create → sync');
 check(/blocksReapplication:\s*true/.test(appSvc), 'create fija true');
 check(/isBlocksReapplicationUniqueViolation/.test(appSvc), 'traduce P2002 específico');
-check(/El candidato ya está asignado a esta vacante\./.test(appSvc), 'mensaje 409 estable');
+check(/reapplicationConflictMessage/.test(appSvc), 'create usa mensajes 409 canónicos');
+check(
+  reapplicationConflictMessage('FINALIST', null) ===
+    'El candidato ya tiene un proceso activo en esta vacante.',
+  'mensaje 409 activo exacto',
+);
+check(
+  reapplicationConflictMessage('HIRED', null) ===
+    'El candidato ya fue contratado en esta vacante.',
+  'mensaje 409 HIRED exacto',
+);
+check(/selectOperationalApplicationsForVacancyKanban/.test(appSvc), 'listado Kanban filtra operativo');
+check(/pickOperationalApplicationForCandidateVacancy/.test(closureSvc), 'helper canónico de proceso visible');
+{
+  const createSlice = appSvc.slice(
+    appSvc.indexOf('export async function createRecruitmentApplication'),
+    appSvc.indexOf('export async function listRecruitmentApplicationsForVacancy'),
+  );
+  check(!/createRecruitmentCandidateAndNotify/.test(createSlice), 'create application no invoca createRecruitmentCandidateAndNotify');
+  check(
+    !/RECRUITMENT_CANDIDATE_CREATED|notifyRecruitmentCandidateCreated|emitOrgNotification/.test(createSlice),
+    'create application no emite RECRUITMENT_CANDIDATE_CREATED',
+  );
+  check(!/recruitmentCandidate\.create/.test(createSlice), 'create application no crea RecruitmentCandidate');
+}
 check(/blocksReapplication: false/.test(closureSvc), 'decline → false');
 check(/blocksReapplication: false/.test(closureSvc.match(/toStageKey === 'REJECTED'[\s\S]{0,200}/)?.[0] || ''), 'move REJECTED → false');
 check(
@@ -182,14 +209,114 @@ check(
 check(/recCandVacancyPriorParticipation/.test(indexHtml), 'UI participación previa');
 check(/Participó antes · Declinó/.test(indexHtml), 'copy Declinó');
 check(/Participó antes · Rechazado/.test(indexHtml), 'copy Rechazado');
-check(/permanecerá en el historial/.test(indexHtml), 'confirmación reincorporación');
 check(
-  /async function recCandSubmitAddVacancy[\s\S]{0,800}window\.confirm\(/.test(indexHtml),
+  /Esta persona ya participó anteriormente en esta vacante y declinó\. Se conservará el proceso anterior en su historial y se iniciará uno nuevo\./.test(
+    indexHtml,
+  ),
+  'confirmación Declinó exacta',
+);
+check(
+  /Esta persona ya participó anteriormente en esta vacante y fue rechazada\. Se conservará el proceso anterior en su historial y se iniciará uno nuevo\./.test(
+    indexHtml,
+  ),
+  'confirmación Rechazado exacta',
+);
+check(/recCandReapplyConfirmMessage/.test(indexHtml), 'helper de confirmación de reaplicación');
+check(/recKanbanPickOperationalApplications/.test(indexHtml), 'Kanban UI usa selección operativa');
+check(/Iniciar nuevo proceso/.test(indexHtml), 'acción habla de iniciar nuevo proceso');
+check(
+  /async function recCandSubmitAddVacancy[\s\S]{0,900}window\.confirm\(/.test(indexHtml),
   'reapply usa window.confirm (deuda visual; no hay diálogo Mind24 reutilizable)',
 );
 check(!/duplicar candidato/i.test(indexHtml), 'sin copy duplicar candidato');
 check(/Al añadir una vacante se creará un nuevo proceso/.test(indexHtml), 'archivado puede añadir vacante');
 check(pubHtml === indexHtml, 'index.html raíz idéntico a server/public');
+
+console.log('\n=== Reaplicación — selección canónica Kanban (unit) ===\n');
+{
+  const terminal = {
+    id: 'app-old',
+    candidateId: 'c1',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    appliedAt: '2026-01-01T00:00:00.000Z',
+    closureOutcome: 'DECLINED',
+    stage: { key: 'CONTACT' },
+  };
+  const active = {
+    id: 'app-new',
+    candidateId: 'c1',
+    createdAt: '2026-11-01T00:00:00.000Z',
+    appliedAt: '2026-11-01T00:00:00.000Z',
+    closureOutcome: null,
+    stage: { key: 'NEW' },
+  };
+  const otherPerson = {
+    id: 'app-other',
+    candidateId: 'c2',
+    createdAt: '2026-10-01T00:00:00.000Z',
+    appliedAt: '2026-10-01T00:00:00.000Z',
+    closureOutcome: 'REJECTED',
+    stage: { key: 'REJECTED' },
+  };
+  const pick = pickOperationalApplicationForCandidateVacancy([terminal, active]);
+  check(pick && pick.id === 'app-new', 'Kanban: con activo nuevo elige el abierto');
+  const onlyTerm = pickOperationalApplicationForCandidateVacancy([terminal]);
+  check(onlyTerm && onlyTerm.id === 'app-old', 'Kanban: solo terminal conserva tarjeta');
+  const visible = selectOperationalApplicationsForVacancyKanban([terminal, active, otherPerson]);
+  check(
+    visible.length === 2 &&
+      visible.some((a) => a.id === 'app-new') &&
+      visible.some((a) => a.id === 'app-other') &&
+      !visible.some((a) => a.id === 'app-old'),
+    'Kanban: una tarjeta por candidato; no oculta otra persona',
+  );
+  const twinOpen = selectOperationalApplicationsForVacancyKanban([
+    { ...active, id: 'app-a', createdAt: '2026-11-02T00:00:00.000Z' },
+    { ...active, id: 'app-b', createdAt: '2026-11-03T00:00:00.000Z' },
+  ]);
+  check(twinOpen.length === 1 && twinOpen[0].id === 'app-b', 'Kanban: entre abiertos gana el más reciente');
+  const createdWins = pickOperationalApplicationForCandidateVacancy([
+    {
+      id: 'app-created-old',
+      candidateId: 'c3',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      appliedAt: '2026-12-01T00:00:00.000Z',
+      closureOutcome: null,
+      stage: { key: 'CONTACT' },
+    },
+    {
+      id: 'app-created-new',
+      candidateId: 'c3',
+      createdAt: '2026-06-01T00:00:00.000Z',
+      appliedAt: '2026-02-01T00:00:00.000Z',
+      closureOutcome: null,
+      stage: { key: 'CONTACT' },
+    },
+  ]);
+  check(createdWins && createdWins.id === 'app-created-new', 'Kanban: createdAt manda aunque appliedAt discrepe');
+  const appliedFallback = pickOperationalApplicationForCandidateVacancy([
+    {
+      id: 'app-a1',
+      candidateId: 'c4',
+      appliedAt: '2026-01-01T00:00:00.000Z',
+      closureOutcome: 'DECLINED',
+      stage: { key: 'CONTACT' },
+    },
+    {
+      id: 'app-a2',
+      candidateId: 'c4',
+      appliedAt: '2026-08-01T00:00:00.000Z',
+      closureOutcome: 'REJECTED',
+      stage: { key: 'REJECTED' },
+    },
+  ]);
+  check(appliedFallback && appliedFallback.id === 'app-a2', 'Kanban: sin createdAt usa appliedAt');
+  check(
+    reapplicationConflictMessage(null, null) ===
+      'El candidato ya tiene un proceso activo en esta vacante.',
+    'P2002 sin fila legible → 409 activo seguro',
+  );
+}
 
 check(
   /Talento registrado|enteredProcess|distinct:\s*\['candidateId'\]/.test(
@@ -280,8 +407,17 @@ async function runPg() {
       fullName: 'Cand Reapply',
       profile: 'Operador',
       phone: '5511111111',
+      notes: 'Nota personal estable',
     },
   });
+  const tag = await prisma.recruitmentCandidateTag.create({
+    data: { organizationId: org.id, name: `Prioritario-${Date.now()}`, colorKey: 'blue' },
+  }).catch(() => null);
+  if (tag) {
+    await prisma.recruitmentCandidateTagAssignment.create({
+      data: { organizationId: org.id, candidateId: cand.id, tagId: tag.id },
+    }).catch(() => {});
+  }
 
   try {
     const login = await jsonFetch('/api/auth/login', {
@@ -289,6 +425,10 @@ async function runPg() {
       body: { email: admin.email, password: pass },
     });
     const cookie = cookieFrom(login.res, 'mind24.sid');
+    const candidateIdBefore = cand.id;
+    const notifBefore = await prisma.orgNotification.count({
+      where: { organizationId: org.id, type: 'RECRUITMENT_CANDIDATE_CREATED' },
+    }).catch(() => 0);
 
     const first = await createRecruitmentApplication({
       organizationId: org.id,
@@ -297,13 +437,22 @@ async function runPg() {
       changedByUserId: admin.id,
     });
     check(first.blocksReapplication === true, '1 alta inicial blocks=true');
+    check(first.candidateId === candidateIdBefore, 'identidad: alta inicial conserva candidateId');
 
+    const candCountBefore = await prisma.recruitmentCandidate.count({
+      where: { organizationId: org.id },
+    });
     const activeConflict = await jsonFetch(`/api/org/recruitment/vacancies/${vac.id}/applications`, {
       method: 'POST',
       cookie,
       body: { candidateId: cand.id },
     });
     check(activeConflict.res.status === 409, '4 activo → 409');
+    check(
+      String(activeConflict.data?.message || '') ===
+        'El candidato ya tiene un proceso activo en esta vacante.',
+      '4 mensaje 409 activo exacto',
+    );
 
     await declineRecruitmentApplication({
       organizationId: org.id,
@@ -313,6 +462,14 @@ async function runPg() {
     });
     const afterDecline = await prisma.recruitmentApplication.findUnique({ where: { id: first.id } });
     check(afterDecline.blocksReapplication === false, 'Declinó → blocks=false');
+    const declineSnapshot = {
+      closedAt: afterDecline.closedAt?.toISOString?.() || null,
+      closureOutcome: afterDecline.closureOutcome,
+      closureReason: afterDecline.closureReason,
+      blocksReapplication: afterDecline.blocksReapplication,
+      stageId: afterDecline.stageId,
+      notes: afterDecline.notes,
+    };
 
     const second = await createRecruitmentApplication({
       organizationId: org.id,
@@ -320,7 +477,51 @@ async function runPg() {
       candidateId: cand.id,
       changedByUserId: admin.id,
     });
-    check(second.id !== first.id && second.blocksReapplication === true, '1 Declinó → nuevo proceso');
+    check(
+      second.id !== first.id &&
+        second.candidateId === cand.id &&
+        second.vacancyId === vac.id &&
+        first.vacancyId === vac.id &&
+        second.blocksReapplication === true,
+      '1 Declinó → nuevo proceso mismo candidateId+vacancyId',
+    );
+    check(second.candidateId === candidateIdBefore, 'identidad: mismo RecruitmentCandidate.id tras reaplicar');
+    const afterReapplyPrev = await prisma.recruitmentApplication.findUnique({ where: { id: first.id } });
+    check(
+      (afterReapplyPrev.closedAt?.toISOString?.() || null) === declineSnapshot.closedAt &&
+        afterReapplyPrev.closureOutcome === declineSnapshot.closureOutcome &&
+        afterReapplyPrev.closureReason === declineSnapshot.closureReason &&
+        afterReapplyPrev.blocksReapplication === declineSnapshot.blocksReapplication &&
+        afterReapplyPrev.stageId === declineSnapshot.stageId &&
+        afterReapplyPrev.notes === declineSnapshot.notes,
+      '10 aplicación anterior intacta tras reaplicar',
+    );
+    const candCountAfter = await prisma.recruitmentCandidate.count({
+      where: { organizationId: org.id },
+    });
+    check(candCountAfter === candCountBefore, '8 conteo RecruitmentCandidate no cambia');
+    const candRow = await prisma.recruitmentCandidate.findUnique({ where: { id: cand.id } });
+    check(candRow?.notes === 'Nota personal estable', 'notas del candidato permanecen en la misma ficha');
+    if (tag) {
+      const tagLinks = await prisma.recruitmentCandidateTagAssignment.count({
+        where: { candidateId: cand.id, tagId: tag.id },
+      });
+      check(tagLinks === 1, 'etiquetas del candidato permanecen en la misma ficha');
+    }
+    const notifAfter = await prisma.orgNotification.count({
+      where: { organizationId: org.id, type: 'RECRUITMENT_CANDIDATE_CREATED' },
+    }).catch(() => 0);
+    check(notifAfter === notifBefore, 'reaplicar no emite RECRUITMENT_CANDIDATE_CREATED');
+
+    const { listRecruitmentApplicationsForVacancy } = await import(
+      '../src/services/recruitmentApplication.service.js'
+    );
+    const kanbanApps = await listRecruitmentApplicationsForVacancy(org.id, vac.id);
+    check(
+      kanbanApps.length === 1 && kanbanApps[0].id === second.id,
+      '11 Kanban terminal+activo → una sola tarjeta operativa',
+    );
+
     const eventsNew = await prisma.recruitmentApplicationStageEvent.count({
       where: { applicationId: second.id },
     });
@@ -343,6 +544,13 @@ async function runPg() {
       },
     });
 
+    const kanbanOnlyTerm = await listRecruitmentApplicationsForVacancy(org.id, vac.id);
+    check(
+      kanbanOnlyTerm.some((a) => a.id === second.id) &&
+        !kanbanOnlyTerm.some((a) => a.id === first.id),
+      '12 Kanban solo terminal → conserva tarjeta más reciente',
+    );
+
     await prisma.recruitmentCandidate.update({
       where: { id: cand.id },
       data: { archivedAt: new Date(), autoArchiveEligibleAt: null },
@@ -354,7 +562,12 @@ async function runPg() {
       changedByUserId: admin.id,
     });
     const candFresh = await prisma.recruitmentCandidate.findUnique({ where: { id: cand.id } });
-    check(!candFresh.archivedAt && third.blocksReapplication === true, '7 archivado → desarchivo + nuevo');
+    check(
+      !candFresh.archivedAt &&
+        third.blocksReapplication === true &&
+        third.candidateId === cand.id,
+      '7 archivado → mismo candidato desarchivado + nuevo',
+    );
 
     await prisma.recruitmentApplication.update({
       where: { id: third.id },
@@ -372,6 +585,11 @@ async function runPg() {
       body: { candidateId: cand.id },
     });
     check(hiredBlock.res.status === 409, '5 HIRED → 409');
+    check(
+      String(hiredBlock.data?.message || '') ===
+        'El candidato ya fue contratado en esta vacante.',
+      '5 mensaje 409 HIRED exacto',
+    );
 
     const histReject = await prisma.recruitmentApplication.create({
       data: {
@@ -470,6 +688,8 @@ async function runPg() {
     await prisma.recruitmentApplicationInterviewEvent.deleteMany({ where: { organizationId: org.id } });
     await prisma.recruitmentApplicationStageEvent.deleteMany({ where: { organizationId: org.id } });
     await prisma.workforceRecruitmentNovedad.deleteMany({ where: { organizationId: org.id } }).catch(() => {});
+    await prisma.recruitmentCandidateTagAssignment.deleteMany({ where: { organizationId: org.id } }).catch(() => {});
+    await prisma.recruitmentCandidateTag.deleteMany({ where: { organizationId: org.id } }).catch(() => {});
     await prisma.recruitmentApplication.deleteMany({ where: { organizationId: org.id } });
     await prisma.recruitmentVacancyStage.deleteMany({ where: { vacancy: { organizationId: org.id } } }).catch(() => {});
     await prisma.recruitmentVacancy.deleteMany({ where: { organizationId: org.id } });
@@ -529,7 +749,9 @@ async function runVisualReapply() {
         typeof recCandVacancyPriorParticipation === 'function' &&
         typeof recCandSyncAddVacancyParticipationUi === 'function' &&
         typeof recCandHistoryAsideHtml === 'function' &&
-        typeof recCandPartitionApplications === 'function',
+        typeof recCandPartitionApplications === 'function' &&
+        typeof recCandReapplyConfirmMessage === 'function' &&
+        typeof recKanbanPickOperationalApplications === 'function',
     );
     check(ready, 'HTML real expone helpers de reaplicación');
     if (!ready) return;
@@ -555,7 +777,12 @@ async function runVisualReapply() {
             hint: hint ? hint.textContent : '',
             hintHidden: hint ? hint.classList.contains('hidden') : true,
             noteHidden: note ? note.classList.contains('hidden') : true,
+            noteText: note ? note.textContent : '',
             btnDisabled: !!(btn && btn.disabled),
+            btnText: btn ? btn.textContent : '',
+            confirmMsg: typeof recCandReapplyConfirmMessage === 'function'
+              ? recCandReapplyConfirmMessage(ui.priorKind || '')
+              : '',
             modalOverflow: card ? card.scrollWidth - card.clientWidth : 999,
             pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
           };
@@ -687,6 +914,10 @@ async function runVisualReapply() {
         d.ui.ok && d.ui.reapply && d.hint === 'Participó antes · Declinó' && !d.btnDisabled && !d.noteHidden,
         `${width}px: Declinó permite seleccionar y muestra hint`,
       );
+      check(
+        /declinó/.test(d.confirmMsg) && /historial/.test(d.confirmMsg) && d.btnText === 'Iniciar nuevo proceso',
+        `${width}px: confirm Declinó + CTA iniciar proceso`,
+      );
       check(d.modalOverflow <= 1 && d.pageOverflow <= 1, `${width}px: modal Declinó sin desborde`);
     }
 
@@ -696,18 +927,147 @@ async function runVisualReapply() {
       r.ui.ok && r.ui.reapply && r.hint === 'Participó antes · Rechazado' && !r.btnDisabled,
       'Rechazado permite seleccionar y muestra hint',
     );
+    check(/fue rechazada/.test(r.confirmMsg) && /historial/.test(r.confirmMsg), 'confirm Rechazado exacto');
 
     const a = await probeVacancyUi(activeCand, vac);
-    check(a.ui.ok === false && a.btnDisabled && /vigente/.test(a.hint), 'activo no permite otro proceso');
+    check(
+      a.ui.ok === false &&
+        a.btnDisabled &&
+        a.hint === 'El candidato ya tiene un proceso activo en esta vacante.',
+      'activo no permite otro proceso',
+    );
 
     const h = await probeVacancyUi(hiredCand, vac);
-    check(h.ui.ok === false && h.btnDisabled && /vigente/.test(h.hint), 'Contratado no permite otro proceso');
+    check(
+      h.ui.ok === false &&
+        h.btnDisabled &&
+        h.hint === 'El candidato ya fue contratado en esta vacante.',
+      'Contratado no permite otro proceso',
+    );
 
     const arch = await probeVacancyUi(archivedCand, vac);
     check(
       arch.ui.ok && arch.ui.reapply && arch.hint === 'Participó antes · Declinó',
       'archivado con Declinó puede iniciar nuevo proceso',
     );
+
+    const kanbanPick = await page.evaluate(() => {
+      const terminal = {
+        id: 'app-old',
+        candidateId: 'c1',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        appliedAt: '2026-01-01T00:00:00.000Z',
+        closureOutcome: 'DECLINED',
+        stage: { key: 'CONTACT' },
+        candidate: { id: 'c1', fullName: 'Ana Homónima' },
+      };
+      const active = {
+        id: 'app-new',
+        candidateId: 'c1',
+        createdAt: '2026-11-01T00:00:00.000Z',
+        appliedAt: '2026-11-01T00:00:00.000Z',
+        closureOutcome: null,
+        stage: { key: 'NEW' },
+        candidate: { id: 'c1', fullName: 'Ana Homónima' },
+      };
+      const twinName = {
+        id: 'app-twin',
+        candidateId: 'c2',
+        createdAt: '2026-10-01T00:00:00.000Z',
+        appliedAt: '2026-10-01T00:00:00.000Z',
+        closureOutcome: 'REJECTED',
+        stage: { key: 'REJECTED' },
+        candidate: { id: 'c2', fullName: 'Ana Homónima' },
+      };
+      const otherVacApp = {
+        id: 'app-vac-b',
+        candidateId: 'c1',
+        vacancyId: 'vac-b',
+        createdAt: '2026-11-02T00:00:00.000Z',
+        appliedAt: '2026-11-02T00:00:00.000Z',
+        closureOutcome: null,
+        stage: { key: 'CONTACT' },
+        candidate: { id: 'c1', fullName: 'Ana Homónima' },
+      };
+      const mixed = recKanbanPickOperationalApplications([terminal, active, twinName]);
+      const alone = recKanbanPickOperationalApplications([terminal]);
+      const closedLatest = recKanbanPickOperationalApplications([
+        terminal,
+        {
+          id: 'app-newer-term',
+          candidateId: 'c1',
+          createdAt: '2026-11-05T00:00:00.000Z',
+          appliedAt: '2026-11-05T00:00:00.000Z',
+          closureOutcome: 'REJECTED',
+          stage: { key: 'REJECTED' },
+          candidate: { id: 'c1', fullName: 'Ana Homónima' },
+        },
+      ]);
+      const samePersonTwoVac = {
+        vacA: recKanbanPickOperationalApplications([terminal, active]).map((a) => a.id),
+        vacB: recKanbanPickOperationalApplications([otherVacApp]).map((a) => a.id),
+      };
+      const st = recEnsureState();
+      // Misma forma que vacancyStages del API (stageId + stage anidado).
+      st.kanbanStages = [
+        { stageId: 's-new', position: 1, isEnabled: true, stage: { id: 's-new', key: 'NEW', name: 'Nuevo' } },
+        { stageId: 's-rej', position: 2, isEnabled: true, stage: { id: 's-rej', key: 'REJECTED', name: 'Descartado' } },
+      ];
+      st.kanbanApplications = [
+        { ...terminal, stageId: 's-new', stage: { id: 's-new', key: 'CONTACT', name: 'Contacto' } },
+        { ...active, stageId: 's-new', stage: { id: 's-new', key: 'NEW', name: 'Nuevo' } },
+        { ...twinName, stageId: 's-rej', stage: { id: 's-rej', key: 'REJECTED', name: 'Descartado' } },
+      ];
+      const slot = document.getElementById('rec-pipeline-slot') || document.createElement('div');
+      slot.id = 'rec-pipeline-slot';
+      if (!slot.parentNode) document.body.appendChild(slot);
+      try { sessionStorage.setItem('recKanbanHideEmpty', '0'); } catch (_e) {}
+      recKanbanRender('vac-reapply');
+      const cards = [...slot.querySelectorAll('.rec-kanban-card')];
+      return {
+        mixedIds: mixed.map((a) => a.id).sort(),
+        aloneIds: alone.map((a) => a.id),
+        closedLatestId: closedLatest[0] && closedLatest[0].id,
+        samePersonTwoVac,
+        cardAppIds: cards.map((el) => el.getAttribute('data-app-id')).sort(),
+        cardCandIds: cards.map((el) => el.getAttribute('data-candidate-id')).sort(),
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+      };
+    });
+    check(
+      kanbanPick.mixedIds.join(',') === 'app-new,app-twin',
+      'UI Kanban: terminal+activo → una tarjeta; otra persona intacta',
+    );
+    check(kanbanPick.aloneIds.join(',') === 'app-old', 'UI Kanban: solo terminal conserva tarjeta');
+    check(kanbanPick.closedLatestId === 'app-newer-term', 'UI Kanban: tras cerrar el nuevo, gana el terminal más reciente');
+    check(
+      kanbanPick.samePersonTwoVac.vacA.join(',') === 'app-new' &&
+        kanbanPick.samePersonTwoVac.vacB.join(',') === 'app-vac-b',
+      'UI Kanban: mismo candidato en dos vacantes → una tarjeta por vacante',
+    );
+    check(
+      kanbanPick.cardAppIds.join(',') === 'app-new,app-twin' &&
+        kanbanPick.cardCandIds.join(',') === 'c1,c2',
+      'HTML Kanban: tarjeta usa applicationId nuevo; homónimos = dos fichas',
+    );
+    check(kanbanPick.overflow <= 1, 'Kanban render sin desborde horizontal');
+
+    const directoryIds = await page.evaluate(() => {
+      const rows = [
+        { id: 'c1', fullName: 'Ana', primaryActiveProcess: { applicationId: 'app-new', vacancyId: 'vac-reapply' } },
+        { id: 'c2', fullName: 'Ana', primaryActiveProcess: { applicationId: 'app-twin', vacancyId: 'vac-reapply' } },
+      ];
+      return {
+        dirCount: rows.length,
+        uniqueCand: new Set(rows.map((r) => r.id)).size,
+        mySpaceProcess: rows[0].primaryActiveProcess.applicationId,
+      };
+    });
+    check(
+      directoryIds.dirCount === 2 && directoryIds.uniqueCand === 2,
+      'Directorio / Mis candidatos: una ficha por candidateId (homónimos no se fusionan)',
+    );
+    check(directoryIds.mySpaceProcess === 'app-new', 'Mi espacio: proceso vigente del candidato único');
 
     const hist = await page.evaluate((c) => {
       const st = recEnsureState();
@@ -719,19 +1079,34 @@ async function runVisualReapply() {
       host.innerHTML = recCandHistoryAsideHtml(parts.closed);
       document.body.appendChild(host);
       const items = [...host.querySelectorAll('.rec-cand-history-item')];
+      const titles = items.map((item) => (item.querySelector('.rec-cand-aside-row-title') || {}).textContent || '');
       const dateIds = [...host.querySelectorAll('time')].map((el) => el.id);
       const primary = recCandPickPrimaryApplication(st, parts.active);
       const prior = recCandVacancyPriorParticipation(c.applications, 'vac-reapply');
+      const singleVacHtml = recCandHistoryAsideHtml([
+        {
+          applicationId: 'app-only',
+          appliedAt: '2026-05-01T12:00:00.000Z',
+          closedAt: '2026-05-20T12:00:00.000Z',
+          closureOutcome: 'DECLINED',
+          vacancy: { id: 'vac-unique', title: 'Única' },
+          stage: { key: 'CONTACT', name: 'Contacto' },
+        },
+      ]);
+      const singleTitle = (singleVacHtml.match(/rec-cand-aside-row-title">([^<]*)</) || [])[1] || '';
       return {
         closedCount: parts.closed.length,
         activeCount: parts.active.length,
         historyRows: items.length,
         outcomes: items.map((item) => (item.querySelector('.rec-cand-history-outcome') || {}).textContent || ''),
         periods: items.map((item) => (item.querySelector('.rec-cand-history-period') || {}).textContent || ''),
+        titles,
         dateIds,
         primaryId: primary && (primary.applicationId || primary.id),
         priorBlocking: prior.blocking,
         dedupeKeys: items.map((_, i) => parts.closed[i] && parts.closed[i].applicationId),
+        singleTitle,
+        hasInvalidDate: titles.some((t) => /Invalid Date/i.test(t)),
       };
     }, multiCand);
     check(
@@ -743,6 +1118,11 @@ async function runVisualReapply() {
       'historial distingue Declinó y Rechazado',
     );
     check(hist.periods.every((p) => /Inicio /.test(p)), 'historial distingue por fecha de inicio');
+    check(
+      hist.titles.every((t) => /Operador · \d{2}\/\d{2}\/\d{4}/.test(t)) && !hist.hasInvalidDate,
+      'historial: título con fecha TZ org solo al repetir vacante',
+    );
+    check(hist.singleTitle === 'Única', 'historial: vacante no repetida sin fecha redundante en título');
     check(hist.primaryId === 'app-active-new', 'proceso activo es el contexto principal');
     check(hist.priorBlocking === true, 'con activo vigente la vacante bloquea reaplicación');
     check(

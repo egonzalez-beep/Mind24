@@ -22,6 +22,8 @@ import {
   isBlocksReapplicationUniqueViolation,
   lockRecruitmentCandidateForProcessChange,
   kanbanVisibleApplicationWhere,
+  reapplicationConflictMessage,
+  selectOperationalApplicationsForVacancyKanban,
   syncCandidateAutoArchive,
 } from './recruitmentProcessClosure.service.js';
 import {
@@ -126,12 +128,15 @@ export async function createRecruitmentApplication({
 
     const blocking = await tx.recruitmentApplication.findFirst({
       where: { candidateId, vacancyId, blocksReapplication: true },
-      select: { id: true },
+      include: { stage: { select: { key: true } } },
     });
     if (blocking) {
       const err = new Error('CONFLICT');
       err.code = 'CONFLICT';
-      err.message = 'El candidato ya está asignado a esta vacante.';
+      err.message = reapplicationConflictMessage(
+        blocking.stage?.key ?? null,
+        blocking.closureOutcome ?? null,
+      );
       throw err;
     }
 
@@ -252,9 +257,16 @@ export async function createRecruitmentApplication({
     serialized = db ? await run(db) : await prisma.$transaction(run);
   } catch (err) {
     if (isBlocksReapplicationUniqueViolation(err)) {
+      const blocking = await prisma.recruitmentApplication.findFirst({
+        where: { candidateId, vacancyId, blocksReapplication: true },
+        include: { stage: { select: { key: true } } },
+      });
       const error = new Error('CONFLICT');
       error.code = 'CONFLICT';
-      error.message = 'El candidato ya está asignado a esta vacante.';
+      error.message = reapplicationConflictMessage(
+        blocking?.stage?.key ?? null,
+        blocking?.closureOutcome ?? null,
+      );
       throw error;
     }
     if (!isScheduledInterviewSlotConflict(err)) throw err;
@@ -281,7 +293,8 @@ export async function listRecruitmentApplicationsForVacancy(organizationId, vaca
     include: { candidate: true, stage: true },
     orderBy: [{ updatedAt: 'desc' }, { position: 'asc' }, { appliedAt: 'desc' }],
   });
-  return rows.map(serializeApplication);
+  // Una tarjeta operativa por candidato: abierto actual, si no el intento más reciente.
+  return selectOperationalApplicationsForVacancyKanban(rows.map(serializeApplication));
 }
 
 export async function updateRecruitmentApplication({

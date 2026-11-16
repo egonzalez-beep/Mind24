@@ -1084,10 +1084,12 @@ check(/scheduleNovedad: true/.test(appSvc) && (appSvc.match(/scheduleNovedad: tr
 const updateSlice = appSvc.slice(appSvc.indexOf('export async function updateRecruitmentApplication'));
 check(updateSlice.indexOf('assertRecruitmentProcessStageChangeAllowed') < updateSlice.indexOf('recordStageEvent'), 'un proceso cerrado se rechaza antes de registrar otro movimiento');
 check(/kanbanVisibleApplicationWhere\(\)/.test(appSvc), 'el listado del Kanban usa la consulta de visibilidad');
+check(/selectOperationalApplicationsForVacancyKanban/.test(appSvc), 'el listado Kanban aplica selección operativa por candidato');
 {
   const whereStart = closureSvc.indexOf('export function kanbanVisibleApplicationWhere');
-  const whereBody = closureSvc.slice(whereStart, closureSvc.indexOf('/**', whereStart + 10));
+  const whereBody = closureSvc.slice(whereStart, whereStart + 180);
   check(/return \{\s*\};/.test(whereBody), 'la consulta del Kanban incluye declinados, contratados y descartados');
+  check(/pickOperationalApplicationForCandidateVacancy/.test(closureSvc), 'helper canónico de proceso visible en cierre');
   check(/if \(previewFilter === 'in_process'\)[\s\S]{0,280}closureOutcome: null/.test(candidateSvc), 'En proceso exige un proceso abierto');
   const publicRoutes = fs.readFileSync(path.join(serverDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
   const myRouteStart = publicRoutes.indexOf("router.get('/recruitment/my-candidates'");
@@ -1112,6 +1114,7 @@ check(/FOR UPDATE/.test(closureSvc), 'el candado es SELECT FOR UPDATE');
 check(/lockRecruitmentCandidateForProcessChange\(tx, candidateId\)/.test(appSvc), 'crear una postulación toma el candado del candidato');
 check(/lockRecruitmentCandidateForProcessChange\(tx, row\.id\)/.test(closureSvc), 'el autoarchivo toma el mismo candado');
 check(/function recKanbanApplicationIsVisible/.test(indexHtml), 'el tablero distingue visibilidad de proceso activo');
+check(/function recKanbanPickOperationalApplications/.test(indexHtml), 'el tablero elige una aplicación operativa por candidato');
 check(indexHtml.includes("const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED'") && indexHtml.includes('return !!app'), 'Declinó, Descartado y Contratado se pintan y no se arrastran');
 check(indexHtml.includes("name:'Declinó'") && indexHtml.includes('recKanbanBoardColumns'), 'la columna Declinó es virtual');
 check(/virtual\?'':' ondragover=/.test(indexHtml), 'Declinó no acepta un arrastre de etapa');

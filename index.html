@@ -3385,7 +3385,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div><label class="form-label">Vacante</label><select id="rec-cand-add-vac-select" class="form-input"></select></div>
       <p id="rec-cand-add-vac-hint" class="hidden" style="font-size:12px;color:var(--slate-500);margin:0;line-height:1.4;"></p>
-      <p id="rec-cand-add-vac-reapply-note" class="hidden" style="font-size:12px;color:var(--slate-600);margin:0;line-height:1.45;">Se creará un nuevo proceso en esta vacante. La participación anterior permanecerá en el historial.</p>
+      <p id="rec-cand-add-vac-reapply-note" class="hidden" style="font-size:12px;color:var(--slate-600);margin:0;line-height:1.45;">Se iniciará un nuevo proceso en esta vacante. El proceso anterior se conserva en el historial.</p>
       <div id="rec-cand-add-vac-stage-wrap"><label class="form-label">Etapa inicial</label><select id="rec-cand-add-vac-stage" class="form-input"></select></div>
     </div>
     <p id="rec-cand-add-vac-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;"></p>
@@ -11453,12 +11453,60 @@ function recKanbanBoardColumns(stages){
   else cols.push(virtual);
   return cols;
 }
+/**
+ * Defensa local del Kanban: espejo exacto de
+ * pickOperationalApplicationForCandidateVacancy /
+ * selectOperationalApplicationsForVacancyKanban.
+ * El servidor es la autoridad; esto no redefine criterio ni elige otra app.
+ * createdAt manda; appliedAt solo si falta createdAt. Sin updatedAt/closedAt.
+ */
+function recKanbanApplicationRecencyMs(app){
+  if(!app) return 0;
+  const hasCreated=app.createdAt!=null&&app.createdAt!=='';
+  const raw=hasCreated?app.createdAt:(app.appliedAt||null);
+  if(!raw) return 0;
+  const ms=new Date(raw).getTime();
+  return Number.isFinite(ms)?ms:0;
+}
+function recKanbanCompareNewestFirst(a,b){
+  const d=recKanbanApplicationRecencyMs(b)-recKanbanApplicationRecencyMs(a);
+  if(d!==0) return d;
+  const idA=String(a&&a.id||'');
+  const idB=String(b&&b.id||'');
+  if(idA===idB) return 0;
+  return idA<idB?1:-1;
+}
+function recKanbanApplicationIsOpen(app){
+  if(!app) return false;
+  if(app.closureOutcome==='DECLINED'||app.closureOutcome==='REJECTED') return false;
+  const k=app.stage&&app.stage.key;
+  return k!=='HIRED'&&k!=='REJECTED';
+}
+function recKanbanPickOperationalApplications(apps){
+  const rows=(apps||[]).filter(Boolean);
+  if(rows.length<=1) return rows;
+  const byCand=new Map();
+  rows.forEach(function(app){
+    const cid=String(app.candidateId||(app.candidate&&app.candidate.id)||'');
+    if(!cid) return;
+    if(!byCand.has(cid)) byCand.set(cid,[]);
+    byCand.get(cid).push(app);
+  });
+  const chosen=new Set();
+  byCand.forEach(function(group){
+    const open=group.filter(recKanbanApplicationIsOpen);
+    const pool=open.length?open:group;
+    const pick=pool.slice().sort(recKanbanCompareNewestFirst)[0];
+    if(pick&&pick.id!=null) chosen.add(String(pick.id));
+  });
+  return rows.filter(function(app){ return chosen.has(String(app.id)); });
+}
 function recKanbanRender(vacancyId){
   const slot=document.getElementById('rec-pipeline-slot');
   const st=recEnsureState();
   if(!slot) return;
   const stages=st.kanbanStages||[];
-  const apps=(st.kanbanApplications||[]).filter(recKanbanApplicationIsVisible);
+  const apps=recKanbanPickOperationalApplications((st.kanbanApplications||[]).filter(recKanbanApplicationIsVisible));
   if(!stages.length){
     slot.innerHTML='<p class="rec-kanban-empty-msg">Configura las etapas del proceso para esta vacante.</p>';
     return;
@@ -14004,6 +14052,11 @@ function recCandAsideRowHtml(a){
 }
 function recCandHistoryAsideHtml(closedApps){
   if(!closedApps.length) return '';
+  const vacCounts={};
+  closedApps.forEach(function(a){
+    const vid=a&&a.vacancy&&a.vacancy.id;
+    if(vid) vacCounts[String(vid)]=(vacCounts[String(vid)]||0)+1;
+  });
   return closedApps.map(function(a){
       const vac=a.vacancy||{};
       const sk=recCandAppStageKey(a);
@@ -14018,8 +14071,11 @@ function recCandHistoryAsideHtml(closedApps){
       const stageName=(a.stage&&a.stage.name)||'';
       const reasonLabel=a.closureReason?recCandDeclineReasonLabel(a.closureReason):'';
       const note=a.closureReason==='OTHER'&&a.closureNote?String(a.closureNote):'';
+      const multiVac=!!(vac.id&&vacCounts[String(vac.id)]>1);
+      const startLabel=multiVac?recCandFmtTerminalDate(a.appliedAt,tz):'';
+      const titleHint=startLabel?(' · '+startLabel):'';
       return '<div class="rec-cand-history-item">'+
-        '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
+        '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc((vac.title||'—')+titleHint)+'</p>'+
         '<div class="rec-cand-history-result">'+
         '<span class="rec-cand-history-outcome '+ocCls+'"'+(dateId?' aria-describedby="'+dateId+'"':'')+'>'+tcEsc(outcome)+'</span>'+
         (terminalLabel?'<time class="rec-cand-history-terminal-date" id="'+dateId+'" datetime="'+tcEsc(terminalKey)+'">'+tcEsc(terminalLabel)+'</time>':'')+
@@ -17231,7 +17287,12 @@ async function recCandCreateAndOpen(body){
 }
 function recCandVacancyPriorParticipation(apps,vacancyId){
   const rows=(apps||[]).filter(function(a){ return a&&a.vacancy&&String(a.vacancy.id)===String(vacancyId); });
-  if(!rows.length) return { blocking:false, canReapply:false, label:'' };
+  if(!rows.length) return { blocking:false, canReapply:false, label:'', priorKind:'', conflictMessage:'' };
+  const hiredBlocking=rows.some(function(a){
+    if(a.blocksReapplication===false) return false;
+    const k=a.stage&&a.stage.key;
+    return k==='HIRED';
+  });
   const blocking=rows.some(function(a){
     if(a.blocksReapplication===true) return true;
     if(a.blocksReapplication===false) return false;
@@ -17240,7 +17301,12 @@ function recCandVacancyPriorParticipation(apps,vacancyId){
     if(k==='REJECTED') return false;
     return true;
   });
-  if(blocking) return { blocking:true, canReapply:false, label:'Ya tiene un proceso vigente en esta vacante.' };
+  if(blocking){
+    const conflictMessage=hiredBlocking
+      ?'El candidato ya fue contratado en esta vacante.'
+      :'El candidato ya tiene un proceso activo en esta vacante.';
+    return { blocking:true, canReapply:false, label:conflictMessage, priorKind:'', conflictMessage:conflictMessage };
+  }
   let latest=null;
   let latestMs=-1;
   rows.forEach(function(a){
@@ -17248,11 +17314,21 @@ function recCandVacancyPriorParticipation(apps,vacancyId){
     if(ms>=latestMs){ latestMs=ms; latest=a; }
   });
   let label='Participó antes';
+  let priorKind='';
   if(latest){
-    if(latest.closureOutcome==='DECLINED') label='Participó antes · Declinó';
-    else if(latest.closureOutcome==='REJECTED'||(latest.stage&&latest.stage.key==='REJECTED')) label='Participó antes · Rechazado';
+    if(latest.closureOutcome==='DECLINED'){ label='Participó antes · Declinó'; priorKind='declined'; }
+    else if(latest.closureOutcome==='REJECTED'||(latest.stage&&latest.stage.key==='REJECTED')){ label='Participó antes · Rechazado'; priorKind='rejected'; }
   }
-  return { blocking:false, canReapply:true, label:label };
+  return { blocking:false, canReapply:true, label:label, priorKind:priorKind, conflictMessage:'' };
+}
+function recCandReapplyConfirmMessage(priorKind){
+  if(priorKind==='declined'){
+    return 'Esta persona ya participó anteriormente en esta vacante y declinó. Se conservará el proceso anterior en su historial y se iniciará uno nuevo.';
+  }
+  if(priorKind==='rejected'){
+    return 'Esta persona ya participó anteriormente en esta vacante y fue rechazada. Se conservará el proceso anterior en su historial y se iniciará uno nuevo.';
+  }
+  return 'Se iniciará un nuevo proceso en esta vacante. El proceso anterior se conserva en el historial.';
 }
 function recCandSyncAddVacancyParticipationUi(){
   const vacId=(document.getElementById('rec-cand-add-vac-select')?.value||'').trim();
@@ -17268,26 +17344,35 @@ function recCandSyncAddVacancyParticipationUi(){
     if(hint){ hint.classList.add('hidden'); hint.textContent=''; }
     if(note) note.classList.add('hidden');
     if(stageWrap) stageWrap.classList.remove('hidden');
-    if(btn) btn.disabled=false;
-    return { ok:true, reapply:false };
+    if(btn){ btn.disabled=false; btn.textContent='Guardar'; }
+    return { ok:true, reapply:false, priorKind:'' };
   }
   const info=recCandVacancyPriorParticipation(apps,vacId);
   if(hint){
     if(info.label){ hint.textContent=info.label; hint.classList.remove('hidden'); }
     else{ hint.textContent=''; hint.classList.add('hidden'); }
   }
-  if(note) note.classList.toggle('hidden',!info.canReapply);
+  if(note){
+    if(info.canReapply){
+      note.textContent=info.priorKind==='declined'
+        ?'Se iniciará un nuevo proceso. El intento en que declinó permanece en el historial.'
+        :(info.priorKind==='rejected'
+          ?'Se iniciará un nuevo proceso. El intento rechazado permanece en el historial.'
+          :'Se iniciará un nuevo proceso en esta vacante. El proceso anterior se conserva en el historial.');
+      note.classList.remove('hidden');
+    }else note.classList.add('hidden');
+  }
   if(info.blocking){
     if(stageWrap) stageWrap.classList.add('hidden');
     if(stageSel) stageSel.innerHTML='';
-    if(btn) btn.disabled=true;
-    if(err){ err.textContent=info.label||'El candidato ya está asignado a esta vacante.'; err.classList.remove('hidden'); }
-    return { ok:false, reapply:false };
+    if(btn){ btn.disabled=true; btn.textContent='Guardar'; }
+    if(err){ err.textContent=info.conflictMessage||info.label||'El candidato ya tiene un proceso activo en esta vacante.'; err.classList.remove('hidden'); }
+    return { ok:false, reapply:false, priorKind:'' };
   }
   if(err){ err.classList.add('hidden'); err.textContent=''; }
   if(stageWrap) stageWrap.classList.remove('hidden');
-  if(btn) btn.disabled=false;
-  return { ok:true, reapply:!!info.canReapply };
+  if(btn){ btn.disabled=false; btn.textContent=info.canReapply?'Iniciar nuevo proceso':'Guardar'; }
+  return { ok:true, reapply:!!info.canReapply, priorKind:info.priorKind||'' };
 }
 async function recCandOpenAddVacancyModal(){
   const st=recEnsureState();
@@ -17331,7 +17416,7 @@ async function recCandSubmitAddVacancy(){
   }
   const ui=recCandSyncAddVacancyParticipationUi();
   if(!ui.ok) return;
-  if(ui.reapply&&!window.confirm('Se creará un nuevo proceso en esta vacante. La participación anterior permanecerá en el historial.')) return;
+  if(ui.reapply&&!window.confirm(recCandReapplyConfirmMessage(ui.priorKind))) return;
   if(btn) btn.disabled=true;
   try{
     await recCandAssignToVacancy(candidateId,vacId,stageId||null);
