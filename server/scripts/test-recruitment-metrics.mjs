@@ -463,8 +463,73 @@ console.log('\n=== Tendencia mensual (unit) ===\n');
   );
   check(
     deduped.length === 1 && deduped[0].kind === 'rejections_client',
-    'no duplica insight de registros cuando trend ya lo cubre',
+    '1) tendencia + registros duplicados → solo complementario de cliente',
   );
+
+  const withClient = filterDuplicateInsights(
+    [{ kind: 'rejections_client', title: 'Cliente Z concentra', body: '2 de 3', tone: 'coral' }],
+    allUp,
+  );
+  check(withClient.length === 1 && withClient[0].kind === 'rejections_client', '2) tendencia + rechazo por cliente → ambos (conserva cliente)');
+
+  const covAnomaly = filterDuplicateInsights(
+    [{ kind: 'coverage_slower', title: 'Cobertura más lenta', body: 'subió 4 días', tone: 'amber' }],
+    {
+      ...quiet,
+      status: 'UP',
+      comparisonMode: 'FULL_MONTH',
+      eligibleSignals: 2,
+      signals: [
+        { key: 'hired', eligible: true, score: 1 },
+        { key: 'registrations', eligible: true, score: 1 },
+        { key: 'rejectionShare', eligible: false, score: null },
+        { key: 'coverageDays', eligible: false, score: null },
+      ],
+      primaryReasons: [{ key: 'hired', text: 'Aumentaron las contrataciones.', polarity: 'positive' }],
+    },
+  );
+  check(covAnomaly.length === 1 && covAnomaly[0].kind === 'coverage_slower', '3) cobertura anómala no mencionada → conserva');
+
+  const threeComp = filterDuplicateInsights(
+    [
+      { kind: 'registrations_down', title: 'Menos registros', body: 'a', tone: 'purple' },
+      { kind: 'rejections_client', title: 'Cliente', body: 'b', tone: 'coral' },
+      { kind: 'coverage_faster', title: 'Cobertura ágil', body: 'c', tone: 'green' },
+    ],
+    {
+      status: 'STABLE',
+      comparisonMode: 'FULL_MONTH',
+      eligibleSignals: 2,
+      signals: [
+        { key: 'hired', eligible: true, score: 0 },
+        { key: 'registrations', eligible: true, score: 0 },
+        { key: 'rejectionShare', eligible: false, score: null },
+        { key: 'coverageDays', eligible: false, score: null },
+      ],
+      primaryReasons: [{ key: 'stable_all', text: 'Los principales indicadores se mantuvieron dentro del rango esperado.', polarity: 'neutral' }],
+    },
+  );
+  check(
+    threeComp.length === 2 &&
+      threeComp[0].kind === 'rejections_client' &&
+      threeComp[1].kind === 'coverage_faster',
+    '4) tres complementarios → dos prioritarios',
+  );
+
+  check(filterDuplicateInsights([], allUp).length === 0, '5) sin complementarios → solo tendencia');
+
+  const insuffOps = filterDuplicateInsights(
+    [{ kind: 'rejections_client', title: 'Cliente', body: 'ops', tone: 'coral' }],
+    {
+      status: 'INSUFFICIENT',
+      eligibleSignals: 0,
+      comparisonMode: 'INSUFFICIENT',
+      signals: [],
+      primaryReasons: [{ key: 'future', text: 'El mes seleccionado aún no tiene un periodo comparable.', polarity: 'neutral' }],
+    },
+  );
+  check(insuffOps.length === 1 && insuffOps[0].kind === 'rejections_client', '6) INSUFFICIENT + insight operativo → conserva');
+
   check(allUp.primaryReasons.length <= 2, 'UI contract: primaryReasons ≤ 2');
   check(allUp.reasons.some((r) => /contrataciones/i.test(r.text)), 'razones incluyen contrataciones');
   check(
@@ -473,6 +538,9 @@ console.log('\n=== Tendencia mensual (unit) ===\n');
   );
   check(/metricsReqSeq/.test(indexHtml), '18) UI protege respuesta fuera de orden (metricsReqSeq)');
   check(/recMetricsTrendTone/.test(indexHtml) && /recMetricsTrendIconKey/.test(indexHtml), 'tone/icon whitelist en UI');
+  check(/rec-metrics-trend-detail-chevron/.test(indexHtml), 'control detalle con chevron');
+  check(/indicadores comparables/.test(indexHtml), 'UI muestra indicadores comparables');
+  check(/rec-metrics-kpi-foot/.test(indexHtml) && !/kpi-value\{[^}]*margin-top:auto/.test(indexHtml.replace(/\s+/g, '')), 'KPI valor sin margin-top:auto');
 }
 
 console.log('\n=== Cobertura calendarística (unit, sin DB) ===\n');
@@ -1124,11 +1192,16 @@ async function runVisual() {
         title: 'Tendencia al alza',
         tone: 'green',
         icon: 'trendUp',
-        signals: [],
+        signals: [
+          { key: 'hired', label: 'Contrataciones', eligible: true, score: 1 },
+          { key: 'registrations', label: 'Registros', eligible: true, score: 1 },
+          { key: 'rejectionShare', label: 'Participación de rechazos', eligible: true, score: 1 },
+          { key: 'coverageDays', label: 'Tiempo promedio de cobertura', eligible: false, score: null },
+        ],
         reasons: [
           { key: 'hired', text: 'Aumentaron las contrataciones <Acme & Co>.', polarity: 'positive' },
           { key: 'rejectionShare', text: 'Disminuyó la participación de rechazos.', polarity: 'positive' },
-          { key: 'coverageDays', text: 'El tiempo de cobertura se mantuvo estable.', polarity: 'neutral' },
+          { key: 'coverageDays', text: 'No hubo suficientes vacantes cubiertas para comparar tiempos.', polarity: 'neutral' },
         ],
         primaryReasons: [
           { key: 'hired', text: 'Aumentaron las contrataciones <Acme & Co>.', polarity: 'positive' },
@@ -1203,6 +1276,24 @@ async function runVisual() {
           const spread = Math.max(...hs) - Math.min(...hs);
           if (spread > rowSpreadMax) rowSpreadMax = spread;
         }
+        const valueTops = cards.map((c) => {
+          const v = c.querySelector('.rec-metrics-kpi-value');
+          return v ? Math.round(v.getBoundingClientRect().top) : null;
+        }).filter((n) => n != null);
+        const valueTopByRow = new Map();
+        cards.forEach((c) => {
+          const rowTop = Math.round(c.getBoundingClientRect().top);
+          const v = c.querySelector('.rec-metrics-kpi-value');
+          if (!v) return;
+          const vt = Math.round(v.getBoundingClientRect().top);
+          if (!valueTopByRow.has(rowTop)) valueTopByRow.set(rowTop, []);
+          valueTopByRow.get(rowTop).push(vt);
+        });
+        let valueAlignMax = 0;
+        for (const tops of valueTopByRow.values()) {
+          const spread = Math.max(...tops) - Math.min(...tops);
+          if (spread > valueAlignMax) valueAlignMax = spread;
+        }
         const labels = cards.map((c) => (c.querySelector('.rec-metrics-kpi-label') || {}).textContent || '');
         const tips = [...host.querySelectorAll('.rec-metrics-kpi-tip')].map((el) => el.textContent || '');
         const tipBtns = [...host.querySelectorAll('.rec-metrics-kpi-info')];
@@ -1216,6 +1307,8 @@ async function runVisual() {
         const calText = (host.querySelector('.rec-metrics-cal-grid') || {}).textContent || '';
         const hostBox = host.getBoundingClientRect();
         const cardWidths = cards.map((c) => Math.round(c.getBoundingClientRect().width));
+        const detailBtn = host.querySelector('.rec-metrics-trend-detail-btn');
+        const btnCs = detailBtn ? getComputedStyle(detailBtn) : null;
         return {
           cardCount: cards.length,
           cols,
@@ -1236,7 +1329,8 @@ async function runVisual() {
             !!sampleEl &&
             /Muestra:\s*2 vacantes/i.test(sampleEl.textContent || '') &&
             !!qualityEl &&
-            /3 históricos sin fecha/i.test(qualityEl.textContent || ''),
+            /3 históricos sin fecha/i.test(qualityEl.textContent || '') &&
+            !!(covCard && covCard.querySelector('.rec-metrics-kpi-meta')),
           coverageTipFull:
             /fecha de cobertura confiable/i.test(covTip) &&
             /no pueden asignarse a un mes/i.test(covTip),
@@ -1247,6 +1341,8 @@ async function runVisual() {
           hiredGreen: !!(hiredCard && hiredCard.querySelector('.rec-metrics-kpi-icon--green')),
           calOmitsDeclined: !/Declinad/i.test(calText),
           rowSpreadMax,
+          valueAlignMax,
+          valueTopsCount: valueTops.length,
           minCardWidth: cardWidths.length ? Math.min(...cardWidths) : 0,
           titleEllipsis: cards.some((c) => {
             const lab = c.querySelector('.rec-metrics-kpi-label');
@@ -1257,6 +1353,14 @@ async function runVisual() {
           trendTitle: /Tendencia al alza/i.test(host.textContent || ''),
           trendCompare: /vs\. septiembre de 2026/i.test(host.textContent || ''),
           trendReasons: /Aumentaron las contrataciones/i.test(host.textContent || ''),
+          trendEligible: /3 de 4 indicadores comparables/i.test(host.textContent || ''),
+          detailGhost:
+            !!detailBtn &&
+            !!detailBtn.querySelector('.rec-metrics-trend-detail-chevron') &&
+            /Ver detalle/i.test(detailBtn.textContent || '') &&
+            btnCs &&
+            btnCs.textDecorationLine === 'none' &&
+            btnCs.borderStyle !== 'none',
           noScoreLeak: !/score\s*=\s*2/i.test(host.textContent || ''),
         };
       }, fixture);
@@ -1280,15 +1384,18 @@ async function runVisual() {
       check(probe.declinedOrange && probe.rejectedCoral && probe.hiredGreen, `${width}px: tonos Declinados/Rechazados/Contratados`);
       check(probe.calOmitsDeclined, `${width}px: calendario sin Declinados`);
       check(probe.rowSpreadMax <= 2, `${width}px: alturas homogéneas por fila (Δ${probe.rowSpreadMax})`);
+      check(probe.valueAlignMax <= 2, `${width}px: valores KPI alineados (Δ${probe.valueAlignMax})`);
       check(!probe.titleEllipsis, `${width}px: títulos sin line-clamp/ellipsis`);
       check(probe.trendTitle && probe.trendCompare && probe.trendReasons, `${width}px: insight de tendencia visible`);
+      check(probe.trendEligible, `${width}px: indicadores comparables visibles`);
+      check(probe.detailGhost, `${width}px: botón detalle ghost + chevron`);
       check(probe.noScoreLeak, `${width}px: sin score técnico en UI`);
       if (probe.cols === 7) {
         check(probe.minCardWidth >= 110, `${width}px: tarjetas 7-col legibles (≥110px, got ${probe.minCardWidth})`);
       }
     }
 
-    // Detalle de tendencia: abre/cierra sin desborde.
+    // Detalle de tendencia: abre/cierra sin desborde; filas de señales sin repetir razones.
     await mountMetricsShell(1280);
     const trendUi = await page.evaluate((data) => {
       const host = document.getElementById('rec-metrics-host');
@@ -1296,21 +1403,41 @@ async function runVisual() {
       const btn = host.querySelector('.rec-metrics-trend-detail-btn');
       const panel = host.querySelector('.rec-metrics-trend-detail');
       if (!btn || !panel) return { ok: false };
+      const collapsedLabel = (btn.querySelector('.rec-metrics-trend-detail-btn-label') || {}).textContent || '';
       btn.click();
       const open = btn.getAttribute('aria-expanded') === 'true' && !panel.hidden;
+      const openLabel = (btn.querySelector('.rec-metrics-trend-detail-btn-label') || {}).textContent || '';
+      const rows = [...panel.querySelectorAll('.rec-metrics-trend-signal')].map((li) => li.textContent.replace(/\s+/g, ' ').trim());
+      const detailText = panel.textContent || '';
+      const reasonsDup = /Aumentaron las contrataciones/i.test(detailText);
+      const hasStatusIcons = [...panel.querySelectorAll('.rec-metrics-trend-signal-status svg')].length >= 4;
       document.body.click();
-      // clic fuera no cierra el detalle (solo el botón / mes / tab); se cierra al re-render
       recMetricsCloseTrendDetail();
       const closed = panel.hidden === true && btn.getAttribute('aria-expanded') === 'false';
       return {
         ok: true,
         open,
         closed,
+        collapsedLabel,
+        openLabel,
+        rows,
+        reasonsDup,
+        hasStatusIcons,
         overflow: document.documentElement.scrollWidth - window.innerWidth,
+        ariaControls: btn.getAttribute('aria-controls') === 'rec-metrics-trend-detail',
       };
     }, fixture);
     check(trendUi.ok && trendUi.open && trendUi.closed, 'detalle de tendencia abre y cierra');
     check(trendUi.overflow <= 1, 'detalle de tendencia sin desborde horizontal');
+    check(trendUi.collapsedLabel === 'Ver detalle' && trendUi.openLabel === 'Ocultar detalle', 'labels Ver/Ocultar detalle');
+    check(trendUi.ariaControls && trendUi.hasStatusIcons, 'aria-controls + iconos de estado en filas');
+    check(!trendUi.reasonsDup, 'detalle no repite razones principales');
+    check(
+      trendUi.rows.length === 4 &&
+        /Contrataciones.*Mejoró/i.test(trendUi.rows[0] || '') &&
+        /Cobertura.*Datos insuficientes/i.test(trendUi.rows[3] || ''),
+      'detalle muestra 4 filas de señales',
+    );
     check(
       await page.evaluate(() => {
         const host = document.getElementById('rec-metrics-host');
@@ -1325,6 +1452,34 @@ async function runVisual() {
       '19) texto con caracteres especiales escapado en tendencia',
     );
 
+    await mountMetricsShell(1280);
+    const complementaryUi = await page.evaluate((base) => {
+      const host = document.getElementById('rec-metrics-host');
+      const withInsights = {
+        ...base,
+        insights: [
+          { kind: 'rejections_client', title: 'Acme concentra los rechazos', body: '2 de 3 candidatos rechazados.', tone: 'coral' },
+          { kind: 'coverage_slower', title: 'Cobertura más lenta', body: 'El promedio subió 2 días.', tone: 'amber' },
+          { kind: 'registrations_up', title: 'Más registros que el mes pasado', body: 'extra', tone: 'purple' },
+        ],
+      };
+      recMetricsRender(withInsights);
+      const comps = [...host.querySelectorAll('.rec-metrics-insight--complementary')];
+      return {
+        count: comps.length,
+        kinds: comps.map((el) => el.getAttribute('data-insight-kind')),
+        titles: comps.map((el) => (el.querySelector('.rec-metrics-insight-title') || {}).textContent || ''),
+        hasTrend: !!host.querySelector('.rec-metrics-insight--trend'),
+      };
+    }, fixture);
+    check(
+      complementaryUi.hasTrend &&
+        complementaryUi.count === 2 &&
+        complementaryUi.kinds[0] === 'rejections_client' &&
+        complementaryUi.kinds[1] === 'coverage_slower',
+      'UI muestra máx. 2 insights complementarios prioritarios',
+    );
+
     await mountMetricsShell(390);
     const trend390 = await page.evaluate((data) => {
       const host = document.getElementById('rec-metrics-host');
@@ -1332,15 +1487,18 @@ async function runVisual() {
       const btn = host.querySelector('.rec-metrics-trend-detail-btn');
       const panel = host.querySelector('.rec-metrics-trend-detail');
       if (!btn || !panel) return { ok: false };
+      btn.focus();
+      const focused = document.activeElement === btn;
       btn.click();
       const open = btn.getAttribute('aria-expanded') === 'true' && !panel.hidden;
       const overflow = document.documentElement.scrollWidth - window.innerWidth;
       btn.click();
       const closed = panel.hidden === true && btn.getAttribute('aria-expanded') === 'false';
-      return { ok: true, open, closed, overflow };
+      return { ok: true, open, closed, overflow, focused };
     }, fixture);
     check(trend390.ok && trend390.open && trend390.closed, '20) detalle tendencia abre/cierra en 390px');
     check(trend390.overflow <= 1, '20b) detalle tendencia sin desborde en 390px');
+    check(trend390.focused, '20c) botón detalle operable con foco');
 
     // Variantes: dígitos, ±comparativo, sin comparativo, sin deuda, mes vacío.
     await mountMetricsShell(1440);

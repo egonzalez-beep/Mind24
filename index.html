@@ -801,7 +801,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 @container rec-metrics (max-width:679px){.rec-metrics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @container rec-metrics (max-width:439px){.rec-metrics-kpi-grid{grid-template-columns:minmax(0,1fr);}}
 .rec-metrics-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:8px 8px 8px;box-shadow:0 1px 3px rgba(15,23,42,.03);display:flex;flex-direction:column;gap:3px;position:relative;min-width:0;overflow:visible;}
-.rec-metrics-kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;min-height:2.4em;padding-right:2px;}
+.rec-metrics-kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;min-height:2.4em;padding-right:2px;flex-shrink:0;}
 .rec-metrics-kpi-label-row{display:flex;align-items:flex-start;gap:2px;min-width:0;flex:1;padding-right:2px;}
 .rec-metrics-kpi-label{font-size:10px;font-weight:700;color:var(--slate-600);line-height:1.2;margin:0;overflow-wrap:break-word;word-break:normal;hyphens:manual;max-width:100%;}
 .rec-metrics-kpi-info{position:absolute;top:6px;right:32px;z-index:2;width:15px;height:15px;margin:0;padding:0;border:0;border-radius:999px;background:#fff;color:var(--slate-400);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
@@ -829,12 +829,17 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-kpi-icon--amber{background:rgba(251,146,60,.14);color:#EA580C;}
 .rec-metrics-kpi-icon--orange{background:rgba(249,115,22,.14);color:#C2410C;}
 .rec-metrics-kpi-icon--sky{background:rgba(56,189,248,.12);color:#0284C7;}
-.rec-metrics-kpi-value{font-size:26px;font-weight:800;letter-spacing:-.4px;color:var(--primary);line-height:1.05;margin:0;margin-top:auto;}
-.rec-metrics-kpi-sub{font-size:10.5px;font-weight:600;color:var(--slate-500);margin:0;line-height:1.3;min-height:1.3em;}
+/* Valor bajo el encabezado (misma línea base); el pie absorbe altura extra sin empujar el valor. */
+.rec-metrics-kpi-value{font-size:26px;font-weight:800;letter-spacing:-.4px;color:var(--primary);line-height:1.05;margin:0;flex-shrink:0;}
+.rec-metrics-kpi-foot{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;min-width:0;}
+.rec-metrics-kpi-sub{font-size:10.5px;font-weight:600;color:var(--slate-500);margin:0;line-height:1.3;}
+.rec-metrics-kpi-sub:empty{display:none;}
+.rec-metrics-kpi-meta{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.rec-metrics-kpi-meta:empty{display:none;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--pos{color:#16A34A;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--neg{color:#E11D48;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--neu{color:var(--slate-500);}
-.rec-metrics-kpi-sub.insight{color:#E11D48;}
+.rec-metrics-kpi-sub .insight{color:#E11D48;}
 .rec-metrics-main{display:grid;grid-template-columns:minmax(0,1fr)280px;gap:14px;align-items:start;}
 @media(max-width:960px){.rec-metrics-main{grid-template-columns:1fr;}}
 .rec-metrics-panel{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
@@ -877,12 +882,24 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-insight-compare{display:block;margin-top:2px;font-size:10px;font-weight:700;color:var(--slate-500);}
 .rec-metrics-insight-reasons{margin:6px 0 0;padding:0 0 0 16px;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.4;}
 .rec-metrics-insight-reasons li{margin:0 0 2px;}
-.rec-metrics-trend-detail-btn{margin-top:8px;border:0;background:transparent;padding:0;font:inherit;font-size:11px;font-weight:700;color:#2563EB;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
-.rec-metrics-trend-detail-btn:focus-visible{outline:2px solid rgba(37,99,235,.45);outline-offset:2px;border-radius:4px;}
-.rec-metrics-trend-detail{margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.4;}
+.rec-metrics-trend-eligible{display:block;margin-top:6px;font-size:10px;font-weight:600;color:var(--slate-400);letter-spacing:.01em;}
+.rec-metrics-trend-detail-btn{margin-top:8px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--slate-200);background:#fff;padding:5px 10px;border-radius:8px;font:inherit;font-size:11px;font-weight:700;color:var(--slate-600);cursor:pointer;line-height:1.2;box-shadow:0 1px 2px rgba(15,23,42,.03);transition:border-color .15s ease,background .15s ease,color .15s ease;}
+.rec-metrics-trend-detail-btn:hover{border-color:rgba(124,58,237,.28);background:rgba(245,243,255,.55);color:var(--purple-dark);}
+.rec-metrics-trend-detail-btn:focus-visible{outline:2px solid rgba(124,58,237,.4);outline-offset:2px;}
+.rec-metrics-trend-detail-btn[aria-expanded="true"]{border-color:rgba(124,58,237,.28);background:rgba(245,243,255,.7);color:var(--purple-dark);}
+.rec-metrics-trend-detail-chevron{width:14px;height:14px;flex-shrink:0;display:block;transition:transform .18s ease;}
+.rec-metrics-trend-detail-btn[aria-expanded="true"] .rec-metrics-trend-detail-chevron{transform:rotate(180deg);}
+.rec-metrics-trend-detail{margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;}
 .rec-metrics-trend-detail[hidden]{display:none!important;}
-.rec-metrics-trend-detail ul{margin:0;padding:0 0 0 16px;}
-.rec-metrics-trend-detail li{margin:0 0 4px;}
+.rec-metrics-trend-signal-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+.rec-metrics-trend-signal{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.3;}
+.rec-metrics-trend-signal-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-metrics-trend-signal-status{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;font-size:10px;font-weight:700;color:var(--slate-500);}
+.rec-metrics-trend-signal-status svg{width:12px;height:12px;stroke-width:2;flex-shrink:0;}
+.rec-metrics-trend-signal-status--up{color:#16A34A;}
+.rec-metrics-trend-signal-status--down{color:#E11D48;}
+.rec-metrics-trend-signal-status--stable{color:#2563EB;}
+.rec-metrics-trend-signal-status--none{color:var(--slate-400);}
 .rec-metrics-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-200);font-size:11px;font-weight:600;color:var(--slate-500);flex-wrap:wrap;}
 .rec-metrics-loading,.rec-metrics-err{padding:24px;text-align:center;font-size:13px;font-weight:600;color:var(--slate-600);}
 .rec-metrics-err{color:#DC2626;}
@@ -12709,7 +12726,7 @@ function recMetricsKpiLabelHtml(label){
   if(label==='Ingresaron a proceso') return 'Ingresaron a <br>proceso';
   return tcEsc(label);
 }
-function recMetricsKpiCard(label,value,subHtml,iconName,tone,tipText){
+function recMetricsKpiCard(label,value,subHtml,iconName,tone,tipText,metaHtml){
   const tipId=tipText?('rec-metrics-tip-'+String(iconName||'kpi').replace(/[^a-z0-9_-]/gi,'')):'';
   const tipBtn=tipText
     ?('<button type="button" class="rec-metrics-kpi-info" aria-label="Más información sobre '+tcEsc(label)+'" aria-expanded="false" aria-describedby="'+tipId+'">'+
@@ -12721,8 +12738,10 @@ function recMetricsKpiCard(label,value,subHtml,iconName,tone,tipText){
     tipBtn+
     '<span class="rec-metrics-kpi-icon rec-metrics-kpi-icon--'+tone+'" aria-hidden="true">'+recMetricsIcon(iconName)+'</span></div>'+
     '<p class="rec-metrics-kpi-value">'+tcEsc(String(value))+'</p>'+
-    (subHtml?'<p class="rec-metrics-kpi-sub">'+subHtml+'</p>':'')+
-    '</article>';
+    '<div class="rec-metrics-kpi-foot">'+
+    '<div class="rec-metrics-kpi-sub">'+(subHtml||'')+'</div>'+
+    '<div class="rec-metrics-kpi-meta">'+(metaHtml||'')+'</div>'+
+    '</div></article>';
 }
 function recMetricsDeclinedSub(dec){
   if(!dec) return '';
@@ -12770,13 +12789,28 @@ function recMetricsBuildCalendar(data){
   }
   return cells.join('');
 }
+function recMetricsTrendDetailBtnLabel(expanded){
+  return expanded?'Ocultar detalle':'Ver detalle';
+}
+function recMetricsTrendDetailBtnHtml(expanded,detailId){
+  const open=!!expanded;
+  return '<button type="button" class="rec-metrics-trend-detail-btn" aria-expanded="'+(open?'true':'false')+'" aria-controls="'+detailId+'" onclick="recMetricsToggleTrendDetail(this)">'+
+    '<span class="rec-metrics-trend-detail-btn-label">'+recMetricsTrendDetailBtnLabel(open)+'</span>'+
+    '<svg class="rec-metrics-trend-detail-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'+
+    '</button>';
+}
+function recMetricsSetTrendDetailBtn(btn,expanded){
+  if(!btn) return;
+  btn.setAttribute('aria-expanded',expanded?'true':'false');
+  const label=btn.querySelector('.rec-metrics-trend-detail-btn-label');
+  if(label) label.textContent=recMetricsTrendDetailBtnLabel(expanded);
+}
 function recMetricsCloseTrendDetail(){
   document.querySelectorAll('.rec-metrics-trend-detail').forEach(function(el){
     el.hidden=true;
   });
   document.querySelectorAll('.rec-metrics-trend-detail-btn[aria-expanded="true"]').forEach(function(btn){
-    btn.setAttribute('aria-expanded','false');
-    btn.textContent='Ver detalle de factores';
+    recMetricsSetTrendDetailBtn(btn,false);
   });
 }
 function recMetricsToggleTrendDetail(btn){
@@ -12786,15 +12820,13 @@ function recMetricsToggleTrendDetail(btn){
   if(!panel) return;
   const open=btn.getAttribute('aria-expanded')==='true';
   if(open){
-    btn.setAttribute('aria-expanded','false');
+    recMetricsSetTrendDetailBtn(btn,false);
     panel.hidden=true;
-    btn.textContent='Ver detalle de factores';
     return;
   }
   recMetricsCloseTrendDetail();
-  btn.setAttribute('aria-expanded','true');
+  recMetricsSetTrendDetailBtn(btn,true);
   panel.hidden=false;
-  btn.textContent='Ocultar detalle';
 }
 function recMetricsTrendTone(tone){
   return tone==='green'||tone==='coral'||tone==='blue'||tone==='slate'?tone:'slate';
@@ -12802,22 +12834,45 @@ function recMetricsTrendTone(tone){
 function recMetricsTrendIconKey(icon){
   return icon==='trendUp'||icon==='trendDown'||icon==='trendFlat'||icon==='trendInfo'?icon:'trendInfo';
 }
+function recMetricsTrendSignalRow(signal){
+  const key=signal&&signal.key;
+  const names={hired:'Contrataciones',registrations:'Registros',rejectionShare:'Rechazos',coverageDays:'Cobertura'};
+  const name=names[key]||(signal&&signal.label)||'Señal';
+  let statusKey='none';
+  let statusText='Datos insuficientes';
+  let iconKey='trendInfo';
+  if(signal&&signal.eligible){
+    if(signal.score===1){ statusKey='up'; statusText='Mejoró'; iconKey='trendUp'; }
+    else if(signal.score===-1){ statusKey='down'; statusText='Empeoró'; iconKey='trendDown'; }
+    else { statusKey='stable'; statusText='Estable'; iconKey='trendFlat'; }
+  }
+  return '<li class="rec-metrics-trend-signal" data-signal-key="'+tcEsc(key||'')+'">'+
+    '<span class="rec-metrics-trend-signal-name">'+tcEsc(name)+'</span>'+
+    '<span class="rec-metrics-trend-signal-status rec-metrics-trend-signal-status--'+statusKey+'">'+
+    '<span aria-hidden="true">'+recMetricsIcon(iconKey)+'</span>'+
+    '<span>'+tcEsc(statusText)+'</span></span></li>';
+}
 function recMetricsRenderTrendInsight(trend){
   if(!trend||!trend.status) return '';
   const tone=recMetricsTrendTone(trend.tone);
   const icon=recMetricsTrendIconKey(trend.icon);
   const primary=(trend.primaryReasons&&trend.primaryReasons.length)?trend.primaryReasons:(trend.reasons||[]).slice(0,2);
-  const all=trend.reasons||[];
+  const signals=Array.isArray(trend.signals)?trend.signals:[];
   const detailId='rec-metrics-trend-detail';
   const reasonsHtml=primary.length
     ?('<ul class="rec-metrics-insight-reasons">'+primary.map(function(r){ return '<li>'+tcEsc(r.text||'')+'</li>'; }).join('')+'</ul>')
     :'';
-  const detailHtml=all.length
-    ?('<button type="button" class="rec-metrics-trend-detail-btn" aria-expanded="false" aria-controls="'+detailId+'" onclick="recMetricsToggleTrendDetail(this)">Ver detalle de factores</button>'+
-      '<div id="'+detailId+'" class="rec-metrics-trend-detail" hidden><ul>'+
-      all.map(function(r){ return '<li>'+tcEsc(r.text||'')+'</li>'; }).join('')+
-      '</ul></div>')
-    :'';
+  const eligibleN=Number.isFinite(Number(trend.eligibleSignals))?Number(trend.eligibleSignals):signals.filter(function(s){ return s&&s.eligible; }).length;
+  const totalN=signals.length||4;
+  const eligibleHtml='<span class="rec-metrics-trend-eligible">'+tcEsc(String(eligibleN)+' de '+String(totalN)+' indicadores comparables')+'</span>';
+  const order=['hired','registrations','rejectionShare','coverageDays'];
+  const byKey={};
+  signals.forEach(function(s){ if(s&&s.key) byKey[s.key]=s; });
+  const rows=order.map(function(k){
+    return recMetricsTrendSignalRow(byKey[k]||{ key:k, eligible:false, score:null });
+  }).join('');
+  const detailHtml=recMetricsTrendDetailBtnHtml(false,detailId)+
+    '<div id="'+detailId+'" class="rec-metrics-trend-detail" hidden><ul class="rec-metrics-trend-signal-list">'+rows+'</ul></div>';
   const compare=trend.comparisonLabel
     ?('<span class="rec-metrics-insight-compare">'+tcEsc(trend.comparisonLabel)+'</span>')
     :'';
@@ -12825,16 +12880,17 @@ function recMetricsRenderTrendInsight(trend){
     '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+tone+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
     '<div class="rec-metrics-insight-body">'+
     '<p class="rec-metrics-insight-title">'+tcEsc(trend.title||'Tendencia')+'</p>'+
-    compare+reasonsHtml+detailHtml+
+    compare+reasonsHtml+eligibleHtml+detailHtml+
     '</div></div>';
 }
 function recMetricsRenderInsights(insights,trend){
   const trendHtml=recMetricsRenderTrendInsight(trend);
-  const rest=(!insights||!insights.length)
+  const list=Array.isArray(insights)?insights.slice(0,2):[];
+  const rest=!list.length
     ?''
-    :insights.map(function(ins){
+    :list.map(function(ins){
       const icon=ins.kind==='rejections_client'?'client':ins.kind.indexOf('coverage')>=0?'clock':'up';
-      return '<div class="rec-metrics-insight">'+
+      return '<div class="rec-metrics-insight rec-metrics-insight--complementary" data-insight-kind="'+tcEsc(ins.kind||'')+'">'+
         '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+(ins.tone||'purple')+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
         '<div class="rec-metrics-insight-body"><p class="rec-metrics-insight-title">'+tcEsc(ins.title)+'</p>'+
         '<p class="rec-metrics-insight-text">'+tcEsc(ins.body)+'</p></div></div>';
@@ -12860,24 +12916,24 @@ function recMetricsRender(data){
   const decSub=recMetricsDeclinedSub(dec);
   const cov=k.avgCoverageDays;
   const covVal=cov.value!=null?cov.value+' días':'—';
-  const covParts=[];
-  if(cov.deltaVsPrevious!=null){
-    covParts.push(recMetricsCmpSpan(recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel),recMetricsCmpClass(cov.deltaVsPrevious,false)));
-  }
+  const covSub=cov.deltaVsPrevious!=null
+    ?recMetricsCmpSpan(recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel),recMetricsCmpClass(cov.deltaVsPrevious,false))
+    :'';
+  const covMetaParts=[];
   const sampleN=Number(cov.sampleSize);
   if(Number.isFinite(sampleN)){
-    covParts.push('<span class="rec-metrics-kpi-sample">Muestra: '+sampleN+' vacante'+(sampleN===1?'':'s')+'</span>');
+    covMetaParts.push('<span class="rec-metrics-kpi-sample">Muestra: '+sampleN+' vacante'+(sampleN===1?'':'s')+'</span>');
   }
   const dq=data.dataQuality||{};
   const missingCovered=Number(dq.coveredVacanciesMissingCoveredAt)||0;
   if(missingCovered>0){
-    covParts.push(
+    covMetaParts.push(
       '<span class="rec-metrics-kpi-quality"><span class="rec-metrics-kpi-quality-ico" aria-hidden="true">'+
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>'+
       missingCovered+' histórico'+(missingCovered===1?'':'s')+' sin fecha</span>'
     );
   }
-  const covSub=covParts.join('<br>');
+  const covMeta=covMetaParts.join('');
   let covTip='Promedio de días calendario desde la apertura hasta la cobertura confirmada. Solo vacantes que permanecen cubiertas con coveredAt en el mes. El promedio usa únicamente vacantes con una fecha de cobertura confiable.';
   if(missingCovered>0){
     covTip+=' Existen '+missingCovered+' vacantes cubiertas históricas sin fecha de cobertura y no pueden asignarse a un mes.';
@@ -12896,7 +12952,7 @@ function recMetricsRender(data){
     recMetricsKpiCard('Contratados',hired.total,hiredSub,'hired','green','Procesos que llegaron a contratación y cumplieron el periodo de consolidación durante el mes.')+
     recMetricsKpiCard('Rechazados',rej.total,rejSub,'rejected','coral','Procesos cerrados como rechazados durante el mes.')+
     recMetricsKpiCard('Declinados',dec.total,decSub,'declined','orange','Procesos en los que la persona declinó durante el mes.')+
-    recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber',covTip)+
+    recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber',covTip,covMeta)+
     recMetricsKpiCard('Vacantes activas',act.total,actSub,'vacancies','sky','Vacantes abiertas o en pausa al cierre del mes seleccionado.')+
     '</div>'+
     '<div class="rec-metrics-main">'+

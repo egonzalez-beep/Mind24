@@ -711,24 +711,51 @@ export function buildMonthlyTrend({
   };
 }
 
-/** Insights legacy a omitir cuando el trend ya cubre el mismo mensaje. */
+const COMPLEMENTARY_INSIGHT_PRIORITY = [
+  'rejections_client',
+  'coverage_faster',
+  'coverage_slower',
+  'registrations_up',
+  'registrations_down',
+];
+
+/**
+ * Insights complementarios: oculta solo los que repiten una razón ya cubierta por la tendencia.
+ * Máximo 2; no inventa insights. Prioriza cliente de rechazos y cobertura sobre registros.
+ */
 export function filterDuplicateInsights(insights, trend) {
-  if (!Array.isArray(insights) || !trend) return insights || [];
+  if (!Array.isArray(insights) || !insights.length) return [];
+  if (!trend) return insights.slice(0, 2);
+
+  // Mes futuro / sin periodo comparable: conservar insights operativos (máx. 2).
+  if (trend.status === 'INSUFFICIENT' && trend.eligibleSignals === 0 && trend.comparisonMode === 'INSUFFICIENT') {
+    return prioritizeComplementaryInsights(insights).slice(0, 2);
+  }
+
   const skip = new Set();
-  const hired = trend.signals?.find((s) => s.key === 'hired');
   const reg = trend.signals?.find((s) => s.key === 'registrations');
   const cov = trend.signals?.find((s) => s.key === 'coverageDays');
-  if (reg?.eligible && reg.score !== 0) {
+  const primaryKeys = new Set((trend.primaryReasons || []).map((r) => r.key).filter(Boolean));
+
+  if ((reg?.eligible && reg.score !== 0) || primaryKeys.has('registrations')) {
     skip.add('registrations_up');
     skip.add('registrations_down');
   }
-  if (cov?.eligible && cov.score !== 0) {
+  if ((cov?.eligible && cov.score !== 0) || primaryKeys.has('coverageDays')) {
     skip.add('coverage_faster');
     skip.add('coverage_slower');
   }
-  // Si no hay trend usable, conservar insights existentes.
-  if (trend.status === 'INSUFFICIENT' && trend.eligibleSignals === 0 && trend.comparisonMode === 'INSUFFICIENT') {
-    return insights;
-  }
-  return insights.filter((ins) => !skip.has(ins.kind));
+
+  const kept = insights.filter((ins) => !skip.has(ins.kind));
+  return prioritizeComplementaryInsights(kept).slice(0, 2);
+}
+
+function prioritizeComplementaryInsights(insights) {
+  return [...insights].sort((a, b) => {
+    const ia = COMPLEMENTARY_INSIGHT_PRIORITY.indexOf(a.kind);
+    const ib = COMPLEMENTARY_INSIGHT_PRIORITY.indexOf(b.kind);
+    const ra = ia === -1 ? 99 : ia;
+    const rb = ib === -1 ? 99 : ib;
+    return ra - rb;
+  });
 }
