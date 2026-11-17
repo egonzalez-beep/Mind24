@@ -114,9 +114,11 @@ check(/Más información sobre /.test(indexHtml), 'aria-label descriptivo del bo
 check(/recMetricsBindKpiTips|recMetricsCloseAllKpiTips|Escape/.test(indexHtml), 'tooltips con open/close Escape');
 check(/role="tooltip"/.test(indexHtml) && /rec-metrics-kpi-info/.test(indexHtml), 'tooltips accesibles KPI');
 check(/rec-metrics-kpi-icon--orange/.test(indexHtml), 'Declinados tono naranja');
-check(/no pueden asignarse a un mes/.test(indexHtml), 'nota honestas de deuda global de coveredAt');
+check(/no pueden asignarse a un mes/.test(indexHtml), 'tooltip cobertura documenta deuda global');
+check(/Muestra:/.test(indexHtml) && /histórico/.test(indexHtml), 'nota compacta de muestra/histórico en UI');
 check(/Calendario sin Declinados/.test(indexHtml), 'calendario documenta omisión de Declinados');
-check(/grid-template-columns:repeat\(4/.test(indexHtml), 'grid 4 columnas en escritorio');
+check(/grid-template-columns:repeat\(7/.test(indexHtml), 'grid 7 columnas en escritorio');
+check(/@container rec-metrics/.test(indexHtml), 'breakpoints por contenedor de métricas');
 check(pubHtml === indexHtml, 'HTML raíz idéntico a server/public');
 
 console.log('\n=== Helpers de periodo ===\n');
@@ -811,22 +813,50 @@ async function runVisual() {
       generatedAt: new Date().toISOString(),
     };
 
-    const expectedCols = {
-      1280: 4,
-      900: 2,
-      768: 2,
-      390: 1,
-    };
+    function expectedColsForContainer(cw) {
+      if (cw <= 439) return 1;
+      if (cw <= 679) return 2;
+      if (cw <= 1049) return 4;
+      return 7;
+    }
 
-    for (const width of [1280, 900, 768, 390]) {
+    async function mountMetricsShell(width) {
       await page.setViewport({ width, height: 900 });
-      const probe = await page.evaluate((data) => {
-        const host = document.getElementById('rec-metrics-host') || document.createElement('div');
+      return page.evaluate(() => {
+        document.body.innerHTML = '';
+        document.body.style.margin = '0';
+        const shell = document.createElement('div');
+        shell.className = 'app-shell';
+        shell.style.height = '100vh';
+        const side = document.createElement('aside');
+        side.className = 'sidebar';
+        side.style.minHeight = '100%';
+        const main = document.createElement('main');
+        main.className = 'main-content';
+        main.style.minWidth = '0';
+        main.style.flex = '1';
+        const page = document.createElement('div');
+        page.className = 'page-content rec-page-content';
+        page.style.padding = '28px';
+        const pane = document.createElement('div');
+        pane.id = 'rec-pane-metrics';
+        pane.className = 'rec-metrics-page';
+        const host = document.createElement('div');
         host.id = 'rec-metrics-host';
-        if (!host.parentNode) {
-          host.style.width = '100%';
-          document.body.appendChild(host);
-        }
+        pane.appendChild(host);
+        page.appendChild(pane);
+        main.appendChild(page);
+        shell.appendChild(side);
+        shell.appendChild(main);
+        document.body.appendChild(shell);
+        return true;
+      });
+    }
+
+    for (const width of [1600, 1440, 1366, 1280, 900, 768, 390]) {
+      await mountMetricsShell(width);
+      const probe = await page.evaluate((data) => {
+        const host = document.getElementById('rec-metrics-host');
         recMetricsRender(data);
         const grid = host.querySelector('.rec-metrics-kpi-grid');
         const gt = grid ? getComputedStyle(grid).gridTemplateColumns : '';
@@ -836,20 +866,36 @@ async function runVisual() {
         else if (/minmax\(/i.test(gt)) cols = (gt.match(/minmax\(/gi) || []).length;
         else cols = gt.split(/\s+/).filter(Boolean).length;
         const cards = [...host.querySelectorAll('.rec-metrics-kpi')];
-        const heights = cards.map((c) => Math.round(c.getBoundingClientRect().height));
+        const rowMap = new Map();
+        for (const c of cards) {
+          const top = Math.round(c.getBoundingClientRect().top);
+          const h = Math.round(c.getBoundingClientRect().height);
+          if (!rowMap.has(top)) rowMap.set(top, []);
+          rowMap.get(top).push(h);
+        }
+        let rowSpreadMax = 0;
+        for (const hs of rowMap.values()) {
+          const spread = Math.max(...hs) - Math.min(...hs);
+          if (spread > rowSpreadMax) rowSpreadMax = spread;
+        }
         const labels = cards.map((c) => (c.querySelector('.rec-metrics-kpi-label') || {}).textContent || '');
         const tips = [...host.querySelectorAll('.rec-metrics-kpi-tip')].map((el) => el.textContent || '');
         const tipBtns = [...host.querySelectorAll('.rec-metrics-kpi-info')];
-        const declinedCard = cards.find((c) => /Declinados/.test(c.textContent || ''));
-        const rejectedCard = cards.find((c) => /Rechazados/.test(c.textContent || ''));
+        const declinedCard = cards.find((c) => (c.querySelector('.rec-metrics-kpi-label') || {}).textContent === 'Declinados');
+        const rejectedCard = cards.find((c) => (c.querySelector('.rec-metrics-kpi-label') || {}).textContent === 'Rechazados');
         const hiredCard = cards.find((c) => (c.querySelector('.rec-metrics-kpi-label') || {}).textContent === 'Contratados');
-        const sampleNote = (cards.find((c) => /cobertura/i.test(c.textContent || '')) || {}).textContent || '';
+        const covCard = cards.find((c) => /cobertura/i.test((c.querySelector('.rec-metrics-kpi-label') || {}).textContent || ''));
+        const sampleEl = covCard && covCard.querySelector('.rec-metrics-kpi-sample');
+        const qualityEl = covCard && covCard.querySelector('.rec-metrics-kpi-quality');
+        const covTip = (covCard && covCard.querySelector('.rec-metrics-kpi-tip') || {}).textContent || '';
         const calText = (host.querySelector('.rec-metrics-cal-grid') || {}).textContent || '';
+        const hostBox = host.getBoundingClientRect();
+        const cardWidths = cards.map((c) => Math.round(c.getBoundingClientRect().width));
         return {
           cardCount: cards.length,
           cols,
+          containerWidth: Math.round(hostBox.width),
           labels,
-          tipCount: tips.length,
           tipBtnCount: tipBtns.length,
           tipLabels: tipBtns.map((b) => b.getAttribute('aria-label') || ''),
           tipDescribed: tipBtns.every((b) => {
@@ -861,21 +907,36 @@ async function runVisual() {
           tipRegistered: tips.some((t) => /registradas por primera vez/i.test(t)),
           tipEntered: tips.some((t) => /iniciaron al menos un proceso/i.test(t)),
           tipHiredProcess: tips.some((t) => /Procesos que llegaron a contratación/i.test(t)),
-          sampleNote:
-            /fecha de cobertura confiable/i.test(sampleNote) &&
-            /no pueden asignarse a un mes/i.test(sampleNote) &&
-            !/excluidas este mes/i.test(sampleNote),
+          compactCoverage:
+            !!sampleEl &&
+            /Muestra:\s*2 vacantes/i.test(sampleEl.textContent || '') &&
+            !!qualityEl &&
+            /3 históricos sin fecha/i.test(qualityEl.textContent || ''),
+          coverageTipFull:
+            /fecha de cobertura confiable/i.test(covTip) &&
+            /no pueden asignarse a un mes/i.test(covTip),
           safeText: !/Cliente <X>/.test(host.innerHTML) && host.textContent.includes('Cliente <X>'),
           overflow: document.documentElement.scrollWidth - window.innerWidth,
           declinedOrange: !!(declinedCard && declinedCard.querySelector('.rec-metrics-kpi-icon--orange')),
           rejectedCoral: !!(rejectedCard && rejectedCard.querySelector('.rec-metrics-kpi-icon--coral')),
           hiredGreen: !!(hiredCard && hiredCard.querySelector('.rec-metrics-kpi-icon--green')),
           calOmitsDeclined: !/Declinad/i.test(calText),
-          heights,
+          rowSpreadMax,
+          minCardWidth: cardWidths.length ? Math.min(...cardWidths) : 0,
+          titleEllipsis: cards.some((c) => {
+            const lab = c.querySelector('.rec-metrics-kpi-label');
+            if (!lab) return false;
+            const cs = getComputedStyle(lab);
+            return cs.webkitLineClamp && cs.webkitLineClamp !== 'none';
+          }),
         };
       }, fixture);
+      const expectCols = expectedColsForContainer(probe.containerWidth);
       check(probe.cardCount === 7 && probe.hasDeclined, `${width}px: 7 KPI incluyendo Declinados`);
-      check(probe.cols === expectedCols[width], `${width}px: grid ${expectedCols[width]} columnas (got ${probe.cols})`);
+      check(
+        probe.cols === expectCols,
+        `${width}px: grid ${expectCols} cols (got ${probe.cols}, container ${probe.containerWidth}px)`,
+      );
       check(probe.tipBtnCount >= 5 && probe.tipRegistered && probe.tipEntered, `${width}px: tooltips Registrados/Ingresaron`);
       check(probe.tipHiredProcess, `${width}px: tooltip Contratados habla de procesos`);
       check(
@@ -883,25 +944,142 @@ async function runVisual() {
         `${width}px: aria-label descriptivo en ?`,
       );
       check(probe.tipDescribed, `${width}px: aria-describedby → role=tooltip`);
-      check(probe.sampleNote, `${width}px: nota honesta de deuda global de cobertura`);
+      check(probe.compactCoverage, `${width}px: cobertura compacta (muestra + histórico)`);
+      check(probe.coverageTipFull, `${width}px: tooltip cobertura con explicación completa`);
       check(probe.safeText, `${width}px: textos escapados`);
       check(probe.overflow <= 1, `${width}px: sin desborde horizontal`);
       check(probe.declinedOrange && probe.rejectedCoral && probe.hiredGreen, `${width}px: tonos Declinados/Rechazados/Contratados`);
       check(probe.calOmitsDeclined, `${width}px: calendario sin Declinados`);
+      check(probe.rowSpreadMax <= 2, `${width}px: alturas homogéneas por fila (Δ${probe.rowSpreadMax})`);
+      check(!probe.titleEllipsis, `${width}px: títulos sin line-clamp/ellipsis`);
+      if (probe.cols === 7) {
+        check(probe.minCardWidth >= 110, `${width}px: tarjetas 7-col legibles (≥110px, got ${probe.minCardWidth})`);
+      }
     }
 
-    await page.setViewport({ width: 390, height: 900 });
+    // Variantes: dígitos, ±comparativo, sin comparativo, sin deuda, mes vacío.
+    await mountMetricsShell(1440);
+    const variants = await page.evaluate(() => {
+      const base = {
+        period: {
+          year: 2026,
+          month: 10,
+          label: 'Octubre 2026',
+          previousMonthLabel: 'septiembre',
+          footerLabel: 'Periodo',
+          daysInMonth: 31,
+          timeZone: 'America/Mexico_City',
+        },
+        dailyActivity: { days: [], peak: { date: null, registrations: 0 } },
+        insights: [],
+        generatedAt: new Date().toISOString(),
+        terminalClosures: {
+          hired: 0,
+          rejected: 0,
+          declined: 0,
+          terminalDecisions: 0,
+          hireShare: null,
+          rejectionShare: null,
+          declineShare: null,
+        },
+        dataQuality: { coveredVacanciesMissingCoveredAt: 0, declinedApplicationsMissingClosedAt: 0 },
+      };
+      const host = document.getElementById('rec-metrics-host');
+      const cases = [];
+      const run = (name, patch) => {
+        const data = {
+          ...base,
+          ...patch,
+          kpis: { ...(patch.kpis || {}) },
+          dataQuality: { ...base.dataQuality, ...(patch.dataQuality || {}) },
+        };
+        recMetricsRender(data);
+        const cards = [...host.querySelectorAll('.rec-metrics-kpi')];
+        const vals = cards.map((c) => (c.querySelector('.rec-metrics-kpi-value') || {}).textContent || '');
+        const cov = cards.find((c) => /cobertura/i.test((c.querySelector('.rec-metrics-kpi-label') || {}).textContent || ''));
+        const covText = cov ? cov.textContent || '' : '';
+        const covTip = (cov && cov.querySelector('.rec-metrics-kpi-tip') || {}).textContent || '';
+        cases.push({
+          name,
+          vals,
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+          hasPos: !!host.querySelector('.rec-metrics-cmp--pos'),
+          hasNeg: !!host.querySelector('.rec-metrics-cmp--neg'),
+          compactLegacy: /históricos? sin fecha/i.test(covText),
+          sampleOnly: /Muestra:/i.test(covText) && !/históricos? sin fecha/i.test(covText),
+          tipMentionsLegacy: /no pueden asignarse a un mes/i.test(covTip),
+        });
+      };
+      run('digits', {
+        kpis: {
+          candidatesRegistered: { total: 1, dailyAverage: 0, deltaDailyAverage: 0, compareLabel: 'septiembre' },
+          enteredProcess: { total: 12 },
+          hired: { total: 1234, deltaVsPrevious: 2, compareLabel: 'septiembre' },
+          rejected: { total: 0, topClient: null, previousTotal: 0 },
+          declined: { total: 9, deltaVsPrevious: -3, compareLabel: 'septiembre', previousTotal: 12 },
+          avgCoverageDays: { value: null, deltaVsPrevious: null, compareLabel: 'septiembre', sampleSize: 0 },
+          activeVacancies: { total: 7, nearTargetCount: 0 },
+        },
+      });
+      run('legacy', {
+        kpis: {
+          candidatesRegistered: { total: 5, dailyAverage: 0.2, deltaDailyAverage: 0.1, compareLabel: 'septiembre' },
+          enteredProcess: { total: 4 },
+          hired: { total: 1, deltaVsPrevious: 0, compareLabel: 'septiembre' },
+          rejected: { total: 1, topClient: null, previousTotal: 0 },
+          declined: { total: 0, deltaVsPrevious: 0, compareLabel: 'septiembre', previousTotal: 0 },
+          avgCoverageDays: {
+            value: 8,
+            deltaVsPrevious: -1,
+            compareLabel: 'septiembre',
+            sampleSize: 4,
+          },
+          activeVacancies: { total: 2, nearTargetCount: 1 },
+        },
+        dataQuality: { coveredVacanciesMissingCoveredAt: 1, declinedApplicationsMissingClosedAt: 0 },
+      });
+      run('empty-month', {
+        kpis: {
+          candidatesRegistered: { total: 0, dailyAverage: 0, deltaDailyAverage: 0, compareLabel: 'septiembre' },
+          enteredProcess: { total: 0 },
+          hired: { total: 0, deltaVsPrevious: 0, compareLabel: 'septiembre' },
+          rejected: { total: 0, topClient: null, previousTotal: 0 },
+          declined: { total: 0, deltaVsPrevious: 0, compareLabel: 'septiembre', previousTotal: 0 },
+          avgCoverageDays: { value: null, deltaVsPrevious: null, compareLabel: 'septiembre', sampleSize: 0 },
+          activeVacancies: { total: 0, nearTargetCount: 0 },
+        },
+      });
+      return cases;
+    });
+    const digits = variants.find((v) => v.name === 'digits');
+    const legacy = variants.find((v) => v.name === 'legacy');
+    const empty = variants.find((v) => v.name === 'empty-month');
+    check(
+      digits && digits.vals.includes('1') && digits.vals.includes('12') && digits.vals.includes('1234'),
+      'variante valores de 1/2/4 dígitos',
+    );
+    check(digits && digits.hasPos, 'variante comparativo positivo (mejora)');
+    check(digits && digits.hasNeg === false, 'variante baja de declinados no se pinta como alerta negativa');
+    check(legacy && legacy.compactLegacy && legacy.tipMentionsLegacy, 'variante 1 histórico compacto + tip completo');
+    check(empty && empty.sampleOnly && empty.overflow <= 1, 'mes vacío: muestra 0 sin deuda, sin desborde');
+
+    await mountMetricsShell(390);
     const tipProbe = await page.evaluate((data) => {
       const host = document.getElementById('rec-metrics-host');
       recMetricsRender(data);
       const btns = [...host.querySelectorAll('.rec-metrics-kpi-info')];
       if (btns.length < 2) return { ok: false, reason: 'few tips' };
       btns[0].click();
+      const tip0 = document.getElementById(btns[0].getAttribute('aria-describedby'));
+      const tipBox = tip0 ? tip0.getBoundingClientRect() : null;
       const firstOpen =
         btns[0].getAttribute('aria-expanded') === 'true' &&
-        document.getElementById(btns[0].getAttribute('aria-describedby'))?.classList.contains(
-          'rec-metrics-kpi-tip--open',
-        );
+        tip0?.classList.contains('rec-metrics-kpi-tip--open');
+      const inViewport =
+        tipBox &&
+        tipBox.left >= -1 &&
+        tipBox.right <= window.innerWidth + 1 &&
+        tipBox.top >= -1;
       btns[1].click();
       const onlySecond =
         btns[1].getAttribute('aria-expanded') === 'true' &&
@@ -925,6 +1103,7 @@ async function runVisual() {
         beforeRerender,
         afterRerender,
         boundOnce,
+        inViewport: !!inViewport,
       };
     }, fixture);
     check(tipProbe.ok && tipProbe.firstOpen, '390px: tip abre con click/tap');
@@ -933,6 +1112,7 @@ async function runVisual() {
     check(tipProbe.afterOutside, '390px: click fuera cierra tip');
     check(tipProbe.beforeRerender && tipProbe.afterRerender, '390px: re-render cierra tip abierto');
     check(tipProbe.boundOnce, '390px: listeners de tip no se duplican');
+    check(tipProbe.inViewport, '390px: tip abierto dentro del viewport');
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

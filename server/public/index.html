@@ -787,31 +787,41 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #view-dash-recruitment .rec-pipeline-header{flex-shrink:0;}
 #view-dash-recruitment #rec-pane-candidates{flex:1;min-height:0;overflow-y:auto;}
 #view-dash-recruitment #rec-pane-metrics{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
-.rec-metrics-page{padding:0 2px 8px;max-width:1280px;flex:1;min-height:0;display:flex;flex-direction:column;}
-#rec-metrics-host{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;}
+.rec-metrics-page{padding:0 2px 8px;max-width:none;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;container-type:inline-size;container-name:rec-metrics;}
+#rec-metrics-host{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;container-type:inline-size;container-name:rec-metrics;}
 .rec-metrics-month-nav{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:4px 8px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-metrics-month-btn{border:none;background:transparent;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);font-family:inherit;}
 .rec-metrics-month-btn:hover{background:var(--purple-light);color:var(--purple-dark);}
 .rec-metrics-month-label{font-size:13px;font-weight:700;color:var(--slate-800);min-width:118px;text-align:center;}
-.rec-metrics-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px;}
-@media(max-width:1200px){.rec-metrics-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-@media(max-width:900px){.rec-metrics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:420px){.rec-metrics-kpi-grid{grid-template-columns:minmax(0,1fr);}}
-.rec-metrics-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:14px 14px 12px;box-shadow:0 1px 3px rgba(15,23,42,.03);min-height:108px;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0;}
-.rec-metrics-kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
-.rec-metrics-kpi-label-row{display:flex;align-items:flex-start;gap:4px;min-width:0;flex:1;}
-.rec-metrics-kpi-label{font-size:11px;font-weight:700;color:var(--slate-600);line-height:1.3;margin:0;}
-.rec-metrics-kpi-info{flex-shrink:0;width:18px;height:18px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;color:var(--slate-400);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+/* Franja ejecutiva: 7 en una fila cuando el contenedor (no el viewport) lo permite. */
+.rec-metrics-kpi-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px;align-items:stretch;}
+/* Contenedor (tras sidebar): ≥1050→7 (títulos ≤2 líneas); 680–1049→4; 440–679→2; ≤439→1.
+   En ~1280 viewport (~972cqi) 7 cols deja cobertura en 3 líneas: se usa 4. */
+@container rec-metrics (max-width:1049px){.rec-metrics-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@container rec-metrics (max-width:679px){.rec-metrics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@container rec-metrics (max-width:439px){.rec-metrics-kpi-grid{grid-template-columns:minmax(0,1fr);}}
+.rec-metrics-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:8px 8px 8px;box-shadow:0 1px 3px rgba(15,23,42,.03);display:flex;flex-direction:column;gap:3px;position:relative;min-width:0;overflow:visible;}
+.rec-metrics-kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;min-height:2.4em;padding-right:2px;}
+.rec-metrics-kpi-label-row{display:flex;align-items:flex-start;gap:2px;min-width:0;flex:1;padding-right:2px;}
+.rec-metrics-kpi-label{font-size:10px;font-weight:700;color:var(--slate-600);line-height:1.2;margin:0;overflow-wrap:break-word;word-break:normal;hyphens:manual;max-width:100%;}
+.rec-metrics-kpi-info{position:absolute;top:6px;right:32px;z-index:2;width:15px;height:15px;margin:0;padding:0;border:0;border-radius:999px;background:#fff;color:var(--slate-400);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 .rec-metrics-kpi-info:hover,.rec-metrics-kpi-info:focus-visible,.rec-metrics-kpi-info[aria-expanded="true"]{color:var(--slate-700);background:rgba(148,163,184,.16);outline:none;}
 .rec-metrics-kpi-info:focus-visible{box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(124,58,237,.35);}
-.rec-metrics-kpi-info svg{width:12px;height:12px;stroke-width:2;}
-.rec-metrics-kpi-tip{position:absolute;left:12px;right:12px;top:40px;z-index:8;max-width:min(280px,calc(100vw - 32px));padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.12);font-size:11px;line-height:1.4;font-weight:600;color:var(--slate-600);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-4px);transition:opacity 140ms ease,visibility 140ms ease,transform 140ms ease;}
-.rec-metrics-kpi-label-row:hover .rec-metrics-kpi-tip,
+.rec-metrics-kpi-info svg{width:11px;height:11px;stroke-width:2;}
+/* Overlay dentro de la tarjeta: evita clip del host y no crece la franja. */
+.rec-metrics-kpi-tip{position:absolute;left:8px;top:34px;z-index:30;width:max-content;max-width:min(240px,calc(100cqi - 16px),calc(100vw - 24px));padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.14);font-size:11px;line-height:1.4;font-weight:600;color:var(--slate-600);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-4px);transition:opacity 140ms ease,visibility 140ms ease,transform 140ms ease;}
+.rec-metrics-kpi:nth-child(7n) .rec-metrics-kpi-tip,
+.rec-metrics-kpi:nth-child(7n-1) .rec-metrics-kpi-tip,
+.rec-metrics-kpi:nth-child(4n) .rec-metrics-kpi-tip{left:auto;right:8px;}
+.rec-metrics-kpi-info:hover + .rec-metrics-kpi-tip,
 .rec-metrics-kpi-info:focus-visible + .rec-metrics-kpi-tip,
 .rec-metrics-kpi-tip.rec-metrics-kpi-tip--open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);}
-.rec-metrics-kpi-quality{display:block;margin-top:4px;font-size:10px;font-weight:600;color:var(--slate-400);line-height:1.35;max-width:100%;}
-.rec-metrics-kpi-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rec-metrics-kpi-icon svg{width:18px;height:18px;stroke-width:2;}
+.rec-metrics-kpi-sample{display:block;font-size:10px;font-weight:600;color:var(--slate-500);line-height:1.3;}
+.rec-metrics-kpi-quality{display:inline-flex;align-items:flex-start;gap:4px;margin-top:2px;font-size:10px;font-weight:600;color:var(--slate-400);line-height:1.3;max-width:100%;}
+.rec-metrics-kpi-quality-ico{flex-shrink:0;width:12px;height:12px;margin-top:1px;color:var(--slate-400);opacity:.9;}
+.rec-metrics-kpi-quality-ico svg{width:12px;height:12px;stroke-width:2;display:block;}
+.rec-metrics-kpi-icon{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-metrics-kpi-icon svg{width:12px;height:12px;stroke-width:2;}
 .rec-metrics-kpi-icon--purple{background:rgba(139,92,246,.1);color:#7C3AED;}
 .rec-metrics-kpi-icon--blue{background:rgba(59,130,246,.1);color:#2563EB;}
 .rec-metrics-kpi-icon--green{background:rgba(34,197,94,.12);color:#16A34A;}
@@ -819,8 +829,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-kpi-icon--amber{background:rgba(251,146,60,.14);color:#EA580C;}
 .rec-metrics-kpi-icon--orange{background:rgba(249,115,22,.14);color:#C2410C;}
 .rec-metrics-kpi-icon--sky{background:rgba(56,189,248,.12);color:#0284C7;}
-.rec-metrics-kpi-value{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.1;margin:0;}
-.rec-metrics-kpi-sub{font-size:11px;font-weight:600;color:var(--slate-500);margin:0;line-height:1.35;}
+.rec-metrics-kpi-value{font-size:26px;font-weight:800;letter-spacing:-.4px;color:var(--primary);line-height:1.05;margin:0;margin-top:auto;}
+.rec-metrics-kpi-sub{font-size:10.5px;font-weight:600;color:var(--slate-500);margin:0;line-height:1.3;min-height:1.3em;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--pos{color:#16A34A;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--neg{color:#E11D48;}
 .rec-metrics-kpi-sub .rec-metrics-cmp--neu{color:var(--slate-500);}
@@ -12669,6 +12679,13 @@ function recMetricsBindKpiTips(host){
     },true);
   }
 }
+function recMetricsKpiLabelHtml(label){
+  // Saltos preferidos (sin truncar): mantienen ≤2 líneas en franja de 7 columnas.
+  if(label==='Tiempo promedio de cobertura') return 'Tiempo promedio <br>de cobertura';
+  if(label==='Candidatos registrados') return 'Candidatos <br>registrados';
+  if(label==='Ingresaron a proceso') return 'Ingresaron a <br>proceso';
+  return tcEsc(label);
+}
 function recMetricsKpiCard(label,value,subHtml,iconName,tone,tipText){
   const tipId=tipText?('rec-metrics-tip-'+String(iconName||'kpi').replace(/[^a-z0-9_-]/gi,'')):'';
   const tipBtn=tipText
@@ -12677,7 +12694,8 @@ function recMetricsKpiCard(label,value,subHtml,iconName,tone,tipText){
       '<span id="'+tipId+'" class="rec-metrics-kpi-tip" role="tooltip">'+tcEsc(tipText)+'</span>')
     :'';
   return '<article class="rec-metrics-kpi">'+
-    '<div class="rec-metrics-kpi-head"><div class="rec-metrics-kpi-label-row"><p class="rec-metrics-kpi-label">'+tcEsc(label)+'</p>'+tipBtn+'</div>'+
+    '<div class="rec-metrics-kpi-head"><div class="rec-metrics-kpi-label-row"><p class="rec-metrics-kpi-label">'+recMetricsKpiLabelHtml(label)+'</p></div>'+
+    tipBtn+
     '<span class="rec-metrics-kpi-icon rec-metrics-kpi-icon--'+tone+'" aria-hidden="true">'+recMetricsIcon(iconName)+'</span></div>'+
     '<p class="rec-metrics-kpi-value">'+tcEsc(String(value))+'</p>'+
     (subHtml?'<p class="rec-metrics-kpi-sub">'+subHtml+'</p>':'')+
@@ -12757,17 +12775,27 @@ function recMetricsRender(data){
   const decSub=recMetricsDeclinedSub(dec);
   const cov=k.avgCoverageDays;
   const covVal=cov.value!=null?cov.value+' días':'—';
-  let covSub='';
+  const covParts=[];
   if(cov.deltaVsPrevious!=null){
-    covSub=recMetricsCmpSpan(recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel),recMetricsCmpClass(cov.deltaVsPrevious,false));
+    covParts.push(recMetricsCmpSpan(recMetricsFmtDelta(cov.deltaVsPrevious)+' días vs. '+tcEsc(cov.compareLabel),recMetricsCmpClass(cov.deltaVsPrevious,false)));
+  }
+  const sampleN=Number(cov.sampleSize);
+  if(Number.isFinite(sampleN)){
+    covParts.push('<span class="rec-metrics-kpi-sample">Muestra: '+sampleN+' vacante'+(sampleN===1?'':'s')+'</span>');
   }
   const dq=data.dataQuality||{};
   const missingCovered=Number(dq.coveredVacanciesMissingCoveredAt)||0;
   if(missingCovered>0){
-    covSub+=(covSub?'<br>':'')+
-      '<span class="rec-metrics-kpi-quality">El promedio usa únicamente vacantes con una fecha de cobertura confiable. Existen '+
-      missingCovered+
-      ' vacantes cubiertas históricas sin fecha de cobertura y no pueden asignarse a un mes.</span>';
+    covParts.push(
+      '<span class="rec-metrics-kpi-quality"><span class="rec-metrics-kpi-quality-ico" aria-hidden="true">'+
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>'+
+      missingCovered+' histórico'+(missingCovered===1?'':'s')+' sin fecha</span>'
+    );
+  }
+  const covSub=covParts.join('<br>');
+  let covTip='Promedio de días calendario desde la apertura hasta la cobertura confirmada. Solo vacantes que permanecen cubiertas con coveredAt en el mes. El promedio usa únicamente vacantes con una fecha de cobertura confiable.';
+  if(missingCovered>0){
+    covTip+=' Existen '+missingCovered+' vacantes cubiertas históricas sin fecha de cobertura y no pueden asignarse a un mes.';
   }
   const act=k.activeVacancies;
   const actSub=act.nearTargetCount?act.nearTargetCount+' próximas al objetivo':'';
@@ -12782,7 +12810,7 @@ function recMetricsRender(data){
     recMetricsKpiCard('Contratados',hired.total,hiredSub,'hired','green','Procesos que llegaron a contratación y cumplieron el periodo de consolidación durante el mes.')+
     recMetricsKpiCard('Rechazados',rej.total,rejSub,'rejected','coral','Procesos cerrados como rechazados durante el mes.')+
     recMetricsKpiCard('Declinados',dec.total,decSub,'declined','orange','Procesos en los que la persona declinó durante el mes.')+
-    recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber','Promedio de días calendario desde la apertura hasta la cobertura confirmada. Solo vacantes que permanecen cubiertas con coveredAt en el mes.')+
+    recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber',covTip)+
     recMetricsKpiCard('Vacantes activas',act.total,actSub,'vacancies','sky','Vacantes abiertas o en pausa al cierre del mes seleccionado.')+
     '</div>'+
     '<div class="rec-metrics-main">'+
