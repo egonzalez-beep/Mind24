@@ -201,32 +201,127 @@ function consolidatedTerminalForPeriod(
 }
 
 /**
- * V1: fecha de cobertura ≈ vacancy.updatedAt al quedar COVERED (sin audit log de status).
- * Solo vacantes COVERED con esa fecha dentro del mes; targetCoverageDate no filtra inclusión.
+ * Promedio a partir de filas ya filtradas (status COVERED + coveredAt en mes).
+ * openedAt posterior a coveredAt → inválido, nunca duración negativa.
+ * KPI = vacantes que **permanecen** COVERED con coveredAt en el mes (no historial de reaperturas).
  */
-async function avgCoverageDaysForMonth(organizationId, start, end, timeZone) {
-  const vacs = await prisma.recruitmentVacancy.findMany({
+export function computeCoverageAverageFromVacancies(vacs, timeZone) {
+  const durations = [];
+  let invalidChronology = 0;
+  for (const v of vacs || []) {
+    if (!v?.coveredAt || !v?.openedAt) continue;
+    const openedKey = localDateKey(v.openedAt, timeZone);
+    const coveredKey = localDateKey(v.coveredAt, timeZone);
+    const days = calendarDayDiff(openedKey, coveredKey);
+    if (days < 0) {
+      invalidChronology += 1;
+      continue;
+    }
+    durations.push(days);
+  }
+  if (!durations.length) {
+    return { value: null, sampleSize: 0, invalidChronology };
+  }
+  const sum = durations.reduce((a, b) => a + b, 0);
+  return {
+    value: round1(sum / durations.length),
+    sampleSize: durations.length,
+    invalidChronology,
+  };
+}
+
+/**
+ * Cobertura canónica del mes: openedAt → coveredAt.
+ * Solo vacantes actualmente COVERED cuyo coveredAt cae en el mes.
+ * Sin fallback a updatedAt. Reabrir limpia coveredAt y deja de contar.
+ */
+export async function avgCoverageDaysForMonth(organizationId, start, end, timeZone) {
+  const inMonth = await prisma.recruitmentVacancy.findMany({
     where: {
       organizationId,
       status: 'COVERED',
-      updatedAt: { gte: start, lt: end },
+      coveredAt: { gte: start, lt: end },
     },
     select: {
       openedAt: true,
-      updatedAt: true,
+      coveredAt: true,
     },
   });
-  const durations = [];
-  for (const v of vacs) {
-    const openedKey = localDateKey(v.openedAt, timeZone);
-    const coveredKey = localDateKey(v.updatedAt, timeZone);
-    const days = calendarDayDiff(openedKey, coveredKey);
-    if (days < 0) continue;
-    durations.push(days);
+  return computeCoverageAverageFromVacancies(inMonth, timeZone);
+}
+
+/**
+ * Declinados del mes: apps con closureOutcome DECLINED y closedAt en rango.
+ * Sin consolidación 24h. Sin fallback a updatedAt/createdAt/archivo.
+ */
+export async function countDeclinedApplicationsForMonth(organizationId, start, end) {
+  const total = await prisma.recruitmentApplication.count({
+    where: {
+      organizationId,
+      closureOutcome: 'DECLINED',
+      closedAt: { gte: start, lt: end },
+    },
+  });
+  return { total };
+}
+
+/**
+ * Calidad de datos global (estado actual de la org), no atribuible a un mes.
+ * Filas sin fecha terminal no pueden asignarse de forma confiable a un periodo.
+ */
+export async function loadRecruitmentMetricsDataQuality(organizationId) {
+  const [coveredVacanciesMissingCoveredAt, declinedApplicationsMissingClosedAt] = await Promise.all([
+    prisma.recruitmentVacancy.count({
+      where: {
+        organizationId,
+        status: 'COVERED',
+        coveredAt: null,
+      },
+    }),
+    prisma.recruitmentApplication.count({
+      where: {
+        organizationId,
+        closureOutcome: 'DECLINED',
+        closedAt: null,
+      },
+    }),
+  ]);
+  return {
+    coveredVacanciesMissingCoveredAt,
+    declinedApplicationsMissingClosedAt,
+  };
+}
+
+/**
+ * Participación entre cierres terminales del mes (0–1).
+ * No es tasa de contratación ni de rechazo sobre el funnel.
+ * null cuando no hay decisiones terminales.
+ */
+export function buildTerminalClosureShares({ hired, rejected, declined }) {
+  const h = Math.max(0, Number(hired) || 0);
+  const r = Math.max(0, Number(rejected) || 0);
+  const d = Math.max(0, Number(declined) || 0);
+  const terminalDecisions = h + r + d;
+  if (terminalDecisions <= 0) {
+    return {
+      hired: h,
+      rejected: r,
+      declined: d,
+      terminalDecisions: 0,
+      hireShare: null,
+      rejectionShare: null,
+      declineShare: null,
+    };
   }
-  if (!durations.length) return null;
-  const sum = durations.reduce((a, b) => a + b, 0);
-  return round1(sum / durations.length);
+  return {
+    hired: h,
+    rejected: r,
+    declined: d,
+    terminalDecisions,
+    hireShare: h / terminalDecisions,
+    rejectionShare: r / terminalDecisions,
+    declineShare: d / terminalDecisions,
+  };
 }
 
 async function activeVacanciesAtMonthEnd(organizationId, endOfMonth, timeZone) {
@@ -430,6 +525,9 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
     enteredProcess,
     currCoverage,
     prevCoverage,
+    declinedCurr,
+    declinedPrev,
+    dataQuality,
     activeSnapshot,
     activity,
   ] = await Promise.all([
@@ -438,6 +536,9 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
     countDistinctCandidatesEnteredProcess(organizationId, start, end),
     avgCoverageDaysForMonth(organizationId, start, end, timeZone),
     avgCoverageDaysForMonth(organizationId, prevRange.start, prevRange.end, timeZone),
+    countDeclinedApplicationsForMonth(organizationId, start, end),
+    countDeclinedApplicationsForMonth(organizationId, prevRange.start, prevRange.end),
+    loadRecruitmentMetricsDataQuality(organizationId),
     activeVacanciesAtMonthEnd(organizationId, endOfMonth, timeZone),
     dailyActivity(organizationId, year, month, start, end, timeZone, consolidatedHiredCurr),
   ]);
@@ -445,6 +546,8 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
   const currDailyAvg = round1(currRegistered / daysInMonth);
   const prevDailyAvg = round1(prevRegistered / prevRange.daysInMonth);
   const deltaDailyAvg = round1(currDailyAvg - prevDailyAvg);
+  const currCoverageValue = currCoverage.value;
+  const prevCoverageValue = prevCoverage.value;
 
   const insights = buildInsights({
     currRegistered,
@@ -452,8 +555,15 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
     prevMonthLabel,
     rejectedTop: rejectedDetail.topClient,
     rejectedTotal: rejectedDetail.total,
-    currCoverage,
-    prevCoverage,
+    currCoverage: currCoverageValue,
+    prevCoverage: prevCoverageValue,
+  });
+
+  /** Participación entre cierres del mes (hired+rejected+declined). No es tasa de funnel. */
+  const terminalClosures = buildTerminalClosureShares({
+    hired,
+    rejected: rejectedDetail.total,
+    declined: declinedCurr.total,
   });
 
   return {
@@ -484,19 +594,39 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
         topClient: rejectedDetail.topClient,
         previousTotal: prevRejectedTotal,
       },
-      avgCoverageDays: {
-        value: currCoverage,
-        deltaVsPrevious:
-          currCoverage != null && prevCoverage != null ? round1(currCoverage - prevCoverage) : null,
+      declined: {
+        total: declinedCurr.total,
+        deltaVsPrevious: declinedCurr.total - declinedPrev.total,
         compareLabel: prevMonthLabel,
-        /** V1: cobertura inferida por updatedAt al pasar a COVERED. */
-        coverageDateSource: 'vacancy.updatedAt',
+        previousTotal: declinedPrev.total,
+      },
+      avgCoverageDays: {
+        value: currCoverageValue,
+        deltaVsPrevious:
+          currCoverageValue != null && prevCoverageValue != null
+            ? round1(currCoverageValue - prevCoverageValue)
+            : null,
+        compareLabel: prevMonthLabel,
+        /** Vacantes actualmente COVERED con coveredAt en el mes. */
+        coverageDateSource: 'vacancy.coveredAt',
+        sampleSize: currCoverage.sampleSize,
       },
       activeVacancies: {
         total: activeSnapshot.total,
         nearTargetCount: activeSnapshot.nearTargetCount,
       },
     },
+    /**
+     * Estado actual de la org (no atribuible al mes).
+     * coveredVacanciesMissingCoveredAt: COVERED sin coveredAt (legado sin backfill).
+     * declinedApplicationsMissingClosedAt: DECLINED sin closedAt.
+     */
+    dataQuality,
+    /**
+     * Preparación para tendencia futura. Shares 0–1 = participación entre cierres del mes.
+     * null si terminalDecisions === 0. No se muestra como insight principal aún.
+     */
+    terminalClosures,
     dailyActivity: activity,
     insights,
     generatedAt: new Date().toISOString(),
