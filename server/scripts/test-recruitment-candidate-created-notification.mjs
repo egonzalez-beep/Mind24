@@ -375,7 +375,7 @@ check(/let recVacLoadSeq=0/.test(indexHtml), 'las cargas de vacantes tienen secu
 check(/if\(opts\.notifyMissing\)/.test(indexHtml), '404 del expediente no bloquea la navegación');
 check(/j\.application&&j\.application\.id/.test(indexHtml), 'no reasigna si la alta ya creó la postulación');
 const dupeFn = sliceBetween(indexHtml, 'async function recCandDupeCreateAnyway', 'async function recCandCreateAndOpen');
-check(dupeFn.includes('recCandCreateAndOpen(body)') && dupeFn.includes('recCandWorkforceCreateAndConfirm(body)'), 'crear de todos modos usa el mismo alta');
+check(dupeFn.includes('recCandCreateAndOpen(body)') && dupeFn.includes('recCandWorkforceCreateAndConfirm(body)'), 'registrar persona distinta usa el mismo alta');
 check(/\/notifications\/:id\/read/.test(notifRoutes) && /read-all/.test(notifRoutes), 'lectura individual y read-all existentes');
 
 console.log('\n=== El body no elige actor ni tenant ===\n');

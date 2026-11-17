@@ -214,6 +214,8 @@ export const candidateCreateSchema = z
     stageId: z.string().min(1).max(80).optional().nullable(),
     interviewDate: z.string().max(10).optional().nullable(),
     interviewTime: z.string().max(5).optional().nullable(),
+    /** Solo `true` explícito autoriza crear pese a coincidencia fuerte. */
+    allowDuplicate: z.union([z.literal(true), z.literal(false)]).optional(),
   })
   .superRefine(candidateContactRefine);
 
@@ -582,14 +584,17 @@ router.post('/candidates/check-duplicates', async (req, res, next) => {
       .object({
         email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
         phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+        whatsapp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
         curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
         excludeCandidateId: z.string().min(1).max(80).optional(),
       })
       .parse(req.body ?? {});
     const email = body.email && String(body.email).trim() ? body.email : undefined;
     const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
+    const whatsapp =
+      body.whatsapp && String(body.whatsapp).trim() ? body.whatsapp : undefined;
     const curp = body.curp && String(body.curp).trim() ? body.curp : undefined;
-    if (!email && !phone && !curp) {
+    if (!email && !phone && !whatsapp && !curp) {
       res.json({ candidates: [], curpConflict: false });
       return;
     }
@@ -600,20 +605,12 @@ router.post('/candidates/check-duplicates', async (req, res, next) => {
     }
     const candidates = await findPotentialDuplicateRecruitmentCandidates(
       u.organizationId,
-      { email, phone, curp },
+      { email, phone, whatsapp, curp },
       { excludeCandidateId },
     );
     res.json({
       curpConflict: candidates.curpConflict === true,
-      candidates: candidates.map((c) => ({
-        id: c.id,
-        fullName: c.fullName,
-        profile: c.profile,
-        phone: c.phone,
-        whatsapp: c.whatsapp,
-        email: c.email,
-        archivedAt: c.archivedAt,
-      })),
+      candidates: [...candidates],
     });
   } catch (e) {
     next(e);
@@ -632,6 +629,7 @@ router.post('/candidates', async (req, res, next) => {
       stageId,
       interviewDate,
       interviewTime,
+      allowDuplicate,
       ...createPayload
     } = body;
     const actorLabel = String(u.fullName || '').trim() || String(u.email || '').trim() || 'Administrador';
@@ -668,6 +666,7 @@ router.post('/candidates', async (req, res, next) => {
       changedByUserId: u.id,
       interviewScheduledAt,
       interviewTimeSpecified,
+      allowDuplicate: allowDuplicate === true,
     });
     if (initialNote) {
       await createRecruitmentCandidateNote(

@@ -35,6 +35,56 @@ function trimOrNull(v) {
 }
 
 /**
+ * Identidad comparable de teléfono/WhatsApp (México).
+ * Solo para comparar; no altera el formato visible guardado en la ficha.
+ * - Quita extensión explícita (ext/x/ramal) antes de digitar.
+ * - Quita no dígitos.
+ * - Quita prefijo 521 / 52 cuando el número es suficientemente largo.
+ * - Prefijo trunk local con ceros → últimos 10; otros sobrantes → null (sin falso positivo).
+ * - Exactamente 10 dígitos nacionales; cortos → null.
+ */
+export function comparableRecruitmentContactPhone(raw) {
+  let text = String(raw ?? '');
+  text = text.replace(/(?:ext\.?|extension|ramal|x)\s*\d+\s*$/i, '');
+  let digits = text.replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.length >= 12 && digits.startsWith('521')) digits = digits.slice(3);
+  else if (digits.length >= 12 && digits.startsWith('52')) digits = digits.slice(2);
+  if (digits.length > 10) {
+    if (/^0\d+$/.test(digits)) digits = digits.slice(-10);
+    else return null;
+  }
+  if (digits.length !== 10) return null;
+  return digits;
+}
+
+/** @deprecated Prefer comparableRecruitmentContactPhone; se mantiene como alias. */
+export function normalizeRecruitmentCandidatePhoneDigits(phone) {
+  return comparableRecruitmentContactPhone(phone);
+}
+
+export function maskRecruitmentContactPhone(raw) {
+  const key = comparableRecruitmentContactPhone(raw);
+  if (key) return `••• ••• ${key.slice(-4)}`;
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  if (digits.length < 4) return null;
+  return `•••${digits.slice(-4)}`;
+}
+
+export function maskRecruitmentContactEmail(email) {
+  const e = String(email ?? '')
+    .trim()
+    .toLowerCase();
+  if (!e || !e.includes('@')) return null;
+  const at = e.lastIndexOf('@');
+  const user = e.slice(0, at);
+  const domain = e.slice(at + 1);
+  if (!domain) return null;
+  const visible = user.slice(0, Math.min(2, user.length));
+  return `${visible}•••@${domain}`;
+}
+
+/**
  * Estructura de CURP mexicana, sin consulta a RENAPO.
  * 4 letras, fecha AAMMDD, sexo, entidad, 3 consonantes, homoclave y dígito.
  */

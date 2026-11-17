@@ -70,6 +70,15 @@ check(!/registeredByWorkforceEmployeeId.*req\.body/.test(publicRoutes), 'no lee 
 check(/listActiveVacanciesForWorkforcePortal/.test(portalSvc), 'solo vacantes ACTIVE portal');
 check(/status !== 'ACTIVE'/.test(portalSvc), 'rechaza vacante no activa');
 check(/registeredByWorkforceEmployeeId: workforceEmployeeId/.test(portalSvc), 'creador desde employee sesión');
+check(/allowDuplicate:\s*allowDuplicate === true/.test(portalSvc), 'portal allowDuplicate estricto');
+check(/attachExistingCandidateToVacancyForWorkforcePortal/.test(portalSvc), 'portal asigna ficha existente');
+check(/Registrar persona distinta/.test(indexHtml), 'portal comparte copy persona distinta');
+check(/Usar candidato existente/.test(indexHtml), 'portal comparte usar existente');
+check(
+  /vacancies\/.+\/applications/.test(publicRoutes) &&
+    /attachExistingCandidateToVacancyForWorkforcePortal/.test(publicRoutes),
+  'POST applications portal para usar existente',
+);
 
 check(/serializeRegisteredByWorkforceEmployee/.test(candSvc), 'serializa registrado por');
 check(/registeredByInclude/.test(candSvc), 'include en list/detail');

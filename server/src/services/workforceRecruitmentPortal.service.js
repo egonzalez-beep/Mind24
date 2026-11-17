@@ -59,6 +59,7 @@ export const workforceCandidateCreateSchema = z
     stageId: z.string().min(1).optional().nullable(),
     interviewDate: z.string().max(10).optional().nullable(),
     interviewTime: z.string().max(5).optional().nullable(),
+    allowDuplicate: z.union([z.literal(true), z.literal(false)]).optional(),
   })
   .strict()
   .superRefine(candidateContactRefine);
@@ -116,7 +117,15 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
   body,
 }) {
   const parsed = workforceCandidateCreateSchema.parse(body);
-  const { vacancyId, stageId, notes, interviewDate, interviewTime, ...createPayload } = parsed;
+  const {
+    vacancyId,
+    stageId,
+    notes,
+    interviewDate,
+    interviewTime,
+    allowDuplicate,
+    ...createPayload
+  } = parsed;
 
   const employee = await prisma.workforceEmployee.findFirst({
     where: { id: workforceEmployeeId, organizationId, isActive: true },
@@ -175,6 +184,7 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
     changedByUserId: null,
     interviewScheduledAt,
     interviewTimeSpecified,
+    allowDuplicate: allowDuplicate === true,
   });
   if (application?.stage?.name) stageName = application.stage.name;
 
@@ -206,14 +216,69 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
 
 export async function findDuplicateCandidatesForWorkforcePortal(
   organizationId,
-  { email, phone, curp },
+  { email, phone, whatsapp, curp },
 ) {
-  const candidates = await findPotentialDuplicateRecruitmentCandidates(organizationId, {
+  return findPotentialDuplicateRecruitmentCandidates(organizationId, {
     email,
     phone,
+    whatsapp,
     curp,
   });
-  return candidates;
+}
+
+/** Reutiliza ficha existente y crea postulación; org/colaborador solo de sesión. */
+export async function attachExistingCandidateToVacancyForWorkforcePortal({
+  organizationId,
+  workforceEmployeeId,
+  vacancyId,
+  candidateId,
+  stageId = null,
+  interviewDate = null,
+  interviewTime = null,
+}) {
+  const employee = await prisma.workforceEmployee.findFirst({
+    where: { id: workforceEmployeeId, organizationId, isActive: true },
+    select: { id: true },
+  });
+  if (!employee) {
+    const err = new Error('FORBIDDEN');
+    err.code = 'FORBIDDEN';
+    err.message = 'Acceso no disponible.';
+    throw err;
+  }
+  const vacancy = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
+  if (vacancy.status !== 'ACTIVE') {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'Solo puedes asignar vacantes activas.';
+    throw err;
+  }
+  const { assertRecruitmentCandidateInOrg } = await import('./recruitmentCandidate.service.js');
+  await assertRecruitmentCandidateInOrg(candidateId, organizationId);
+  const resolvedStageId = await resolveStageForVacancy(organizationId, vacancyId, stageId || null);
+  const st = await prisma.recruitmentStage.findFirst({
+    where: { id: resolvedStageId, organizationId },
+    select: { key: true },
+  });
+  const { resolveInterviewScheduledAtForOrg } = await import(
+    './recruitmentInterviewSchedule.service.js'
+  );
+  const interviewSchedule = await resolveInterviewScheduledAtForOrg(
+    organizationId,
+    { interviewDate, interviewTime },
+    { stageKey: st?.key },
+  );
+  const { createRecruitmentApplication } = await import('./recruitmentApplication.service.js');
+  const application = await createRecruitmentApplication({
+    organizationId,
+    vacancyId,
+    candidateId,
+    changedByUserId: null,
+    initialStageId: resolvedStageId,
+    interviewScheduledAt: interviewSchedule?.scheduledAt ?? undefined,
+    interviewTimeSpecified: interviewSchedule?.timeSpecified,
+  });
+  return { application, candidateId };
 }
 
 export async function listMyCandidatesForWorkforcePortal(

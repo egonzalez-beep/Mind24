@@ -6,6 +6,9 @@ import {
   recruitmentTerminalOutcomeAt,
 } from './recruitmentProcessClosure.service.js';
 import {
+  comparableRecruitmentContactPhone,
+  maskRecruitmentContactEmail,
+  maskRecruitmentContactPhone,
   normalizeRecruitmentCandidateCurp,
   normalizeRecruitmentCandidateFullName,
   prepareRecruitmentCandidateWritePayload,
@@ -18,7 +21,13 @@ import {
   RECRUITMENT_CANDIDATE_SOURCE_OPTIONS,
 } from './recruitmentCandidateCatalog.service.js';
 
-export { normalizeRecruitmentCandidateFullName } from './recruitmentCandidateCatalog.service.js';
+export {
+  comparableRecruitmentContactPhone,
+  maskRecruitmentContactEmail,
+  maskRecruitmentContactPhone,
+  normalizeRecruitmentCandidateFullName,
+} from './recruitmentCandidateCatalog.service.js';
+export { normalizeRecruitmentCandidatePhoneDigits } from './recruitmentCandidateCatalog.service.js';
 
 function serializeResumeMetadata(row) {
   if (!row) return null;
@@ -51,12 +60,6 @@ function trimOrNull(v) {
 export function normalizeRecruitmentCandidateEmail(email) {
   const v = trimOrNull(email);
   return v ? v.toLowerCase() : null;
-}
-
-/** Solo dígitos para heurísticas de duplicado (no unique duro). */
-export function normalizeRecruitmentCandidatePhoneDigits(phone) {
-  const digits = String(phone ?? '').replace(/\D/g, '');
-  return digits.length >= 7 ? digits : null;
 }
 
 export function emptyRecruitmentCandidateApplicationSummary() {
@@ -436,57 +439,149 @@ export async function listCandidateDirectoryFilterOptions(organizationId) {
   };
 }
 
+/** Columnas mínimas para match fuerte + serialización enmascarada (sin apps/notas/docs). */
+const DUPLICATE_MATCH_SELECT = {
+  id: true,
+  fullName: true,
+  profile: true,
+  phone: true,
+  whatsapp: true,
+  email: true,
+  curp: true,
+  archivedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  registeredByWorkforceEmployee: { select: { fullName: true } },
+};
+
+/** Payload seguro para preflight / 409 (sin CURP completa ni contactos en claro). */
+export function serializeRecruitmentDuplicateMatch(row, processPreview = null) {
+  const contactRaw = row.whatsapp || row.phone || null;
+  return {
+    id: row.id,
+    fullName: row.fullName,
+    profile: row.profile,
+    phoneMasked: maskRecruitmentContactPhone(contactRaw),
+    emailMasked: maskRecruitmentContactEmail(row.email),
+    archived: !!row.archivedAt,
+    createdAt:
+      row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt || null,
+    registeredByName: row.registeredByWorkforceEmployee?.fullName || null,
+    primaryProcess: processPreview
+      ? {
+          vacancyTitle: processPreview.vacancyTitle || null,
+          stageName: processPreview.stageName || null,
+          stageKey: processPreview.stageKey || null,
+          listPreviewKind: processPreview.listPreviewKind || null,
+        }
+      : null,
+  };
+}
+
+function candidateRowMatchesPhoneKey(row, phoneKey) {
+  if (!phoneKey) return false;
+  return (
+    comparableRecruitmentContactPhone(row.phone) === phoneKey ||
+    comparableRecruitmentContactPhone(row.whatsapp) === phoneKey
+  );
+}
+
 /**
- * Candidatos potencialmente duplicados (email exacto o teléfono normalizado).
- * No bloquea creación; pensado para UI 1D.2.
+ * Coincidencias fuertes: correo, CURP o teléfono/WhatsApp comparable (10 dígitos MX).
+ * Compara teléfono en memoria dentro de la organización (sin columna normalizada).
+ * Incluye archivados. Deduplica por id. No cruza organizaciones.
  */
 export async function findPotentialDuplicateRecruitmentCandidates(
   organizationId,
-  { email, phone, curp } = {},
-  { excludeCandidateId } = {},
+  { email, phone, whatsapp, curp } = {},
+  { excludeCandidateId, db = prisma, skipProcessPreview = false } = {},
 ) {
-  const or = [];
   const normEmail = normalizeRecruitmentCandidateEmail(email);
-  if (normEmail) {
-    or.push({ email: { equals: normEmail, mode: 'insensitive' } });
-  }
-  const digits = normalizeRecruitmentCandidatePhoneDigits(phone);
-  if (digits) {
-    or.push({ phone: { contains: digits.slice(-10) } });
-    or.push({ whatsapp: { contains: digits.slice(-10) } });
-  }
+  const phoneKey =
+    comparableRecruitmentContactPhone(phone) || comparableRecruitmentContactPhone(whatsapp);
   const normCurp = recruitmentCandidateCurpForLookup(curp);
-  let curpConflict = false;
-  if (normCurp) {
-    const curpHit = await prisma.recruitmentCandidate.findFirst({
-      where: {
-        organizationId,
-        curp: { equals: normCurp, mode: 'insensitive' },
-        ...(excludeCandidateId ? { id: { not: excludeCandidateId } } : {}),
-      },
-      select: { id: true },
-    });
-    curpConflict = !!curpHit;
-    or.push({ curp: { equals: normCurp, mode: 'insensitive' } });
-  }
-  if (!or.length) {
+  const exclude = excludeCandidateId ? { id: { not: excludeCandidateId } } : {};
+
+  if (!normEmail && !phoneKey && !normCurp) {
     const empty = [];
     empty.curpConflict = false;
     return empty;
   }
 
-  const rows = await prisma.recruitmentCandidate.findMany({
-    where: {
-      organizationId,
-      ...(excludeCandidateId ? { id: { not: excludeCandidateId } } : {}),
-      OR: or,
-    },
-    take: 10,
-    orderBy: { updatedAt: 'desc' },
-  });
-  const list = rows.map((r) => serializeRecruitmentCandidate(r));
+  const byId = new Map();
+  let curpConflict = false;
+
+  if (normEmail) {
+    const emailRows = await db.recruitmentCandidate.findMany({
+      where: {
+        organizationId,
+        ...exclude,
+        email: { equals: normEmail, mode: 'insensitive' },
+      },
+      select: DUPLICATE_MATCH_SELECT,
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+    });
+    for (const row of emailRows) byId.set(row.id, row);
+  }
+
+  if (normCurp) {
+    const curpRows = await db.recruitmentCandidate.findMany({
+      where: {
+        organizationId,
+        ...exclude,
+        curp: { equals: normCurp, mode: 'insensitive' },
+      },
+      select: DUPLICATE_MATCH_SELECT,
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+    });
+    curpConflict = curpRows.length > 0;
+    for (const row of curpRows) byId.set(row.id, row);
+  }
+
+  if (phoneKey) {
+    // phone es NOT NULL: se leen contactos de la org y se filtra por clave de 10 dígitos.
+    const phoneRows = await db.recruitmentCandidate.findMany({
+      where: { organizationId, ...exclude },
+      select: DUPLICATE_MATCH_SELECT,
+      orderBy: { updatedAt: 'desc' },
+    });
+    for (const row of phoneRows) {
+      if (candidateRowMatchesPhoneKey(row, phoneKey)) byId.set(row.id, row);
+    }
+  }
+
+  const merged = [...byId.values()].sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
+  const limited = merged.slice(0, 10);
+  let activeMap = new Map();
+  let terminalMap = new Map();
+  if (!skipProcessPreview && limited.length) {
+    const ids = limited.map((r) => r.id);
+    [activeMap, terminalMap] = await Promise.all([
+      buildPrimaryActivePreviewByCandidateId(organizationId, ids),
+      buildLatestTerminalPreviewByCandidateId(organizationId, ids),
+    ]);
+  }
+  const list = limited.map((row) =>
+    serializeRecruitmentDuplicateMatch(
+      row,
+      resolveCandidateListProcessPreview(activeMap.get(row.id), terminalMap.get(row.id)),
+    ),
+  );
   list.curpConflict = curpConflict;
   return list;
+}
+
+export function assertNoStrongRecruitmentDuplicates(matches, { curpConflict = false } = {}) {
+  if (!matches?.length && !curpConflict) return;
+  const err = new Error('Encontramos un candidato que podría ser la misma persona.');
+  err.code = 'CANDIDATE_DUPLICATE';
+  err.matches = Array.isArray(matches) ? matches : [];
+  err.curpConflict = curpConflict === true;
+  throw err;
 }
 
 function encodeListCursor(createdAt, id) {
@@ -1021,6 +1116,25 @@ export async function updateRecruitmentCandidate(organizationId, candidateId, pa
   }
   if (patch.curp !== undefined) {
     data.curp = normalizeRecruitmentCandidateCurp(patch.curp);
+  }
+  const contactTouched =
+    patch.whatsapp !== undefined ||
+    patch.phone !== undefined ||
+    patch.email !== undefined ||
+    patch.curp !== undefined;
+  // Sin bypass allowDuplicate en PATCH: solo create admite persona distinta a propósito.
+  if (contactTouched) {
+    const matches = await findPotentialDuplicateRecruitmentCandidates(
+      organizationId,
+      {
+        email: data.email !== undefined ? data.email : existing.email,
+        phone: data.phone,
+        whatsapp: data.whatsapp,
+        curp: data.curp !== undefined ? data.curp : existing.curp,
+      },
+      { excludeCandidateId: candidateId },
+    );
+    assertNoStrongRecruitmentDuplicates(matches, { curpConflict: matches.curpConflict === true });
   }
   if (patch.city !== undefined) data.city = trimOrNull(patch.city);
   if (patch.state !== undefined) data.state = trimOrNull(patch.state);

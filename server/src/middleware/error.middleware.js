@@ -42,6 +42,7 @@ const STATUS = {
   ATTENDANCE_NOT_CONFIGURED: 403,
   WORK_SESSION_NOT_OPEN: 409,
   WORK_LOG_ALREADY_SUBMITTED: 409,
+  CANDIDATE_DUPLICATE: 409,
 };
 
 /** Foto administrativa o foto propia del portal. No alcanza otras rutas que contengan "photo". */
@@ -87,6 +88,14 @@ export function errorHandler(err, req, res, next) {
   }
   if (err.code === 'P2002') {
     return res.status(409).json({ error: 'CONFLICT', message: 'El recurso ya existe.' });
+  }
+  if (err.code === 'CANDIDATE_DUPLICATE') {
+    return res.status(409).json({
+      error: 'CANDIDATE_DUPLICATE',
+      message: err.message || 'Encontramos un candidato que podría ser la misma persona.',
+      matches: Array.isArray(err.matches) ? err.matches : [],
+      curpConflict: err.curpConflict === true,
+    });
   }
   const code = err.code || err.name;
   const status = STATUS[code] || (err.status && Number(err.status)) || 500;

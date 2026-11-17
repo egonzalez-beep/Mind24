@@ -1,8 +1,13 @@
 import { prisma } from '../db/client.js';
-import { createRecruitmentCandidate } from './recruitmentCandidate.service.js';
+import {
+  assertNoStrongRecruitmentDuplicates,
+  createRecruitmentCandidate,
+  findPotentialDuplicateRecruitmentCandidates,
+} from './recruitmentCandidate.service.js';
 import { createRecruitmentApplication } from './recruitmentApplication.service.js';
 import { notifyRecruitmentCandidateCreated } from './orgNotification.service.js';
 import { HIRED_STAGE_KEY, reconcileVacancyCoverage } from './recruitmentCoverage.service.js';
+import { prepareRecruitmentCandidateWritePayload } from './recruitmentCandidateCatalog.service.js';
 
 export async function createRecruitmentCandidateAndNotify({
   organizationId,
@@ -15,8 +20,33 @@ export async function createRecruitmentCandidateAndNotify({
   changedByUserId = null,
   interviewScheduledAt = undefined,
   interviewTimeSpecified = undefined,
+  allowDuplicate = false,
 }) {
+  const prepared = prepareRecruitmentCandidateWritePayload(payload, { partial: false });
+  if (allowDuplicate !== true) {
+    const matches = await findPotentialDuplicateRecruitmentCandidates(organizationId, {
+      email: prepared.email,
+      phone: prepared.phone,
+      whatsapp: prepared.whatsapp,
+      curp: prepared.curp,
+    });
+    assertNoStrongRecruitmentDuplicates(matches, { curpConflict: matches.curpConflict === true });
+  }
+
+  // Concurrencia: no hay candado org-wide reutilizable (FOR UPDATE existe por candidato, no por org).
+  // Riesgo residual: dos altas paralelas con el mismo contacto pueden colarse entre lecturas.
+  // No se añade índice UNIQUE ni advisory lock en esta fase.
   const created = await prisma.$transaction(async (tx) => {
+    // Relectura pragmática dentro de la tx (sin candado org-wide ni índice único).
+    if (allowDuplicate !== true) {
+      const again = await findPotentialDuplicateRecruitmentCandidates(organizationId, {
+        email: prepared.email,
+        phone: prepared.phone,
+        whatsapp: prepared.whatsapp,
+        curp: prepared.curp,
+      });
+      assertNoStrongRecruitmentDuplicates(again, { curpConflict: again.curpConflict === true });
+    }
     const candidate = await createRecruitmentCandidate(organizationId, payload, {
       registeredByWorkforceEmployeeId,
       db: tx,

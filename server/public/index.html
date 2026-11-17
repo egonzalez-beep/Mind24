@@ -3490,14 +3490,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <div id="modal-rec-candidate-duplicates" class="modal-overlay rec-modal-glass hidden" onclick="closeModalOnBg(event,'modal-rec-candidate-duplicates')">
   <div class="modal-card" style="max-width:min(480px,calc(100vw - 32px));background:#FAFBFF;" onclick="event.stopPropagation()">
     <button type="button" class="modal-close" onclick="closeModal('modal-rec-candidate-duplicates')">✕</button>
-    <h2 class="modal-title" style="font-size:18px;">Encontramos un posible candidato existente</h2>
-    <p id="rec-cand-dupe-intro" style="font-size:13px;color:var(--slate-600);margin:0 0 8px;">Revisa si ya está registrado antes de crear uno nuevo.</p>
+    <h2 class="modal-title" style="font-size:18px;">Encontramos un candidato que podría ser la misma persona</h2>
+    <p id="rec-cand-dupe-intro" style="font-size:13px;color:var(--slate-600);margin:0 0 8px;">Revisa la ficha existente antes de registrar una nueva persona.</p>
     <p id="rec-cand-dupe-curp-warn" class="hidden" style="font-size:13px;color:#B45309;margin:0 0 10px;">Ya existe un candidato con esta CURP. Revisa el expediente antes de continuar.</p>
+    <p id="rec-cand-dupe-confirm-distinct" class="hidden" style="font-size:13px;color:var(--slate-700);margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(251,191,36,.12);border:1px solid rgba(245,158,11,.28);">Se creará una ficha nueva e independiente. La persona existente no se modificará.</p>
     <div id="rec-cand-dupe-list" class="rec-cand-dupe-list"></div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <button type="button" id="rec-cand-dupe-use" class="form-submit form-submit-purple" onclick="recCandDupeUseExisting()">Usar existente</button>
-      <button type="button" id="rec-cand-dupe-proceed" class="rec-stages-ghost-btn" onclick="recCandDupeCreateAnyway()">Crear de todos modos</button>
-      <button type="button" class="rec-stage-act" onclick="closeModal('modal-rec-candidate-duplicates')">Volver</button>
+      <button type="button" id="rec-cand-dupe-use" class="form-submit form-submit-purple" onclick="recCandDupeUseExisting()">Usar candidato existente</button>
+      <button type="button" id="rec-cand-dupe-proceed" class="rec-stages-ghost-btn" onclick="recCandDupeCreateAnyway()">Registrar persona distinta</button>
+      <button type="button" class="rec-stage-act" onclick="recCandDupeCancel()">Volver</button>
     </div>
   </div>
 </div>
@@ -6380,7 +6381,10 @@ async function apiJson(url,opts={}){
     }
     const er=new Error(msg);
     if(j&&j.error)er.code=j.error;
+    er.error=j&&j.error;
     er.httpStatus=r.status;
+    if(j&&j.matches)er.matches=j.matches;
+    if(j&&j.curpConflict!=null)er.curpConflict=j.curpConflict;
     if(r.status===401){
       const safeAuthAttempt=url.includes('/api/auth/login')||url.includes('/api/auth/candidate-access');
       window.__MIND24_USER=null;
@@ -14520,18 +14524,13 @@ async function recCandFormVacancyChanged(vacancyId){
   }
 }
 async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFields){
-  if(recCandFormIsWorkforce()){
-    const err=new Error('Asignación no disponible en este contexto.');
-    err.code='FORBIDDEN';
-    throw err;
-  }
   const body={ candidateId:candidateId };
   if(stageId) body.stageId=stageId;
   if(interviewFields){
     body.interviewDate=interviewFields.interviewDate;
     body.interviewTime=interviewFields.interviewTime;
   }
-  return apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
+  return recCandFormRecApiJson('/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
     method:'POST',
     body:JSON.stringify(body),
   });
@@ -16397,6 +16396,20 @@ function recCandApiCandidateCreateBody(body){
   }
   return o;
 }
+function recCandIsDuplicateConflict(e){
+  return !!(e&&(e.error==='CANDIDATE_DUPLICATE'||e.code==='CANDIDATE_DUPLICATE'));
+}
+function recCandShowDuplicateFromError(e,body,intent,editId){
+  const st=recEnsureState();
+  st.candDupeCurpConflict=!!(e&&e.curpConflict);
+  st.candDupeIntent=intent||'create';
+  st.candDupeEditId=editId||null;
+  st.candDupePendingBody=body;
+  st.candDupeConfirmDistinct=false;
+  const list=(e&&e.matches)||[];
+  st.candDupeSelectedId=(list[0]&&list[0].id)||null;
+  recCandShowDupeModal(list);
+}
 async function recCandSubmitForm(){
   const err=document.getElementById('rec-cand-form-err');
   const btn=document.getElementById('rec-cand-form-submit');
@@ -16412,7 +16425,7 @@ async function recCandSubmitForm(){
     if(err){ err.textContent=curpErr; err.classList.remove('hidden'); }
     return;
   }
-  if(btn) btn.disabled=true;
+  if(btn){ if(btn.dataset.recBusy==='1') return; btn.dataset.recBusy='1'; btn.disabled=true; }
   try{
     if(id){
       if(!body.whatsapp){
@@ -16420,43 +16433,62 @@ async function recCandSubmitForm(){
         return;
       }
       const stEdit=recEnsureState();
-      if(recCandEditCurpNeedsDuplicateCheck(body.curp, stEdit.candFormOriginalCurp)){
-        const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify({curp:body.curp,excludeCandidateId:id})});
+      const dupPayload={
+        email:body.email||null,
+        phone:body.phone||null,
+        whatsapp:body.whatsapp||null,
+        curp:body.curp||null,
+        excludeCandidateId:id,
+      };
+      try{
+        const dup=await apiJson('/api/org/recruitment/candidates/check-duplicates',{method:'POST',body:JSON.stringify(dupPayload)});
         stEdit.candDupeCurpConflict=!!(dup&&dup.curpConflict);
-        if(stEdit.candDupeCurpConflict){
+        if((dup.candidates||[]).length||stEdit.candDupeCurpConflict){
           stEdit.candDupeIntent='edit';
           stEdit.candDupeEditId=id;
           stEdit.candDupePendingBody=body;
+          stEdit.candDupeConfirmDistinct=false;
           stEdit.candDupeSelectedId=(dup.candidates&&dup.candidates[0]&&dup.candidates[0].id)||null;
           recCandShowDupeModal(dup.candidates||[]);
           return;
         }
+      }catch(_pre){ /* el PATCH revalida en servidor */ }
+      try{
+        await recCandPatchExisting(id, body);
+      }catch(e){
+        if(recCandIsDuplicateConflict(e)){ recCandShowDuplicateFromError(e,body,'edit',id); return; }
+        throw e;
       }
-      await recCandPatchExisting(id, body);
       return;
     }
     const st=recEnsureState();
     const dupPhone=body.whatsapp||body.phone;
     if(body.email||dupPhone||body.curp){
-      const dup=await recCandFormRecApiJson('/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:dupPhone||null,curp:body.curp||null})});
+      const dup=await recCandFormRecApiJson('/candidates/check-duplicates',{method:'POST',body:JSON.stringify({email:body.email||null,phone:body.phone||null,whatsapp:body.whatsapp||dupPhone||null,curp:body.curp||null})});
       st.candDupeCurpConflict=!!(dup&&dup.curpConflict);
       if((dup.candidates||[]).length||st.candDupeCurpConflict){
         st.candDupeIntent='create';
         st.candDupeEditId=null;
         st.candDupePendingBody=body;
+        st.candDupeConfirmDistinct=false;
         st.candDupeSelectedId=(dup.candidates&&dup.candidates[0]&&dup.candidates[0].id)||null;
         recCandShowDupeModal(dup.candidates||[]);
         return;
       }
     }
-    if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
-    else await recCandCreateAndOpen(body);
+    try{
+      if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
+      else await recCandCreateAndOpen(body);
+    }catch(e){
+      if(recCandIsDuplicateConflict(e)){ recCandShowDuplicateFromError(e,body,'create',null); return; }
+      throw e;
+    }
   }catch(e){
     if(recCandFormIsWorkforce()&&recEnsureState().candFormWorkforceCreatedCandidateId){
       if(err){ err.classList.add('hidden'); err.textContent=''; }
     }else if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
   }finally{
-    if(btn) btn.disabled=false;
+    if(btn){ btn.disabled=false; btn.dataset.recBusy='0'; }
   }
 }
 function recCandWorkforceClearPartialCvState(){
@@ -16494,6 +16526,7 @@ async function recCandWorkforceCreateAndConfirm(body){
     return;
   }
   const payload=recCandApiCandidateCreateBody(body);
+  if(body.allowDuplicate===true) payload.allowDuplicate=true;
   const j=await tcPublicJson('/api/timeclock/public/recruitment/candidates',{method:'POST',body:JSON.stringify(payload)});
   const candidateId=j&&j.candidate&&j.candidate.id;
   if(!candidateId) throw new Error('No se pudo registrar al candidato.');
@@ -17457,7 +17490,8 @@ function tcEmpShowCandidateRegisteredCvPartial(conf,extraErr){
   tcEmpRecruitmentShowCvPartial(extraErr||'');
 }
 async function recCandPatchExisting(id, body){
-  await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(recCandApiCandidateBody(body))});
+  const payload=recCandApiCandidateBody(body);
+  await apiJson('/api/org/recruitment/candidates/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(payload)});
   closeModal('modal-rec-candidate-form');
   await recCandLoadList(false);
   if(recEnsureState().detailCandidateId===id){
@@ -17465,27 +17499,59 @@ async function recCandPatchExisting(id, body){
     await recCandRenderDetail(c,false);
   }
 }
+function recCandDupeFormatDate(iso){
+  if(!iso) return '';
+  try{
+    return new Date(iso).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric'});
+  }catch(_e){ return ''; }
+}
+function recCandDupeMatchHtml(c,selectedId){
+  const sel=c.id===selectedId?' rec-cand-dupe-item--selected':'';
+  const contact=[c.phoneMasked||c.phone,c.emailMasked||c.email].filter(Boolean).join(' · ');
+  const meta=[];
+  if(c.registeredByName) meta.push('Registrado por '+c.registeredByName);
+  const when=recCandDupeFormatDate(c.createdAt);
+  if(when) meta.push(when);
+  if(c.archived) meta.push('Archivado');
+  const proc=c.primaryProcess;
+  const procLine=proc
+    ?(proc.vacancyTitle||'')+(proc.stageName?(' · '+proc.stageName):'')
+    :'';
+  return '<button type="button" class="rec-cand-dupe-item'+sel+'" onclick="recCandSelectDupe(\''+tcEsc(c.id)+'\')">'+
+    '<div style="font-weight:700;">'+tcEsc(c.fullName||'')+'</div>'+
+    '<div style="font-size:12px;color:var(--slate-600);">'+tcEsc(c.profile||'')+'</div>'+
+    (contact?'<div style="font-size:11px;color:var(--slate-500);">'+tcEsc(contact)+'</div>':'')+
+    (meta.length?'<div style="font-size:11px;color:var(--slate-500);margin-top:2px;">'+tcEsc(meta.join(' · '))+'</div>':'')+
+    (procLine?'<div style="font-size:11px;color:var(--slate-600);margin-top:2px;">'+tcEsc(procLine)+'</div>':'')+
+    '</button>';
+}
 function recCandShowDupeModal(list){
   const box=document.getElementById('rec-cand-dupe-list');
   const warn=document.getElementById('rec-cand-dupe-curp-warn');
   const intro=document.getElementById('rec-cand-dupe-intro');
+  const confirmEl=document.getElementById('rec-cand-dupe-confirm-distinct');
   const useBtn=document.getElementById('rec-cand-dupe-use');
   const proceed=document.getElementById('rec-cand-dupe-proceed');
   const st=recEnsureState();
   const editing=st.candDupeIntent==='edit';
   st.candDupeList=list||[];
   if(warn) warn.classList.toggle('hidden',!st.candDupeCurpConflict);
-  if(intro) intro.textContent=editing?'Revisa el expediente antes de guardar este cambio.':'Revisa si ya está registrado antes de crear uno nuevo.';
-  if(useBtn) useBtn.classList.toggle('hidden',editing);
-  if(proceed) proceed.textContent=editing?'Guardar de todos modos':'Crear de todos modos';
+  if(intro) intro.textContent=editing
+    ?'Corrige el contacto o revisa la ficha existente. No se puede guardar un contacto que ya pertenece a otra persona.'
+    :'Revisa la ficha existente antes de registrar una nueva persona.';
+  if(confirmEl) confirmEl.classList.toggle('hidden',editing||!st.candDupeConfirmDistinct);
+  if(useBtn){
+    useBtn.classList.toggle('hidden',editing);
+    useBtn.textContent='Usar candidato existente';
+  }
+  if(proceed){
+    proceed.classList.toggle('hidden',editing);
+    proceed.textContent=st.candDupeConfirmDistinct
+      ?'Confirmar persona distinta'
+      :'Registrar persona distinta';
+  }
   if(box){
-    box.innerHTML=(list||[]).map(function(c){
-      const sel=c.id===st.candDupeSelectedId?' rec-cand-dupe-item--selected':'';
-      return '<button type="button" class="rec-cand-dupe-item'+sel+'" onclick="recCandSelectDupe(\''+c.id+'\')">'+
-        '<div style="font-weight:700;">'+tcEsc(c.fullName)+'</div>'+
-        '<div style="font-size:12px;color:var(--slate-600);">'+tcEsc(c.profile)+'</div>'+
-        '<div style="font-size:11px;color:var(--slate-500);">'+tcEsc([c.email,c.phone].filter(Boolean).join(' · '))+'</div></button>';
-    }).join('');
+    box.innerHTML=(list||[]).map(function(c){ return recCandDupeMatchHtml(c,st.candDupeSelectedId); }).join('');
   }
   openModal('modal-rec-candidate-duplicates');
   const formModal=document.getElementById('modal-rec-candidate-form');
@@ -17495,6 +17561,11 @@ function recCandShowDupeModal(list){
     formModal.style.visibility='visible';
   }
 }
+function recCandDupeCancel(){
+  const st=recEnsureState();
+  st.candDupeConfirmDistinct=false;
+  closeModal('modal-rec-candidate-duplicates');
+}
 function recCandSelectDupe(id){
   const st=recEnsureState();
   st.candDupeSelectedId=id;
@@ -17502,39 +17573,91 @@ function recCandSelectDupe(id){
 }
 async function recCandDupeUseExisting(){
   const st=recEnsureState();
-  closeModal('modal-rec-candidate-duplicates');
-  closeModal('modal-rec-candidate-form');
-  if(st.candDupeSelectedId) await recCandOpenDetail(st.candDupeSelectedId);
-  st.candDupePendingBody=null;
-  st.candFormPendingCvFile=null;
+  const useBtn=document.getElementById('rec-cand-dupe-use');
+  if(useBtn&&useBtn.dataset.recBusy==='1') return;
+  if(useBtn){ useBtn.dataset.recBusy='1'; useBtn.disabled=true; }
+  const body=st.candDupePendingBody;
+  const candidateId=st.candDupeSelectedId;
+  const errEl=document.getElementById('rec-cand-form-err');
+  try{
+    if(!candidateId){
+      if(errEl){ errEl.textContent='Selecciona un candidato de la lista.'; errEl.classList.remove('hidden'); }
+      return;
+    }
+    const vacId=body&&body._vacancyId;
+    const stageId=body&&body._stageId;
+    if(vacId){
+      try{
+        await recCandAssignToVacancy(candidateId,vacId,stageId||null,body._interview||null);
+      }catch(e){
+        if(errEl){ errEl.textContent=(e&&e.message)||'No se pudo asignar a la vacante.'; errEl.classList.remove('hidden'); }
+        closeModal('modal-rec-candidate-duplicates');
+        return;
+      }
+      if(!recCandFormIsWorkforce()&&recEnsureState().selectedId===vacId) recKanbanLoad(vacId);
+    }
+    closeModal('modal-rec-candidate-duplicates');
+    closeModal('modal-rec-candidate-form');
+    st.candDupePendingBody=null;
+    st.candFormPendingCvFile=null;
+    st.candDupeConfirmDistinct=false;
+    if(recCandFormIsWorkforce()){
+      recCandFormApiMode='admin';
+      await tcEmpLoadMyCandidates(false);
+      tcEmpQuickGoCandidates('in_process', candidateId);
+    }else{
+      await recCandLoadList(false);
+      await recCandOpenDetail(candidateId);
+    }
+  }finally{
+    if(useBtn){ useBtn.disabled=false; useBtn.dataset.recBusy='0'; }
+  }
 }
 async function recCandDupeCreateAnyway(){
   const st=recEnsureState();
+  const proceed=document.getElementById('rec-cand-dupe-proceed');
+  if(proceed&&proceed.dataset.recBusy==='1') return;
   const body=st.candDupePendingBody;
   const editId=st.candDupeEditId;
   const intent=st.candDupeIntent;
+  if(intent==='edit'){
+    closeModal('modal-rec-candidate-duplicates');
+    return;
+  }
+  if(!st.candDupeConfirmDistinct){
+    st.candDupeConfirmDistinct=true;
+    recCandShowDupeModal(st.candDupeList||[]);
+    return;
+  }
+  if(proceed){ proceed.dataset.recBusy='1'; proceed.disabled=true; }
   closeModal('modal-rec-candidate-duplicates');
   try{
-    if(intent==='edit'){
-      if(editId&&body) await recCandPatchExisting(editId, body);
-    }else if(body){
+    if(body){
+      body.allowDuplicate=true;
       if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
       else await recCandCreateAndOpen(body);
     }
+    st.candDupePendingBody=null;
+    st.candDupeEditId=null;
+    st.candDupeIntent=null;
+    st.candDupeConfirmDistinct=false;
   }catch(e){
     const err=document.getElementById('rec-cand-form-err');
-    if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
+    if(recCandIsDuplicateConflict(e)){
+      recCandShowDuplicateFromError(e,body,intent,editId);
+    }else if(err){ err.textContent=(e&&e.message)||'No se pudo guardar.'; err.classList.remove('hidden'); }
+  }finally{
+    if(proceed){ proceed.disabled=false; proceed.dataset.recBusy='0'; }
   }
-  st.candDupePendingBody=null;
-  st.candDupeEditId=null;
-  st.candDupeIntent=null;
 }
 async function recCandCreateAndOpen(body){
   const st=recEnsureState();
   const vacId=body._vacancyId;
   const stageId=body._stageId;
   const pendingCv=st.candFormPendingCvFile;
-  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(recCandApiCandidateCreateBody(body))});
+  const payload=recCandApiCandidateCreateBody(body);
+  if(body.allowDuplicate===true) payload.allowDuplicate=true;
+  const j=await apiJson('/api/org/recruitment/candidates',{method:'POST',body:JSON.stringify(payload)});
   if(!(j&&j.candidate&&j.candidate.id)) throw new Error('No se pudo registrar al candidato.');
   st.candFormPendingCvFile=null;
   closeModal('modal-rec-candidate-form');
@@ -20860,7 +20983,9 @@ async function tcPublicJson(url, opts){
   let j=null; const t=await r.text(); try{j=JSON.parse(t);}catch(_){}
   if(!r.ok){
     const er=new Error((j&&j.message)||t||('HTTP '+r.status));
-    er.code=j&&j.error; er.httpStatus=r.status;
+    er.code=j&&j.error; er.error=j&&j.error; er.httpStatus=r.status;
+    if(j&&j.matches)er.matches=j.matches;
+    if(j&&j.curpConflict!=null)er.curpConflict=j.curpConflict;
     throw er;
   }
   return j;

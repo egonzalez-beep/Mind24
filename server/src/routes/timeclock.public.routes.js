@@ -85,6 +85,7 @@ import {
 } from '../services/recruitmentCandidate.service.js';
 import {
   createRecruitmentCandidateFromWorkforcePortal,
+  attachExistingCandidateToVacancyForWorkforcePortal,
   findDuplicateCandidatesForWorkforcePortal,
   getEnabledVacancyStagesForWorkforcePortal,
   listActiveVacanciesForWorkforcePortal,
@@ -448,33 +449,65 @@ router.post('/recruitment/candidates/check-duplicates', requireTimeclockSession,
       .object({
         email: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
         phone: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
+        whatsapp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
         curp: z.union([z.string().max(40), z.literal(''), z.null()]).optional(),
       })
       .parse(req.body ?? {});
     const email = body.email && String(body.email).trim() ? body.email : undefined;
     const phone = body.phone && String(body.phone).trim() ? body.phone : undefined;
+    const whatsapp =
+      body.whatsapp && String(body.whatsapp).trim() ? body.whatsapp : undefined;
     const curp = body.curp && String(body.curp).trim() ? body.curp : undefined;
-    if (!email && !phone && !curp) {
+    if (!email && !phone && !whatsapp && !curp) {
       res.json({ candidates: [], curpConflict: false });
       return;
     }
-    const candidates = await findDuplicateCandidatesForWorkforcePortal(orgId, { email, phone, curp });
+    const candidates = await findDuplicateCandidatesForWorkforcePortal(orgId, {
+      email,
+      phone,
+      whatsapp,
+      curp,
+    });
     res.json({
       curpConflict: candidates.curpConflict === true,
-      candidates: candidates.map((c) => ({
-        id: c.id,
-        fullName: c.fullName,
-        profile: c.profile,
-        phone: c.phone,
-        whatsapp: c.whatsapp,
-        email: c.email,
-        archivedAt: c.archivedAt,
-      })),
+      candidates: [...candidates],
     });
   } catch (e) {
     next(e);
   }
 });
+
+router.post(
+  '/recruitment/vacancies/:vacancyId/applications',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  async (req, res, next) => {
+    try {
+      const orgId = req.timeclockEmployee.organizationId;
+      const body = z
+        .object({
+          candidateId: z.string().min(1).max(80),
+          stageId: z.string().min(1).max(80).optional().nullable(),
+          interviewDate: z.string().max(10).optional().nullable(),
+          interviewTime: z.string().max(5).optional().nullable(),
+        })
+        .parse(req.body ?? {});
+      const result = await attachExistingCandidateToVacancyForWorkforcePortal({
+        organizationId: orgId,
+        workforceEmployeeId: req.timeclockEmployee.id,
+        vacancyId: req.params.vacancyId,
+        candidateId: body.candidateId,
+        stageId: body.stageId || null,
+        interviewDate: body.interviewDate,
+        interviewTime: body.interviewTime,
+      });
+      res.status(201).json(result);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.post(
   '/recruitment/candidates/resume/parse',

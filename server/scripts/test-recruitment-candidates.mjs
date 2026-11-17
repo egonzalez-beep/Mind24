@@ -106,11 +106,26 @@ check(
 console.log('\n=== Recruitment CURP opcional — unit y frontend ===\n');
 
 const {
+  comparableRecruitmentContactPhone,
+  maskRecruitmentContactEmail,
+  maskRecruitmentContactPhone,
   normalizeRecruitmentCandidateCurp,
   recruitmentCandidateCurpConflicts,
   recruitmentCandidateCurpForLookup,
   RECRUITMENT_CURP_INVALID_MESSAGE,
 } = await import('../src/services/recruitmentCandidateCatalog.service.js');
+
+console.log('\n=== Normalización de contacto (duplicados) ===\n');
+check(comparableRecruitmentContactPhone('4421234567') === '4421234567', 'teléfono idéntico');
+check(comparableRecruitmentContactPhone('442 123 4567') === '4421234567', 'espacios');
+check(comparableRecruitmentContactPhone('442-123-4567') === '4421234567', 'guiones');
+check(comparableRecruitmentContactPhone('+52 442 123 4567') === '4421234567', '+52');
+check(comparableRecruitmentContactPhone('+52 1 442 123 4567') === '4421234567', '+521');
+check(comparableRecruitmentContactPhone('(442) 123 4567') === '4421234567', 'paréntesis');
+check(comparableRecruitmentContactPhone('123') == null, 'corto no comparable');
+check(comparableRecruitmentContactPhone('4421234567') === comparableRecruitmentContactPhone('+5214421234567'), 'tel vs wa mismo contacto');
+check(maskRecruitmentContactPhone('+52 442 123 4567') === '••• ••• 4567', 'máscara teléfono');
+check(maskRecruitmentContactEmail('  Ana.Test@Example.COM ') === 'an•••@example.com', 'máscara correo');
 
 function curpError(input) {
   try {
@@ -189,13 +204,44 @@ check(/assertRecruitmentCandidateInOrg\(body\.excludeCandidateId, u\.organizatio
 const dupStart = routes.indexOf("router.post('/candidates/check-duplicates'");
 const dupRoute = routes.slice(dupStart, routes.indexOf("router.post('/candidates',", dupStart + 10));
 check(dupStart > 0 && dupRoute.includes('assertEmpresaAdmin') && !/organizationId:\s*(req\.body|body\.organizationId)/.test(dupRoute), 'check usa organizationId de la sesión');
-const mapStart = dupRoute.indexOf('candidates.map');
-const dupMap = dupRoute.slice(mapStart, dupRoute.indexOf('})),', mapStart));
-check(mapStart > 0 && !/\bcurp\b|organizationId|notes/.test(dupMap), 'mapa de duplicados sin CURP, notas ni organización');
+check(
+  /serializeRecruitmentDuplicateMatch/.test(candidateSvc) &&
+    /phoneMasked/.test(candidateSvc) &&
+    /emailMasked/.test(candidateSvc),
+  'matches serializados con máscaras',
+);
+check(
+  /candidates:\s*\[\.\.\.candidates\]/.test(dupRoute) &&
+    !/candidates\.map\(/.test(dupRoute) &&
+    !/organizationId:\s*(req\.body|body\.organizationId)/.test(dupRoute),
+  'respuesta de check-duplicates reutiliza matches serializados',
+);
+check(
+  /phoneMasked|emailMasked/.test(candidateSvc) &&
+    !/curp:\s*row\.curp/.test(candidateSvc.slice(
+      candidateSvc.indexOf('serializeRecruitmentDuplicateMatch'),
+      candidateSvc.indexOf('serializeRecruitmentDuplicateMatch') + 800,
+    )),
+  'serialización de match sin CURP completa',
+);
+check(/allowDuplicate:\s*allowDuplicate === true/.test(routes), 'POST create exige allowDuplicate estricto');
+check(/allowDuplicate: z\.union\(\[z\.literal\(true\), z\.literal\(false\)\]\)/.test(routes), 'schema allowDuplicate literal');
+const createSvc = fs.readFileSync(path.join(rootDir, 'src/services/recruitmentCandidateCreate.service.js'), 'utf8');
+check(/assertNoStrongRecruitmentDuplicates/.test(createSvc), 'create vuelve a comprobar duplicados en servidor');
+check(/CANDIDATE_DUPLICATE:\s*409/.test(fs.readFileSync(path.join(rootDir, 'src/middleware/error.middleware.js'), 'utf8')), '409 CANDIDATE_DUPLICATE');
+const catalogSrc = fs.readFileSync(
+  path.join(rootDir, 'src/services/recruitmentCandidateCatalog.service.js'),
+  'utf8',
+);
+check(/export function comparableRecruitmentContactPhone/.test(catalogSrc), 'normalización canónica de teléfono');
 const publicRoutes = fs.readFileSync(path.join(rootDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
 const publicDupStart = publicRoutes.indexOf("router.post('/recruitment/candidates/check-duplicates'");
 const publicDup = publicRoutes.slice(publicDupStart, publicRoutes.indexOf('router.post(', publicDupStart + 20));
 check(publicDupStart > 0 && !/excludeCandidateId/.test(publicDup), 'portal no acepta excludeCandidateId');
+check(
+  /attachExistingCandidateToVacancyForWorkforcePortal/.test(publicRoutes),
+  'portal puede asignar candidato existente a vacante',
+);
 const qBlock = candidateSvc.slice(candidateSvc.indexOf('const qTrim'), candidateSvc.indexOf('if (filters.profiles.length)'));
 check(!/\bcurp\b/.test(qBlock), 'búsqueda q no filtra por CURP');
 const wfBlock = candidateSvc.slice(
@@ -222,11 +268,30 @@ check(curpCss && !/text-transform/i.test(curpCss), 'CSS del campo sin text-trans
 check(/@media\(max-width:520px\)[\s\S]*?\.rec-cand-form-grid-row,/.test(indexHtml), 'grid del formulario colapsa en móvil');
 check(/recCandExpedienteCurpHtml\(c\)/.test(indexHtml), 'expediente usa el bloque de CURP');
 check(/Ya existe un candidato con esta CURP\. Revisa el expediente antes de continuar\./.test(indexHtml), 'advertencia de CURP duplicada');
-check(/recCandDupeCreateAnyway/.test(indexHtml), 'la advertencia no sustituye crear de todos modos');
-check(/Guardar de todos modos/.test(indexHtml), 'edición ofrece guardar de todos modos');
+check(/Encontramos un candidato que podría ser la misma persona/.test(indexHtml), 'copy principal duplicados');
+check(/Revisa la ficha existente antes de registrar una nueva persona/.test(indexHtml), 'copy secundario duplicados');
+check(/Usar candidato existente/.test(indexHtml), 'acción usar existente');
+check(/Registrar persona distinta/.test(indexHtml), 'acción registrar persona distinta');
+check(!/Crear de todos modos/.test(indexHtml), 'sin copy ambiguo Crear de todos modos');
+check(/recCandDupeCreateAnyway/.test(indexHtml), 'flujo persona distinta sigue disponible');
+check(!/Guardar de todos modos/.test(indexHtml), 'edición sin bypass guardar de todos modos');
+check(/allowDuplicate===true|allowDuplicate:\s*true/.test(indexHtml), 'UI envía allowDuplicate estricto solo en create');
+check(!/payload\.allowDuplicate/.test(indexHtml.match(/async function recCandPatchExisting[\s\S]*?^async function |async function recCandPatchExisting[\s\S]*?^function /m)?.[0] || ''), 'PATCH UI no envía allowDuplicate');
+check(/dataset\.recBusy/.test(indexHtml), 'doble clic protegido en acciones de duplicados');
+check(/tcEsc\(c\.fullName/.test(indexHtml), 'coincidencias escapan HTML');
 check(/onclick="closeModal\('modal-rec-candidate-duplicates'\)"/.test(indexHtml), 'volver cierra solo la advertencia');
+check(/max-width:min\(480px,calc\(100vw - 32px\)\)/.test(indexHtml), 'modal sin desborde en viewport estrecho');
 const showDupeFn = indexHtml.slice(indexHtml.indexOf('function recCandShowDupeModal'), indexHtml.indexOf('function recCandSelectDupe'));
 check(/modal-rec-candidate-form/.test(showDupeFn), 'la advertencia conserva el formulario abierto');
+check(/Confirmar persona distinta/.test(showDupeFn), 'confirmación clara antes de persona distinta');
+check(/proceed\.classList\.toggle\('hidden',editing\)/.test(showDupeFn), 'edición oculta registrar persona distinta');
+const useExistingFn = indexHtml.slice(
+  indexHtml.indexOf('async function recCandDupeUseExisting'),
+  indexHtml.indexOf('async function recCandDupeCreateAnyway'),
+);
+check(/recCandAssignToVacancy/.test(useExistingFn), 'usar existente con vacante crea aplicación');
+check(/recCandOpenDetail|tcEmpQuickGoCandidates/.test(useExistingFn), 'usar existente abre expediente');
+check(!/RecruitmentCandidate|method:'POST'[\s\S]*candidates'/.test(useExistingFn), 'usar existente no crea candidato');
 const portfolioFn = indexHtml.match(/function recCandBuildPortfolioRowHtml[\s\S]*?\nfunction recCandBindFilters/)?.[0] || '';
 check(!/\bcurp\b/i.test(portfolioFn), 'cartera sin columna CURP');
 const submitFn = indexHtml.slice(
@@ -234,8 +299,8 @@ const submitFn = indexHtml.slice(
   indexHtml.indexOf('function recCandWorkforceClearPartialCvState'),
 );
 const editBranch = submitFn.split('if(id){')[1]?.split('const st=recEnsureState()')[0] || '';
-check(/recCandEditCurpNeedsDuplicateCheck/.test(editBranch), 'edición revisa CURP solo si cambió');
 check(/excludeCandidateId:id/.test(editBranch), 'edición envía el id del candidato abierto');
+check(/check-duplicates/.test(editBranch) && /curp:body\.curp/.test(editBranch), 'edición preflight contacto+CURP');
 check(/recCandPatchExisting\(id, body\)/.test(editBranch), 'sin conflicto la edición hace PATCH');
 check(!/recCandCreateAndOpen/.test(editBranch), 'la edición no crea otro candidato');
 check(/check-duplicates/.test(submitFn) && /curp:body\.curp/.test(submitFn), 'alta revisa CURP una vez al guardar');
@@ -243,9 +308,14 @@ const proceedFn = indexHtml.slice(
   indexHtml.indexOf('async function recCandDupeCreateAnyway'),
   indexHtml.indexOf('async function recCandCreateAndOpen'),
 );
-const proceedEdit = proceedFn.split("if(intent==='edit')")[1]?.split('}else if(body)')[0] || '';
-check(/recCandPatchExisting\(editId, body\)/.test(proceedEdit), 'aceptar en edición actualiza al mismo candidato');
-check(!/recCandCreateAndOpen|recCandWorkforceCreateAndConfirm|method:'POST'/.test(proceedEdit), 'aceptar en edición no hace POST');
+check(/intent==='edit'/.test(proceedFn) && /closeModal\('modal-rec-candidate-duplicates'\)/.test(proceedFn), 'en edición solo vuelve al formulario');
+check(!/recCandPatchExisting/.test(proceedFn), 'persona distinta no hace PATCH');
+check(/allowDuplicate=true/.test(proceedFn) && /recCandCreateAndOpen|recCandWorkforceCreateAndConfirm/.test(proceedFn), 'persona distinta solo en create');
+const patchSchemaOnly = routes.slice(
+  routes.indexOf('const candidatePatchSchema'),
+  routes.indexOf('router.post', routes.indexOf('const candidatePatchSchema')),
+);
+check(!/allowDuplicate/.test(patchSchemaOnly), 'PATCH schema sin allowDuplicate');
 check(/candFormOriginalCurp/.test(indexHtml), 'edición recuerda el CURP original');
 const inputFn = indexHtml.slice(
   indexHtml.indexOf('function recCandCurpFieldInput'),
@@ -808,8 +878,11 @@ if (dbOk) {
       'registro con CURP válida en mayúsculas',
     );
     const curpId = validCurp.data.candidate?.id;
-    const spacedCurp = await postCand({ curp: '  go se 900101 hqrtmn09  ' });
-    check(spacedCurp.data.candidate?.curp === 'GOSE900101HQRTMN09', 'persistencia limpia espacios');
+    const spacedCurp = await postCand({ curp: '  go se 900101 hqrtmn09  ', allowDuplicate: true });
+    check(
+      spacedCurp.res.status === 201 && spacedCurp.data.candidate?.curp === 'GOSE900101HQRTMN09',
+      'persistencia limpia espacios (persona distinta autorizada)',
+    );
     const emptyCurp = await postCand({ curp: '   ' });
     check(emptyCurp.res.status === 201 && emptyCurp.data.candidate?.curp == null, 'CURP vacía persiste null');
     const invalidCurp = await postCand({ curp: 'GOSE901301HQRTMN09' });
@@ -826,12 +899,33 @@ if (dbOk) {
       body: { curp: 'mora900101mdfrrl08' },
     });
     check(added.res.status === 200 && added.data.candidate?.curp === 'MORA900101MDFRRL08', 'edición agrega CURP');
-    const changed = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+    const changedConflict = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
       method: 'PATCH',
       cookie,
       body: { curp: 'GOSE900101HQRTMN09' },
     });
-    check(changed.data.candidate?.curp === 'GOSE900101HQRTMN09', 'edición modifica CURP');
+    check(
+      changedConflict.res.status === 409 && changedConflict.data?.error === 'CANDIDATE_DUPLICATE',
+      'PATCH a CURP ajena bloquea sin bypass',
+    );
+    const bypassIgnored = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { curp: 'GOSE900101HQRTMN09', allowDuplicate: true },
+    });
+    check(
+      bypassIgnored.res.status === 409 || bypassIgnored.res.status === 400,
+      'PATCH ignora o rechaza allowDuplicate',
+    );
+    const sameOwnCurp = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
+      method: 'PATCH',
+      cookie,
+      body: { curp: 'mora900101mdfrrl08' },
+    });
+    check(
+      sameOwnCurp.res.status === 200 && sameOwnCurp.data.candidate?.curp === 'MORA900101MDFRRL08',
+      'PATCH mismo CURP propio (formato) no conflicto',
+    );
     const cleared = await jsonFetch(base, `/api/org/recruitment/candidates/${withoutCurp.data.candidate.id}`, {
       method: 'PATCH',
       cookie,
@@ -854,9 +948,16 @@ if (dbOk) {
       sameOrgDup.data?.candidates?.some((c) => c.id === curpId) &&
         sameOrgDup.data.candidates.every((c) => {
           const keys = Object.keys(c);
-          return !keys.includes('curp') && !keys.includes('organizationId') && !keys.includes('notes');
+          return (
+            !keys.includes('curp') &&
+            !keys.includes('organizationId') &&
+            !keys.includes('notes') &&
+            !keys.includes('phone') &&
+            !keys.includes('email') &&
+            keys.includes('phoneMasked')
+          );
         }),
-      'duplicado misma org sin CURP ni datos de más',
+      'duplicado misma org sin CURP ni contactos en claro',
     );
     const soloCurp = await postCand({ curp: 'garc850101mdfrrl08' });
     const soloId = soloCurp.data.candidate?.id;
@@ -877,8 +978,17 @@ if (dbOk) {
       body: { curp: 'gose900101hqrtmn09', excludeCandidateId: curpId },
     });
     check(foreignExclude.res.status === 404, 'excludeCandidateId de otra organización se rechaza');
-    const again = await postCand({ curp: 'GOSE900101HQRTMN09' });
-    check(again.res.status === 201, 'CURP repetida no bloquea el guardado');
+    const againBlocked = await postCand({ curp: 'GOSE900101HQRTMN09' });
+    check(
+      againBlocked.res.status === 409 &&
+        againBlocked.data?.error === 'CANDIDATE_DUPLICATE' &&
+        Array.isArray(againBlocked.data?.matches),
+      'CURP repetida bloquea alta sin allowDuplicate',
+    );
+    const againFalse = await postCand({ curp: 'GOSE900101HQRTMN09', allowDuplicate: false });
+    check(againFalse.res.status === 409, 'allowDuplicate false bloquea');
+    const again = await postCand({ curp: 'GOSE900101HQRTMN09', allowDuplicate: true });
+    check(again.res.status === 201, 'allowDuplicate true permite persona distinta');
     const crossDup = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
       method: 'POST',
       cookie: cookieB,
@@ -902,6 +1012,217 @@ if (dbOk) {
     check(
       otherOrg.res.status === 201 && otherOrg.data.candidate?.curp === 'GOSE900101HQRTMN09',
       'misma CURP permitida en otra organización',
+    );
+
+    // --- Prevención de duplicados: teléfono / correo / reaplicación ---
+    const phoneSeed = await postCand({
+      fullName: 'Tel Seed',
+      whatsapp: '4421234567',
+      email: `tel-seed-${suffix}@Example.COM`,
+    });
+    const phoneSeedId = phoneSeed.data.candidate?.id;
+    check(phoneSeed.res.status === 201, 'semilla teléfono');
+
+    const phoneFmt = await postCand({ fullName: 'Otro', whatsapp: '+52 1 442 123 4567' });
+    check(
+      phoneFmt.res.status === 409 &&
+        phoneFmt.data?.matches?.some((m) => m.id === phoneSeedId) &&
+        phoneFmt.data.matches.every((m) => !m.phone && !m.email && !m.curp),
+      'alta con +521 choca con teléfono existente',
+    );
+
+    const phoneWaCross = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie,
+      body: { phone: '442 123 4567' },
+    });
+    check(
+      phoneWaCross.data?.candidates?.some((c) => c.id === phoneSeedId),
+      'preflight teléfono vs WhatsApp',
+    );
+
+    const emailCase = await postCand({
+      fullName: 'Mail Case',
+      whatsapp: nextPhone(),
+      email: `TEL-SEED-${suffix}@example.com`,
+    });
+    check(emailCase.res.status === 409, 'correo mayúsculas bloquea');
+    const emailPre = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie,
+      body: { email: `  tel-seed-${suffix}@Example.COM  ` },
+    });
+    check(
+      emailPre.data?.candidates?.some((c) => c.id === phoneSeedId),
+      'preflight correo trim/minúsculas',
+    );
+
+    const sameNameOk = await postCand({
+      fullName: 'Tel Seed',
+      whatsapp: nextPhone(),
+      email: `other-name-${suffix}@example.com`,
+    });
+    check(sameNameOk.res.status === 201, 'mismo nombre con contacto distinto permitido');
+
+    await jsonFetch(base, `/api/org/recruitment/candidates/${phoneSeedId}`, {
+      method: 'PATCH',
+      cookie,
+      body: { archived: true },
+    });
+    const archivedHit = await jsonFetch(base, '/api/org/recruitment/candidates/check-duplicates', {
+      method: 'POST',
+      cookie,
+      body: { whatsapp: '4421234567' },
+    });
+    check(
+      archivedHit.data?.candidates?.some((c) => c.id === phoneSeedId && c.archived === true),
+      'candidato archivado detectado',
+    );
+
+    const stageRows = await prisma.recruitmentStage.findMany({ where: { organizationId: orgA.id } });
+    const byKey = Object.fromEntries(stageRows.map((s) => [s.key, s]));
+    const vacDupRes = await jsonFetch(base, '/api/org/recruitment/vacancies', {
+      method: 'POST',
+      cookie,
+      body: { title: `Vac dup ${suffix}`, clientName: 'C', positionsTotal: 2 },
+    });
+    const vacOtherRes = await jsonFetch(base, '/api/org/recruitment/vacancies', {
+      method: 'POST',
+      cookie,
+      body: { title: `Vac other ${suffix}`, clientName: 'C', positionsTotal: 1 },
+    });
+    const vacDupId = vacDupRes.data.vacancy?.id;
+    const vacOtherId = vacOtherRes.data.vacancy?.id;
+    check(vacDupId && vacOtherId, 'vacantes para reaplicación');
+
+    const rejCand = await postCand({ fullName: 'Rechazado Dup', whatsapp: '4439988776' });
+    const rejId = rejCand.data.candidate?.id;
+    const rejApp = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacDupId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: rejId },
+    });
+    check(rejApp.res.status === 201 || rejApp.res.status === 200, 'app rechazado creada');
+    if (byKey.REJECTED && rejApp.data?.application?.id) {
+      await prisma.recruitmentApplication.update({
+        where: { id: rejApp.data.application.id },
+        data: {
+          stageId: byKey.REJECTED.id,
+          closureOutcome: 'REJECTED',
+          closedAt: new Date(),
+          blocksReapplication: false,
+        },
+      });
+    }
+    const reuseRej = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacOtherId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: rejId },
+    });
+    check(
+      (reuseRej.res.status === 201 || reuseRej.res.status === 200) &&
+        reuseRej.data?.application?.candidateId === rejId,
+      'rechazado reutilizable en otra vacante',
+    );
+    const reuseRejSame = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacDupId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: rejId },
+    });
+    check(
+      (reuseRejSame.res.status === 201 || reuseRejSame.res.status === 200) &&
+        reuseRejSame.data?.application?.candidateId === rejId,
+      'rechazado reutilizable en misma vacante',
+    );
+
+    const activeOther = await postCand({ fullName: 'Activo Otra', whatsapp: '4431122334' });
+    const activeOtherId = activeOther.data.candidate?.id;
+    await jsonFetch(base, `/api/org/recruitment/vacancies/${vacOtherId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: activeOtherId },
+    });
+    const reuseActive = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacDupId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: activeOtherId },
+    });
+    check(
+      (reuseActive.res.status === 201 || reuseActive.res.status === 200) &&
+        reuseActive.data?.application?.candidateId === activeOtherId,
+      'activo en otra vacante reutilizable',
+    );
+
+    const sameVacBlock = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacOtherId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: activeOtherId },
+    });
+    check(
+      sameVacBlock.res.status === 409 &&
+        String(sameVacBlock.data?.message || '').includes('proceso activo'),
+      'activo en misma vacante: mensaje específico sin alta',
+    );
+
+    const hiredCand = await postCand({ fullName: 'Contratado Dup', whatsapp: '4435566778' });
+    const hiredId = hiredCand.data.candidate?.id;
+    const hiredApp = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacDupId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: hiredId },
+    });
+    if (byKey.HIRED && hiredApp.data?.application?.id) {
+      await prisma.recruitmentApplication.update({
+        where: { id: hiredApp.data.application.id },
+        data: {
+          stageId: byKey.HIRED.id,
+          closureOutcome: null,
+          closedAt: null,
+          blocksReapplication: true,
+        },
+      });
+    }
+    const hiredAgain = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacDupId}/applications`, {
+      method: 'POST',
+      cookie,
+      body: { candidateId: hiredId },
+    });
+    check(
+      hiredAgain.res.status === 409 &&
+        String(hiredAgain.data?.message || '').includes('contratado'),
+      'contratado en misma vacante: mensaje específico sin alta',
+    );
+
+    const createWithVac = await jsonFetch(base, '/api/org/recruitment/candidates', {
+      method: 'POST',
+      cookie,
+      body: {
+        fullName: 'Con Vacante',
+        profile: 'Ventas',
+        whatsapp: '4436677889',
+        vacancyId: vacDupId,
+      },
+    });
+    check(
+      createWithVac.res.status === 201 &&
+        createWithVac.data?.candidate?.id &&
+        createWithVac.data?.application?.candidateId === createWithVac.data.candidate.id,
+      'alta admin con vacante crea candidato+aplicación',
+    );
+
+    const reuseExistingViaApp = await jsonFetch(
+      base,
+      `/api/org/recruitment/vacancies/${vacOtherId}/applications`,
+      {
+        method: 'POST',
+        cookie,
+        body: { candidateId: createWithVac.data.candidate.id },
+      },
+    );
+    check(
+      (reuseExistingViaApp.res.status === 201 || reuseExistingViaApp.res.status === 200) &&
+        reuseExistingViaApp.data?.application?.candidateId === createWithVac.data.candidate.id,
+      'usar existente con vacante: mismo candidateId, nueva aplicación',
     );
 
     const cross = await jsonFetch(base, `/api/org/recruitment/candidates/${candidateId}`, {
@@ -933,6 +1254,7 @@ function runRegression(script) {
   }
 }
 
+runRegression('test-recruitment-candidate-duplicates.mjs');
 runRegression('test-recruitment-candidate-resume.mjs');
 runRegression('test-recruitment-vacancy-stages.mjs');
 runRegression('test-recruitment-candidate-nav.mjs');

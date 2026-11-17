@@ -126,6 +126,10 @@ check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
 check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');
 check(/modal-rec-candidate-form/.test(indexHtml), 'modal nuevo candidato');
 check(/check-duplicates/.test(indexHtml), 'preflight duplicados UI');
+check(/Registrar persona distinta/.test(indexHtml), 'copy persona distinta');
+check(/Usar candidato existente/.test(indexHtml), 'copy usar existente');
+check(!/Crear de todos modos/.test(indexHtml), 'sin Crear de todos modos');
+check(/CANDIDATE_DUPLICATE/.test(indexHtml), 'UI reconoce 409 CANDIDATE_DUPLICATE');
 check(/recCandUploadCvFile/.test(indexHtml) && /rec-cand-form-cv-file/.test(indexHtml), 'upload CV UI ficha y alta');
 check(/max-width:min\(980px/.test(indexHtml), 'modal detalle ejecutivo ancho');
 

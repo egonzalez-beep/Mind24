@@ -82,6 +82,8 @@ check(/stageId: z\.string/.test(routes) && /initialStageId: body\.stageId/.test(
 check(/RECRUITMENT_CANDIDATE_SOURCE_OPTIONS/.test(catalogSvc), 'catálogo source');
 check(/RECRUITMENT_CANDIDATE_PROFILE_OPTIONS/.test(catalogSvc), 'catálogo profile');
 check(/normalizeRecruitmentCandidateFullName/.test(catalogSvc), 'normalización fullName');
+check(/comparableRecruitmentContactPhone/.test(catalogSvc), 'normalización teléfono comparable');
+check(/allowDuplicate/.test(routes), 'create schema allowDuplicate');
 check(/blocksReapplication/.test(schema), 'blocksReapplication en schema');
 check(!/@@unique\(\[candidateId, vacancyId\]\)/.test(schema), 'sin unique absoluto candidate+vacancy');
 check(
