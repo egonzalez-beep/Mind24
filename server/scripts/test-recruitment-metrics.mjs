@@ -50,6 +50,19 @@ const {
   qualifyTerminalApplicationForMonth,
   rejectedTopClientFromConsolidated,
 } = await import('../src/services/recruitmentMetricsTerminal.service.js');
+const {
+  buildMonthlyTrend,
+  classifyTrendScore,
+  evaluateCountSignal,
+  evaluateCoverageSignal,
+  evaluateRejectionShareSignal,
+  filterDuplicateInsights,
+  isSignificantChange,
+  relativeDelta,
+  resolveTrendComparisonWindows,
+  sameLocalClockInMonth,
+  localDateTimeParts,
+} = await import('../src/services/recruitmentMetricsTrend.service.js');
 const { calendarDayDiff } = await import('../src/services/recruitmentVacancy.service.js');
 const { localDateKey } = await import('../src/services/remoteWorkSessionHistory.service.js');
 
@@ -97,6 +110,15 @@ check(
   !/\b(tasa de rechazo|tasa de contratación)\b/i.test(svcSrc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')),
   'no llama tasa de funnel a los shares (fuera de comentarios)',
 );
+check(/buildMonthlyTrend|comparisonMode/.test(svcSrc), 'tendencia mensual en servicio');
+check(/MONTH_TO_DATE|FULL_MONTH|INSUFFICIENT/.test(svcSrc), 'modos de comparación documentados');
+const trendSrc = fs.readFileSync(
+  path.join(rootDir, 'src/services/recruitmentMetricsTrend.service.js'),
+  'utf8',
+);
+check(/Tendencia al alza/.test(trendSrc) && /Datos insuficientes/.test(trendSrc), 'copy de tendencia en servicio');
+check(/recMetricsRenderTrendInsight|recMetricsToggleTrendDetail/.test(indexHtml), 'detalle expandible de tendencia');
+check(/rec-metrics-insight--trend/.test(indexHtml), 'UI de tendencia en HTML');
 check(/consolidateTerminalApplications/.test(svcSrc), 'KPIs usan consolidación terminal');
 check(!/countStageMovesToKey/.test(svcSrc), 'sin conteo bruto StageEvent en métricas');
 check(/ADD COLUMN "coveredAt"/.test(migrationCovered), 'migración agregó coveredAt');
@@ -170,6 +192,288 @@ check(
     sharesEmpty.declineShare === null,
   'shares con cero terminales → null',
 );
+
+console.log('\n=== Tendencia mensual (unit) ===\n');
+
+{
+  // Fórmula relativa exacta: (current - previous) / Math.max(previous, 1)
+  check(relativeDelta(0, 0) === 0, 'rel: 0→0 = 0');
+  check(relativeDelta(1, 0) === 1, 'rel: 0→1 = 1 (sin Infinity)');
+  check(relativeDelta(2, 0) === 2, 'rel: 0→2 = 2');
+  check(relativeDelta(0, 1) === -1, 'rel: 1→0 = −100%');
+  check(relativeDelta(11, 10) === 0.1, 'rel: 10→11 = 10%');
+  check(relativeDelta(12, 10) === 0.2, 'rel: 10→12 = 20%');
+  check(relativeDelta(21, 20) === 0.05, 'rel: 20→21 = 5%');
+  check(relativeDelta(22, 20) === 0.1, 'rel: 20→22 = 10%');
+  check(relativeDelta(9.5, 10) === -0.05, 'rel: cobertura 10→9.5');
+  check(relativeDelta(9, 10) === -0.1, 'rel: cobertura 10→9');
+  check(Number.isFinite(relativeDelta(5, 0)) && !Number.isNaN(relativeDelta(5, 0)), 'rel: sin NaN/Infinity');
+
+  const regOpts = (curr, prev) => ({
+    key: 'registrations',
+    label: 'Registros',
+    current: curr,
+    previous: prev,
+    minAbs: 2,
+    positiveWhenHigher: true,
+  });
+  const hireOpts = (curr, prev) => ({
+    key: 'hired',
+    label: 'Contrataciones',
+    current: curr,
+    previous: prev,
+    minAbs: 1,
+    requireEitherSide: true,
+    positiveWhenHigher: true,
+  });
+
+  check(evaluateCountSignal(hireOpts(0, 0)).score === null, 'tabla: 0→0 contrataciones no elegible (score null)');
+  check(evaluateCountSignal(hireOpts(1, 0)).score === 1, 'tabla: 0→1 contrataciones alza válida');
+  check(
+    isSignificantChange(2, 0, 2, 0.1) && evaluateCountSignal({ ...regOpts(2, 0), minCombinedForEligibility: null }).score === 1,
+    'tabla: 0→2 registros supera abs+rel (elegibilidad aparte)',
+  );
+  check(evaluateCountSignal(hireOpts(0, 1)).score === -1, 'tabla: 1→0 disminución 100%');
+  check(evaluateCountSignal(regOpts(11, 10)).score === 0, 'tabla: 10→11 registros estables por abs');
+  check(evaluateCountSignal(regOpts(12, 10)).score === 1, 'tabla: 10→12 registros alza');
+  check(evaluateCountSignal(regOpts(21, 20)).score === 0, 'tabla: 20→21 registros estables por rel <10%');
+  check(evaluateCountSignal(regOpts(22, 20)).score === 1, 'tabla: 20→22 registros alza');
+  check(evaluateCoverageSignal(9.5, 10, 2, 2).score === 0, 'tabla: cobertura 10→9.5 estable');
+  const covImprove = evaluateCoverageSignal(9, 10, 2, 2);
+  check(covImprove.score === 1 && covImprove.delta === -1, 'tabla: cobertura 10→9 mejora; delta matemático −1');
+
+  const allUp = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 20, previous: 10 },
+    hired: { current: 5, previous: 2 },
+    rejectionShare: { current: 0.2, previous: 0.4, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: 5, previous: 8, currentSampleSize: 3, previousSampleSize: 3 },
+  });
+  check(allUp.status === 'UP' && allUp.score >= 2, '1) todas positivas → UP');
+  check(allUp.primaryReasons[0]?.polarity === 'positive', 'UP: primera razón positiva');
+  check(allUp.signals.every((s) => s.eligible && (s.score === 1 || s.score === 0 || s.score === -1)), 'scores elegibles ∈ {−1,0,1}');
+
+  const allDown = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 5, previous: 12 },
+    hired: { current: 1, previous: 4 },
+    rejectionShare: { current: 0.5, previous: 0.2, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: 12, previous: 6, currentSampleSize: 3, previousSampleSize: 3 },
+  });
+  check(allDown.status === 'DOWN' && allDown.score <= -2, '2) todas negativas → DOWN');
+  check(allDown.primaryReasons[0]?.polarity === 'negative', 'DOWN: primera razón negativa');
+  check(
+    !allDown.primaryReasons.some((r) => r.polarity === 'positive'),
+    'DOWN: mejoras no en primary (quedan en detalle)',
+  );
+
+  const mixed = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 20, previous: 10 },
+    hired: { current: 5, previous: 2 },
+    rejectionShare: { current: 0.5, previous: 0.2, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: 12, previous: 6, currentSampleSize: 3, previousSampleSize: 3 },
+  });
+  check(mixed.status === 'STABLE' && mixed.score === 0, '3) 2+/2− → STABLE');
+  check(
+    mixed.primaryReasons.some((r) => r.polarity === 'positive') &&
+      mixed.primaryReasons.some((r) => r.polarity === 'negative'),
+    '5) STABLE mixto: primaryReasons balanceadas (+ y −)',
+  );
+
+  const oneEligible = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 1, previous: 0 },
+    hired: { current: 3, previous: 0 },
+    rejectionShare: { current: null, previous: null, currentDecisions: 2, previousDecisions: 2 },
+    coverage: { current: 5, previous: 8, currentSampleSize: 1, previousSampleSize: 1 },
+  });
+  check(oneEligible.status === 'INSUFFICIENT', '4) una elegible → INSUFFICIENT');
+  check(
+    oneEligible.primaryReasons.every((r) => r.polarity !== 'positive'),
+    '6) INSUFFICIENT: primary no vende alza aislada',
+  );
+  check(
+    oneEligible.signals.filter((s) => s.eligible).length === 1 &&
+      oneEligible.signals.find((s) => s.key === 'hired').score === 1 &&
+      oneEligible.signals.find((s) => !s.eligible).score === null,
+    'score null en no elegibles; elegible positiva = 1',
+  );
+
+  const twoUp = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 1, previous: 0 },
+    hired: { current: 3, previous: 0 },
+    rejectionShare: { current: 0.2, previous: 0.4, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: null, previous: null, currentSampleSize: 0, previousSampleSize: 0 },
+  });
+  check(twoUp.status === 'UP' && twoUp.score === 2 && twoUp.eligibleSignals === 2, '1) score 2 con 2 elegibles → UP');
+
+  const twoDown = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 1, previous: 0 },
+    hired: { current: 0, previous: 3 },
+    rejectionShare: { current: 0.5, previous: 0.2, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: null, previous: null, currentSampleSize: 0, previousSampleSize: 0 },
+  });
+  check(twoDown.status === 'DOWN' && twoDown.score === -2, '2) score −2 → DOWN');
+
+  check(classifyTrendScore([1, 0, 0]).status === 'STABLE', '3) score 1 → STABLE');
+  check(classifyTrendScore([-1, 0, 0]).status === 'STABLE', '4) score −1 → STABLE');
+  check(classifyTrendScore([1, null, null, null]).status === 'INSUFFICIENT', 'nulls no cuentan como elegibles');
+  check(classifyTrendScore([1, 1, 0]).status === 'UP' && classifyTrendScore([1, 1, 0]).eligibleSignals === 3, '3 elegibles score 2 → UP');
+  check(classifyTrendScore([1, 1, 1, 0]).status === 'UP' && classifyTrendScore([1, 1, 1, 0]).eligibleSignals === 4, '4 elegibles');
+  check(classifyTrendScore([-1, -1, 0]).status === 'DOWN', '3 elegibles score −2 → DOWN');
+
+  const quiet = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 0, previous: 0 },
+    hired: { current: 0, previous: 0 },
+    rejectionShare: { current: null, previous: null, currentDecisions: 0, previousDecisions: 0 },
+    coverage: { current: null, previous: null, currentSampleSize: 0, previousSampleSize: 0 },
+  });
+  check(quiet.status === 'INSUFFICIENT', '9) ambos meses sin actividad → INSUFFICIENT');
+
+  const allStable = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 10, previous: 10 },
+    hired: { current: 3, previous: 3 },
+    rejectionShare: { current: 0.3, previous: 0.3, currentDecisions: 10, previousDecisions: 10 },
+    coverage: { current: 7, previous: 7, currentSampleSize: 3, previousSampleSize: 3 },
+  });
+  check(allStable.status === 'STABLE', '9) valores idénticos → STABLE');
+  check(
+    /rango esperado/i.test(allStable.primaryReasons[0]?.text || ''),
+    'STABLE todo igual: mensaje de rango esperado',
+  );
+
+  const fromZero = evaluateCountSignal(hireOpts(2, 0));
+  check(fromZero.eligible && fromZero.score === 1 && Number.isFinite(fromZero.relativeDelta), '7) anterior cero sin infinito');
+  check(evaluateCountSignal(hireOpts(0, 2)).score === -1, '8) actual cero → disminución');
+
+  const shareExact = evaluateRejectionShareSignal(0.4, 0.32, 10, 10);
+  check(shareExact.score === -1, '10) rejection share exactamente +8 pp → cambio');
+  const shareExactDown = evaluateRejectionShareSignal(0.32, 0.4, 10, 10);
+  check(shareExactDown.score === 1, '10b) rejection share exactamente −8 pp → mejora');
+  const shareUnder = evaluateRejectionShareSignal(0.39, 0.32, 10, 10);
+  check(shareUnder.score === 0, '10c) <8 pp → estable');
+
+  const covExact = evaluateCoverageSignal(9, 10, 2, 2);
+  check(covExact.score === 1 && Math.abs(covExact.relativeDelta) === 0.1, '11) cobertura ±1 día y ±10%');
+  check(evaluateCountSignal(regOpts(22, 20)).score === 1, '12) registros exactamente +2 y +10%');
+
+  const nowMtd = new Date('2026-11-16T20:30:00.000Z');
+  const mtd = resolveTrendComparisonWindows({
+    year: 2026,
+    month: 11,
+    timeZone: MIND24_DEFAULT_IANA_TIMEZONE,
+    now: nowMtd,
+    getLocalMonthRange,
+  });
+  check(mtd.comparisonMode === 'MONTH_TO_DATE', '13) mes actual → MONTH_TO_DATE');
+  check(/mismo periodo/i.test(mtd.labels.comparisonLabel || ''), '13b) etiqueta MTD');
+  check(/mismo periodo de octubre/i.test(mtd.labels.compareLabelShort || ''), 'MTD compareLabelShort explícito');
+
+  const full = resolveTrendComparisonWindows({
+    year: 2026,
+    month: 10,
+    timeZone: MIND24_DEFAULT_IANA_TIMEZONE,
+    now: nowMtd,
+    getLocalMonthRange,
+  });
+  check(full.comparisonMode === 'FULL_MONTH', '14) mes pasado completo → FULL_MONTH');
+  check(full.labels.compareLabelShort === 'septiembre', 'FULL compareLabelShort = mes nombre');
+
+  const future = resolveTrendComparisonWindows({
+    year: 2027,
+    month: 1,
+    timeZone: MIND24_DEFAULT_IANA_TIMEZONE,
+    now: nowMtd,
+    getLocalMonthRange,
+  });
+  check(future.comparisonMode === 'INSUFFICIENT', '15) mes futuro → INSUFFICIENT');
+
+  const febParts = localDateTimeParts(new Date('2026-03-31T18:00:00.000Z'), MIND24_DEFAULT_IANA_TIMEZONE);
+  const febClock = sameLocalClockInMonth(febParts, 2026, 2, MIND24_DEFAULT_IANA_TIMEZONE);
+  check(localDateKey(febClock, MIND24_DEFAULT_IANA_TIMEZONE) === '2026-02-28', '16) día 31 → feb 28');
+  const day30 = localDateTimeParts(new Date('2026-03-30T18:00:00.000Z'), MIND24_DEFAULT_IANA_TIMEZONE);
+  check(localDateKey(sameLocalClockInMonth(day30, 2026, 2, MIND24_DEFAULT_IANA_TIMEZONE), MIND24_DEFAULT_IANA_TIMEZONE) === '2026-02-28', '16b) día 30 → feb 28');
+  const day29 = localDateTimeParts(new Date('2026-03-29T18:00:00.000Z'), MIND24_DEFAULT_IANA_TIMEZONE);
+  check(localDateKey(sameLocalClockInMonth(day29, 2026, 2, MIND24_DEFAULT_IANA_TIMEZONE), MIND24_DEFAULT_IANA_TIMEZONE) === '2026-02-28', '16c) día 29 no bisiesto → feb 28');
+
+  const decJan = shiftMonth(2026, 1, -1);
+  check(decJan.year === 2025 && decJan.month === 12, '15) diciembre–enero');
+
+  const nycWin = resolveTrendComparisonWindows({
+    year: 2026,
+    month: 10,
+    timeZone: 'America/New_York',
+    now: new Date('2026-11-16T20:30:00.000Z'),
+    getLocalMonthRange,
+  });
+  check(nycWin.comparisonMode === 'FULL_MONTH', '17) otra TZ organiza FULL_MONTH');
+
+  const fewTerm = evaluateRejectionShareSignal(0.1, 0.5, 4, 10);
+  check(!fewTerm.eligible && fewTerm.score === null, '17) <5 decisiones → score null');
+
+  const covOne = evaluateCoverageSignal(5, 8, 1, 3);
+  check(!covOne.eligible && covOne.score === null, '18) cobertura sample 1 → score null');
+
+  const absUpShareDown = evaluateRejectionShareSignal(0.2, 0.4, 20, 10);
+  check(absUpShareDown.score === 1, '21) participación de rechazos baja aunque absolutos puedan subir');
+
+  const hiredUpRegDown = buildMonthlyTrend({
+    comparisonMode: 'FULL_MONTH',
+    comparisonLabel: 'vs. septiembre de 2026',
+    compareLabelShort: 'septiembre',
+    registrations: { current: 5, previous: 20 },
+    hired: { current: 6, previous: 2 },
+    rejectionShare: { current: null, previous: null, currentDecisions: 0, previousDecisions: 0 },
+    coverage: { current: null, previous: null, currentSampleSize: 0, previousSampleSize: 0 },
+  });
+  check(hiredUpRegDown.status === 'STABLE' && hiredUpRegDown.score === 0, '22) contrataciones↑ registros↓ → STABLE');
+  check(
+    hiredUpRegDown.primaryReasons.some((r) => r.polarity === 'positive') &&
+      hiredUpRegDown.primaryReasons.some((r) => r.polarity === 'negative'),
+    'STABLE mixto 2 señales: primary balanceada',
+  );
+
+  const deduped = filterDuplicateInsights(
+    [
+      { kind: 'registrations_up', title: 'Más registros que el mes pasado', body: 'x', tone: 'purple' },
+      { kind: 'rejections_client', title: 'Cliente', body: 'y', tone: 'coral' },
+    ],
+    allUp,
+  );
+  check(
+    deduped.length === 1 && deduped[0].kind === 'rejections_client',
+    'no duplica insight de registros cuando trend ya lo cubre',
+  );
+  check(allUp.primaryReasons.length <= 2, 'UI contract: primaryReasons ≤ 2');
+  check(allUp.reasons.some((r) => /contrataciones/i.test(r.text)), 'razones incluyen contrataciones');
+  check(
+    !/tasa de funnel/i.test(JSON.stringify(allUp)) && !/funnel rate/i.test(svcSrc),
+    'rejectionShare no se presenta como tasa de funnel',
+  );
+  check(/metricsReqSeq/.test(indexHtml), '18) UI protege respuesta fuera de orden (metricsReqSeq)');
+  check(/recMetricsTrendTone/.test(indexHtml) && /recMetricsTrendIconKey/.test(indexHtml), 'tone/icon whitelist en UI');
+}
 
 console.log('\n=== Cobertura calendarística (unit, sin DB) ===\n');
 
@@ -810,6 +1114,27 @@ async function runVisual() {
         peak: { date: '2026-10-05', registrations: 5 },
       },
       insights: [],
+      trend: {
+        status: 'UP',
+        score: 2,
+        eligibleSignals: 3,
+        comparisonMode: 'FULL_MONTH',
+        comparisonLabel: 'vs. septiembre de 2026',
+        compareLabelShort: 'septiembre',
+        title: 'Tendencia al alza',
+        tone: 'green',
+        icon: 'trendUp',
+        signals: [],
+        reasons: [
+          { key: 'hired', text: 'Aumentaron las contrataciones <Acme & Co>.', polarity: 'positive' },
+          { key: 'rejectionShare', text: 'Disminuyó la participación de rechazos.', polarity: 'positive' },
+          { key: 'coverageDays', text: 'El tiempo de cobertura se mantuvo estable.', polarity: 'neutral' },
+        ],
+        primaryReasons: [
+          { key: 'hired', text: 'Aumentaron las contrataciones <Acme & Co>.', polarity: 'positive' },
+          { key: 'rejectionShare', text: 'Disminuyó la participación de rechazos.', polarity: 'positive' },
+        ],
+      },
       generatedAt: new Date().toISOString(),
     };
 
@@ -929,6 +1254,10 @@ async function runVisual() {
             const cs = getComputedStyle(lab);
             return cs.webkitLineClamp && cs.webkitLineClamp !== 'none';
           }),
+          trendTitle: /Tendencia al alza/i.test(host.textContent || ''),
+          trendCompare: /vs\. septiembre de 2026/i.test(host.textContent || ''),
+          trendReasons: /Aumentaron las contrataciones/i.test(host.textContent || ''),
+          noScoreLeak: !/score\s*=\s*2/i.test(host.textContent || ''),
         };
       }, fixture);
       const expectCols = expectedColsForContainer(probe.containerWidth);
@@ -952,10 +1281,66 @@ async function runVisual() {
       check(probe.calOmitsDeclined, `${width}px: calendario sin Declinados`);
       check(probe.rowSpreadMax <= 2, `${width}px: alturas homogéneas por fila (Δ${probe.rowSpreadMax})`);
       check(!probe.titleEllipsis, `${width}px: títulos sin line-clamp/ellipsis`);
+      check(probe.trendTitle && probe.trendCompare && probe.trendReasons, `${width}px: insight de tendencia visible`);
+      check(probe.noScoreLeak, `${width}px: sin score técnico en UI`);
       if (probe.cols === 7) {
         check(probe.minCardWidth >= 110, `${width}px: tarjetas 7-col legibles (≥110px, got ${probe.minCardWidth})`);
       }
     }
+
+    // Detalle de tendencia: abre/cierra sin desborde.
+    await mountMetricsShell(1280);
+    const trendUi = await page.evaluate((data) => {
+      const host = document.getElementById('rec-metrics-host');
+      recMetricsRender(data);
+      const btn = host.querySelector('.rec-metrics-trend-detail-btn');
+      const panel = host.querySelector('.rec-metrics-trend-detail');
+      if (!btn || !panel) return { ok: false };
+      btn.click();
+      const open = btn.getAttribute('aria-expanded') === 'true' && !panel.hidden;
+      document.body.click();
+      // clic fuera no cierra el detalle (solo el botón / mes / tab); se cierra al re-render
+      recMetricsCloseTrendDetail();
+      const closed = panel.hidden === true && btn.getAttribute('aria-expanded') === 'false';
+      return {
+        ok: true,
+        open,
+        closed,
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+      };
+    }, fixture);
+    check(trendUi.ok && trendUi.open && trendUi.closed, 'detalle de tendencia abre y cierra');
+    check(trendUi.overflow <= 1, 'detalle de tendencia sin desborde horizontal');
+    check(
+      await page.evaluate(() => {
+        const host = document.getElementById('rec-metrics-host');
+        const html = host.innerHTML;
+        const text = host.textContent || '';
+        return (
+          text.includes('Aumentaron las contrataciones <Acme & Co>.') &&
+          !html.includes('Aumentaron las contrataciones <Acme & Co>.') &&
+          html.includes('&lt;Acme &amp; Co&gt;')
+        );
+      }),
+      '19) texto con caracteres especiales escapado en tendencia',
+    );
+
+    await mountMetricsShell(390);
+    const trend390 = await page.evaluate((data) => {
+      const host = document.getElementById('rec-metrics-host');
+      recMetricsRender(data);
+      const btn = host.querySelector('.rec-metrics-trend-detail-btn');
+      const panel = host.querySelector('.rec-metrics-trend-detail');
+      if (!btn || !panel) return { ok: false };
+      btn.click();
+      const open = btn.getAttribute('aria-expanded') === 'true' && !panel.hidden;
+      const overflow = document.documentElement.scrollWidth - window.innerWidth;
+      btn.click();
+      const closed = panel.hidden === true && btn.getAttribute('aria-expanded') === 'false';
+      return { ok: true, open, closed, overflow };
+    }, fixture);
+    check(trend390.ok && trend390.open && trend390.closed, '20) detalle tendencia abre/cierra en 390px');
+    check(trend390.overflow <= 1, '20b) detalle tendencia sin desborde en 390px');
 
     // Variantes: dígitos, ±comparativo, sin comparativo, sin deuda, mes vacío.
     await mountMetricsShell(1440);

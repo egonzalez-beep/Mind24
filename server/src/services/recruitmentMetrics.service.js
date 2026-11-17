@@ -14,6 +14,11 @@ import {
   localDateKey,
   utcRangeForLocalDateInclusive,
 } from './remoteWorkSessionHistory.service.js';
+import {
+  buildMonthlyTrend,
+  filterDuplicateInsights,
+  resolveTrendComparisonWindows,
+} from './recruitmentMetricsTrend.service.js';
 
 const MONTH_NAMES_ES = [
   'enero',
@@ -463,54 +468,67 @@ function buildInsights({
 
 export async function getRecruitmentMetrics(organizationId, year, month, now = new Date()) {
   const timeZone = await resolveOrganizationIanaTimezone(organizationId);
-  const { start, end, daysInMonth, fromKey, toKey } = getLocalMonthRange(year, month, timeZone);
-  const prev = shiftMonth(year, month, -1);
-  const prevRange = getLocalMonthRange(prev.year, prev.month, timeZone);
+  const fullRange = getLocalMonthRange(year, month, timeZone);
+  const { daysInMonth, fromKey, toKey } = fullRange;
+  const prevMeta = shiftMonth(year, month, -1);
+  const prevFull = getLocalMonthRange(prevMeta.year, prevMeta.month, timeZone);
   const endOfMonth = endOfCalendarDayInTimeZone(toKey, timeZone);
-  const prevEndOfMonth = endOfCalendarDayInTimeZone(prevRange.toKey, timeZone);
-  const prevMonthLabel = formatMonthShort(prev.month);
+
+  const windows = resolveTrendComparisonWindows({
+    year,
+    month,
+    timeZone,
+    now,
+    getLocalMonthRange,
+  });
+  const { comparisonMode, curr, prev, labels, isCurrentMonth } = windows;
+  const compareLabel = labels.compareLabelShort || formatMonthShort(prev.month);
+  const prevMonthLabel = labels.previousMonthLabel || formatMonthShort(prev.month);
+
+  // KPIs MoM y tendencia usan la misma ventana (FULL_MONTH o MONTH_TO_DATE).
+  const kpiStart = curr.start;
+  const kpiEnd = curr.end;
+  const prevStart = prev.start;
+  const prevEnd = prev.end;
 
   const { applications } = await loadApplicationsForTerminalMetrics(
     organizationId,
-    prevRange.start,
-    end,
+    prevFull.start < prevStart ? prevFull.start : prevStart,
+    fullRange.end > kpiEnd ? fullRange.end : kpiEnd,
   );
 
-  const consolidatedHiredCurr = consolidatedTerminalForPeriod(applications, 'HIRED', {
-    year,
-    month,
-    monthStart: start,
-    monthEnd: end,
-    endOfMonthInstant: endOfMonth,
-    timeZone,
+  const currCloseInstant = isCurrentMonth
+    ? now
+    : new Date(Math.max(kpiStart.getTime(), kpiEnd.getTime() - 1));
+  const prevCloseInstant = new Date(Math.max(prevStart.getTime(), prevEnd.getTime() - 1));
+
+  const consolidatedHiredCurr = consolidateTerminalApplications(applications, 'HIRED', {
+    monthStart: kpiStart,
+    monthEnd: kpiEnd,
+    endOfMonthInstant: currCloseInstant,
     now,
+    isCurrentMonth,
   });
-  const consolidatedHiredPrev = consolidatedTerminalForPeriod(applications, 'HIRED', {
-    year: prev.year,
-    month: prev.month,
-    monthStart: prevRange.start,
-    monthEnd: prevRange.end,
-    endOfMonthInstant: prevEndOfMonth,
-    timeZone,
+  const consolidatedHiredPrev = consolidateTerminalApplications(applications, 'HIRED', {
+    monthStart: prevStart,
+    monthEnd: prevEnd,
+    endOfMonthInstant: prevCloseInstant,
     now,
+    isCurrentMonth: false,
   });
-  const consolidatedRejectedCurr = consolidatedTerminalForPeriod(applications, 'REJECTED', {
-    year,
-    month,
-    monthStart: start,
-    monthEnd: end,
-    endOfMonthInstant: endOfMonth,
-    timeZone,
+  const consolidatedRejectedCurr = consolidateTerminalApplications(applications, 'REJECTED', {
+    monthStart: kpiStart,
+    monthEnd: kpiEnd,
+    endOfMonthInstant: currCloseInstant,
     now,
+    isCurrentMonth,
   });
-  const consolidatedRejectedPrev = consolidatedTerminalForPeriod(applications, 'REJECTED', {
-    year: prev.year,
-    month: prev.month,
-    monthStart: prevRange.start,
-    monthEnd: prevRange.end,
-    endOfMonthInstant: prevEndOfMonth,
-    timeZone,
+  const consolidatedRejectedPrev = consolidateTerminalApplications(applications, 'REJECTED', {
+    monthStart: prevStart,
+    monthEnd: prevEnd,
+    endOfMonthInstant: prevCloseInstant,
     now,
+    isCurrentMonth: false,
   });
 
   const hired = consolidatedHiredCurr.length;
@@ -531,40 +549,92 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
     activeSnapshot,
     activity,
   ] = await Promise.all([
-    countCandidatesCreated(organizationId, start, end),
-    countCandidatesCreated(organizationId, prevRange.start, prevRange.end),
-    countDistinctCandidatesEnteredProcess(organizationId, start, end),
-    avgCoverageDaysForMonth(organizationId, start, end, timeZone),
-    avgCoverageDaysForMonth(organizationId, prevRange.start, prevRange.end, timeZone),
-    countDeclinedApplicationsForMonth(organizationId, start, end),
-    countDeclinedApplicationsForMonth(organizationId, prevRange.start, prevRange.end),
+    countCandidatesCreated(organizationId, kpiStart, kpiEnd),
+    countCandidatesCreated(organizationId, prevStart, prevEnd),
+    countDistinctCandidatesEnteredProcess(organizationId, kpiStart, kpiEnd),
+    avgCoverageDaysForMonth(organizationId, kpiStart, kpiEnd, timeZone),
+    avgCoverageDaysForMonth(organizationId, prevStart, prevEnd, timeZone),
+    countDeclinedApplicationsForMonth(organizationId, kpiStart, kpiEnd),
+    countDeclinedApplicationsForMonth(organizationId, prevStart, prevEnd),
     loadRecruitmentMetricsDataQuality(organizationId),
     activeVacanciesAtMonthEnd(organizationId, endOfMonth, timeZone),
-    dailyActivity(organizationId, year, month, start, end, timeZone, consolidatedHiredCurr),
+    // Calendario: mes civil completo seleccionado (no MTD).
+    dailyActivity(
+      organizationId,
+      year,
+      month,
+      fullRange.start,
+      fullRange.end,
+      timeZone,
+      consolidatedTerminalForPeriod(applications, 'HIRED', {
+        year,
+        month,
+        monthStart: fullRange.start,
+        monthEnd: fullRange.end,
+        endOfMonthInstant: endOfMonth,
+        timeZone,
+        now,
+      }),
+    ),
   ]);
 
-  const currDailyAvg = round1(currRegistered / daysInMonth);
-  const prevDailyAvg = round1(prevRegistered / prevRange.daysInMonth);
+  // Promedio diario: misma base de días en MTD; días del mes en FULL_MONTH.
+  let daysForAvgCurr = daysInMonth;
+  let daysForAvgPrev = prevFull.daysInMonth;
+  if (comparisonMode === 'MONTH_TO_DATE') {
+    const dayNum = Number(localDateKey(now, timeZone).slice(8, 10)) || 1;
+    daysForAvgCurr = Math.max(1, dayNum);
+    daysForAvgPrev = daysForAvgCurr;
+  }
+  const currDailyAvg = round1(currRegistered / daysForAvgCurr);
+  const prevDailyAvg = round1(prevRegistered / daysForAvgPrev);
   const deltaDailyAvg = round1(currDailyAvg - prevDailyAvg);
   const currCoverageValue = currCoverage.value;
   const prevCoverageValue = prevCoverage.value;
 
-  const insights = buildInsights({
+  const rawInsights = buildInsights({
     currRegistered,
     prevRegistered,
-    prevMonthLabel,
+    prevMonthLabel: compareLabel,
     rejectedTop: rejectedDetail.topClient,
     rejectedTotal: rejectedDetail.total,
     currCoverage: currCoverageValue,
     prevCoverage: prevCoverageValue,
   });
 
-  /** Participación entre cierres del mes (hired+rejected+declined). No es tasa de funnel. */
+  /** Participación entre cierres del periodo comparable. No es tasa de funnel. */
   const terminalClosures = buildTerminalClosureShares({
     hired,
     rejected: rejectedDetail.total,
     declined: declinedCurr.total,
   });
+  const terminalClosuresPrev = buildTerminalClosureShares({
+    hired: prevHired,
+    rejected: prevRejectedTotal,
+    declined: declinedPrev.total,
+  });
+
+  const trend = buildMonthlyTrend({
+    comparisonMode,
+    comparisonLabel: labels.comparisonLabel,
+    compareLabelShort: compareLabel,
+    registrations: { current: currRegistered, previous: prevRegistered },
+    hired: { current: hired, previous: prevHired },
+    rejectionShare: {
+      current: terminalClosures.rejectionShare,
+      previous: terminalClosuresPrev.rejectionShare,
+      currentDecisions: terminalClosures.terminalDecisions,
+      previousDecisions: terminalClosuresPrev.terminalDecisions,
+    },
+    coverage: {
+      current: currCoverageValue,
+      previous: prevCoverageValue,
+      currentSampleSize: currCoverage.sampleSize,
+      previousSampleSize: prevCoverage.sampleSize,
+    },
+  });
+
+  const insights = filterDuplicateInsights(rawInsights, trend);
 
   return {
     period: {
@@ -575,29 +645,34 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
       footerLabel: formatPeriodFooter(fromKey, toKey, year, month),
       daysInMonth,
       timeZone,
+      /** FULL_MONTH | MONTH_TO_DATE | INSUFFICIENT — misma ventana para KPIs MoM y tendencia. */
+      comparisonMode,
+      comparisonLabel: labels.comparisonLabel,
     },
     kpis: {
       candidatesRegistered: {
         total: currRegistered,
         dailyAverage: currDailyAvg,
         deltaDailyAverage: deltaDailyAvg,
-        compareLabel: prevMonthLabel,
+        compareLabel,
       },
       enteredProcess: { total: enteredProcess },
       hired: {
         total: hired,
         deltaVsPrevious: hired - prevHired,
-        compareLabel: prevMonthLabel,
+        compareLabel,
       },
       rejected: {
         total: rejectedDetail.total,
         topClient: rejectedDetail.topClient,
+        /** Total del periodo comparable (no necesariamente el mes civil completo). */
         previousTotal: prevRejectedTotal,
+        compareLabel,
       },
       declined: {
         total: declinedCurr.total,
         deltaVsPrevious: declinedCurr.total - declinedPrev.total,
-        compareLabel: prevMonthLabel,
+        compareLabel,
         previousTotal: declinedPrev.total,
       },
       avgCoverageDays: {
@@ -606,8 +681,8 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
           currCoverageValue != null && prevCoverageValue != null
             ? round1(currCoverageValue - prevCoverageValue)
             : null,
-        compareLabel: prevMonthLabel,
-        /** Vacantes actualmente COVERED con coveredAt en el mes. */
+        compareLabel,
+        /** Vacantes actualmente COVERED con coveredAt en el periodo comparable. */
         coverageDateSource: 'vacancy.coveredAt',
         sampleSize: currCoverage.sampleSize,
       },
@@ -623,10 +698,12 @@ export async function getRecruitmentMetrics(organizationId, year, month, now = n
      */
     dataQuality,
     /**
-     * Preparación para tendencia futura. Shares 0–1 = participación entre cierres del mes.
-     * null si terminalDecisions === 0. No se muestra como insight principal aún.
+     * Participación entre cierres del periodo comparable (hired+rejected+declined).
+     * Shares 0–1; null si terminalDecisions === 0.
      */
     terminalClosures,
+    /** Insight principal de tendencia (servidor; la UI no recalcula). */
+    trend,
     dailyActivity: activity,
     insights,
     generatedAt: new Date().toISOString(),

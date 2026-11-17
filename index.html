@@ -859,14 +859,30 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-cal-hire{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 2px #fff;}
 .rec-metrics-insights-list{display:flex;flex-direction:column;gap:10px;}
 .rec-metrics-insight{display:flex;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--slate-100);background:linear-gradient(180deg,#fff,rgba(248,250,252,.6));}
+.rec-metrics-insight--trend{border-color:rgba(148,163,184,.28);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.rec-metrics-insight--trend-green{border-color:rgba(34,197,94,.28);background:linear-gradient(180deg,#fff,rgba(240,253,244,.75));}
+.rec-metrics-insight--trend-coral{border-color:rgba(248,113,113,.28);background:linear-gradient(180deg,#fff,rgba(255,241,242,.75));}
+.rec-metrics-insight--trend-blue{border-color:rgba(59,130,246,.22);background:linear-gradient(180deg,#fff,rgba(239,246,255,.75));}
+.rec-metrics-insight--trend-slate{border-color:rgba(148,163,184,.35);background:linear-gradient(180deg,#fff,rgba(248,250,252,.9));}
 .rec-metrics-insight-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rec-metrics-insight-icon--purple{background:rgba(139,92,246,.1);color:#7C3AED;}
 .rec-metrics-insight-icon--coral{background:rgba(248,113,113,.12);color:#E11D48;}
 .rec-metrics-insight-icon--green{background:rgba(34,197,94,.12);color:#16A34A;}
 .rec-metrics-insight-icon--amber{background:rgba(251,146,60,.14);color:#EA580C;}
-.rec-metrics-insight-body{min-width:0;}
+.rec-metrics-insight-icon--blue{background:rgba(59,130,246,.12);color:#2563EB;}
+.rec-metrics-insight-icon--slate{background:rgba(148,163,184,.16);color:#64748B;}
+.rec-metrics-insight-body{min-width:0;flex:1;}
 .rec-metrics-insight-title{font-size:12px;font-weight:800;color:var(--primary);margin:0 0 3px;line-height:1.3;}
 .rec-metrics-insight-text{font-size:11px;font-weight:600;color:var(--slate-600);margin:0;line-height:1.4;}
+.rec-metrics-insight-compare{display:block;margin-top:2px;font-size:10px;font-weight:700;color:var(--slate-500);}
+.rec-metrics-insight-reasons{margin:6px 0 0;padding:0 0 0 16px;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.4;}
+.rec-metrics-insight-reasons li{margin:0 0 2px;}
+.rec-metrics-trend-detail-btn{margin-top:8px;border:0;background:transparent;padding:0;font:inherit;font-size:11px;font-weight:700;color:#2563EB;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.rec-metrics-trend-detail-btn:focus-visible{outline:2px solid rgba(37,99,235,.45);outline-offset:2px;border-radius:4px;}
+.rec-metrics-trend-detail{margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.4;}
+.rec-metrics-trend-detail[hidden]{display:none!important;}
+.rec-metrics-trend-detail ul{margin:0;padding:0 0 0 16px;}
+.rec-metrics-trend-detail li{margin:0 0 4px;}
 .rec-metrics-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-200);font-size:11px;font-weight:600;color:var(--slate-500);flex-wrap:wrap;}
 .rec-metrics-loading,.rec-metrics-err{padding:24px;text-align:center;font-size:13px;font-weight:600;color:var(--slate-600);}
 .rec-metrics-err{color:#DC2626;}
@@ -9667,6 +9683,7 @@ function recEnsureState(){
       metricsMonth:null,
       metricsData:null,
       metricsLoading:false,
+      metricsReqSeq:0,
     };
   }
   if(!window.__REC_STATE.vacancyStagesCache) window.__REC_STATE.vacancyStagesCache={};
@@ -12545,6 +12562,7 @@ async function recSubmitVacancy(){
 }
 function recSwitchModuleTab(tab){
   if(typeof recMetricsCloseAllKpiTips==='function') recMetricsCloseAllKpiTips();
+  if(typeof recMetricsCloseTrendDetail==='function') recMetricsCloseTrendDetail();
   if(typeof recKanbanAutoScrollStop==='function'){
     recEnsureState().kanbanDragging=false;
     recKanbanAutoScrollStop();
@@ -12590,6 +12608,7 @@ function recMetricsShiftMonth(delta){
 }
 function recMetricsChangeMonth(delta){
   recMetricsCloseAllKpiTips();
+  if(typeof recMetricsCloseTrendDetail==='function') recMetricsCloseTrendDetail();
   recMetricsShiftMonth(delta);
   recMetricsLoad();
 }
@@ -12603,6 +12622,10 @@ function recMetricsIcon(name){
     coverage:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>',
     vacancies:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
     up:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m18 15-6-6-6 6"/></svg>',
+    trendUp:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11l4 4 7-7"/><path d="M14 8h6v6"/></svg>',
+    trendDown:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7 9 13l4-4 7 7"/><path d="M14 16h6v-6"/></svg>',
+    trendFlat:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="m14 8 4 4-4 4"/></svg>',
+    trendInfo:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
     client:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/></svg>',
     clock:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>',
   };
@@ -12747,15 +12770,77 @@ function recMetricsBuildCalendar(data){
   }
   return cells.join('');
 }
-function recMetricsRenderInsights(insights){
-  if(!insights||!insights.length) return '<p class="rec-metrics-kpi-sub" style="margin:0;">Sin insights destacados para este mes.</p>';
-  return insights.map(function(ins){
-    const icon=ins.kind==='rejections_client'?'client':ins.kind.indexOf('coverage')>=0?'clock':'up';
-    return '<div class="rec-metrics-insight">'+
-      '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+(ins.tone||'purple')+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
-      '<div class="rec-metrics-insight-body"><p class="rec-metrics-insight-title">'+tcEsc(ins.title)+'</p>'+
-      '<p class="rec-metrics-insight-text">'+tcEsc(ins.body)+'</p></div></div>';
-  }).join('');
+function recMetricsCloseTrendDetail(){
+  document.querySelectorAll('.rec-metrics-trend-detail').forEach(function(el){
+    el.hidden=true;
+  });
+  document.querySelectorAll('.rec-metrics-trend-detail-btn[aria-expanded="true"]').forEach(function(btn){
+    btn.setAttribute('aria-expanded','false');
+    btn.textContent='Ver detalle de factores';
+  });
+}
+function recMetricsToggleTrendDetail(btn){
+  if(!btn) return;
+  const id=btn.getAttribute('aria-controls');
+  const panel=id?document.getElementById(id):null;
+  if(!panel) return;
+  const open=btn.getAttribute('aria-expanded')==='true';
+  if(open){
+    btn.setAttribute('aria-expanded','false');
+    panel.hidden=true;
+    btn.textContent='Ver detalle de factores';
+    return;
+  }
+  recMetricsCloseTrendDetail();
+  btn.setAttribute('aria-expanded','true');
+  panel.hidden=false;
+  btn.textContent='Ocultar detalle';
+}
+function recMetricsTrendTone(tone){
+  return tone==='green'||tone==='coral'||tone==='blue'||tone==='slate'?tone:'slate';
+}
+function recMetricsTrendIconKey(icon){
+  return icon==='trendUp'||icon==='trendDown'||icon==='trendFlat'||icon==='trendInfo'?icon:'trendInfo';
+}
+function recMetricsRenderTrendInsight(trend){
+  if(!trend||!trend.status) return '';
+  const tone=recMetricsTrendTone(trend.tone);
+  const icon=recMetricsTrendIconKey(trend.icon);
+  const primary=(trend.primaryReasons&&trend.primaryReasons.length)?trend.primaryReasons:(trend.reasons||[]).slice(0,2);
+  const all=trend.reasons||[];
+  const detailId='rec-metrics-trend-detail';
+  const reasonsHtml=primary.length
+    ?('<ul class="rec-metrics-insight-reasons">'+primary.map(function(r){ return '<li>'+tcEsc(r.text||'')+'</li>'; }).join('')+'</ul>')
+    :'';
+  const detailHtml=all.length
+    ?('<button type="button" class="rec-metrics-trend-detail-btn" aria-expanded="false" aria-controls="'+detailId+'" onclick="recMetricsToggleTrendDetail(this)">Ver detalle de factores</button>'+
+      '<div id="'+detailId+'" class="rec-metrics-trend-detail" hidden><ul>'+
+      all.map(function(r){ return '<li>'+tcEsc(r.text||'')+'</li>'; }).join('')+
+      '</ul></div>')
+    :'';
+  const compare=trend.comparisonLabel
+    ?('<span class="rec-metrics-insight-compare">'+tcEsc(trend.comparisonLabel)+'</span>')
+    :'';
+  return '<div class="rec-metrics-insight rec-metrics-insight--trend rec-metrics-insight--trend-'+tone+'" data-trend-status="'+tcEsc(trend.status)+'">'+
+    '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+tone+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
+    '<div class="rec-metrics-insight-body">'+
+    '<p class="rec-metrics-insight-title">'+tcEsc(trend.title||'Tendencia')+'</p>'+
+    compare+reasonsHtml+detailHtml+
+    '</div></div>';
+}
+function recMetricsRenderInsights(insights,trend){
+  const trendHtml=recMetricsRenderTrendInsight(trend);
+  const rest=(!insights||!insights.length)
+    ?''
+    :insights.map(function(ins){
+      const icon=ins.kind==='rejections_client'?'client':ins.kind.indexOf('coverage')>=0?'clock':'up';
+      return '<div class="rec-metrics-insight">'+
+        '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+(ins.tone||'purple')+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
+        '<div class="rec-metrics-insight-body"><p class="rec-metrics-insight-title">'+tcEsc(ins.title)+'</p>'+
+        '<p class="rec-metrics-insight-text">'+tcEsc(ins.body)+'</p></div></div>';
+    }).join('');
+  if(!trendHtml&&!rest) return '<p class="rec-metrics-kpi-sub" style="margin:0;">Sin insights destacados para este mes.</p>';
+  return trendHtml+rest;
 }
 function recMetricsRender(data){
   const host=document.getElementById('rec-metrics-host');
@@ -12803,6 +12888,7 @@ function recMetricsRender(data){
   const peakTxt=peak&&peak.registrations?('Pico: '+peak.registrations+' registros · '+recMetricsFmtDayShort(peak.date)):'';
   /* Calendario sin Declinados: evitar densidad visual frente a registros/contrataciones. */
   recMetricsCloseAllKpiTips();
+  if(typeof recMetricsCloseTrendDetail==='function') recMetricsCloseTrendDetail();
   host.innerHTML=
     '<div class="rec-metrics-kpi-grid">'+
     recMetricsKpiCard('Candidatos registrados',reg.total,regSub,'users','purple','Personas registradas por primera vez durante el mes seleccionado.')+
@@ -12825,7 +12911,7 @@ function recMetricsRender(data){
     (peakTxt?'<span class="rec-metrics-cal-peak">'+tcEsc(peakTxt)+'</span>':'')+
     '</div></div><div class="rec-metrics-cal-grid">'+recMetricsBuildCalendar(data)+'</div></section>'+
     '<aside class="rec-metrics-panel"><h3 class="rec-metrics-panel-title" style="margin-bottom:12px;">Insights del mes</h3>'+
-    '<div class="rec-metrics-insights-list">'+recMetricsRenderInsights(data.insights)+'</div></aside></div>'+
+    '<div class="rec-metrics-insights-list">'+recMetricsRenderInsights(data.insights,data.trend)+'</div></aside></div>'+
     '<footer class="rec-metrics-footer"><span>'+tcEsc(data.period.footerLabel)+'</span><span>Última actualización: hoy</span></footer>';
   recMetricsBindKpiTips(host);
 }
@@ -12835,12 +12921,17 @@ async function recMetricsLoad(){
   recMetricsCloseAllKpiTips();
   if(host) host.innerHTML='<p class="rec-metrics-loading">Cargando métricas…</p>';
   st.metricsLoading=true;
+  st.metricsReqSeq=(st.metricsReqSeq||0)+1;
+  const seq=st.metricsReqSeq;
+  const reqYear=st.metricsYear;
+  const reqMonth=st.metricsMonth;
   try{
     let url='/api/org/recruitment/metrics';
-    if(st.metricsYear&&st.metricsMonth){
-      url+='?year='+encodeURIComponent(st.metricsYear)+'&month='+encodeURIComponent(st.metricsMonth);
+    if(reqYear&&reqMonth){
+      url+='?year='+encodeURIComponent(reqYear)+'&month='+encodeURIComponent(reqMonth);
     }
     const j=await apiJson(url);
+    if(seq!==st.metricsReqSeq) return;
     st.metricsData=j.metrics||null;
     if(st.metricsData){
       st.metricsYear=st.metricsData.period.year;
@@ -12849,9 +12940,10 @@ async function recMetricsLoad(){
     }
     else if(host) host.innerHTML='<p class="rec-metrics-err">No hay datos para este periodo.</p>';
   }catch(e){
+    if(seq!==st.metricsReqSeq) return;
     if(host) host.innerHTML='<p class="rec-metrics-err">'+(tcEsc((e&&e.message)||'No se pudieron cargar las métricas.'))+'</p>';
   }finally{
-    st.metricsLoading=false;
+    if(seq===st.metricsReqSeq) st.metricsLoading=false;
   }
 }
 function recCandInitials(name){
