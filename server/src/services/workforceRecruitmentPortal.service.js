@@ -78,7 +78,10 @@ export async function getEnabledVacancyStagesForWorkforcePortal(organizationId, 
     throw err;
   }
   const config = await getVacancyStageConfiguration(organizationId, vacancyId);
-  const rows = (config.vacancyStages || []).filter((vs) => vs.isEnabled !== false);
+  // Portal: altas/reuso de ficha; no oferta HIRED (contratar es solo admin).
+  const rows = (config.vacancyStages || []).filter(
+    (vs) => vs.isEnabled !== false && vs.stage?.key !== 'HIRED',
+  );
   rows.sort((a, b) => (a.position || 0) - (b.position || 0));
   return {
     vacancy: { id: vacancy.id, title: vacancy.title, status: vacancy.status },
@@ -163,6 +166,12 @@ export async function createRecruitmentCandidateFromWorkforcePortal({
     const { resolveInterviewScheduledAtForOrg } = await import(
       './recruitmentInterviewSchedule.service.js'
     );
+    if (st?.key === 'HIRED') {
+      const err = new Error('VALIDATION_ERROR');
+      err.code = 'VALIDATION_ERROR';
+      err.message = 'Solo un administrador puede registrar una contratación.';
+      throw err;
+    }
     const interviewSchedule = await resolveInterviewScheduledAtForOrg(
       organizationId,
       { interviewDate, interviewTime },
@@ -260,6 +269,12 @@ export async function attachExistingCandidateToVacancyForWorkforcePortal({
     where: { id: resolvedStageId, organizationId },
     select: { key: true },
   });
+  if (st?.key === 'HIRED') {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'Solo un administrador puede registrar una contratación.';
+    throw err;
+  }
   const { resolveInterviewScheduledAtForOrg } = await import(
     './recruitmentInterviewSchedule.service.js'
   );

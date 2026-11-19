@@ -46,6 +46,9 @@ check(/updatedAt.*desc/.test(appSvc), 'orden applications por updatedAt');
 console.log('\n=== Recruitment Kanban — optimistic DnD ===\n');
 
 const dropBlock = indexHtml.match(/async function recKanbanColDrop[\s\S]*?^function recKanbanCardClick/m)?.[0] || '';
+const commitBlock =
+  indexHtml.match(/async function recKanbanCommitStageMove[\s\S]*?^function recKanbanCardClick/m)?.[0] ||
+  dropBlock;
 check(/recKanbanMoveCardInDom/.test(indexHtml), 'movimiento DOM optimista');
 check(/recKanbanSyncColCounts/.test(indexHtml), 'contadores columna sincronizados');
 check(/kanbanPendingMoves/.test(indexHtml), 'bloqueo PATCH pendiente por application');
@@ -53,8 +56,9 @@ check(/recKanbanSilentReconcile/.test(indexHtml), 'reconciliación silenciosa po
 check(/recKanbanRefreshRelatedPanels/.test(indexHtml), 'refresh paneles sin recargar Kanban');
 check(!/recKanbanRender\(vacancyId\)/.test(dropBlock), 'drop no reconstruye Kanban completo');
 check(!/recKanbanLoad\(vacancyId\)/.test(dropBlock), 'drop no dispara recKanbanLoad');
-check(/No se pudo cambiar la etapa\. Intenta nuevamente\./.test(dropBlock), 'rollback con mensaje discreto');
+check(/No se pudo cambiar la etapa/.test(commitBlock), 'rollback con mensaje discreto');
 check(/String\(fromStageId\)===String\(targetStageId\)/.test(dropBlock), 'misma etapa sin PATCH');
+check(/targetStageKey==='HIRED'/.test(dropBlock) && /recHireConfirmOpen/.test(dropBlock), 'HIRED abre confirmación sin mover');
 check(/rec-kanban-card--enter/.test(indexHtml) && /rec-kanban-col--drop-success/.test(indexHtml), 'microinteracciones drop');
 
 console.log('\n=== Recruitment Kanban — polish semántico ===\n');

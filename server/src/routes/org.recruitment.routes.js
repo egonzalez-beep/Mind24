@@ -214,6 +214,7 @@ export const candidateCreateSchema = z
     stageId: z.string().min(1).max(80).optional().nullable(),
     interviewDate: z.string().max(10).optional().nullable(),
     interviewTime: z.string().max(5).optional().nullable(),
+    employmentStartDate: z.string().max(10).optional().nullable(),
     /** Solo `true` explícito autoriza crear pese a coincidencia fuerte. */
     allowDuplicate: z.union([z.literal(true), z.literal(false)]).optional(),
   })
@@ -629,6 +630,7 @@ router.post('/candidates', async (req, res, next) => {
       stageId,
       interviewDate,
       interviewTime,
+      employmentStartDate,
       allowDuplicate,
       ...createPayload
     } = body;
@@ -666,6 +668,7 @@ router.post('/candidates', async (req, res, next) => {
       changedByUserId: u.id,
       interviewScheduledAt,
       interviewTimeSpecified,
+      employmentStartDate: employmentStartDate || undefined,
       allowDuplicate: allowDuplicate === true,
     });
     if (initialNote) {
@@ -960,6 +963,7 @@ router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
         stageId: z.string().min(1).optional(),
         interviewDate: z.string().max(10).optional().nullable(),
         interviewTime: z.string().max(5).optional().nullable(),
+        employmentStartDate: z.string().max(10).optional().nullable(),
       })
       .parse(req.body);
     const { prisma } = await import('../db/client.js');
@@ -987,6 +991,7 @@ router.post('/vacancies/:vacancyId/applications', async (req, res, next) => {
       initialStageId: body.stageId,
       interviewScheduledAt: interviewSchedule?.scheduledAt ?? undefined,
       interviewTimeSpecified: interviewSchedule?.timeSpecified,
+      employmentStartDate: body.employmentStartDate || undefined,
     });
     res.status(201).json({ application });
   } catch (e) {
@@ -1106,6 +1111,8 @@ router.patch('/applications/:id', async (req, res, next) => {
         interviewDate: z.string().max(10).optional().nullable(),
         interviewTime: z.string().max(5).optional().nullable(),
         clearInterview: z.boolean().optional(),
+        /** Día calendario AAAA-MM-DD; obligatorio al pasar a HIRED o al editar ingreso. */
+        employmentStartDate: z.string().max(10).optional().nullable(),
       })
       .parse(req.body);
     let interviewScheduledAt;
@@ -1151,6 +1158,8 @@ router.patch('/applications/:id', async (req, res, next) => {
       notes: body.notes,
       interviewScheduledAt,
       interviewTimeSpecified,
+      employmentStartDate:
+        body.employmentStartDate === undefined ? undefined : body.employmentStartDate,
       changedByUserId: u.id,
     });
     const headcount = await getActiveVacancyHeadcount(u.organizationId);

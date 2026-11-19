@@ -20,6 +20,7 @@ export async function createRecruitmentCandidateAndNotify({
   changedByUserId = null,
   interviewScheduledAt = undefined,
   interviewTimeSpecified = undefined,
+  employmentStartDate = undefined,
   allowDuplicate = false,
 }) {
   const prepared = prepareRecruitmentCandidateWritePayload(payload, { partial: false });
@@ -66,6 +67,7 @@ export async function createRecruitmentCandidateAndNotify({
         initialStageId: stageId || undefined,
         interviewScheduledAt,
         interviewTimeSpecified,
+        employmentStartDate,
         db: tx,
       });
       vacancyTitle = vacancy?.title || null;

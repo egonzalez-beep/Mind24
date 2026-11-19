@@ -32,8 +32,61 @@ import {
   reconcileVacancyCoverage,
   shouldRecordStageEvent,
 } from './recruitmentCoverage.service.js';
+import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
+import { localDateKey } from './remoteWorkSessionHistory.service.js';
 
 const POSITION_GAP = 1000;
+const EMPLOYMENT_START_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Parsea AAAA-MM-DD real; null si inválida. */
+export function parseEmploymentStartDateInput(raw) {
+  const s = String(raw ?? '').trim();
+  if (!EMPLOYMENT_START_DATE_RE.test(s)) return null;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+  return s;
+}
+
+/** Persiste Date @db.Date sin corrimiento de día (UTC midnight del calendario). */
+export function employmentStartDateToPrisma(dateKey) {
+  const key = parseEmploymentStartDateInput(dateKey);
+  if (!key) return null;
+  return new Date(`${key}T00:00:00.000Z`);
+}
+
+/** Serializa Date/@db.Date → AAAA-MM-DD estable. */
+export function serializeEmploymentStartDate(value) {
+  if (value == null) return null;
+  if (typeof value === 'string' && EMPLOYMENT_START_DATE_RE.test(value.trim())) {
+    return value.trim();
+  }
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export async function assertEmploymentStartDateForOrg(organizationId, raw, now = new Date()) {
+  const key = parseEmploymentStartDateInput(raw);
+  if (!key) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'Indica una fecha de ingreso válida (AAAA-MM-DD).';
+    throw err;
+  }
+  const timeZone = await resolveOrganizationIanaTimezone(organizationId);
+  const today = localDateKey(now, timeZone);
+  if (key > today) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'La fecha de ingreso no puede ser posterior a hoy.';
+    throw err;
+  }
+  return key;
+}
 
 async function nextPositionInStage(vacancyId, stageId, tx) {
   const agg = await tx.recruitmentApplication.aggregate({
@@ -56,6 +109,7 @@ function serializeApplication(row) {
       : null,
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
+    employmentStartDate: serializeEmploymentStartDate(row.employmentStartDate),
     notes: row.notes,
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
     closureOutcome: row.closureOutcome || null,
@@ -117,6 +171,7 @@ export async function createRecruitmentApplication({
   initialStageId,
   interviewScheduledAt = undefined,
   interviewTimeSpecified = undefined,
+  employmentStartDate = undefined,
   db = null,
 }) {
   const run = async (tx) => {
@@ -187,6 +242,13 @@ export async function createRecruitmentApplication({
       });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
       const toKey = targetStage?.key ?? null;
+      let resolvedEmploymentStart = null;
+      if (toKey === HIRED_STAGE_KEY) {
+        resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
+          organizationId,
+          employmentStartDate,
+        );
+      }
       const closurePatch = closurePatchForStageMove({
         stageChanged: true,
         fromStageKey: newStage.key,
@@ -206,6 +268,9 @@ export async function createRecruitmentApplication({
         blocksReapplication: expectedBlocksReapplication(toKey, closurePatch.closureOutcome ?? null),
         ...closurePatch,
       };
+      if (resolvedEmploymentStart) {
+        moveData.employmentStartDate = employmentStartDateToPrisma(resolvedEmploymentStart);
+      }
       const moved = await tx.recruitmentApplication.update({
         where: { id: app.id },
         data: moveData,
@@ -305,6 +370,7 @@ export async function updateRecruitmentApplication({
   notes,
   interviewScheduledAt,
   interviewTimeSpecified,
+  employmentStartDate,
   changedByUserId,
 }) {
   const existingRow = await prisma.recruitmentApplication.findFirst({
@@ -322,6 +388,33 @@ export async function updateRecruitmentApplication({
   }
   const existing = existingRow;
 
+  const stageChanged = stageId != null && stageId !== existing.stageId;
+  let previewToKey = existing.stage?.key ?? null;
+  if (stageChanged) {
+    const nextPreview = await prisma.recruitmentStage.findFirst({
+      where: { id: stageId, organizationId },
+      select: { key: true },
+    });
+    previewToKey = nextPreview?.key ?? null;
+  }
+  const movingToHired = stageChanged && previewToKey === HIRED_STAGE_KEY;
+  const editingHireDateOnly =
+    !stageChanged &&
+    employmentStartDate !== undefined &&
+    existing.stage?.key === HIRED_STAGE_KEY;
+  let resolvedEmploymentStart = null;
+  if (movingToHired || editingHireDateOnly) {
+    resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
+      organizationId,
+      employmentStartDate,
+    );
+  } else if (employmentStartDate !== undefined && !movingToHired) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = 'La fecha de ingreso solo aplica a postulaciones contratadas.';
+    throw err;
+  }
+
   let serialized;
   try {
     serialized = await prisma.$transaction(async (tx) => {
@@ -329,7 +422,6 @@ export async function updateRecruitmentApplication({
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;
 
-    const stageChanged = stageId != null && stageId !== existing.stageId;
     let toStageKey = existing.stage?.key ?? null;
     if (stageChanged && existing.candidate?.archivedAt) {
       const err = new Error('VALIDATION_ERROR');
@@ -359,6 +451,10 @@ export async function updateRecruitmentApplication({
       if (position == null) {
         data.position = await nextPositionInStage(existing.vacancyId, stageId, tx);
       }
+    }
+    if (resolvedEmploymentStart) {
+      // Solo escribe employmentStartDate; no toca hiredStageEnteredAt en edición de fecha.
+      data.employmentStartDate = employmentStartDateToPrisma(resolvedEmploymentStart);
     }
 
     Object.assign(

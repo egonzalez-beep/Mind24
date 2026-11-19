@@ -956,6 +956,8 @@ model RecruitmentApplication {
   interviewTimeSpecified Boolean @default(true)
   /// Entrada real a la etapa HIRED. Se limpia al salir. No lo envía el cliente.
   hiredStageEnteredAt DateTime? @db.Timestamptz(6)
+  /// Día calendario de ingreso laboral (AAAA-MM-DD). Distinto de hiredStageEnteredAt.
+  employmentStartDate DateTime? @db.Date
   /// Cierre del proceso, independiente del nombre visible de la etapa. No lo envía el cliente.
   closedAt       DateTime? @db.Timestamptz(6)
   closureOutcome RecruitmentApplicationClosureOutcome?

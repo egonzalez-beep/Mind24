@@ -120,6 +120,17 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
 }
 
 function serializeCandidateApplicationProcess(row) {
+  const employmentStartDate = (() => {
+    const v = row.employmentStartDate;
+    if (v == null) return null;
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+    const d = v instanceof Date ? v : new Date(v);
+    if (Number.isNaN(d.getTime())) return null;
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  })();
   return {
     applicationId: row.id,
     appliedAt: row.appliedAt.toISOString(),
@@ -129,6 +140,8 @@ function serializeCandidateApplicationProcess(row) {
       ? row.interviewScheduledAt.toISOString()
       : null,
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
+    hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
+    employmentStartDate,
     vacancy: {
       id: row.vacancy.id,
       title: row.vacancy.title,

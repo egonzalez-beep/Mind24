@@ -588,6 +588,14 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-iv-note{margin:10px 0 0;font-size:13px;line-height:1.4;color:var(--slate-600);}
 .rec-iv-confirm{margin:0 0 12px;color:var(--slate-700);font-size:14px;}
 .rec-iv-dialog button:focus-visible,.rec-iv-dialog input:focus-visible,.rec-iv-dialog textarea:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-hire-start-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--slate-600);}
+.rec-hire-start-label{font-weight:700;color:var(--slate-700);}
+.rec-hire-start-value{font-weight:600;}
+.rec-hire-start-edit{border:0;background:transparent;padding:0;color:#7c3aed;font:inherit;font-size:12px;font-weight:650;cursor:pointer;}
+.rec-hire-start-edit:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-hire-start-form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;}
+.rec-hire-start-form .form-input{width:auto;min-width:9.5rem;padding:6px 8px;font-size:12px;}
+.rec-hire-start-form .rec-iv-btn{padding:6px 10px;font-size:12px;}
 @media(max-width:520px){
   .rec-iv-overlay{align-items:flex-end;padding:0;}
   .rec-iv-dialog{width:100%;max-height:92vh;border-radius:18px 18px 0 0;}
@@ -3469,6 +3477,26 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <div class="rec-process-actions">
       <button type="button" class="rec-stages-ghost-btn" onclick="recCandCloseDecline()">Cancelar</button>
       <button type="button" class="form-submit form-submit-purple" id="rec-decline-confirm" onclick="recCandConfirmDecline()">Confirmar declinación</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-rec-hire-confirm" class="modal-overlay rec-modal-glass rec-iv-overlay hidden" onclick="recHireConfirmBackdrop(event)">
+  <div class="modal-card rec-iv-dialog rec-process-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-hire-confirm-title" onclick="event.stopPropagation()">
+    <div class="rec-iv-head">
+      <h2 id="rec-hire-confirm-title" class="rec-iv-title modal-title" style="font-size:18px;margin:0;">Confirmar contratación</h2>
+      <button type="button" class="rec-iv-close modal-close" onclick="recHireConfirmCancel()" aria-label="Cerrar">×</button>
+    </div>
+    <p id="rec-hire-confirm-copy" class="rec-iv-confirm" style="margin-top:12px;"></p>
+    <label class="rec-iv-label form-label" for="rec-hire-confirm-date">Fecha de ingreso</label>
+    <label class="rec-iv-field" style="margin-top:0;">
+      <span aria-hidden="true">📅</span>
+      <input type="date" id="rec-hire-confirm-date" class="form-input" required aria-label="Fecha de ingreso">
+    </label>
+    <p id="rec-hire-confirm-err" class="rec-iv-error" role="alert" tabindex="-1"></p>
+    <div class="rec-iv-form-actions rec-process-actions">
+      <button type="button" class="rec-iv-btn rec-stages-ghost-btn" id="rec-hire-confirm-cancel" onclick="recHireConfirmCancel()">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-hire-confirm-submit" onclick="recHireConfirmSubmit()">Confirmar contratación</button>
     </div>
   </div>
 </div>
@@ -11599,7 +11627,7 @@ function recKanbanRender(vacancyId){
     const dragAttr=virtual?'':' ondragover="recKanbanColDragOver(event)" ondragleave="recKanbanColDragLeave(event)" ondrop="recKanbanColDrop(event)"';
     const collapseLabel=collapsed?'Expandir etapa':'Contraer etapa';
     const colTip=stageName+' · '+colApps.length+' candidatos';
-    html+='<div class="'+colCls+'" data-stage-id="'+tcEsc(sid)+'"'+dragAttr+
+    html+='<div class="'+colCls+'" data-stage-id="'+tcEsc(sid)+'" data-stage-key="'+tcEsc(stage.key||'')+'"'+dragAttr+
       (collapsed?' aria-label="'+tcEsc(colTip)+'" title="'+tcEsc(colTip)+'"':'')+'>'+
       '<div class="rec-kanban-col-head">'+
       '<div class="rec-kanban-col-head-main">'+
@@ -11853,6 +11881,7 @@ async function recKanbanColDrop(ev){
   const st=recEnsureState();
   const col=ev.currentTarget.closest('.rec-kanban-col');
   const targetStageId=col&&col.getAttribute('data-stage-id');
+  const targetStageKey=col&&(col.getAttribute('data-stage-key')||'');
   if(col) col.classList.remove('rec-kanban-col--over');
   if(col&&col.classList.contains('rec-kanban-col--collapsed')) return;
   const appId=(ev.dataTransfer&&ev.dataTransfer.getData('text/plain'))||st.kanbanDragAppId;
@@ -11861,12 +11890,34 @@ async function recKanbanColDrop(ev){
   const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
   const fromStageId=app&&(app.stageId||(app.stage&&app.stage.id));
   if(!app||String(fromStageId)===String(targetStageId)) return;
+  if(targetStageKey==='HIRED'){
+    const cand=app.candidate||{};
+    const vacTitle=(st.vacancies||[]).find(function(v){ return v.id===st.selectedId; });
+    recHireConfirmOpen({
+      source:'kanban',
+      applicationId:appId,
+      fromStageId:fromStageId,
+      targetStageId:targetStageId,
+      candidateId:app.candidateId||cand.id,
+      candidateName:cand.fullName||'el candidato',
+      vacancyTitle:(vacTitle&&vacTitle.title)||'la vacante',
+      vacancyId:st.selectedId,
+    });
+    return;
+  }
+  await recKanbanCommitStageMove(appId, fromStageId, targetStageId, col);
+}
+async function recKanbanCommitStageMove(appId, fromStageId, targetStageId, toCol, extraBody){
+  const st=recEnsureState();
+  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
+  if(!app) return null;
   const card=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+appId+'"]');
-  if(!card) return;
+  if(!card) return null;
   const vacancyId=st.selectedId;
   const candidateId=app.candidateId||(app.candidate&&app.candidate.id);
   const fromCol=recKanbanFindCol(fromStageId)||card.closest('.rec-kanban-col');
-  const toCol=col;
+  toCol=toCol||recKanbanFindCol(targetStageId);
+  if(!toCol) return null;
   if(!st.kanbanPendingMoves) st.kanbanPendingMoves={};
   st.kanbanEpoch=(st.kanbanEpoch||0)+1;
   const moveEpoch=st.kanbanEpoch;
@@ -11877,12 +11928,13 @@ async function recKanbanColDrop(ev){
   recKanbanMoveCardInDom(card,fromCol,toCol,{ animate:true });
   recKanbanSyncColCounts(fromCol);
   recKanbanSyncColCounts(toCol);
+  const payload=Object.assign({ stageId:targetStageId }, extraBody||{});
   try{
     const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
       method:'PATCH',
-      body:JSON.stringify({ stageId:targetStageId }),
+      body:JSON.stringify(payload),
     });
-    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return;
+    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return out;
     if(out&&out.application){
       Object.assign(app,out.application);
       recKanbanUpdateCardFoot(card,app);
@@ -11901,14 +11953,16 @@ async function recKanbanColDrop(ev){
     if(st.detailCandidateId===candidateId) recCandMarkPipelineDirty();
     recKanbanSilentReconcile(vacancyId, moveEpoch);
     await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
-  }catch(_e){
-    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return;
+    return out;
+  }catch(e){
+    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) throw e;
     app.stageId=fromStageId;
     if(app.stage) app.stage.id=fromStageId;
     recKanbanMoveCardInDom(card,toCol,fromCol,{ animate:false });
     recKanbanSyncColCounts(fromCol);
     recKanbanSyncColCounts(toCol);
-    recKanbanSetErr('No se pudo cambiar la etapa. Intenta nuevamente.');
+    recKanbanSetErr((e&&e.message)||'No se pudo cambiar la etapa. Intenta nuevamente.');
+    throw e;
   }finally{
     if(st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]===moveEpoch) delete st.kanbanPendingMoves[appId];
     card.classList.remove('rec-kanban-card--pending');
@@ -13448,7 +13502,7 @@ function recCandFillHeroStageSelect(selectEl,stageRows,currentStageId){
   selectEl.innerHTML=stageRows.map(function(vs){
     const st=vs.stage||{};
     const sid=st.id||vs.stageId;
-    return '<option value="'+tcEsc(sid)+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
+    return '<option value="'+tcEsc(sid)+'" data-stage-key="'+tcEsc(st.key||'')+'">'+tcEsc(st.name||st.key||'Etapa')+'</option>';
   }).join('');
   if(currentStageId){
     selectEl.value=currentStageId;
@@ -13466,17 +13520,44 @@ async function recCandChangePrimaryStage(selectEl){
     selectEl.value=prev;
     return;
   }
+  const opt=selectEl.options[selectEl.selectedIndex];
+  const newKey=opt?(opt.getAttribute('data-stage-key')||''):'';
+  if(newKey==='HIRED'){
+    selectEl.value=prev;
+    const cand=st.detailCandidate||{};
+    const vac=app.vacancy||{};
+    recHireConfirmOpen({
+      source:'detail',
+      applicationId:recCandGetAppId(app),
+      fromStageId:prev,
+      targetStageId:newStageId,
+      candidateId:st.detailCandidateId,
+      candidateName:cand.fullName||'el candidato',
+      vacancyTitle:vac.title||'la vacante',
+      vacancyId:vac.id||null,
+      selectEl:selectEl,
+    });
+    return;
+  }
+  await recCandCommitPrimaryStage(selectEl, newStageId, prev, null);
+}
+async function recCandCommitPrimaryStage(selectEl, newStageId, prev, extraBody){
+  const st=recEnsureState();
+  const app=st.detailPrimaryApplication;
+  if(!app||!selectEl) return null;
   const appId=recCandGetAppId(app);
   const vacId=app.vacancy&&app.vacancy.id;
   const candidateId=st.detailCandidateId;
   selectEl.disabled=true;
   recCandSetOpErr('');
   try{
-    await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
+    const payload=Object.assign({ stageId:newStageId }, extraBody||{});
+    const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId),{
       method:'PATCH',
-      body:JSON.stringify({ stageId:newStageId }),
+      body:JSON.stringify(payload),
     });
     selectEl.setAttribute('data-prev',newStageId);
+    selectEl.value=newStageId;
     recCandMarkPipelineDirty();
     if(vacId) await recKanbanRefreshRelated(vacId,candidateId);
     else if(candidateId){
@@ -13484,9 +13565,11 @@ async function recCandChangePrimaryStage(selectEl){
       st.detailCandidate=c;
       await recCandRenderDetail(c,false);
     }
+    return out;
   }catch(e){
     selectEl.value=prev;
     recCandSetOpErr((e&&e.message)||'No se pudo cambiar la etapa.');
+    throw e;
   }finally{
     selectEl.disabled=false;
   }
@@ -14361,11 +14444,103 @@ function recCandHistoryAsideHtml(closedApps){
         '</div></div>'+
         (period?'<p class="rec-cand-history-period">'+tcEsc(period)+'</p>':'')+
         (stageName?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
+        (sk==='HIRED'?recCandEmploymentStartHtml(a):'')+
         (reasonLabel?'<p class="rec-cand-history-reason">'+tcEsc(reasonLabel)+'</p>':'')+
         (note?'<p class="rec-cand-history-note" title="'+tcEsc(note)+'">'+tcEsc(note)+'</p>':'')+
         recCandInterviewsBlockHtml(a,{ readonly:true })+
         '</div>';
     }).join('');
+}
+function recCandFmtEmploymentStart(dateKey){
+  if(!dateKey) return '';
+  const m=String(dateKey).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return '';
+  const dt=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),12,0,0));
+  if(Number.isNaN(dt.getTime())) return '';
+  return dt.toLocaleDateString('es-MX',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'});
+}
+function recCandEmploymentStartHtml(a){
+  const appId=recCandGetAppId(a);
+  const safeId=String(appId||'').replace(/[^a-zA-Z0-9_-]/g,'');
+  const raw=a&&a.employmentStartDate?String(a.employmentStartDate).slice(0,10):'';
+  const label=raw?recCandFmtEmploymentStart(raw):'Sin registrar';
+  return '<div class="rec-hire-start-block" data-app-id="'+tcEsc(appId)+'" id="rec-hire-start-'+safeId+'">'+
+    '<div class="rec-hire-start-row" data-hire-start-view="1">'+
+    '<span class="rec-hire-start-label">Fecha de ingreso</span>'+
+    '<span class="rec-hire-start-value" data-hire-start-value="1">'+tcEsc(label)+'</span>'+
+    '<button type="button" class="rec-hire-start-edit" onclick="recCandEditEmploymentStart(\''+tcEsc(appId)+'\')">Editar fecha de ingreso</button>'+
+    '</div></div>';
+}
+function recCandEditEmploymentStart(applicationId){
+  const host=recCandHireStartHost(applicationId);
+  if(!host) return;
+  const st=recEnsureState();
+  const apps=((st.detailCandidate&&st.detailCandidate.applications)||[]);
+  const app=apps.find(function(a){ return recCandGetAppId(a)===applicationId; });
+  if(!app||recCandAppStageKey(app)!=='HIRED') return;
+  const current=app.employmentStartDate?String(app.employmentStartDate).slice(0,10):'';
+  const preset=current||recOrgTodayYmd();
+  host.innerHTML='<form class="rec-hire-start-form" onsubmit="return recCandSaveEmploymentStart(event,\''+tcEsc(applicationId)+'\')">'+
+    '<label class="rec-hire-start-label" for="rec-hire-start-input-'+tcEsc(applicationId)+'">Fecha de ingreso</label>'+
+    '<input type="date" class="form-input" id="rec-hire-start-input-'+tcEsc(applicationId)+'" value="'+tcEsc(preset)+'" required>'+
+    '<button type="submit" class="rec-iv-btn rec-iv-btn--ok" data-hire-save="1">Guardar</button>'+
+    '<button type="button" class="rec-iv-btn" onclick="recCandCancelEmploymentStartEdit(\''+tcEsc(applicationId)+'\')">Cancelar</button>'+
+    '<p class="rec-iv-error" data-hire-err="1" role="alert"></p></form>';
+  const input=host.querySelector('input[type="date"]');
+  if(input) input.focus();
+}
+function recCandHireStartHost(applicationId){
+  const blocks=document.querySelectorAll('.rec-hire-start-block');
+  for(let i=0;i<blocks.length;i++){
+    if(blocks[i].getAttribute('data-app-id')===String(applicationId)) return blocks[i];
+  }
+  return null;
+}
+function recCandCancelEmploymentStartEdit(applicationId){
+  const st=recEnsureState();
+  const apps=((st.detailCandidate&&st.detailCandidate.applications)||[]);
+  const app=apps.find(function(a){ return recCandGetAppId(a)===applicationId; });
+  const host=recCandHireStartHost(applicationId);
+  if(!host||!app) return;
+  host.outerHTML=recCandEmploymentStartHtml(app);
+}
+async function recCandSaveEmploymentStart(ev, applicationId){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const host=recCandHireStartHost(applicationId);
+  if(!host) return false;
+  const input=host.querySelector('input[type="date"]');
+  const errEl=host.querySelector('[data-hire-err]');
+  const saveBtn=host.querySelector('[data-hire-save]');
+  const date=(input&&input.value||'').trim();
+  if(errEl) errEl.textContent='';
+  if(!date){
+    if(errEl) errEl.textContent='Indica una fecha de ingreso.';
+    return false;
+  }
+  if(saveBtn&&saveBtn.dataset.recBusy==='1') return false;
+  if(saveBtn){ saveBtn.dataset.recBusy='1'; saveBtn.disabled=true; }
+  try{
+    const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId),{
+      method:'PATCH',
+      body:JSON.stringify({ employmentStartDate:date }),
+    });
+    const st=recEnsureState();
+    const cand=st.detailCandidate;
+    if(cand&&cand.applications){
+      cand.applications=cand.applications.map(function(a){
+        if(recCandGetAppId(a)!==applicationId) return a;
+        return Object.assign({}, a, {
+          employmentStartDate:(out&&out.application&&out.application.employmentStartDate)||date,
+        });
+      });
+    }
+    const app=(cand&&cand.applications||[]).find(function(a){ return recCandGetAppId(a)===applicationId; });
+    if(host&&app) host.outerHTML=recCandEmploymentStartHtml(app);
+  }catch(e){
+    if(errEl) errEl.textContent=(e&&e.message)||'No se pudo guardar la fecha.';
+    if(saveBtn){ saveBtn.disabled=false; saveBtn.dataset.recBusy='0'; }
+  }
+  return false;
 }
 function recCandToggleAsidePanel(btn){
   const panel=document.getElementById('rec-cand-aside-panel');
@@ -14488,7 +14663,10 @@ async function recCandEnsureVacancyPickerOptions(selectEl){
 async function recCandLoadEnabledStagesForVacancy(vacancyId){
   if(!vacancyId) return [];
   const j=await recCandFormRecApiJson('/vacancies/'+encodeURIComponent(vacancyId)+'/stages');
-  const rows=(j.vacancyStages||j.config?.vacancyStages||[]).filter(function(vs){ return vs.isEnabled!==false; });
+  let rows=(j.vacancyStages||j.config?.vacancyStages||[]).filter(function(vs){ return vs.isEnabled!==false; });
+  if(recCandFormIsWorkforce()){
+    rows=rows.filter(function(vs){ return (vs.stage&&vs.stage.key)!=='HIRED'; });
+  }
   rows.sort(function(a,b){ return (a.position||0)-(b.position||0); });
   return rows;
 }
@@ -14523,13 +14701,14 @@ async function recCandFormVacancyChanged(vacancyId){
     recCandFormSyncInterviewVisibility();
   }
 }
-async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFields){
+async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFields,employmentStartDate){
   const body={ candidateId:candidateId };
   if(stageId) body.stageId=stageId;
   if(interviewFields){
     body.interviewDate=interviewFields.interviewDate;
     body.interviewTime=interviewFields.interviewTime;
   }
+  if(employmentStartDate) body.employmentStartDate=employmentStartDate;
   return recCandFormRecApiJson('/vacancies/'+encodeURIComponent(vacancyId)+'/applications',{
     method:'POST',
     body:JSON.stringify(body),
@@ -16389,6 +16568,7 @@ function recCandApiCandidateCreateBody(body){
   if(note) o.notes=note;
   if(body._vacancyId) o.vacancyId=body._vacancyId;
   if(body._stageId) o.stageId=body._stageId;
+  if(body._employmentStartDate) o.employmentStartDate=body._employmentStartDate;
   const iv=body._interview;
   if(iv){
     o.interviewDate=iv.interviewDate;
@@ -16475,6 +16655,18 @@ async function recCandSubmitForm(){
         recCandShowDupeModal(dup.candidates||[]);
         return;
       }
+    }
+    if(!recCandFormIsWorkforce()&&body._vacancyId&&recCandFormGetSelectedStageKey()==='HIRED'&&!body._employmentStartDate){
+      const vacSel=document.getElementById('rec-cand-form-vacancy');
+      const vacOpt=vacSel&&vacSel.options[vacSel.selectedIndex];
+      recHireConfirmOpen({
+        source:'create',
+        body:body,
+        candidateName:body.fullName||'el candidato',
+        vacancyTitle:(vacOpt&&vacOpt.textContent)||'la vacante',
+        targetStageId:body._stageId,
+      });
+      return;
     }
     try{
       if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
@@ -17815,9 +18007,10 @@ async function recCandSubmitAddVacancy(){
   const ui=recCandSyncAddVacancyParticipationUi();
   if(!ui.ok) return;
   if(ui.reapply&&!window.confirm(recCandReapplyConfirmMessage(ui.priorKind))) return;
-  if(btn) btn.disabled=true;
-  try{
-    await recCandAssignToVacancy(candidateId,vacId,stageId||null);
+  const stageSel=document.getElementById('rec-cand-add-vac-stage');
+  const stageOpt=stageSel&&stageSel.options[stageSel.selectedIndex];
+  const stageKey=stageOpt?(stageOpt.getAttribute('data-stage-key')||''):'';
+  const afterAssign=async function(){
     closeModal('modal-rec-candidate-add-vacancy');
     const c=await recCandFetchDetail(candidateId);
     st.detailCandidate=c;
@@ -17825,6 +18018,25 @@ async function recCandSubmitAddVacancy(){
     recCandMarkPipelineDirty();
     await recCandLoadList(false);
     if(st.selectedId===vacId&&st.moduleTab!=='candidates') recKanbanLoad(vacId);
+  };
+  if(stageKey==='HIRED'){
+    const cand=st.detailCandidate||{};
+    const vacOpt=document.querySelector('#rec-cand-add-vac-select option:checked');
+    recHireConfirmOpen({
+      source:'assign',
+      candidateId:candidateId,
+      vacancyId:vacId,
+      targetStageId:stageId||null,
+      candidateName:cand.fullName||'el candidato',
+      vacancyTitle:(vacOpt&&vacOpt.textContent)||'la vacante',
+      afterAssign:afterAssign,
+    });
+    return;
+  }
+  if(btn) btn.disabled=true;
+  try{
+    await recCandAssignToVacancy(candidateId,vacId,stageId||null);
+    await afterAssign();
   }catch(e){
     if(err){ err.textContent=(e&&e.message)||'No se pudo crear la postulación.'; err.classList.remove('hidden'); }
   }finally{
@@ -17835,6 +18047,12 @@ let recDeclineReturnFocus=null;
 let recDeclineEpoch=0;
 document.addEventListener('keydown',function(ev){
   if(ev.key!=='Escape') return;
+  const hireModal=document.getElementById('modal-rec-hire-confirm');
+  if(hireModal&&!hireModal.classList.contains('hidden')){
+    ev.stopImmediatePropagation();
+    recHireConfirmCancel();
+    return;
+  }
   const modal=document.getElementById('modal-rec-decline');
   if(!modal||modal.classList.contains('hidden')) return;
   ev.stopImmediatePropagation();
@@ -17859,6 +18077,101 @@ function recCandDeclineReasonChanged(){
     note.setAttribute('aria-required', other?'true':'false');
   }
   if(!other&&note) note.value='';
+}
+function recOrgTodayYmd(){
+  const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
+  return new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function recHireConfirmBackdrop(ev){
+  if(ev&&ev.target&&ev.target.id==='modal-rec-hire-confirm') recHireConfirmCancel();
+}
+function recHireConfirmCancel(){
+  const st=recEnsureState();
+  const pending=st.hireConfirmPending;
+  st.hireConfirmPending=null;
+  st.hireConfirmDateDraft=null;
+  closeModal('modal-rec-hire-confirm');
+  if(pending&&pending.source==='detail'&&pending.selectEl){
+    const prev=pending.fromStageId||'';
+    if(prev) pending.selectEl.value=prev;
+  }
+}
+async function recHireConfirmOpen(opts){
+  const st=recEnsureState();
+  await recEnsureRecruitmentOrgTimeZone();
+  const draft=st.hireConfirmDateDraft;
+  st.hireConfirmPending=opts||null;
+  const copy=document.getElementById('rec-hire-confirm-copy');
+  const dateEl=document.getElementById('rec-hire-confirm-date');
+  const errEl=document.getElementById('rec-hire-confirm-err');
+  const submit=document.getElementById('rec-hire-confirm-submit');
+  const name=(opts&&opts.candidateName)||'el candidato';
+  const vac=(opts&&opts.vacancyTitle)||'la vacante';
+  if(copy) copy.textContent='¿Confirmas que '+name+' fue contratado para '+vac+'?';
+  if(errEl) errEl.textContent='';
+  if(dateEl){
+    dateEl.value=draft||recOrgTodayYmd();
+    dateEl.max=recOrgTodayYmd();
+  }
+  if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
+  openModal('modal-rec-hire-confirm');
+  if(dateEl) dateEl.focus();
+}
+async function recHireConfirmSubmit(){
+  const st=recEnsureState();
+  const pending=st.hireConfirmPending;
+  const submit=document.getElementById('rec-hire-confirm-submit');
+  const dateEl=document.getElementById('rec-hire-confirm-date');
+  const errEl=document.getElementById('rec-hire-confirm-err');
+  if(!pending) return;
+  if(submit&&submit.dataset.recBusy==='1') return;
+  const date=(dateEl&&dateEl.value||'').trim();
+  st.hireConfirmDateDraft=date||null;
+  if(errEl) errEl.textContent='';
+  if(!date){
+    if(errEl) errEl.textContent='Indica la fecha de ingreso.';
+    return;
+  }
+  if(submit){ submit.dataset.recBusy='1'; submit.disabled=true; }
+  try{
+    if(pending.source==='kanban'){
+      await recKanbanCommitStageMove(
+        pending.applicationId,
+        pending.fromStageId,
+        pending.targetStageId,
+        null,
+        { employmentStartDate:date },
+      );
+    }else if(pending.source==='detail'){
+      const selectEl=pending.selectEl||document.getElementById('rec-cand-hero-stage-select');
+      await recCandCommitPrimaryStage(
+        selectEl,
+        pending.targetStageId,
+        pending.fromStageId,
+        { employmentStartDate:date },
+      );
+    }else if(pending.source==='assign'){
+      await recCandAssignToVacancy(
+        pending.candidateId,
+        pending.vacancyId,
+        pending.targetStageId,
+        pending.interview||null,
+        date,
+      );
+      if(pending.afterAssign) await pending.afterAssign();
+    }else if(pending.source==='create'){
+      const body=pending.body||{};
+      body._employmentStartDate=date;
+      if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
+      else await recCandCreateAndOpen(body);
+    }
+    st.hireConfirmPending=null;
+    st.hireConfirmDateDraft=null;
+    closeModal('modal-rec-hire-confirm');
+  }catch(e){
+    if(errEl) errEl.textContent=(e&&e.message)||'No se pudo confirmar la contratación.';
+    if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
+  }
 }
 function recCandCloseDecline(){
   closeModal('modal-rec-decline');

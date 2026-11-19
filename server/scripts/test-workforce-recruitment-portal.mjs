@@ -71,6 +71,10 @@ check(/listActiveVacanciesForWorkforcePortal/.test(portalSvc), 'solo vacantes AC
 check(/status !== 'ACTIVE'/.test(portalSvc), 'rechaza vacante no activa');
 check(/registeredByWorkforceEmployeeId: workforceEmployeeId/.test(portalSvc), 'creador desde employee sesión');
 check(/allowDuplicate:\s*allowDuplicate === true/.test(portalSvc), 'portal allowDuplicate estricto');
+check(!/employmentStartDate/.test(portalSvc), 'portal no acepta ni reenvía fecha de ingreso');
+check(!/employmentStartDate/.test(publicRoutes.match(/vacancies\/:vacancyId\/applications[\s\S]{0,800}/)?.[0] || ''), 'attach portal sin employmentStartDate');
+check(/stage\?\.key !== 'HIRED'/.test(portalSvc), 'portal no lista etapa HIRED');
+check(/Solo un administrador puede registrar una contratación/.test(portalSvc), 'portal rechaza contratar');
 check(/attachExistingCandidateToVacancyForWorkforcePortal/.test(portalSvc), 'portal asigna ficha existente');
 check(/Registrar persona distinta/.test(indexHtml), 'portal comparte copy persona distinta');
 check(/Usar candidato existente/.test(indexHtml), 'portal comparte usar existente');
