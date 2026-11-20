@@ -8,12 +8,66 @@ import {
   CLOSED_PROCESS_STAGE_MESSAGE,
   classifyRecruitmentApplication,
 } from './recruitmentProcessClosure.service.js';
+import { emitWorkforceRecruitmentNovedadForInterviewNoShow } from './workforceRecruitmentNovedad.service.js';
+import { parkApplicationAfterInterviewNoShow } from './recruitmentInterviewNoShowPark.service.js';
 
 export const RECRUITMENT_APPLICATION_INTERVIEW_EVENT_TYPES = new Set([
   'ATTENDED',
   'NO_SHOW',
   'RESCHEDULED',
 ]);
+
+/**
+ * Tras un NO_SHOW nuevo: aparca si aplica, luego emite aviso (misma TX).
+ * P2002 de dedupe no falla; sin destinatario el resultado y el park quedan.
+ */
+async function afterInterviewNoShowConfirmed(tx, {
+  organizationId,
+  applicationId,
+  interviewStageId,
+  scheduledAt,
+  scheduledTimeSpecified,
+  interviewEventId = null,
+  changedByUserId = null,
+}) {
+  if (!scheduledAt || !interviewEventId) return { parked: false };
+  const park = await parkApplicationAfterInterviewNoShow(tx, {
+    organizationId,
+    applicationId,
+    interviewStageId,
+    interviewEventId,
+    changedByUserId,
+  });
+  await emitWorkforceRecruitmentNovedadForInterviewNoShow(tx, {
+    organizationId,
+    applicationId,
+    scheduledAt,
+    scheduledTimeSpecified: scheduledTimeSpecified !== false,
+    interviewEventId,
+  });
+  return park;
+}
+
+/** Tras un NO_SHOW nuevo (no alreadyApplied): park + aviso en la misma TX. */
+async function emitNoShowNovedadIfNeeded(tx, app, type, result, changedByUserId = null) {
+  if (type !== 'NO_SHOW' || !result || result.alreadyApplied) return result;
+  const interview = result.interview;
+  if (!interview?.scheduledAt) return result;
+  const scheduledAt =
+    interview.scheduledAt instanceof Date
+      ? interview.scheduledAt
+      : new Date(interview.scheduledAt);
+  await afterInterviewNoShowConfirmed(tx, {
+    organizationId: app.organizationId,
+    applicationId: app.id,
+    interviewStageId: interview.stageId || app.stageId,
+    scheduledAt,
+    scheduledTimeSpecified: interview.scheduledTimeSpecified !== false,
+    interviewEventId: interview.id || null,
+    changedByUserId,
+  });
+  return result;
+}
 
 export const INTERVIEW_EVENT_STALE_MESSAGE =
   'La entrevista cambió mientras realizabas esta acción. Actualiza e inténtalo nuevamente.';
@@ -318,19 +372,64 @@ export async function recordRecruitmentApplicationInterviewEvent({
           interviewTimeSpecified: true,
         },
       });
-      const event = await tx.recruitmentApplicationInterviewEvent.create({
-        data: {
+      // Misma identidad canónica que /interviews/:id/actions: actualizar SCHEDULED in-place.
+      // Si ya hay resultado en ese slot, no crear otra fila ni re-emitir aviso.
+      const scheduledRow = await findScheduledSlot(
+        tx,
+        organizationId,
+        applicationId,
+        scheduledAt,
+        scheduledTimeSpecified,
+      );
+      const existingResult = scheduledRow
+        ? null
+        : await tx.recruitmentApplicationInterviewEvent.findFirst({
+            where: {
+              organizationId,
+              applicationId,
+              eventType: type,
+              scheduledAt,
+              scheduledTimeSpecified,
+            },
+            include: eventInclude,
+          });
+      let event;
+      let alreadyApplied = false;
+      if (existingResult) {
+        event = existingResult;
+        alreadyApplied = true;
+      } else if (scheduledRow) {
+        event = await tx.recruitmentApplicationInterviewEvent.update({
+          where: { id: scheduledRow.id },
+          data: { eventType: type },
+          include: eventInclude,
+        });
+      } else {
+        event = await tx.recruitmentApplicationInterviewEvent.create({
+          data: {
+            organizationId,
+            applicationId,
+            stageId,
+            eventType: type,
+            scheduledAt,
+            scheduledTimeSpecified,
+            createdByUserId,
+          },
+          include: eventInclude,
+        });
+      }
+      await recalculateInterviewScheduledAt(tx, { ...app, interviewScheduledAt: null }, new Date(), createdByUserId);
+      if (type === 'NO_SHOW' && !alreadyApplied) {
+        await afterInterviewNoShowConfirmed(tx, {
           organizationId,
           applicationId,
-          stageId,
-          eventType: type,
+          interviewStageId: stageId,
           scheduledAt,
           scheduledTimeSpecified,
-          createdByUserId,
-        },
-        include: eventInclude,
-      });
-      await recalculateInterviewScheduledAt(tx, { ...app, interviewScheduledAt: null }, new Date(), createdByUserId);
+          interviewEventId: event.id,
+          changedByUserId: createdByUserId,
+        });
+      }
       const updated = await tx.recruitmentApplication.findFirst({
         where: { id: applicationId, organizationId },
         include: applicationInclude,
@@ -338,6 +437,7 @@ export async function recordRecruitmentApplicationInterviewEvent({
       return {
         event: serializeRecruitmentApplicationInterviewEvent(event),
         application: serializeApplicationPatch(updated),
+        alreadyApplied,
       };
     }
 
@@ -944,7 +1044,10 @@ async function applyLegacyInterviewAction(tx, app, {
     include: eventInclude,
   });
   await recalculateInterviewScheduledAt(tx, app, now, createdByUserId);
-  return { interview: serializeRecruitmentApplicationInterviewEvent(created), alreadyApplied: false };
+  return emitNoShowNovedadIfNeeded(tx, app, type, {
+    interview: serializeRecruitmentApplicationInterviewEvent(created),
+    alreadyApplied: false,
+  }, createdByUserId);
 }
 
 async function updateMatchedInterview(tx, app, event, {
@@ -1013,7 +1116,10 @@ async function updateMatchedInterview(tx, app, event, {
     include: eventInclude,
   });
   await recalculateInterviewScheduledAt(tx, app, now, createdByUserId);
-  return { interview: serializeRecruitmentApplicationInterviewEvent(updated), alreadyApplied: false };
+  return emitNoShowNovedadIfNeeded(tx, app, type, {
+    interview: serializeRecruitmentApplicationInterviewEvent(updated),
+    alreadyApplied: false,
+  }, createdByUserId);
 }
 
 export async function updateRecruitmentApplicationInterview({
@@ -1111,7 +1217,10 @@ export async function updateRecruitmentApplicationInterview({
       include: eventInclude,
     });
     await recalculateInterviewScheduledAt(tx, app, now, createdByUserId);
-    return { interview: serializeRecruitmentApplicationInterviewEvent(updated), alreadyApplied: false };
+    return emitNoShowNovedadIfNeeded(tx, app, type, {
+      interview: serializeRecruitmentApplicationInterviewEvent(updated),
+      alreadyApplied: false,
+    }, createdByUserId);
   });
   return runInterviewWrite(run);
 }

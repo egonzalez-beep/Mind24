@@ -238,7 +238,9 @@ check(routesSrc.includes(".strict()"), 'el alta de entrevista rechaza campos aje
 check(routesSrc.includes("z.enum(['ATTENDED', 'NO_SHOW', 'CANCELLED', 'RESCHEDULED', 'COMMENT', 'EDIT'])"), 'las acciones son un estado canónico');
 check(indexHtml.includes("form.dataset.pending==='1'"), 'Guardar queda deshabilitado mientras la petición sigue en curso');
 check(!/\/interviews/.test(publicRoutes), 'el portal público no escribe entrevistas');
-check(!/novedad|setInterval|recordatorio/i.test(interviewSrc), 'esta fase no crea avisos ni un scheduler de recordatorios');
+check(/afterInterviewNoShowConfirmed/.test(interviewSrc), 'NO_SHOW park+aviso al colaborador');
+check(/parkApplicationAfterInterviewNoShow/.test(interviewSrc), 'NO_SHOW mueve a cartera');
+check(!/setInterval|recordatorio/i.test(interviewSrc), 'sin scheduler de recordatorios de entrevista');
 check(migration.includes("ADD VALUE 'SCHEDULED'") && migration.includes("ADD VALUE 'CANCELLED'"), 'la migración agrega los estados');
 check(!migration.includes('CREATE UNIQUE INDEX') && !/\b(UPDATE|INSERT|WHERE|DEFAULT)\b/i.test(migration), 'la primera migración no crea el índice ni usa el valor nuevo');
 check(slotMigration.includes('CREATE UNIQUE INDEX "RecruitmentApplicationInterviewEvent_one_scheduled_slot"'), 'el horario Programada no se duplica');
@@ -1452,7 +1454,8 @@ if (!executablePath) {
     host.querySelector('.rec-cand-interviews-toggle').click();
     const history = host.querySelector('.rec-cand-interview-row--history');
     history.click();
-    const dialogText = document.querySelector('.rec-iv-dialog').textContent;
+    // Scope al overlay de entrevistas: el modal de contratación también usa .rec-iv-dialog.
+    const dialogText = document.querySelector('#rec-iv-overlay .rec-iv-dialog').textContent;
     const scheduled = host.querySelector('.rec-cand-interview-status--scheduled');
     return {
       count: host.textContent.includes('Entrevistas · 1'),
@@ -1483,7 +1486,7 @@ if (!executablePath) {
     host.querySelector('.rec-cand-interviews-toggle').click();
     const rows = [...host.querySelectorAll('.rec-cand-interview-row')];
     rows[1].click();
-    const safeDialog = document.querySelector('.rec-iv-dialog');
+    const safeDialog = document.querySelector('#rec-iv-overlay .rec-iv-dialog');
     const safeText = safeDialog.textContent.includes('alert(1)');
     const safeEscaped = safeDialog.innerHTML.includes('&lt;script');
     const safeScripts = document.querySelectorAll('#rec-iv-overlay script').length;
@@ -1527,7 +1530,7 @@ if (!executablePath) {
     rows[1].click();
     release({});
     await pending;
-    const dialog = document.querySelector('.rec-iv-dialog');
+    const dialog = document.querySelector('#rec-iv-overlay .rec-iv-dialog');
     return {
       safeText: safeText && safeEscaped,
       safeScripts,

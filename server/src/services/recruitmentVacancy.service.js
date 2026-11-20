@@ -4,7 +4,10 @@ import {
   listEnabledVacancyStagesForDistribution,
   seedVacancyStagesFromOrganizationCatalog,
 } from './recruitmentVacancyStage.service.js';
-import { classifyRecruitmentApplication } from './recruitmentProcessClosure.service.js';
+import {
+  classifyRecruitmentApplication,
+  isRecruitmentApplicationInActiveVacancyQueue,
+} from './recruitmentProcessClosure.service.js';
 import {
   countDistinctHiredCandidates,
   planVacancyCoverageUpdate,
@@ -33,7 +36,9 @@ function summarizeApplications(applications, now = new Date()) {
     }
     if (kind === 'active' && key === 'FINALIST') summary.finalists += 1;
     if (kind === 'rejected') summary.rejected += 1;
-    if (kind === 'active') summary.inProcess += 1;
+    if (isRecruitmentApplicationInActiveVacancyQueue(key, app.closureOutcome)) {
+      summary.inProcess += 1;
+    }
   }
   return summary;
 }

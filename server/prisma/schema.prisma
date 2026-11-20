@@ -87,6 +87,7 @@ enum WorkforceRecruitmentNovedadEventType {
   HIRED
   REJECTED
   DECLINED
+  INTERVIEW_NO_SHOW
 }
 
 enum RecruitmentApplicationClosureOutcome {
@@ -929,6 +930,7 @@ model RecruitmentStage {
   stageEventsFrom     RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventFrom")
   stageEventsTo       RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventTo")
   interviewEvents     RecruitmentApplicationInterviewEvent[]
+  interviewNoShowReturnFor RecruitmentApplication[] @relation("RecruitmentApplicationInterviewNoShowFrom")
   workforceRecruitmentNovedadesFrom WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadFromStage")
   workforceRecruitmentNovedadesTo   WorkforceRecruitmentNovedad[] @relation("WorkforceRecruitmentNovedadToStage")
   orgNotifications OrgNotification[]
@@ -958,6 +960,12 @@ model RecruitmentApplication {
   hiredStageEnteredAt DateTime? @db.Timestamptz(6)
   /// Día calendario de ingreso laboral (AAAA-MM-DD). Distinto de hiredStageEnteredAt.
   employmentStartDate DateTime? @db.Date
+  /// Etapa de entrevista de origen al aparcar por NO_SHOW. Se limpia al recuperar.
+  interviewNoShowFromStageId String?
+  interviewNoShowFromStage   RecruitmentStage? @relation("RecruitmentApplicationInterviewNoShowFrom", fields: [interviewNoShowFromStageId], references: [id], onDelete: SetNull)
+  /// Evento NO_SHOW que provocó la estancia actual en cartera. Se limpia al recuperar.
+  interviewNoShowEventId String?
+  interviewNoShowEvent   RecruitmentApplicationInterviewEvent? @relation("RecruitmentApplicationInterviewNoShowEvent", fields: [interviewNoShowEventId], references: [id], onDelete: SetNull)
   /// Cierre del proceso, independiente del nombre visible de la etapa. No lo envía el cliente.
   closedAt       DateTime? @db.Timestamptz(6)
   closureOutcome RecruitmentApplicationClosureOutcome?
@@ -1016,6 +1024,7 @@ model RecruitmentApplicationInterviewEvent {
   createdByUserId            String
   createdBy                  User @relation("RecruitmentInterviewEventUser", fields: [createdByUserId], references: [id], onDelete: Restrict)
   createdAt                  DateTime @default(now())
+  parkStayFor                RecruitmentApplication[] @relation("RecruitmentApplicationInterviewNoShowEvent")
 
   @@index([applicationId, createdAt])
   @@index([organizationId])

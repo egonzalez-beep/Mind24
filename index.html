@@ -1214,13 +1214,18 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-kanban-col--sem-hired .rec-kanban-col-title{color:#0f766e;}
 .rec-kanban-col--sem-hired .rec-kanban-col-count{color:#0d9488;border-color:rgba(45,212,191,.42);}
 .rec-kanban-col--sem-hired .rec-kanban-col-icon-compact{color:#0d9488;}
+.rec-kanban-col--sem-noshow{background:rgba(255,251,235,.7);border-color:rgba(245,158,11,.28);box-shadow:inset 3px 0 0 rgba(245,158,11,.35);}
+.rec-kanban-col--sem-noshow .rec-kanban-col-title{color:#92400e;}
+.rec-kanban-col--sem-noshow .rec-kanban-col-count{color:#b45309;border-color:rgba(245,158,11,.4);}
+.rec-kanban-col--sem-noshow .rec-kanban-col-icon-compact{color:#d97706;}
 .rec-kanban-col--sem-rejected{background:rgba(255,247,247,.72);border-color:rgba(251,113,133,.32);box-shadow:inset 3px 0 0 rgba(244,63,94,.22);}
 .rec-kanban-col--sem-rejected .rec-kanban-col-title{color:#be123c;}
 .rec-kanban-col--sem-rejected .rec-kanban-col-count{color:#e11d48;border-color:rgba(251,113,133,.38);}
 .rec-kanban-col--sem-rejected .rec-kanban-col-icon-compact{color:#e11d48;}
-.rec-kanban-col--sem-finalist.rec-kanban-col--collapsed,.rec-kanban-col--sem-hired.rec-kanban-col--collapsed,.rec-kanban-col--sem-rejected.rec-kanban-col--collapsed{box-shadow:inset 0 0 0 1px rgba(15,23,42,.04);}
+.rec-kanban-col--sem-finalist.rec-kanban-col--collapsed,.rec-kanban-col--sem-hired.rec-kanban-col--collapsed,.rec-kanban-col--sem-noshow.rec-kanban-col--collapsed,.rec-kanban-col--sem-rejected.rec-kanban-col--collapsed{box-shadow:inset 0 0 0 1px rgba(15,23,42,.04);}
 .rec-kanban-col--sem-finalist.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(236,253,245,.55);border-color:rgba(110,231,183,.38);}
 .rec-kanban-col--sem-hired.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(240,253,250,.62);border-color:rgba(45,212,191,.36);}
+.rec-kanban-col--sem-noshow.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(255,251,235,.7);border-color:rgba(245,158,11,.28);}
 .rec-kanban-col--sem-rejected.rec-kanban-col--collapsed.rec-kanban-col--over{background:rgba(255,247,247,.72);border-color:rgba(251,113,133,.32);}
 .rec-kanban-col--sem-declined{background:rgba(255,251,235,.92);border-color:rgba(217,119,6,.28);box-shadow:inset 3px 0 0 rgba(180,83,9,.28);}
 .rec-kanban-col--sem-declined .rec-kanban-col-title{color:#92400e;}
@@ -2012,6 +2017,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-novedades-item--hired .tc-ws-novedades-item-msg{color:var(--primary);font-weight:600;}
 .tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
 .tc-ws-novedades-item--hired .tc-ws-novedades-item-time{color:var(--slate-500);}
+.tc-ws-novedades-item--noshow{background:rgba(255,251,235,.55);border-color:rgba(245,158,11,.14);box-shadow:inset 3px 0 0 rgba(245,158,11,.45);}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread{background:rgba(255,247,237,.75);border-color:rgba(245,158,11,.22);box-shadow:inset 3px 0 0 #f59e0b;}
+.tc-ws-novedades-item--noshow:hover{background:rgba(255,247,237,.9);}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--read{background:rgba(255,251,235,.35);border-color:rgba(245,158,11,.1);box-shadow:inset 3px 0 0 rgba(245,158,11,.28);}
+.tc-ws-novedades-item--noshow .tc-ws-novedades-item-dot{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.35);}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#d6d3d1;box-shadow:0 0 0 3px rgba(214,211,209,.4);}
+.tc-ws-novedades-item--noshow .tc-ws-novedades-item-msg{color:#92400e;font-weight:600;}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
+.tc-ws-novedades-item-cta{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#b45309;}
 .tc-ws-novedades-item-mark{width:18px;height:18px;margin-top:1px;flex-shrink:0;color:var(--purple-dark);display:inline-flex;}
 .tc-ws-novedades-item-mark svg{width:18px;height:18px;display:block;}
 .tc-ws-novedades-item-body{flex:1;min-width:0;}
@@ -4988,6 +5002,34 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     </div>
   </div>
   <div class="tc-ws-novedades-popover-body" id="tc-ws-novedades-body"></div>
+</div>
+<div id="modal-tc-noshow-reschedule" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-tc-noshow-reschedule')">
+  <div class="modal-card" style="max-width:420px" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="closeModal('modal-tc-noshow-reschedule')" aria-label="Cerrar">✕</button>
+    <h2 class="modal-title" id="tc-noshow-reschedule-title">Agendar nueva entrevista</h2>
+    <p class="modal-subtitle" id="tc-noshow-reschedule-subtitle">Programa otra cita para la misma postulación.</p>
+    <div class="form-group" style="margin-top:12px">
+      <label class="form-label">Candidato</label>
+      <input type="text" class="form-input" id="tc-noshow-reschedule-candidate" readonly disabled>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Vacante</label>
+      <input type="text" class="form-input" id="tc-noshow-reschedule-vacancy" readonly disabled>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="tc-noshow-reschedule-date">Fecha</label>
+      <input type="date" class="form-input" id="tc-noshow-reschedule-date" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="tc-noshow-reschedule-time">Hora (opcional)</label>
+      <input type="time" class="form-input" id="tc-noshow-reschedule-time" step="60">
+    </div>
+    <p class="form-error hidden" id="tc-noshow-reschedule-error" role="alert"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-tc-noshow-reschedule')">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="tc-noshow-reschedule-save" onclick="tcEmpNoshowRescheduleSubmit()">Agendar</button>
+    </div>
+  </div>
 </div>
 <div id="rec-hired-popover" class="rec-hired-popover hidden" role="dialog" aria-modal="false" aria-labelledby="rec-hired-popover-title" aria-hidden="true" hidden>
   <p class="rec-hired-popover-title" id="rec-hired-popover-title">Contratados</p>
@@ -9803,7 +9845,13 @@ function recKanbanColumnShouldCollapse(vacancyId, stageId, count){
   const st=recEnsureState();
   const key=recKanbanColCollapseKey(vacancyId, stageId);
   if(count===0&&recKanbanHideEmptyEnabled()) return !(st.kanbanEmptyPinnedOpen&&st.kanbanEmptyPinnedOpen[key]);
-  return !!(st.kanbanColCollapsed&&st.kanbanColCollapsed[key]);
+  if(st.kanbanColCollapsed&&Object.prototype.hasOwnProperty.call(st.kanbanColCollapsed,key)){
+    return !!st.kanbanColCollapsed[key];
+  }
+  // Cartera de inasistencia: contraída por defecto para no estorbar en volumen.
+  const stage=(st.stages||[]).find(function(s){ return String(s.id)===String(stageId); });
+  if(stage&&String(stage.key||'').toUpperCase()==='INTERVIEW_NO_SHOW') return true;
+  return false;
 }
 const REC_KANBAN_EMPTY_SVG_HIDDEN='<rect x="3" y="4" width="5" height="16" rx="1"/><path d="M12 8v8" stroke-dasharray="1.5 2"/><rect x="16" y="4" width="5" height="16" rx="1"/>';
 const REC_KANBAN_EMPTY_SVG_ALL='<rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="16" rx="1"/><rect x="16.5" y="4" width="4.5" height="16" rx="1"/>';
@@ -9939,6 +9987,7 @@ function recKanbanStageIconSvg(stage){
     EVALUATIONS:'<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
     PSYCHOMETRICS:'<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
     FINALIST:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    INTERVIEW_NO_SHOW:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     HIRED:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
     DECLINED:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     REJECTED:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
@@ -9949,6 +9998,7 @@ function recKanbanStageIconSvg(stage){
 function recKanbanColSemanticMod(stage){
   const key=String((stage&&stage.key)||'').toUpperCase();
   if(key==='FINALIST') return ' rec-kanban-col--sem-finalist';
+  if(key==='INTERVIEW_NO_SHOW') return ' rec-kanban-col--sem-noshow';
   if(key==='HIRED') return ' rec-kanban-col--sem-hired';
   if(key==='DECLINED') return ' rec-kanban-col--sem-declined';
   if(key==='REJECTED') return ' rec-kanban-col--sem-rejected';
@@ -10567,7 +10617,7 @@ function recStagesSetProcessViewVisible(visible){
   if(sub) sub.classList.toggle('hidden',!visible);
   if(funnel) funnel.classList.toggle('hidden',!visible);
 }
-var REC_REQUIRED_STAGE_KEYS=['NEW','HIRED','REJECTED'];
+var REC_REQUIRED_STAGE_KEYS=['NEW','HIRED','REJECTED','INTERVIEW_NO_SHOW'];
 function recStageIsRequiredKey(key){ return REC_REQUIRED_STAGE_KEYS.indexOf(key)>=0; }
 function recStageEditorEnsure(){
   const st=recEnsureState();
@@ -16974,20 +17024,24 @@ function tcEmpQuickRegisterCandidate(){
 }
 function tcEmpQuickGoCandidates(filter, highlightCandidateId){
   tcEmpNovedadesClose(false);
-  const next=filter||'in_process';
-  if(tcEmpWorkspaceTab!=='candidates') tcEmpWorkspaceSetTab('candidates');
+  // null = conservar filtro actual (INTERVIEW_NO_SHOW no fuerza En proceso).
+  const next=filter==null?(tcEmpMyCandFilter||'in_process'):filter;
+  const wasOnCand=tcEmpWorkspaceTab==='candidates';
+  if(!wasOnCand) tcEmpWorkspaceSetTab('candidates');
   const filterChanged=tcEmpMyCandFilter!==next;
+  const afterLoad=function(){
+    if(highlightCandidateId) tcEmpMyCandHighlightCandidate(highlightCandidateId);
+  };
   if(filterChanged){
     tcEmpMyCandFilterUserPicked=true;
     tcEmpMyCandFilter=next;
     tcEmpMyCandSyncFilterUi();
     tcEmpWorkspaceResetPanelScroll('candidates');
-    tcEmpLoadMyCandidates(false).then(function(){
-      if(highlightCandidateId) tcEmpMyCandHighlightCandidate(highlightCandidateId);
-    });
+    tcEmpLoadMyCandidates(false).then(afterLoad);
   }else{
     tcEmpWorkspaceResetPanelScroll('candidates');
-    if(highlightCandidateId) tcEmpMyCandHighlightCandidate(highlightCandidateId);
+    if(!wasOnCand) tcEmpLoadMyCandidates(false).then(afterLoad);
+    else afterLoad();
   }
   tcEmpWorkspaceSyncQuickActions();
 }
@@ -17281,6 +17335,8 @@ function tcEmpNovedadesFmtTime(iso){
 function tcEmpNovedadesFilterForEventType(eventType){
   if(eventType==='HIRED') return 'hired';
   if(eventType==='REJECTED') return 'rejected';
+  // No forzar En proceso: el candidato puede estar en otro filtro o ya no visible.
+  if(eventType==='INTERVIEW_NO_SHOW') return null;
   return 'in_process';
 }
 function tcEmpNovedadesUpdateBadge(count){
@@ -17353,7 +17409,8 @@ function tcEmpNovedadesRenderList(){
   body.innerHTML=tcEmpNovedadesItems.map(function(n){
     const reminder=n.eventType==='WORKFORCE_DAILY_GOALS_REMINDER';
     const hired=n.eventType==='HIRED';
-    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'')+(hired?' tc-ws-novedades-item--hired':'');
+    const noshow=n.eventType==='INTERVIEW_NO_SHOW';
+    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'')+(hired?' tc-ws-novedades-item--hired':'')+(noshow?' tc-ws-novedades-item--noshow':'');
     const meta=n.metadata||{};
     const title=reminder&&typeof meta.title==='string'?meta.title:'';
     const bodyText=reminder&&typeof meta.body==='string'?meta.body:'';
@@ -17365,9 +17422,12 @@ function tcEmpNovedadesRenderList(){
       : reminder
       ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
       : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
+    const cta=noshow
+      ? '<span class="tc-ws-novedades-item-cta">Agendar nueva entrevista</span>'
+      : '';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
       mark+
-      '<span class="tc-ws-novedades-item-body">'+copy+
+      '<span class="tc-ws-novedades-item-body">'+copy+cta+
       '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.createdAt))+'</p></span></button>';
   }).join('');
 }
@@ -17464,6 +17524,80 @@ function tcEmpNovedadesEnsureItemRead(item){
   tcEmpNovedadesMarkInFlight[compositeId]=req;
   return req;
 }
+let tcEmpNoshowRescheduleCtx=null;
+let tcEmpNoshowRescheduleInFlight=false;
+function tcEmpNoshowRescheduleShowError(msg){
+  const el=document.getElementById('tc-noshow-reschedule-error');
+  if(!el) return;
+  if(!msg){ el.textContent=''; el.classList.add('hidden'); return; }
+  el.textContent=String(msg);
+  el.classList.remove('hidden');
+}
+function tcEmpOpenNoshowReschedule(item){
+  if(!item||!item.applicationId){
+    if(typeof toast==='function') toast('Esta acción ya no está disponible.','error');
+    return;
+  }
+  const meta=item.metadata||{};
+  if(!meta.interviewEventId){
+    if(typeof toast==='function') toast('Este aviso ya no está vigente para agendar.','error');
+    return;
+  }
+  tcEmpNoshowRescheduleCtx={
+    applicationId:item.applicationId,
+    candidateId:item.candidateId||null,
+    vacancyId:item.vacancyId||null,
+    candidateName:meta.candidateName||'Candidato',
+    vacancyTitle:meta.vacancyTitle||'Vacante',
+    sourceInterviewEventId:String(meta.interviewEventId),
+  };
+  const cand=document.getElementById('tc-noshow-reschedule-candidate');
+  const vac=document.getElementById('tc-noshow-reschedule-vacancy');
+  const dateEl=document.getElementById('tc-noshow-reschedule-date');
+  const timeEl=document.getElementById('tc-noshow-reschedule-time');
+  if(cand) cand.value=tcEmpNoshowRescheduleCtx.candidateName;
+  if(vac) vac.value=tcEmpNoshowRescheduleCtx.vacancyTitle;
+  if(dateEl) dateEl.value='';
+  if(timeEl) timeEl.value='';
+  tcEmpNoshowRescheduleShowError('');
+  openModal('modal-tc-noshow-reschedule');
+}
+async function tcEmpNoshowRescheduleSubmit(){
+  if(tcEmpNoshowRescheduleInFlight||!tcEmpNoshowRescheduleCtx) return;
+  const dateEl=document.getElementById('tc-noshow-reschedule-date');
+  const timeEl=document.getElementById('tc-noshow-reschedule-time');
+  const interviewDate=(dateEl&&dateEl.value||'').trim();
+  const interviewTime=(timeEl&&timeEl.value||'').trim();
+  if(!interviewDate){
+    tcEmpNoshowRescheduleShowError('Indica la fecha de la nueva entrevista.');
+    return;
+  }
+  tcEmpNoshowRescheduleInFlight=true;
+  const btn=document.getElementById('tc-noshow-reschedule-save');
+  if(btn) btn.disabled=true;
+  tcEmpNoshowRescheduleShowError('');
+  try{
+    await tcPublicJson(
+      '/api/timeclock/public/recruitment/applications/'+encodeURIComponent(tcEmpNoshowRescheduleCtx.applicationId)+'/reschedule-interview-no-show',
+      { method:'POST', body:JSON.stringify({
+        interviewDate:interviewDate,
+        interviewTime:interviewTime||null,
+        sourceInterviewEventId:tcEmpNoshowRescheduleCtx.sourceInterviewEventId,
+      }) }
+    );
+    closeModal('modal-tc-noshow-reschedule');
+    const candId=tcEmpNoshowRescheduleCtx.candidateId;
+    tcEmpNoshowRescheduleCtx=null;
+    if(typeof toast==='function') toast('Entrevista agendada.','ok');
+    if(candId) tcEmpQuickGoCandidates('in_process', candId);
+  }catch(err){
+    const msg=(err&&(err.message||err.error))||'No se pudo agendar la entrevista.';
+    tcEmpNoshowRescheduleShowError(msg);
+  }finally{
+    tcEmpNoshowRescheduleInFlight=false;
+    if(btn) btn.disabled=false;
+  }
+}
 function tcEmpNovedadesOpenItem(id){
   const item=tcEmpNovedadesItems.find(function(n){ return n.id===id; });
   if(!item) return;
@@ -17475,6 +17609,10 @@ function tcEmpNovedadesOpenItem(id){
     if(item.eventType==='TASK_ASSIGNED') tcEmpQuickGoActivities();
     else if(item.eventType==='GOAL_ASSIGNED') tcEmpQuickGoGoals();
     else if(item.eventType==='WORKFORCE_DAILY_GOALS_REMINDER') tcEmpOpenDailyGoalsReminder(item);
+    return;
+  }
+  if(item.eventType==='INTERVIEW_NO_SHOW'){
+    tcEmpOpenNoshowReschedule(item);
     return;
   }
   const filter=tcEmpNovedadesFilterForEventType(item.eventType);
@@ -17502,6 +17640,7 @@ window.tcEmpNovedadesToggle=tcEmpNovedadesToggle;
 window.tcEmpNovedadesClose=tcEmpNovedadesClose;
 window.tcEmpNovedadesMarkAllRead=tcEmpNovedadesMarkAllRead;
 window.tcEmpNovedadesOpenItem=tcEmpNovedadesOpenItem;
+window.tcEmpNoshowRescheduleSubmit=tcEmpNoshowRescheduleSubmit;
 function tcEmpPrimaryButtonEl(){
   const waitView=document.getElementById('tc-ws-jornada-view-wait');
   if(waitView&&!waitView.classList.contains('hidden')) return document.getElementById('tc-emp-primary-wait');

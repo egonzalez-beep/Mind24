@@ -1091,6 +1091,22 @@ check(/selectOperationalApplicationsForVacancyKanban/.test(appSvc), 'el listado 
   check(/return \{\s*\};/.test(whereBody), 'la consulta del Kanban incluye declinados, contratados y descartados');
   check(/pickOperationalApplicationForCandidateVacancy/.test(closureSvc), 'helper canónico de proceso visible en cierre');
   check(/if \(previewFilter === 'in_process'\)[\s\S]{0,280}closureOutcome: null/.test(candidateSvc), 'En proceso exige un proceso abierto');
+  check(
+    /previewFilter === 'in_process'[\s\S]{0,400}INTERVIEW_NO_SHOW/.test(candidateSvc),
+    'En proceso excluye cartera INTERVIEW_NO_SHOW',
+  );
+  check(
+    /isRecruitmentApplicationInActiveVacancyQueue/.test(closureSvc),
+    'helper cola activa vs cartera NO_SHOW',
+  );
+  check(
+    /previewFilter === 'in_process'[\s\S]{0,400}INTERVIEW_NO_SHOW/.test(candidateSvc),
+    'En proceso excluye cartera INTERVIEW_NO_SHOW',
+  );
+  check(
+    /isRecruitmentApplicationInActiveVacancyQueue/.test(closureSvc),
+    'helper cola activa vs cartera NO_SHOW',
+  );
   const publicRoutes = fs.readFileSync(path.join(serverDir, 'src/routes/timeclock.public.routes.js'), 'utf8');
   const myRouteStart = publicRoutes.indexOf("router.get('/recruitment/my-candidates'");
   const myRoute = publicRoutes.slice(myRouteStart, publicRoutes.indexOf('router.post(', myRouteStart + 20));

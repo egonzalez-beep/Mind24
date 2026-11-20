@@ -136,6 +136,16 @@ export function isRecruitmentApplicationOpen(stageKey, closureOutcome) {
   return classifyRecruitmentApplication(stageKey, closureOutcome) === 'active';
 }
 
+/**
+ * Cola operativa de la vacante (inProcess / En proceso).
+ * INTERVIEW_NO_SHOW sigue abierta y visible en su columna de cartera, pero no cuenta
+ * como trabajo activo del funnel. No redefine classify ni métricas históricas.
+ */
+export function isRecruitmentApplicationInActiveVacancyQueue(stageKey, closureOutcome) {
+  if (!isRecruitmentApplicationOpen(stageKey, closureOutcome)) return false;
+  return String(stageKey || '').trim() !== 'INTERVIEW_NO_SHOW';
+}
+
 export function isRecruitmentApplicationVisibleInKanban(stageKey, closureOutcome) {
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
   return kind === 'active' || kind === 'hired' || kind === 'rejected' || kind === 'declined';

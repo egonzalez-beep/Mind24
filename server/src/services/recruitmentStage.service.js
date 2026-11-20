@@ -8,9 +8,17 @@ export const RECRUITMENT_DEFAULT_STAGES = [
   { key: 'EVALUATIONS', name: 'Evaluaciones', position: 5000, isTerminal: false },
   { key: 'PSYCHOMETRICS', name: 'Psicometría', position: 6000, isTerminal: false },
   { key: 'FINALIST', name: 'Finalista', position: 7000, isTerminal: false },
+  /**
+   * Cartera pausada tras inasistencia; recuperable.
+   * Antes de HIRED/REJECTED para no romper «terminales al final».
+   * En Kanban se muestra como última columna activa (contraíble).
+   */
+  { key: 'INTERVIEW_NO_SHOW', name: 'No asistió a entrevista', position: 7500, isTerminal: false },
   { key: 'HIRED', name: 'Contratado', position: 8000, isTerminal: true },
   { key: 'REJECTED', name: 'Descartado', position: 9000, isTerminal: true },
 ];
+
+export const INTERVIEW_NO_SHOW_STAGE_KEY = 'INTERVIEW_NO_SHOW';
 
 export const RECRUITMENT_VACANCY_STATUSES = ['ACTIVE', 'PAUSED', 'COVERED', 'CLOSED'];
 

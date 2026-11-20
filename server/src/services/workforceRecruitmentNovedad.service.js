@@ -65,7 +65,22 @@ function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle
   if (eventType === 'HIRED') return `${name} llegó a contratación en ${vacancy}.`;
   if (eventType === 'REJECTED') return `${name} salió del proceso ${vacancy}.`;
   if (eventType === 'DECLINED') return `${name} declinó el proceso ${vacancy}.`;
+  if (eventType === 'INTERVIEW_NO_SHOW') {
+    return `${name} no se presentó a la entrevista para ${vacancy}.`;
+  }
   return `${name} cambió a la etapa ${stage} en ${vacancy}.`;
+}
+
+/**
+ * Clave estable por identidad canónica de la cita (id del evento de entrevista).
+ * Ambas rutas admin (actualizar SCHEDULED in-place o crear resultado) pasan el id de la fila
+ * resultante: mismo evento → un aviso; dos citas (aunque compartan horario) → dos avisos.
+ */
+export function interviewNoShowDedupeKey({ applicationId, interviewEventId }) {
+  const appId = String(applicationId || '').trim();
+  const eventId = String(interviewEventId || '').trim();
+  if (!appId || !eventId) return null;
+  return `interview_no_show:${appId}:${eventId}`;
 }
 
 function serializeNovedad(row) {
@@ -268,6 +283,105 @@ export async function emitWorkforceRecruitmentNovedadForDecline(tx, { organizati
     if (isOrganizationDedupeKeyConflict(e)) return null;
     throw e;
   }
+}
+
+/**
+ * Aviso inmediato al confirmar NO_SHOW. Misma elegibilidad que otras novedades de reclutamiento.
+ * Va en la misma TX del resultado: createMany+skipDuplicates (ON CONFLICT DO NOTHING) para que
+ * un duplicado no aborte la transacción de PostgreSQL. Sin destinatario → null; el park/resultado siguen.
+ */
+export async function emitWorkforceRecruitmentNovedadForInterviewNoShow(
+  tx,
+  {
+    organizationId,
+    applicationId,
+    scheduledAt,
+    scheduledTimeSpecified = true,
+    interviewEventId = null,
+  },
+) {
+  if (!organizationId || !applicationId || !interviewEventId) return null;
+  const dedupeKey = interviewNoShowDedupeKey({
+    applicationId,
+    interviewEventId,
+  });
+  if (!dedupeKey) return null;
+
+  const app = await tx.recruitmentApplication.findFirst({
+    where: { id: applicationId, organizationId },
+    select: {
+      id: true,
+      organizationId: true,
+      candidateId: true,
+      vacancyId: true,
+      stageId: true,
+      candidate: {
+        select: {
+          id: true,
+          organizationId: true,
+          fullName: true,
+          registeredByWorkforceEmployeeId: true,
+          archivedAt: true,
+        },
+      },
+      vacancy: { select: { id: true, organizationId: true, title: true } },
+    },
+  });
+  if (!app?.candidate?.registeredByWorkforceEmployeeId) return null;
+  if (app.candidate.archivedAt) return null;
+  if (
+    app.organizationId !== organizationId ||
+    app.candidate.organizationId !== organizationId ||
+    app.vacancy?.organizationId !== organizationId
+  ) {
+    return null;
+  }
+  const recipient = await tx.workforceEmployee.findFirst({
+    where: { id: app.candidate.registeredByWorkforceEmployeeId, organizationId },
+    select: { id: true, isActive: true },
+  });
+  if (!recipient || recipient.isActive === false) return null;
+  const stage = await tx.recruitmentStage.findFirst({
+    where: { id: app.stageId, organizationId },
+    select: { id: true, key: true, name: true },
+  });
+  if (!stage) return null;
+
+  const message = buildNovedadMessage('INTERVIEW_NO_SHOW', {
+    candidateName: app.candidate.fullName,
+    vacancyTitle: app.vacancy.title,
+  });
+  const at = scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt);
+  const inserted = await tx.workforceRecruitmentNovedad.createMany({
+    data: [
+      {
+        organizationId,
+        recipientWorkforceEmployeeId: recipient.id,
+        candidateId: app.candidateId,
+        applicationId: app.id,
+        vacancyId: app.vacancyId,
+        eventType: 'INTERVIEW_NO_SHOW',
+        fromStageId: null,
+        toStageId: stage.id,
+        message,
+        metadata: {
+          candidateName: app.candidate.fullName,
+          vacancyTitle: app.vacancy.title,
+          toStageKey: stage.key,
+          toStageName: stage.name,
+          interviewEventId: interviewEventId || null,
+          scheduledAt: Number.isNaN(at.getTime()) ? null : at.toISOString(),
+          scheduledTimeSpecified: scheduledTimeSpecified !== false,
+        },
+        dedupeKey,
+      },
+    ],
+    skipDuplicates: true,
+  });
+  if (!inserted?.count) return null;
+  return tx.workforceRecruitmentNovedad.findFirst({
+    where: { organizationId, dedupeKey },
+  });
 }
 
 export async function listWorkforceRecruitmentNovedades({

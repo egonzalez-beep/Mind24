@@ -57,6 +57,20 @@ check(/eventType: 'RESCHEDULED'/.test(eventSvc), 'RESCHEDULED actualiza cita');
 check(/createdByUserId/.test(eventSvc) && !/req\.body\.createdByUserId/.test(routes), 'autor desde sesión');
 check(/\/applications\/:applicationId\/interview-events/.test(routes), 'POST interview-events admin');
 check(!/\/interview-events/.test(publicRoutes), 'Workforce sin write interview-events');
+check(/afterInterviewNoShowConfirmed/.test(eventSvc), 'NO_SHOW park+aviso');
+check(/parkApplicationAfterInterviewNoShow/.test(eventSvc), 'NO_SHOW aparca a cartera');
+check(/emitNoShowNovedadIfNeeded/.test(eventSvc), 'no emite en alreadyApplied');
+check(
+  /findScheduledSlot[\s\S]{0,400}eventType: type[\s\S]{0,200}update\(/.test(eventSvc)
+    || /scheduledRow[\s\S]{0,300}eventType: type/.test(eventSvc),
+  'interview-events NO_SHOW actualiza SCHEDULED in-place (mismo id que actions)',
+);
+check(
+  /alreadyApplied = true[\s\S]{0,200}NO_SHOW[\s\S]{0,80}!alreadyApplied/.test(eventSvc)
+    || /if \(type === 'NO_SHOW' && !alreadyApplied\)/.test(eventSvc),
+  'interview-events no re-emite si el resultado ya existe',
+);
+check(!/type === 'CANCELLED'[\s\S]{0,120}emitWorkforceRecruitmentNovedadForInterviewNoShow/.test(eventSvc), 'CANCELLED no emite');
 
 console.log('\n=== UI Candidate Detail ===\n');
 check(/recCandSubmitInterviewEvent/.test(indexHtml), 'acciones entrevista');
@@ -336,6 +350,116 @@ if (dbOk) {
       },
     );
     check(dup.status >= 400, 'NO_SHOW sin cita → error');
+
+    // --- Cross-route: misma cita, ambas rutas admin, ambos órdenes → 1 aviso ---
+    const emp = await prisma.workforceEmployee.create({
+      data: {
+        organizationId: org.id,
+        fullName: `Emp ${suffix}`,
+        timezone: 'America/Mexico_City',
+        isActive: true,
+        accessTokenHash: `hash-${suffix}`,
+      },
+    });
+
+    async function seedCrossRouteCase(label, slotIso) {
+      const cRes = await fetch(`${base}/api/org/recruitment/candidates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: cookie },
+        body: JSON.stringify({
+          fullName: `Cross ${label} ${suffix}`,
+          profile: 'Ventas',
+          whatsapp: `55${String(Date.now()).slice(-8)}${label.length}`,
+        }),
+      });
+      const cId = (await cRes.json()).candidate?.id;
+      await prisma.recruitmentCandidate.update({
+        where: { id: cId },
+        data: { registeredByWorkforceEmployeeId: emp.id },
+      });
+      const aRes = await fetch(`${base}/api/org/recruitment/vacancies/${vacId}/applications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: cookie },
+        body: JSON.stringify({ candidateId: cId, stageId: initial.id }),
+      });
+      const aId = (await aRes.json()).application?.id;
+      const slot = new Date(slotIso);
+      const sched = await prisma.recruitmentApplicationInterviewEvent.create({
+        data: {
+          organizationId: org.id,
+          applicationId: aId,
+          stageId: initial.id,
+          eventType: 'SCHEDULED',
+          scheduledAt: slot,
+          scheduledTimeSpecified: true,
+          createdByUserId: admin.id,
+        },
+      });
+      await prisma.recruitmentApplication.update({
+        where: { id: aId },
+        data: {
+          interviewScheduledAt: slot,
+          interviewTimeSpecified: true,
+          stageId: initial.id,
+        },
+      });
+      return { applicationId: aId, eventId: sched.id };
+    }
+
+    async function postEvents(appId, body) {
+      return fetch(`${base}/api/org/recruitment/applications/${appId}/interview-events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: cookie },
+        body: JSON.stringify(body),
+      });
+    }
+    async function postActions(appId, eventId, body) {
+      return fetch(
+        `${base}/api/org/recruitment/applications/${appId}/interviews/${eventId}/actions`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Cookie: cookie },
+          body: JSON.stringify(body),
+        },
+      );
+    }
+
+    // Orden 1: actions → interview-events
+    {
+      const seeded = await seedCrossRouteCase('A', '2026-12-10T15:00:00.000Z');
+      const act = await postActions(seeded.applicationId, seeded.eventId, { action: 'NO_SHOW' });
+      const second = await postEvents(seeded.applicationId, { eventType: 'NO_SHOW' });
+      const avisos = await prisma.workforceRecruitmentNovedad.count({
+        where: { applicationId: seeded.applicationId, eventType: 'INTERVIEW_NO_SHOW' },
+      });
+      const rows = await prisma.recruitmentApplicationInterviewEvent.findMany({
+        where: { applicationId: seeded.applicationId, eventType: 'NO_SHOW' },
+      });
+      check(act.ok, 'orden1 actions NO_SHOW ok');
+      check(second.status >= 400 || avisos === 1, 'orden1 segunda ruta no crea otro aviso');
+      check(avisos === 1, 'orden1 actions→events: un solo aviso');
+      check(rows.length === 1 && rows[0].id === seeded.eventId, 'orden1: mismo id SCHEDULED→NO_SHOW');
+    }
+
+    // Orden 2: interview-events → actions
+    {
+      const seeded = await seedCrossRouteCase('B', '2026-12-11T16:00:00.000Z');
+      const first = await postEvents(seeded.applicationId, { eventType: 'NO_SHOW' });
+      const second = await postActions(seeded.applicationId, seeded.eventId, { action: 'NO_SHOW' });
+      const avisos = await prisma.workforceRecruitmentNovedad.count({
+        where: { applicationId: seeded.applicationId, eventType: 'INTERVIEW_NO_SHOW' },
+      });
+      const rows = await prisma.recruitmentApplicationInterviewEvent.findMany({
+        where: { applicationId: seeded.applicationId, eventType: 'NO_SHOW' },
+      });
+      check(first.ok, 'orden2 interview-events NO_SHOW ok');
+      check(
+        second.ok || second.status === 409 || avisos === 1,
+        'orden2 segunda ruta no crea otro aviso',
+      );
+      check(avisos === 1, 'orden2 events→actions: un solo aviso');
+      check(rows.length === 1 && rows[0].id === seeded.eventId, 'orden2: mismo id SCHEDULED→NO_SHOW');
+    }
   } finally {
     server.close();
     await prisma.organization.delete({ where: { id: org.id } });
@@ -343,21 +467,25 @@ if (dbOk) {
 }
 
 console.log('\n=== Regresiones ===\n');
-for (const script of [
-  'test-recruitment-locality-interview.mjs',
-  'test-recruitment-candidate-collaboration.mjs',
-  'test-recruitment-candidates.mjs',
-]) {
-  const r = spawnSync(process.execPath, [path.join(serverDir, 'scripts', script)], {
-    cwd: serverDir,
-    encoding: 'utf8',
-    env: process.env,
-  });
-  if (r.status !== 0) {
-    console.error((r.stdout || '') + (r.stderr || ''));
-    check(false, script);
-  } else {
-    check(true, script);
+if (!dbOk) {
+  console.log('  SKIP regressions: sin PostgreSQL (mismas scripts requieren DB)');
+} else {
+  for (const script of [
+    'test-recruitment-locality-interview.mjs',
+    'test-recruitment-candidate-collaboration.mjs',
+    'test-recruitment-candidates.mjs',
+  ]) {
+    const r = spawnSync(process.execPath, [path.join(serverDir, 'scripts', script)], {
+      cwd: serverDir,
+      encoding: 'utf8',
+      env: process.env,
+    });
+    if (r.status !== 0) {
+      console.error((r.stdout || '') + (r.stderr || ''));
+      check(false, script);
+    } else {
+      check(true, script);
+    }
   }
 }
 

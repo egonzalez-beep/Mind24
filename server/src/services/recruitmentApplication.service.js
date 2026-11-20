@@ -110,6 +110,7 @@ function serializeApplication(row) {
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     employmentStartDate: serializeEmploymentStartDate(row.employmentStartDate),
+    interviewNoShowFromStageId: row.interviewNoShowFromStageId || null,
     notes: row.notes,
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
     closureOutcome: row.closureOutcome || null,
@@ -450,6 +451,11 @@ export async function updateRecruitmentApplication({
       });
       if (position == null) {
         data.position = await nextPositionInStage(existing.vacancyId, stageId, tx);
+      }
+      // Sale de cartera de inasistencia: limpia origen; mover no crea cita.
+      if (existing.stage?.key === 'INTERVIEW_NO_SHOW' && toStageKey !== 'INTERVIEW_NO_SHOW') {
+        data.interviewNoShowFromStageId = null;
+        data.interviewNoShowEventId = null;
       }
     }
     if (resolvedEmploymentStart) {

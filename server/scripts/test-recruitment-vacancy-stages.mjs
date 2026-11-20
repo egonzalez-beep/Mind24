@@ -101,8 +101,8 @@ check(
 );
 check(/REQUIRED_VACANCY_STAGE_KEYS/.test(vacancyStageSvc), 'etapas obligatorias');
 check(
-  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED',
-  'NEW HIRED REJECTED obligatorios',
+  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED,INTERVIEW_NO_SHOW',
+  'NEW HIRED REJECTED INTERVIEW_NO_SHOW obligatorios',
 );
 check(/VACANCY_STAGE_POSITION_GAP\s*=\s*1000/.test(vacancyStageSvc), 'gap position 1000');
 check(/skipDuplicates:\s*true/.test(vacancyStageSvc), 'seed vacancy stages skipDuplicates');
@@ -177,7 +177,7 @@ if (dbOk) {
     check(loginA.res.status === 200 && adminCookie, 'login admin');
 
     const catalogRes = await jsonFetch(base, '/api/org/recruitment/stages', { cookie: adminCookie });
-    check(catalogRes.res.status === 200 && catalogRes.data.stages?.length === 9, 'GET catálogo 9 etapas');
+    check(catalogRes.res.status === 200 && catalogRes.data.stages?.length === 10, 'GET catálogo 10 etapas');
     check(
       catalogRes.data.stages[0].key === 'NEW' &&
         catalogRes.data.stages.every((s) => s.isActive === true),
@@ -232,8 +232,8 @@ if (dbOk) {
     const lazyCfg = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyIdB}/stages`, {
       cookie: adminCookie,
     });
-    check(lazyCfg.res.status === 200 && lazyCfg.data.vacancyStages?.length === 9, 'lazy init en GET stages');
-    check(lazyCfg.data.catalog?.length === 9, 'GET stages incluye catalog');
+    check(lazyCfg.res.status === 200 && lazyCfg.data.vacancyStages?.length === 10, 'lazy init en GET stages');
+    check(lazyCfg.data.catalog?.length === 10, 'GET stages incluye catalog');
 
     const stages = await prisma.recruitmentStage.findMany({
       where: { organizationId: orgA.id },
@@ -241,7 +241,13 @@ if (dbOk) {
     });
     const byKey = Object.fromEntries(stages.map((s) => [s.key, s]));
 
-    const minimalFunnel = [byKey.NEW.id, byKey.CONTACT.id, byKey.HIRED.id, byKey.REJECTED.id];
+    const minimalFunnel = [
+      byKey.NEW.id,
+      byKey.CONTACT.id,
+      byKey.INTERVIEW_NO_SHOW.id,
+      byKey.HIRED.id,
+      byKey.REJECTED.id,
+    ];
     const putA = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyId}/stages`, {
       method: 'PUT',
       cookie: adminCookie,
@@ -249,9 +255,9 @@ if (dbOk) {
     });
     check(putA.res.status === 200, 'PUT funnel minimal');
     const enabledA = putA.data.vacancyStages.filter((r) => r.isEnabled);
-    check(enabledA.length === 4, '4 etapas habilitadas vacante A');
+    check(enabledA.length === 5, '5 etapas habilitadas vacante A');
     check(
-      enabledA.map((r) => r.stage.key).join(',') === 'NEW,CONTACT,HIRED,REJECTED',
+      enabledA.map((r) => r.stage.key).join(',') === 'NEW,CONTACT,INTERVIEW_NO_SHOW,HIRED,REJECTED',
       'orden funnel vacante A',
     );
     check(
@@ -265,6 +271,7 @@ if (dbOk) {
       byKey.CONTACT.id,
       byKey.INITIAL_INTERVIEW.id,
       byKey.FINALIST.id,
+      byKey.INTERVIEW_NO_SHOW.id,
       byKey.HIRED.id,
       byKey.REJECTED.id,
     ];
@@ -280,7 +287,8 @@ if (dbOk) {
       .map((r) => r.stage.key)
       .join(',');
     check(
-      enabledBKeys === 'NEW,PSYCHOMETRICS,CONTACT,INITIAL_INTERVIEW,FINALIST,HIRED,REJECTED',
+      enabledBKeys ===
+        'NEW,PSYCHOMETRICS,CONTACT,INITIAL_INTERVIEW,FINALIST,INTERVIEW_NO_SHOW,HIRED,REJECTED',
       'funnels distintos entre vacantes',
     );
 
@@ -341,6 +349,7 @@ if (dbOk) {
             byKey.NEW.id,
             byKey.CONTACT.id,
             byKey.INITIAL_INTERVIEW.id,
+            byKey.INTERVIEW_NO_SHOW.id,
             byKey.REJECTED.id,
             byKey.HIRED.id,
           ],
@@ -363,7 +372,14 @@ if (dbOk) {
       method: 'PUT',
       cookie: adminCookie,
       body: {
-        stageIds: [byKey.NEW.id, byKey.CONTACT.id, stagesB[0].id, byKey.HIRED.id, byKey.REJECTED.id],
+        stageIds: [
+          byKey.NEW.id,
+          byKey.CONTACT.id,
+          stagesB[0].id,
+          byKey.INTERVIEW_NO_SHOW.id,
+          byKey.HIRED.id,
+          byKey.REJECTED.id,
+        ],
       },
     });
     check(crossPut.res.status === 404, 'stage org B no en vacante org A');
@@ -388,6 +404,7 @@ if (dbOk) {
           byKey.NEW.id,
           byKey.CONTACT.id,
           byKey.PSYCHOMETRICS.id,
+          byKey.INTERVIEW_NO_SHOW.id,
           byKey.HIRED.id,
           byKey.REJECTED.id,
         ],
@@ -416,7 +433,13 @@ if (dbOk) {
       method: 'PUT',
       cookie: adminCookie,
       body: {
-        stageIds: [byKey.NEW.id, byKey.CONTACT.id, byKey.HIRED.id, byKey.REJECTED.id],
+        stageIds: [
+          byKey.NEW.id,
+          byKey.CONTACT.id,
+          byKey.INTERVIEW_NO_SHOW.id,
+          byKey.HIRED.id,
+          byKey.REJECTED.id,
+        ],
       },
     });
     check(
@@ -432,6 +455,7 @@ if (dbOk) {
         stageIds: [
           byKey.NEW.id,
           byKey.PSYCHOMETRICS.id,
+          byKey.INTERVIEW_NO_SHOW.id,
           byKey.HIRED.id,
           byKey.REJECTED.id,
         ],
@@ -454,7 +478,8 @@ if (dbOk) {
     });
     const dist = detail.data.vacancy?.stageDistribution || [];
     check(
-      dist.length === 4 && dist.map((d) => d.key).join(',') === 'NEW,PSYCHOMETRICS,HIRED,REJECTED',
+      dist.length === 5 &&
+        dist.map((d) => d.key).join(',') === 'NEW,PSYCHOMETRICS,INTERVIEW_NO_SHOW,HIRED,REJECTED',
       'stageDistribution solo enabled y orden vacancy',
     );
     check(

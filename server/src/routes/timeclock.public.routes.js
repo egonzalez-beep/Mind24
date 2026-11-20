@@ -560,6 +560,47 @@ router.get('/recruitment/my-candidates', requireTimeclockSession, async (req, re
   }
 });
 
+/** Agendar nueva entrevista desde aviso INTERVIEW_NO_SHOW (misma postulación; sin alta). */
+router.post(
+  '/recruitment/applications/:applicationId/reschedule-interview-no-show',
+  requireTimeclockSession,
+  requireTimeclockMutationOrigin,
+  timeclockCheckInLimiter,
+  async (req, res, next) => {
+    try {
+      const body = z
+        .object({
+          interviewDate: z.string().min(1).max(10),
+          interviewTime: z.string().max(5).optional().nullable(),
+          /** Id del evento NO_SHOW del aviso; debe ser el que provocó la estancia actual en cartera. */
+          sourceInterviewEventId: z.string().min(1).max(80),
+        })
+        .parse(req.body ?? {});
+      const { rescheduleAfterInterviewNoShowForWorkforce } = await import(
+        '../services/recruitmentInterviewNoShowPark.service.js'
+      );
+      const result = await rescheduleAfterInterviewNoShowForWorkforce({
+        organizationId: req.timeclockEmployee.organizationId,
+        workforceEmployeeId: req.timeclockEmployee.id,
+        applicationId: req.params.applicationId,
+        interviewDate: body.interviewDate,
+        interviewTime: body.interviewTime,
+        sourceInterviewEventId: body.sourceInterviewEventId,
+      });
+      res.status(201).json({
+        applicationId: result.application?.id,
+        candidateId: result.application?.candidateId || result.application?.candidate?.id,
+        vacancyId: result.application?.vacancyId || result.application?.vacancy?.id,
+        stageId: result.application?.stageId,
+        returnStage: result.returnStage,
+        interview: result.interview,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
 router.post(
   '/recruitment/candidates',
   requireTimeclockSession,

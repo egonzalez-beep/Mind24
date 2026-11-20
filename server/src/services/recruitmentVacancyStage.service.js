@@ -18,7 +18,7 @@ async function assertVacancyInOrg(vacancyId, organizationId, tx = prisma) {
 }
 
 export const VACANCY_STAGE_POSITION_GAP = 1000;
-export const REQUIRED_VACANCY_STAGE_KEYS = ['NEW', 'HIRED', 'REJECTED'];
+export const REQUIRED_VACANCY_STAGE_KEYS = ['NEW', 'HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW'];
 
 export function serializeRecruitmentVacancyStage(row) {
   return {

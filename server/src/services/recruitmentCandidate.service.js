@@ -214,7 +214,8 @@ export async function buildPrimaryActivePreviewByCandidateId(
       organizationId,
       candidateId: { in: candidateIds },
       closureOutcome: null,
-      stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
+      // Preview «activo» = cola operativa; INTERVIEW_NO_SHOW queda solo en su columna.
+      stage: { key: { notIn: ['HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
     },
     include: {
       vacancy: { select: { id: true, title: true } },
@@ -726,7 +727,8 @@ export function buildWorkforceRegisteredCandidatesWhere(organizationId, workforc
         some: {
           organizationId,
           closureOutcome: null,
-          stage: { key: { notIn: ['HIRED', 'REJECTED'] } },
+          // Cartera de inasistencia: fuera de «En proceso» / cola activa.
+          stage: { key: { notIn: ['HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
         },
       },
     });

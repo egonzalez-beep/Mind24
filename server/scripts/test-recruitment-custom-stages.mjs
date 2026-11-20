@@ -185,6 +185,7 @@ if (dbOk) {
           byKey.NEW.id,
           byKey.CONTACT.id,
           custom.id,
+          byKey.INTERVIEW_NO_SHOW.id,
           byKey.HIRED.id,
           byKey.REJECTED.id,
         ],

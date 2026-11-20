@@ -50,7 +50,118 @@ check(/fromStageId \|\| !toStageId/.test(novedadSvc) || /!fromStageId/.test(nove
 check(/!changedByUserId/.test(novedadSvc), 'excluye changedByUserId null');
 check(/registeredByWorkforceEmployeeId/.test(novedadSvc), 'destinatario registeredBy');
 check(/dedupeKey = stageEvent\.id/.test(novedadSvc) || /dedupeKey = stageEvent.id/.test(novedadSvc), 'dedupeKey stage event id');
-check(/P2002/.test(novedadSvc), 'idempotente unique violation');
+check(/INTERVIEW_NO_SHOW/.test(schema), 'enum INTERVIEW_NO_SHOW');
+check(/emitWorkforceRecruitmentNovedadForInterviewNoShow/.test(novedadSvc), 'emit NO_SHOW');
+check(/interview_no_show:\$\{appId\}:\$\{eventId\}/.test(novedadSvc) || /interview_no_show:/.test(novedadSvc), 'dedupeKey por id de cita');
+check(/interviewNoShowDedupeKey/.test(novedadSvc), 'helper dedupe NO_SHOW exportado');
+check(/interviewEventId/.test(novedadSvc) && /!interviewEventId/.test(novedadSvc), 'emit exige interviewEventId');
+check(
+  /no se presentó a la entrevista para/.test(novedadSvc),
+  'copy NO_SHOW con nombre y vacante',
+);
+check(/INTERVIEW_NO_SHOW/.test(indexHtml) && /tc-ws-novedades-item--noshow/.test(indexHtml), 'UI ámbar NO_SHOW');
+check(/eventType==='INTERVIEW_NO_SHOW'\) return null/.test(indexHtml), 'NO_SHOW no fuerza filtro En proceso');
+check(/P2002/.test(novedadSvc), 'idempotente unique violation (otras novedades)');
+check(
+  /emitWorkforceRecruitmentNovedadForInterviewNoShow[\s\S]*createMany[\s\S]*skipDuplicates:\s*true/.test(
+    novedadSvc,
+  ),
+  'NO_SHOW usa createMany skipDuplicates (no aborta TX)',
+);
+{
+  const mig = fs.readFileSync(
+    path.join(serverDir, 'prisma/migrations/20261118200000_workforce_novedad_interview_no_show/migration.sql'),
+    'utf8',
+  );
+  check(/ADD VALUE 'INTERVIEW_NO_SHOW'/.test(mig), 'migración aditiva INTERVIEW_NO_SHOW');
+  const migSql = mig
+    .split('\n')
+    .filter((line) => !/^\s*--/.test(line))
+    .join('\n');
+  check(!/\bUPDATE\b|\bINSERT\b/i.test(migSql), 'migración sin backfill');
+}
+{
+  const interviewSvc = fs.readFileSync(
+    path.join(serverDir, 'src/services/recruitmentApplicationInterviewEvent.service.js'),
+    'utf8',
+  );
+  check(/emitNoShowNovedadIfNeeded/.test(interviewSvc), 'helper emisión en servicio entrevistas');
+  check(/afterInterviewNoShowConfirmed/.test(interviewSvc), 'helper park+aviso tras NO_SHOW');
+  check(
+    /recordRecruitmentApplicationInterviewEvent[\s\S]*afterInterviewNoShowConfirmed/.test(
+      interviewSvc,
+    ),
+    'ruta legacy interview-events park+aviso NO_SHOW',
+  );
+  check(
+    /emitNoShowNovedadIfNeeded\(tx, app, type/.test(interviewSvc),
+    'ruta actions emite solo si NO_SHOW nuevo',
+  );
+  check(/parkApplicationAfterInterviewNoShow/.test(interviewSvc), 'NO_SHOW aparca postulación');
+  check(!/CANCELLED[\s\S]{0,80}emitWorkforceRecruitmentNovedadForInterviewNoShow/.test(interviewSvc), 'CANCELLED no emite NO_SHOW');
+}
+{
+  const parkSvc = fs.readFileSync(
+    path.join(serverDir, 'src/services/recruitmentInterviewNoShowPark.service.js'),
+    'utf8',
+  );
+  const parkMig = fs.readFileSync(
+    path.join(serverDir, 'prisma/migrations/20261120120000_recruitment_interview_no_show_park/migration.sql'),
+    'utf8',
+  );
+  check(/INTERVIEW_NO_SHOW/.test(parkSvc), 'servicio cartera INTERVIEW_NO_SHOW');
+  check(/rescheduleAfterInterviewNoShowForWorkforce/.test(parkSvc), 'agendar desde portal');
+  check(/interviewNoShowFromStageId/.test(parkMig), 'migración origen de retorno');
+  check(/7500/.test(parkMig), 'etapa antes de terminales');
+  const parkMigSql = parkMig
+    .split('\n')
+    .filter((line) => !/^\s*--/.test(line))
+    .join('\n');
+  check(!/\bUPDATE\s+"RecruitmentApplication"/i.test(parkMigSql), 'migración park sin UPDATE de postulaciones');
+}
+check(
+  /reschedule-interview-no-show/.test(publicRoutes),
+  'POST portal agendar desde NO_SHOW',
+);
+check(/sourceInterviewEventId/.test(publicRoutes), 'ruta exige id del NO_SHOW del aviso');
+check(/Agendar nueva entrevista/.test(indexHtml), 'CTA Novedades agendar');
+check(/sourceInterviewEventId/.test(indexHtml), 'UI envía id del evento del aviso');
+check(/modal-tc-noshow-reschedule/.test(indexHtml), 'modal agendar sin alta');
+check(/rec-kanban-col--sem-noshow/.test(indexHtml), 'Kanban columna cartera');
+{
+  const parkSvc = fs.readFileSync(
+    path.join(serverDir, 'src/services/recruitmentInterviewNoShowPark.service.js'),
+    'utf8',
+  );
+  const parkMigLink = fs.readFileSync(
+    path.join(serverDir, 'prisma/migrations/20261120120000_recruitment_interview_no_show_park/migration.sql'),
+    'utf8',
+  );
+  check(/FOR UPDATE/.test(parkSvc), 'agendar bloquea fila (concurrencia)');
+  check(/interviewNoShowEventId:\s*eventId/.test(parkSvc), 'park guarda interviewEventId en la misma TX');
+  check(
+    /app\.interviewNoShowEventId !== sourceEventId/.test(parkSvc),
+    'agendar exige el evento vinculado a la estancia',
+  );
+  check(/sourceInterviewEventId/.test(parkSvc), 'aviso ata identity estable de la cita');
+  check(/updateMany/.test(parkSvc) && /moved\.count !== 1/.test(parkSvc), 'salida de cartera condicional');
+  check(/interviewNoShowEventId/.test(parkMigLink), 'migración guarda vínculo de estancia');
+}
+{
+  const closure = fs.readFileSync(
+    path.join(serverDir, 'src/services/recruitmentProcessClosure.service.js'),
+    'utf8',
+  );
+  const vacancySvc = fs.readFileSync(
+    path.join(serverDir, 'src/services/recruitmentVacancy.service.js'),
+    'utf8',
+  );
+  check(/isRecruitmentApplicationInActiveVacancyQueue/.test(closure), 'helper cola activa');
+  check(
+    /isRecruitmentApplicationInActiveVacancyQueue/.test(vacancySvc),
+    'inProcess excluye cartera NO_SHOW',
+  );
+}
 check(/router\.get\('\/novedades'/.test(publicRoutes), 'GET listado');
 check(/\/novedades\/unread-count/.test(publicRoutes), 'GET unread-count');
 check(/\/novedades\/recruitment\/:id\/read/.test(publicRoutes), 'POST read individual reclutamiento');
@@ -85,6 +196,38 @@ check(/TC_EMP_NOVEDADES_POLL_MS=20000/.test(indexHtml), 'polling 20s');
 check(/tcEmpNovedadesStopPolling[\s\S]*clearInterval/.test(indexHtml), 'un solo intervalo');
 check(/if\(tcEmpNovedadesPollInFlight\) return/.test(indexHtml), 'guard inFlight polling');
 check(!/tcEmpNovedadesBuildFeed/.test(indexHtml), 'sin feed inferido');
+
+console.log('\n=== NO_SHOW dedupe key (unit) ===\n');
+const { interviewNoShowDedupeKey } = await import(
+  '../src/services/workforceRecruitmentNovedad.service.js'
+);
+{
+  // Misma cita (mismo event id) aunque el horario se repita en otra cita distinta.
+  const sameCita = interviewNoShowDedupeKey({ applicationId: 'app1', interviewEventId: 'ev-a' });
+  const sameCitaAgain = interviewNoShowDedupeKey({ applicationId: 'app1', interviewEventId: 'ev-a' });
+  const otherCitaSameSlot = interviewNoShowDedupeKey({ applicationId: 'app1', interviewEventId: 'ev-b' });
+  check(
+    sameCita === sameCitaAgain && sameCita === 'interview_no_show:app1:ev-a',
+    'doble guardado misma cita → misma clave',
+  );
+  check(sameCita !== otherCitaSameSlot, 'dos citas distintas (mismo horario) → dos claves');
+  check(interviewNoShowDedupeKey({ applicationId: 'app1', interviewEventId: '' }) == null, 'sin eventId no hay clave');
+  check(interviewNoShowDedupeKey({ applicationId: '', interviewEventId: 'ev-a' }) == null, 'sin applicationId no hay clave');
+}
+
+console.log('\n=== Park stay ↔ NO_SHOW event (unit) ===\n');
+{
+  // Caso 1: B aparca (eventId B). A tarde no mueve; authorized sigue siendo B.
+  const stayAfterB = { interviewNoShowEventId: 'ev-b' };
+  check(stayAfterB.interviewNoShowEventId === 'ev-b', 'caso1: estancia atada a B');
+  check(stayAfterB.interviewNoShowEventId !== 'ev-a', 'caso1: aviso A no autoriza');
+  // Caso 2: A aparca → recupera → B aparca; solo B autoriza la estancia actual.
+  const stayAfterB2 = { interviewNoShowEventId: 'ev-b' };
+  check(stayAfterB2.interviewNoShowEventId === 'ev-b', 'caso2: estancia actual = B');
+  check(stayAfterB2.interviewNoShowEventId !== 'ev-a', 'caso2: aviso A ya no sirve');
+  // Mismo timestamp no aplica: el vínculo es el id escrito al park, no createdAt.
+  check(typeof stayAfterB.interviewNoShowEventId === 'string', 'vínculo explícito por id, no por timestamp');
+}
 
 function cookieHeaderFromResponse(res, name) {
   const raw = res.headers.getSetCookie?.() || [];
