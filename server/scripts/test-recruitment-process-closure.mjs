@@ -1172,8 +1172,8 @@ check(/Este candidato dejará de aparecer entre los candidatos activos/.test(ind
 check(!/No podrá recibir nuevas postulaciones/.test(indexHtml), 'se retiró el aviso engañoso');
 check(/Al añadir una vacante se creará un nuevo proceso/.test(indexHtml), 'archivado puede iniciar nuevo proceso desde la ficha');
 check(/addBtn\.disabled=false/.test(indexHtml) && /addBtn\.title='Añadir a vacante'/.test(indexHtml), 'la acción de vacante permanece disponible si está archivado');
-check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(stageName\)/.test(indexHtml) && /tcEsc\(reasonLabel\)/.test(indexHtml) && /tcEsc\(note\)/.test(indexHtml), 'el historial escapa etapa, motivo y detalle');
-check(/function recCandHistoryAsideHtml[\s\S]{0,2500}tcEsc\(outcome\)/.test(indexHtml), 'el historial escapa el resultado');
+check(/function recCandHistoryAsideHtml[\s\S]{0,4000}tcEsc\(stageName\)/.test(indexHtml) && /tcEsc\(reasonLabel\)/.test(indexHtml) && /tcEsc\(note\)/.test(indexHtml), 'el historial escapa etapa, motivo y detalle');
+check(/function recCandHistoryAsideHtml[\s\S]{0,4000}tcEsc\(outcome\)/.test(indexHtml), 'el historial escapa el resultado');
 check(/vac\.textContent/.test(indexHtml) && /stage\.textContent/.test(indexHtml), 'el diálogo pinta vacante y etapa como texto');
 check(/kind==='declined'/.test(indexHtml), 'la cartera distingue Declinó');
 check(!/Proceso cerrado/.test(indexHtml), 'el historial no agrega el texto redundante');

@@ -588,11 +588,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-iv-note{margin:10px 0 0;font-size:13px;line-height:1.4;color:var(--slate-600);}
 .rec-iv-confirm{margin:0 0 12px;color:var(--slate-700);font-size:14px;}
 .rec-iv-dialog button:focus-visible,.rec-iv-dialog input:focus-visible,.rec-iv-dialog textarea:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
-.rec-hire-start-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--slate-600);}
+.rec-hire-start-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:6px;font-size:12px;color:var(--slate-600);min-width:0;}
 .rec-hire-start-label{font-weight:700;color:var(--slate-700);}
-.rec-hire-start-value{font-weight:600;}
-.rec-hire-start-edit{border:0;background:transparent;padding:0;color:#7c3aed;font:inherit;font-size:12px;font-weight:650;cursor:pointer;}
+.rec-hire-start-value{font-weight:600;font-variant-numeric:tabular-nums;}
+.rec-hire-start-value--set{color:#047857;}
+.rec-hire-start-value--empty{color:var(--slate-500);font-weight:500;}
+.rec-hire-start-edit{border:1px solid var(--slate-200);background:#fff;border-radius:6px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--slate-500);flex:0 0 auto;}
+.rec-hire-start-edit:hover{border-color:rgba(4,120,87,.35);color:#047857;}
 .rec-hire-start-edit:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-hire-start-edit svg{width:13px;height:13px;display:block;}
 .rec-hire-start-form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;}
 .rec-hire-start-form .form-input{width:auto;min-width:9.5rem;padding:6px 8px;font-size:12px;}
 .rec-hire-start-form .rec-iv-btn{padding:6px 10px;font-size:12px;}
@@ -603,6 +607,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .rec-iv-foot{display:grid;grid-template-columns:1fr 1fr;}
   .rec-cand-interviews-toggle{flex-wrap:wrap;}
   .rec-cand-interviews-next{flex-basis:100%;}
+  .rec-hire-start-row{align-items:flex-start;}
 }
 .rec-cand-interviews--readonly .rec-cand-interview-row{cursor:default;}
 .rec-cand-aside-row-sub{overflow-wrap:anywhere;}
@@ -14422,11 +14427,12 @@ function recCandHistoryAsideHtml(closedApps){
   return closedApps.map(function(a){
       const vac=a.vacancy||{};
       const sk=recCandAppStageKey(a);
-      const outcome=a.closureOutcome==='DECLINED'?'Declinó':(sk==='HIRED'?'Contratado':'Rechazado');
-      const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(sk==='HIRED'?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
-      const terminalKind=a.closureOutcome==='DECLINED'?'':(sk==='HIRED'?'hired':(a.closureOutcome==='REJECTED'||sk==='REJECTED'?'rejected':''));
+      const isHired=sk==='HIRED';
+      const outcome=a.closureOutcome==='DECLINED'?'Declinó':(isHired?'Contratado':'Rechazado');
+      const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(isHired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
+      const terminalKind=a.closureOutcome==='DECLINED'?'':(isHired?'hired':(a.closureOutcome==='REJECTED'||sk==='REJECTED'?'rejected':''));
       const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
-      const terminalLabel=terminalKind?recCandFmtTerminalDate(a.terminalOutcomeAt,tz):'';
+      const terminalLabel=(!isHired&&terminalKind)?recCandFmtTerminalDate(a.terminalOutcomeAt,tz):'';
       const terminalKey=terminalLabel?recCandTerminalDateKey(a.terminalOutcomeAt,tz):'';
       const dateId=terminalLabel?('rec-hist-date-'+String(a.applicationId||'').replace(/[^a-zA-Z0-9_-]/g,'')):'';
       const period=[a.appliedAt?('Inicio '+recCandFmtDetailDate(a.appliedAt)):'', terminalKind?'':(a.closedAt?('Cierre '+recCandFmtDetailDate(a.closedAt)):'' )].filter(Boolean).join(' · ');
@@ -14436,15 +14442,19 @@ function recCandHistoryAsideHtml(closedApps){
       const multiVac=!!(vac.id&&vacCounts[String(vac.id)]>1);
       const startLabel=multiVac?recCandFmtTerminalDate(a.appliedAt,tz):'';
       const titleHint=startLabel?(' · '+startLabel):'';
-      return '<div class="rec-cand-history-item">'+
-        '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc((vac.title||'—')+titleHint)+'</p>'+
+      const resultBlock=isHired?'':(
         '<div class="rec-cand-history-result">'+
         '<span class="rec-cand-history-outcome '+ocCls+'"'+(dateId?' aria-describedby="'+dateId+'"':'')+'>'+tcEsc(outcome)+'</span>'+
         (terminalLabel?'<time class="rec-cand-history-terminal-date" id="'+dateId+'" datetime="'+tcEsc(terminalKey)+'">'+tcEsc(terminalLabel)+'</time>':'')+
-        '</div></div>'+
+        '</div>'
+      );
+      return '<div class="rec-cand-history-item'+(isHired?' rec-cand-history-item--hired':'')+'">'+
+        '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc((vac.title||'—')+titleHint)+'</p>'+
+        resultBlock+
+        '</div>'+
         (period?'<p class="rec-cand-history-period">'+tcEsc(period)+'</p>':'')+
-        (stageName?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
-        (sk==='HIRED'?recCandEmploymentStartHtml(a):'')+
+        ((!isHired&&stageName)?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
+        (isHired?recCandEmploymentStartHtml(a):'')+
         (reasonLabel?'<p class="rec-cand-history-reason">'+tcEsc(reasonLabel)+'</p>':'')+
         (note?'<p class="rec-cand-history-note" title="'+tcEsc(note)+'">'+tcEsc(note)+'</p>':'')+
         recCandInterviewsBlockHtml(a,{ readonly:true })+
@@ -14455,20 +14465,20 @@ function recCandFmtEmploymentStart(dateKey){
   if(!dateKey) return '';
   const m=String(dateKey).match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if(!m) return '';
-  const dt=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),12,0,0));
-  if(Number.isNaN(dt.getTime())) return '';
-  return dt.toLocaleDateString('es-MX',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'});
+  return m[3]+'/'+m[2]+'/'+m[1];
 }
 function recCandEmploymentStartHtml(a){
   const appId=recCandGetAppId(a);
   const safeId=String(appId||'').replace(/[^a-zA-Z0-9_-]/g,'');
   const raw=a&&a.employmentStartDate?String(a.employmentStartDate).slice(0,10):'';
-  const label=raw?recCandFmtEmploymentStart(raw):'Sin registrar';
+  const hasDate=!!raw;
+  const label=hasDate?recCandFmtEmploymentStart(raw):'Sin registrar';
+  const valueCls='rec-hire-start-value '+(hasDate?'rec-hire-start-value--set':'rec-hire-start-value--empty');
   return '<div class="rec-hire-start-block" data-app-id="'+tcEsc(appId)+'" id="rec-hire-start-'+safeId+'">'+
     '<div class="rec-hire-start-row" data-hire-start-view="1">'+
-    '<span class="rec-hire-start-label">Fecha de ingreso</span>'+
-    '<span class="rec-hire-start-value" data-hire-start-value="1">'+tcEsc(label)+'</span>'+
-    '<button type="button" class="rec-hire-start-edit" onclick="recCandEditEmploymentStart(\''+tcEsc(appId)+'\')">Editar fecha de ingreso</button>'+
+    '<span class="rec-hire-start-label">Fecha de ingreso:</span>'+
+    '<span class="'+valueCls+'" data-hire-start-value="1">'+tcEsc(label)+'</span>'+
+    '<button type="button" class="rec-hire-start-edit" onclick="recCandEditEmploymentStart(\''+tcEsc(appId)+'\')" aria-label="Editar fecha de ingreso" title="Editar fecha de ingreso">'+recCandObsIconEdit()+'</button>'+
     '</div></div>';
 }
 function recCandEditEmploymentStart(applicationId){

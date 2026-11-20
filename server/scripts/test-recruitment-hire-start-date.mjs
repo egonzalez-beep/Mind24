@@ -103,8 +103,13 @@ check(/targetStageKey==='HIRED'/.test(indexHtml), 'Kanban intercepta HIRED');
 check(/recKanbanCommitStageMove/.test(indexHtml), 'mueve tarjeta solo tras commit');
 check(/newKey==='HIRED'/.test(indexHtml), 'ficha intercepta HIRED');
 check(/dataset\.recBusy/.test(indexHtml.slice(indexHtml.indexOf('async function recHireConfirmSubmit'), indexHtml.indexOf('function recCandCloseDecline'))), 'doble clic bloqueado');
-check(/Editar fecha de ingreso/.test(indexHtml), 'edición en historial');
+check(/aria-label="Editar fecha de ingreso"/.test(indexHtml) && /title="Editar fecha de ingreso"/.test(indexHtml), 'edición en historial (lápiz accesible)');
+check(/rec-hire-start-edit[\s\S]*?recCandObsIconEdit\(\)/.test(indexHtml), 'botón lápiz junto a la fecha');
 check(/Sin registrar/.test(indexHtml), 'sin fecha muestra Sin registrar');
+check(/rec-hire-start-value--set/.test(indexHtml) && /rec-hire-start-value--empty/.test(indexHtml), 'verde discreto vs tono neutro');
+check(/m\[3\]\+'\/'\+m\[2\]\+'\/'\+m\[1\]/.test(indexHtml), 'formato DD/MM/AAAA solo desde employmentStartDate');
+check(/isHired\?''/.test(indexHtml) || /resultBlock=isHired\?''/.test(indexHtml), 'historial contratado sin bloque CONTRATADO');
+check(/!isHired&&stageName/.test(indexHtml), 'sin Última etapa: Contratado en historial hired');
 check(/recCandSaveEmploymentStart/.test(indexHtml), 'guardar fecha sin mover etapa');
 check(/employmentStartDate:date/.test(indexHtml), 'PATCH solo employmentStartDate en edición');
 
