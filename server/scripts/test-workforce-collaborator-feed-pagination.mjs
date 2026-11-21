@@ -107,6 +107,12 @@ console.log('\n=== Feed listado — estático ===\n');
 
 check(!/maxRounds/.test(feedSvc) && !/recLimit \+=/.test(feedSvc), 'sin rondas ni límites crecientes');
 check(/take: fetchTake/.test(feedSvc) && /fetchTake = take \+ 1/.test(feedSvc), 'limit+1 por fuente');
+check(
+  /createdAtIso/.test(feedSvc)
+    && /createdAt: createdAtIso/.test(feedSvc)
+    && /toISOString\(\)/.test(feedSvc),
+  'feed devuelve createdAt ISO (reclutamiento y workplace)',
+);
 
 console.log('\n=== Meta reportada — mensajes (unit) ===\n');
 

@@ -124,7 +124,38 @@ check(
   'POST portal agendar desde NO_SHOW',
 );
 check(/sourceInterviewEventId/.test(publicRoutes), 'ruta exige id del NO_SHOW del aviso');
-check(/Agendar nueva entrevista/.test(indexHtml), 'CTA Novedades agendar');
+check(/¿Agendamos la entrevista\?/.test(indexHtml), 'CTA Novedades agendar');
+check(/Reagendar entrevista/.test(indexHtml), 'modal título Reagendar entrevista');
+check(/Seleccionar fecha/.test(indexHtml), 'placeholder fecha personalizado');
+check(/tc-noshow-date-panel/.test(indexHtml), 'calendario desplegable propio');
+check(/tcEmpNoshowDateShiftMonth/.test(indexHtml), 'navegación de mes en calendario');
+check(/Seleccionar hora/.test(indexHtml), 'placeholder hora personalizado');
+check(/Sin hora/.test(indexHtml), 'opción Sin hora en desplegable');
+check(/tc-noshow-time-panel/.test(indexHtml), 'desplegable de hora propio');
+check(
+  /tcEmpNoshowTimeIsComplete/.test(indexHtml)
+    && /tcEmpNoshowTimeIsPartial/.test(indexHtml)
+    && /Falta:/.test(indexHtml),
+  'hora se guarda solo si está completa',
+);
+check(
+  !/tcEmpNoshowTimeSetOpen\(open\)[\s\S]{0,220}tcEmpNoshowTimeDraft\s*=\s*\{\s*hour:\s*tcEmpNoshowTimeCommitted/.test(
+    indexHtml,
+  ),
+  'reabrir selector no borra borrador parcial',
+);
+{
+  // Caso: solo minutos=30 → parcial; dos validaciones no envían; Sin hora → null.
+  const draft = { hour: null, minute: 30, ampm: null };
+  const isPartial = draft.hour != null || draft.minute != null || !!draft.ampm;
+  const isComplete = draft.hour != null && draft.minute != null && !!draft.ampm;
+  check(isPartial && !isComplete, 'caso minutos-only: parcial no completa');
+  check(!isComplete, 'caso minutos-only: no envía (falta hora y a. m./p. m.)');
+  const cleared = { hour: null, minute: null, ampm: null };
+  const clearedComplete =
+    cleared.hour != null && cleared.minute != null && !!cleared.ampm;
+  check(!clearedComplete, 'Sin hora → sin HH:mm (null al endpoint)');
+}
 check(
   /canRescheduleInterviewNoShow/.test(indexHtml)
     && /noshow&&n\.canRescheduleInterviewNoShow/.test(indexHtml),

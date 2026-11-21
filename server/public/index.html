@@ -2023,9 +2023,48 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-novedades-item--noshow.tc-ws-novedades-item--read{background:rgba(255,251,235,.35);border-color:rgba(245,158,11,.1);box-shadow:inset 3px 0 0 rgba(245,158,11,.28);}
 .tc-ws-novedades-item--noshow .tc-ws-novedades-item-dot{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.35);}
 .tc-ws-novedades-item--noshow.tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#d6d3d1;box-shadow:0 0 0 3px rgba(214,211,209,.4);}
-.tc-ws-novedades-item--noshow .tc-ws-novedades-item-msg{color:#92400e;font-weight:600;}
+.tc-ws-novedades-item--noshow .tc-ws-novedades-item-msg{color:var(--primary);font-weight:600;}
 .tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
-.tc-ws-novedades-item-cta{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#b45309;}
+.tc-ws-novedades-item-cta{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;font-weight:600;color:var(--primary);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(30,41,59,.32);}
+.tc-ws-novedades-item-cta-arrow{display:inline-block;font-size:11px;line-height:1;opacity:.7;text-decoration:none;}
+.tc-noshow-reschedule-card{max-width:420px;padding:36px 28px 28px;}
+.tc-noshow-reschedule-card .modal-subtitle{margin-bottom:18px;}
+.tc-noshow-reschedule-card .form-input:disabled,.tc-noshow-reschedule-card .form-input[readonly]{color:var(--primary);background:var(--slate-50);opacity:1;cursor:default;}
+.tc-noshow-date-field,.tc-noshow-time-field{position:relative;}
+.tc-noshow-date-trigger,.tc-noshow-time-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;cursor:pointer;font:inherit;min-height:46px;}
+.tc-noshow-date-trigger[aria-expanded="true"],.tc-noshow-time-trigger[aria-expanded="true"]{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.tc-noshow-date-trigger-label,.tc-noshow-time-trigger-label{flex:1;min-width:0;color:var(--primary);font-weight:600;}
+.tc-noshow-date-trigger-label.is-placeholder,.tc-noshow-time-trigger-label.is-placeholder{color:var(--slate-400);font-weight:500;}
+.tc-noshow-date-trigger-icon,.tc-noshow-time-trigger-icon{flex-shrink:0;width:18px;height:18px;color:var(--slate-500);display:inline-flex;}
+.tc-noshow-date-trigger-icon svg,.tc-noshow-time-trigger-icon svg{width:18px;height:18px;display:block;}
+.tc-noshow-date-panel,.tc-noshow-time-panel{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:6;background:#fff;border:1px solid var(--slate-200);border-radius:12px;box-shadow:0 16px 36px rgba(15,23,42,.12);padding:10px;display:flex;flex-direction:column;gap:8px;}
+.tc-noshow-date-panel.hidden,.tc-noshow-time-panel.hidden{display:none!important;}
+.tc-noshow-date-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tc-noshow-date-nav-btn{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:16px;line-height:1;}
+.tc-noshow-date-nav-btn:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);color:var(--purple-dark);}
+.tc-noshow-date-nav-label{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--primary);text-transform:capitalize;}
+.tc-noshow-date-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 2px;}
+.tc-noshow-date-weekday{text-align:center;font-size:11px;font-weight:700;color:var(--slate-500);padding:4px 0;}
+.tc-noshow-date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.tc-noshow-date-day{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--primary);padding:8px 0;border-radius:8px;cursor:pointer;}
+.tc-noshow-date-day:hover{background:var(--purple-light);color:var(--purple-dark);}
+.tc-noshow-date-day.is-muted{color:var(--slate-400);font-weight:500;}
+.tc-noshow-date-day.is-today{box-shadow:inset 0 0 0 1px rgba(124,58,237,.35);}
+.tc-noshow-date-day.is-selected{background:var(--assess-gradient);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(124,58,237,.25);}
+.tc-noshow-date-day.is-selected.is-today{box-shadow:0 2px 8px rgba(124,58,237,.25);}
+.tc-noshow-time-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;min-height:168px;}
+.tc-noshow-time-col{display:flex;flex-direction:column;gap:2px;max-height:168px;overflow-y:auto;padding:2px;border:1px solid var(--slate-100);border-radius:10px;background:var(--slate-50);scrollbar-width:thin;}
+.tc-noshow-time-opt{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--primary);padding:8px 6px;border-radius:8px;cursor:pointer;text-align:center;}
+.tc-noshow-time-opt:hover{background:var(--purple-light);color:var(--purple-dark);}
+.tc-noshow-time-opt.is-selected{background:var(--purple-mid);color:var(--purple-dark);}
+.tc-noshow-time-hint{margin:0;font-size:12px;font-weight:600;color:var(--slate-600);text-align:center;min-height:16px;}
+.tc-noshow-time-hint.is-warn{color:#b45309;}
+.tc-noshow-time-clear{border:none;background:transparent;font:inherit;font-size:12px;font-weight:600;color:var(--slate-600);padding:8px 10px;border-radius:8px;cursor:pointer;text-align:center;}
+.tc-noshow-time-clear:hover{background:var(--slate-100);color:var(--primary);}
+.tc-noshow-reschedule-actions{display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:18px;}
+.tc-noshow-reschedule-actions .card-action{padding:10px 12px;border-radius:8px;}
+.tc-noshow-reschedule-actions .tc-kanban-assign-btn{padding:10px 16px;font-size:13px;}
+.tc-noshow-reschedule-actions .tc-kanban-assign-btn:disabled{opacity:.65;cursor:wait;transform:none;filter:none;}
 .tc-ws-novedades-item-mark{width:18px;height:18px;margin-top:1px;flex-shrink:0;color:var(--purple-dark);display:inline-flex;}
 .tc-ws-novedades-item-mark svg{width:18px;height:18px;display:block;}
 .tc-ws-novedades-item-body{flex:1;min-width:0;}
@@ -5003,31 +5042,59 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   </div>
   <div class="tc-ws-novedades-popover-body" id="tc-ws-novedades-body"></div>
 </div>
-<div id="modal-tc-noshow-reschedule" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-tc-noshow-reschedule')">
-  <div class="modal-card" style="max-width:420px" onclick="event.stopPropagation()">
-    <button type="button" class="modal-close" onclick="closeModal('modal-tc-noshow-reschedule')" aria-label="Cerrar">✕</button>
-    <h2 class="modal-title" id="tc-noshow-reschedule-title">Agendar nueva entrevista</h2>
+<div id="modal-tc-noshow-reschedule" class="modal-overlay hidden" onclick="tcEmpNoshowRescheduleOverlayClick(event)">
+  <div class="modal-card tc-noshow-reschedule-card" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="tcEmpNoshowRescheduleClose()" aria-label="Cerrar">✕</button>
+    <h2 class="modal-title" id="tc-noshow-reschedule-title">Reagendar entrevista</h2>
     <p class="modal-subtitle" id="tc-noshow-reschedule-subtitle">Programa otra cita para la misma postulación.</p>
-    <div class="form-group" style="margin-top:12px">
-      <label class="form-label">Candidato</label>
+    <div class="form-group" style="margin-top:4px">
+      <label class="form-label" for="tc-noshow-reschedule-candidate">Candidato</label>
       <input type="text" class="form-input" id="tc-noshow-reschedule-candidate" readonly disabled>
     </div>
     <div class="form-group">
-      <label class="form-label">Vacante</label>
+      <label class="form-label" for="tc-noshow-reschedule-vacancy">Vacante</label>
       <input type="text" class="form-input" id="tc-noshow-reschedule-vacancy" readonly disabled>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="tc-noshow-reschedule-date">Fecha</label>
-      <input type="date" class="form-input" id="tc-noshow-reschedule-date" required>
+    <div class="form-group tc-noshow-date-field">
+      <label class="form-label" id="tc-noshow-reschedule-date-label-text">Fecha</label>
+      <button type="button" class="form-input tc-noshow-date-trigger" id="tc-noshow-reschedule-date-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="tc-noshow-reschedule-date-panel" aria-labelledby="tc-noshow-reschedule-date-label-text" onclick="tcEmpNoshowDateToggle(event)">
+        <span class="tc-noshow-date-trigger-label is-placeholder" id="tc-noshow-reschedule-date-display">Seleccionar fecha</span>
+        <span class="tc-noshow-date-trigger-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></span>
+      </button>
+      <input type="hidden" id="tc-noshow-reschedule-date" value="" required>
+      <div id="tc-noshow-reschedule-date-panel" class="tc-noshow-date-panel hidden" role="dialog" aria-label="Seleccionar fecha">
+        <div class="tc-noshow-date-nav">
+          <button type="button" class="tc-noshow-date-nav-btn" id="tc-noshow-date-prev" aria-label="Mes anterior" onclick="tcEmpNoshowDateShiftMonth(-1,event)">‹</button>
+          <div class="tc-noshow-date-nav-label" id="tc-noshow-date-month-label"></div>
+          <button type="button" class="tc-noshow-date-nav-btn" id="tc-noshow-date-next" aria-label="Mes siguiente" onclick="tcEmpNoshowDateShiftMonth(1,event)">›</button>
+        </div>
+        <div class="tc-noshow-date-weekdays" aria-hidden="true">
+          <span class="tc-noshow-date-weekday">D</span><span class="tc-noshow-date-weekday">L</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">J</span><span class="tc-noshow-date-weekday">V</span><span class="tc-noshow-date-weekday">S</span>
+        </div>
+        <div class="tc-noshow-date-grid" id="tc-noshow-date-grid" role="grid" aria-labelledby="tc-noshow-date-month-label"></div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="tc-noshow-reschedule-time">Hora (opcional)</label>
-      <input type="time" class="form-input" id="tc-noshow-reschedule-time" step="60">
+    <div class="form-group tc-noshow-time-field">
+      <label class="form-label" id="tc-noshow-reschedule-time-label-text">Hora (opcional)</label>
+      <button type="button" class="form-input tc-noshow-time-trigger" id="tc-noshow-reschedule-time-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="tc-noshow-reschedule-time-panel" aria-labelledby="tc-noshow-reschedule-time-label-text" onclick="tcEmpNoshowTimeToggle(event)">
+        <span class="tc-noshow-time-trigger-label is-placeholder" id="tc-noshow-reschedule-time-display">Seleccionar hora</span>
+        <span class="tc-noshow-time-trigger-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+      </button>
+      <input type="hidden" id="tc-noshow-reschedule-time" value="">
+      <div id="tc-noshow-reschedule-time-panel" class="tc-noshow-time-panel hidden" role="dialog" aria-label="Seleccionar hora">
+        <div class="tc-noshow-time-cols">
+          <div class="tc-noshow-time-col" id="tc-noshow-time-hours" role="listbox" aria-label="Hora"></div>
+          <div class="tc-noshow-time-col" id="tc-noshow-time-mins" role="listbox" aria-label="Minutos"></div>
+          <div class="tc-noshow-time-col" id="tc-noshow-time-ampm" role="listbox" aria-label="a. m. o p. m."></div>
+        </div>
+        <p class="tc-noshow-time-hint" id="tc-noshow-time-hint" aria-live="polite"></p>
+        <button type="button" class="tc-noshow-time-clear" onclick="tcEmpNoshowTimeClear(event)">Sin hora</button>
+      </div>
     </div>
     <p class="form-error hidden" id="tc-noshow-reschedule-error" role="alert"></p>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-tc-noshow-reschedule')">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="tc-noshow-reschedule-save" onclick="tcEmpNoshowRescheduleSubmit()">Agendar</button>
+    <div class="tc-noshow-reschedule-actions">
+      <button type="button" class="card-action" onclick="tcEmpNoshowRescheduleClose()">Cancelar</button>
+      <button type="button" class="tc-kanban-assign-btn" id="tc-noshow-reschedule-save" onclick="tcEmpNoshowRescheduleSubmit()">Reagendar</button>
     </div>
   </div>
 </div>
@@ -17330,7 +17397,8 @@ function tcEmpNovedadesResetSessionState(){
   tcEmpNovedadesUpdateBadge(0);
 }
 function tcEmpNovedadesFmtTime(iso){
-  return mind24NotifFmtTime(iso);
+  const label=mind24NotifFmtTime(iso);
+  return label==='—'?'':label;
 }
 function tcEmpNovedadesFilterForEventType(eventType){
   if(eventType==='HIRED') return 'hired';
@@ -17423,12 +17491,13 @@ function tcEmpNovedadesRenderList(){
       ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
       : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
     const cta=noshow&&n.canRescheduleInterviewNoShow
-      ? '<span class="tc-ws-novedades-item-cta">Agendar nueva entrevista</span>'
+      ? '<span class="tc-ws-novedades-item-cta">¿Agendamos la entrevista?<span class="tc-ws-novedades-item-cta-arrow" aria-hidden="true"> →</span></span>'
       : '';
+    const timeLabel=tcEmpNovedadesFmtTime(n.createdAt);
+    const timeHtml=timeLabel?'<p class="tc-ws-novedades-item-time">'+tcEsc(timeLabel)+'</p>':'';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
       mark+
-      '<span class="tc-ws-novedades-item-body">'+copy+cta+
-      '<p class="tc-ws-novedades-item-time">'+tcEsc(tcEmpNovedadesFmtTime(n.createdAt))+'</p></span></button>';
+      '<span class="tc-ws-novedades-item-body">'+copy+cta+timeHtml+'</span></button>';
   }).join('');
 }
 async function tcEmpNovedadesMarkAllRead(){
@@ -17526,12 +17595,331 @@ function tcEmpNovedadesEnsureItemRead(item){
 }
 let tcEmpNoshowRescheduleCtx=null;
 let tcEmpNoshowRescheduleInFlight=false;
+let tcEmpNoshowTimeDraft={ hour:null, minute:null, ampm:null };
+let tcEmpNoshowTimeCommitted={ hour:null, minute:null, ampm:null };
+let tcEmpNoshowDateYmd='';
+let tcEmpNoshowDateView=null;
+let tcEmpNoshowPickerBound=false;
+const TC_NOSHOW_MONTHS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 function tcEmpNoshowRescheduleShowError(msg){
   const el=document.getElementById('tc-noshow-reschedule-error');
   if(!el) return;
   if(!msg){ el.textContent=''; el.classList.add('hidden'); return; }
   el.textContent=String(msg);
   el.classList.remove('hidden');
+}
+function tcEmpNoshowPad2(n){
+  return String(n).padStart(2,'0');
+}
+function tcEmpNoshowYmd(y,m,d){
+  return String(y)+'-'+tcEmpNoshowPad2(m+1)+'-'+tcEmpNoshowPad2(d);
+}
+function tcEmpNoshowParseYmd(ymd){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd||'').trim());
+  if(!m) return null;
+  const y=Number(m[1]); const mo=Number(m[2])-1; const d=Number(m[3]);
+  const dt=new Date(y,mo,d);
+  if(dt.getFullYear()!==y||dt.getMonth()!==mo||dt.getDate()!==d) return null;
+  return { y:y, m:mo, d:d };
+}
+function tcEmpNoshowDateDisplayLabel(ymd){
+  const p=tcEmpNoshowParseYmd(ymd);
+  if(!p) return '';
+  return String(p.d)+' de '+TC_NOSHOW_MONTHS[p.m]+' de '+String(p.y);
+}
+function tcEmpNoshowDateSyncUi(){
+  const hidden=document.getElementById('tc-noshow-reschedule-date');
+  const display=document.getElementById('tc-noshow-reschedule-date-display');
+  const label=tcEmpNoshowDateDisplayLabel(tcEmpNoshowDateYmd);
+  if(hidden) hidden.value=tcEmpNoshowDateYmd||'';
+  if(display){
+    if(label){
+      display.textContent=label;
+      display.classList.remove('is-placeholder');
+    }else{
+      display.textContent='Seleccionar fecha';
+      display.classList.add('is-placeholder');
+    }
+  }
+}
+function tcEmpNoshowDateRenderGrid(){
+  const grid=document.getElementById('tc-noshow-date-grid');
+  const monthLabel=document.getElementById('tc-noshow-date-month-label');
+  if(!grid||!tcEmpNoshowDateView) return;
+  const y=tcEmpNoshowDateView.y;
+  const m=tcEmpNoshowDateView.m;
+  if(monthLabel) monthLabel.textContent=TC_NOSHOW_MONTHS[m]+' '+String(y);
+  const first=new Date(y,m,1);
+  const startPad=first.getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
+  const today=new Date();
+  const todayYmd=tcEmpNoshowYmd(today.getFullYear(),today.getMonth(),today.getDate());
+  const selected=tcEmpNoshowDateYmd;
+  let html='';
+  for(let i=0;i<42;i+=1){
+    let cellY=y; let cellM=m; let cellD; let muted=false;
+    if(i<startPad){
+      cellM=m-1; cellD=prevDays-startPad+i+1; muted=true;
+      if(cellM<0){ cellM=11; cellY=y-1; }
+    }else if(i>=startPad+daysInMonth){
+      cellM=m+1; cellD=i-(startPad+daysInMonth)+1; muted=true;
+      if(cellM>11){ cellM=0; cellY=y+1; }
+    }else{
+      cellD=i-startPad+1;
+    }
+    const ymd=tcEmpNoshowYmd(cellY,cellM,cellD);
+    const cls='tc-noshow-date-day'
+      +(muted?' is-muted':'')
+      +(ymd===todayYmd?' is-today':'')
+      +(ymd===selected?' is-selected':'');
+    html+='<button type="button" class="'+cls+'" data-ymd="'+ymd+'" aria-label="'+ymd+'"'+(ymd===selected?' aria-pressed="true"':'')+'>'+String(cellD)+'</button>';
+  }
+  grid.innerHTML=html;
+}
+function tcEmpNoshowDateSetOpen(open){
+  const panel=document.getElementById('tc-noshow-reschedule-date-panel');
+  const trigger=document.getElementById('tc-noshow-reschedule-date-trigger');
+  if(panel) panel.classList.toggle('hidden',!open);
+  if(trigger) trigger.setAttribute('aria-expanded',open?'true':'false');
+  if(open){
+    tcEmpNoshowTimeSetOpen(false);
+    const parsed=tcEmpNoshowParseYmd(tcEmpNoshowDateYmd);
+    const now=new Date();
+    tcEmpNoshowDateView=parsed
+      ? { y:parsed.y, m:parsed.m }
+      : { y:now.getFullYear(), m:now.getMonth() };
+    tcEmpNoshowDateRenderGrid();
+  }
+}
+function tcEmpNoshowDateToggle(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const panel=document.getElementById('tc-noshow-reschedule-date-panel');
+  const open=!(panel&&!panel.classList.contains('hidden'));
+  tcEmpNoshowDateSetOpen(open);
+}
+function tcEmpNoshowDateShiftMonth(delta,ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if(!tcEmpNoshowDateView) return;
+  let y=tcEmpNoshowDateView.y;
+  let m=tcEmpNoshowDateView.m+delta;
+  if(m<0){ m=11; y-=1; }
+  if(m>11){ m=0; y+=1; }
+  tcEmpNoshowDateView={ y:y, m:m };
+  tcEmpNoshowDateRenderGrid();
+}
+function tcEmpNoshowDateOnPick(ev){
+  const btn=ev.target&&ev.target.closest?ev.target.closest('.tc-noshow-date-day'):null;
+  if(!btn) return;
+  const ymd=btn.getAttribute('data-ymd');
+  if(!tcEmpNoshowParseYmd(ymd)) return;
+  tcEmpNoshowDateYmd=ymd;
+  tcEmpNoshowDateSyncUi();
+  tcEmpNoshowDateRenderGrid();
+  tcEmpNoshowDateSetOpen(false);
+  tcEmpNoshowRescheduleShowError('');
+}
+function tcEmpNoshowTimeIsComplete(state){
+  return !!(state&&state.hour!=null&&state.minute!=null&&state.ampm);
+}
+function tcEmpNoshowTimeIsPartial(state){
+  if(!state) return false;
+  const any=state.hour!=null||state.minute!=null||!!state.ampm;
+  return any&&!tcEmpNoshowTimeIsComplete(state);
+}
+function tcEmpNoshowTimeMissingLabels(state){
+  const missing=[];
+  if(!state||state.hour==null) missing.push('hora');
+  if(!state||state.minute==null) missing.push('minutos');
+  if(!state||!state.ampm) missing.push('a. m. / p. m.');
+  return missing;
+}
+function tcEmpNoshowTimeToHHmm(state){
+  if(!tcEmpNoshowTimeIsComplete(state)) return '';
+  let h=Number(state.hour);
+  const m=Number(state.minute);
+  if(!Number.isFinite(h)||!Number.isFinite(m)||h<1||h>12||m<0||m>59) return '';
+  if(state.ampm==='pm'&&h!==12) h+=12;
+  if(state.ampm==='am'&&h===12) h=0;
+  return tcEmpNoshowPad2(h)+':'+tcEmpNoshowPad2(m);
+}
+function tcEmpNoshowTimeDisplayLabel(state){
+  if(!tcEmpNoshowTimeIsComplete(state)) return '';
+  const h=Number(state.hour);
+  const m=Number(state.minute);
+  if(!Number.isFinite(h)||!Number.isFinite(m)) return '';
+  const suffix=state.ampm==='pm'?'p. m.':'a. m.';
+  return String(h)+':'+tcEmpNoshowPad2(m)+' '+suffix;
+}
+function tcEmpNoshowTimeSyncUi(){
+  const hidden=document.getElementById('tc-noshow-reschedule-time');
+  const display=document.getElementById('tc-noshow-reschedule-time-display');
+  const hint=document.getElementById('tc-noshow-time-hint');
+  const committedLabel=tcEmpNoshowTimeDisplayLabel(tcEmpNoshowTimeCommitted);
+  const hhmm=tcEmpNoshowTimeToHHmm(tcEmpNoshowTimeCommitted);
+  if(hidden) hidden.value=hhmm;
+  if(display){
+    if(committedLabel){
+      display.textContent=committedLabel;
+      display.classList.remove('is-placeholder');
+    }else{
+      display.textContent='Seleccionar hora';
+      display.classList.add('is-placeholder');
+    }
+  }
+  const highlight=tcEmpNoshowTimeDraft;
+  const hourHost=document.getElementById('tc-noshow-time-hours');
+  const minHost=document.getElementById('tc-noshow-time-mins');
+  const ampmHost=document.getElementById('tc-noshow-time-ampm');
+  if(hourHost){
+    hourHost.querySelectorAll('.tc-noshow-time-opt').forEach(function(btn){
+      btn.classList.toggle('is-selected', Number(btn.getAttribute('data-val'))===Number(highlight.hour));
+    });
+  }
+  if(minHost){
+    minHost.querySelectorAll('.tc-noshow-time-opt').forEach(function(btn){
+      btn.classList.toggle('is-selected', Number(btn.getAttribute('data-val'))===Number(highlight.minute));
+    });
+  }
+  if(ampmHost){
+    ampmHost.querySelectorAll('.tc-noshow-time-opt').forEach(function(btn){
+      btn.classList.toggle('is-selected', btn.getAttribute('data-val')===highlight.ampm);
+    });
+  }
+  if(hint){
+    if(tcEmpNoshowTimeIsPartial(tcEmpNoshowTimeDraft)){
+      const miss=tcEmpNoshowTimeMissingLabels(tcEmpNoshowTimeDraft);
+      hint.textContent='Falta: '+miss.join(', ')+'. O elige Sin hora.';
+      hint.classList.add('is-warn');
+    }else if(tcEmpNoshowTimeIsComplete(tcEmpNoshowTimeDraft)){
+      hint.textContent='Hora lista';
+      hint.classList.remove('is-warn');
+    }else{
+      hint.textContent='Opcional · elige hora, minutos y a. m. / p. m.';
+      hint.classList.remove('is-warn');
+    }
+  }
+}
+function tcEmpNoshowTimeEnsureColumns(){
+  const hourHost=document.getElementById('tc-noshow-time-hours');
+  const minHost=document.getElementById('tc-noshow-time-mins');
+  const ampmHost=document.getElementById('tc-noshow-time-ampm');
+  if(!hourHost||!minHost||!ampmHost) return;
+  if(!hourHost.childElementCount){
+    for(let h=1;h<=12;h+=1){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='tc-noshow-time-opt';
+      b.setAttribute('role','option');
+      b.setAttribute('data-kind','hour');
+      b.setAttribute('data-val',String(h));
+      b.textContent=String(h);
+      hourHost.appendChild(b);
+    }
+  }
+  if(!minHost.childElementCount){
+    for(let m=0;m<=59;m+=1){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='tc-noshow-time-opt';
+      b.setAttribute('role','option');
+      b.setAttribute('data-kind','minute');
+      b.setAttribute('data-val',String(m));
+      b.textContent=tcEmpNoshowPad2(m);
+      minHost.appendChild(b);
+    }
+  }
+  if(!ampmHost.childElementCount){
+    [['am','a. m.'],['pm','p. m.']].forEach(function(pair){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='tc-noshow-time-opt';
+      b.setAttribute('role','option');
+      b.setAttribute('data-kind','ampm');
+      b.setAttribute('data-val',pair[0]);
+      b.textContent=pair[1];
+      ampmHost.appendChild(b);
+    });
+  }
+}
+function tcEmpNoshowTimeSetOpen(open){
+  const panel=document.getElementById('tc-noshow-reschedule-time-panel');
+  const trigger=document.getElementById('tc-noshow-reschedule-time-trigger');
+  if(panel) panel.classList.toggle('hidden',!open);
+  if(trigger) trigger.setAttribute('aria-expanded',open?'true':'false');
+  if(open){
+    // Conserva el borrador parcial/completo al reabrir (p. ej. tras error de validación).
+    // Solo se reinicia al abrir una nueva cita o con «Sin hora».
+    tcEmpNoshowDateSetOpen(false);
+    tcEmpNoshowTimeEnsureColumns();
+    tcEmpNoshowTimeSyncUi();
+  }
+}
+function tcEmpNoshowTimeToggle(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const panel=document.getElementById('tc-noshow-reschedule-time-panel');
+  const open=!(panel&&!panel.classList.contains('hidden'));
+  tcEmpNoshowTimeSetOpen(open);
+}
+function tcEmpNoshowTimeClear(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  tcEmpNoshowTimeDraft={ hour:null, minute:null, ampm:null };
+  tcEmpNoshowTimeCommitted={ hour:null, minute:null, ampm:null };
+  tcEmpNoshowTimeSyncUi();
+  tcEmpNoshowTimeSetOpen(false);
+  tcEmpNoshowRescheduleShowError('');
+}
+function tcEmpNoshowTimeOnPick(ev){
+  const btn=ev.target&&ev.target.closest?ev.target.closest('.tc-noshow-time-opt'):null;
+  if(!btn) return;
+  const kind=btn.getAttribute('data-kind');
+  const val=btn.getAttribute('data-val');
+  if(kind==='hour') tcEmpNoshowTimeDraft.hour=Number(val);
+  else if(kind==='minute') tcEmpNoshowTimeDraft.minute=Number(val);
+  else if(kind==='ampm') tcEmpNoshowTimeDraft.ampm=val;
+  if(tcEmpNoshowTimeIsComplete(tcEmpNoshowTimeDraft)){
+    tcEmpNoshowTimeCommitted={
+      hour:tcEmpNoshowTimeDraft.hour,
+      minute:tcEmpNoshowTimeDraft.minute,
+      ampm:tcEmpNoshowTimeDraft.ampm,
+    };
+  }
+  tcEmpNoshowTimeSyncUi();
+  tcEmpNoshowRescheduleShowError('');
+}
+function tcEmpNoshowPickerEnsureListeners(){
+  if(tcEmpNoshowPickerBound) return;
+  tcEmpNoshowPickerBound=true;
+  const timePanel=document.getElementById('tc-noshow-reschedule-time-panel');
+  const dateGrid=document.getElementById('tc-noshow-date-grid');
+  if(timePanel) timePanel.addEventListener('click',tcEmpNoshowTimeOnPick);
+  if(dateGrid) dateGrid.addEventListener('click',tcEmpNoshowDateOnPick);
+  document.addEventListener('mousedown',function(ev){
+    const timePanelEl=document.getElementById('tc-noshow-reschedule-time-panel');
+    const timeTrigger=document.getElementById('tc-noshow-reschedule-time-trigger');
+    const datePanelEl=document.getElementById('tc-noshow-reschedule-date-panel');
+    const dateTrigger=document.getElementById('tc-noshow-reschedule-date-trigger');
+    if(timePanelEl&&!timePanelEl.classList.contains('hidden')){
+      if(!(timePanelEl.contains(ev.target)||(timeTrigger&&timeTrigger.contains(ev.target)))){
+        tcEmpNoshowTimeSetOpen(false);
+      }
+    }
+    if(datePanelEl&&!datePanelEl.classList.contains('hidden')){
+      if(!(datePanelEl.contains(ev.target)||(dateTrigger&&dateTrigger.contains(ev.target)))){
+        tcEmpNoshowDateSetOpen(false);
+      }
+    }
+  });
+}
+function tcEmpNoshowRescheduleClose(){
+  tcEmpNoshowTimeSetOpen(false);
+  tcEmpNoshowDateSetOpen(false);
+  closeModal('modal-tc-noshow-reschedule');
+}
+function tcEmpNoshowRescheduleOverlayClick(ev){
+  if(ev&&ev.target&&ev.target.id==='modal-tc-noshow-reschedule'){
+    tcEmpNoshowRescheduleClose();
+  }
 }
 function tcEmpOpenNoshowReschedule(item){
   if(!item||!item.applicationId||!item.canRescheduleInterviewNoShow){
@@ -17554,25 +17942,38 @@ function tcEmpOpenNoshowReschedule(item){
   };
   const cand=document.getElementById('tc-noshow-reschedule-candidate');
   const vac=document.getElementById('tc-noshow-reschedule-vacancy');
-  const dateEl=document.getElementById('tc-noshow-reschedule-date');
-  const timeEl=document.getElementById('tc-noshow-reschedule-time');
   if(cand) cand.value=tcEmpNoshowRescheduleCtx.candidateName;
   if(vac) vac.value=tcEmpNoshowRescheduleCtx.vacancyTitle;
-  if(dateEl) dateEl.value='';
-  if(timeEl) timeEl.value='';
+  tcEmpNoshowDateYmd='';
+  tcEmpNoshowDateView=null;
+  tcEmpNoshowTimeDraft={ hour:null, minute:null, ampm:null };
+  tcEmpNoshowTimeCommitted={ hour:null, minute:null, ampm:null };
+  tcEmpNoshowTimeEnsureColumns();
+  tcEmpNoshowPickerEnsureListeners();
+  tcEmpNoshowDateSyncUi();
+  tcEmpNoshowTimeSyncUi();
+  tcEmpNoshowDateSetOpen(false);
+  tcEmpNoshowTimeSetOpen(false);
   tcEmpNoshowRescheduleShowError('');
   openModal('modal-tc-noshow-reschedule');
 }
 async function tcEmpNoshowRescheduleSubmit(){
   if(tcEmpNoshowRescheduleInFlight||!tcEmpNoshowRescheduleCtx) return;
-  const dateEl=document.getElementById('tc-noshow-reschedule-date');
-  const timeEl=document.getElementById('tc-noshow-reschedule-time');
-  const interviewDate=(dateEl&&dateEl.value||'').trim();
-  const interviewTime=(timeEl&&timeEl.value||'').trim();
+  const interviewDate=(tcEmpNoshowDateYmd||'').trim();
   if(!interviewDate){
     tcEmpNoshowRescheduleShowError('Indica la fecha de la nueva entrevista.');
+    tcEmpNoshowDateSetOpen(true);
     return;
   }
+  if(tcEmpNoshowTimeIsPartial(tcEmpNoshowTimeDraft)){
+    const miss=tcEmpNoshowTimeMissingLabels(tcEmpNoshowTimeDraft);
+    tcEmpNoshowRescheduleShowError('Completa la hora ('+miss.join(', ')+') o elige Sin hora.');
+    tcEmpNoshowTimeSetOpen(true);
+    return;
+  }
+  const interviewTime=tcEmpNoshowTimeToHHmm(tcEmpNoshowTimeCommitted)||null;
+  tcEmpNoshowDateSetOpen(false);
+  tcEmpNoshowTimeSetOpen(false);
   tcEmpNoshowRescheduleInFlight=true;
   const btn=document.getElementById('tc-noshow-reschedule-save');
   if(btn) btn.disabled=true;
@@ -17582,11 +17983,11 @@ async function tcEmpNoshowRescheduleSubmit(){
       '/api/timeclock/public/recruitment/applications/'+encodeURIComponent(tcEmpNoshowRescheduleCtx.applicationId)+'/reschedule-interview-no-show',
       { method:'POST', body:JSON.stringify({
         interviewDate:interviewDate,
-        interviewTime:interviewTime||null,
+        interviewTime:interviewTime,
         sourceInterviewEventId:tcEmpNoshowRescheduleCtx.sourceInterviewEventId,
       }) }
     );
-    closeModal('modal-tc-noshow-reschedule');
+    tcEmpNoshowRescheduleClose();
     const candId=tcEmpNoshowRescheduleCtx.candidateId;
     const novId=tcEmpNoshowRescheduleCtx.novedadId;
     const appId=tcEmpNoshowRescheduleCtx.applicationId;
@@ -17660,6 +18061,12 @@ window.tcEmpNovedadesClose=tcEmpNovedadesClose;
 window.tcEmpNovedadesMarkAllRead=tcEmpNovedadesMarkAllRead;
 window.tcEmpNovedadesOpenItem=tcEmpNovedadesOpenItem;
 window.tcEmpNoshowRescheduleSubmit=tcEmpNoshowRescheduleSubmit;
+window.tcEmpNoshowRescheduleClose=tcEmpNoshowRescheduleClose;
+window.tcEmpNoshowRescheduleOverlayClick=tcEmpNoshowRescheduleOverlayClick;
+window.tcEmpNoshowDateToggle=tcEmpNoshowDateToggle;
+window.tcEmpNoshowDateShiftMonth=tcEmpNoshowDateShiftMonth;
+window.tcEmpNoshowTimeToggle=tcEmpNoshowTimeToggle;
+window.tcEmpNoshowTimeClear=tcEmpNoshowTimeClear;
 function tcEmpPrimaryButtonEl(){
   const waitView=document.getElementById('tc-ws-jornada-view-wait');
   if(waitView&&!waitView.classList.contains('hidden')) return document.getElementById('tc-emp-primary-wait');

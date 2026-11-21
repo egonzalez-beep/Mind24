@@ -231,7 +231,16 @@ export async function listCollaboratorNovedadesFeed({
 
   const { page, hasMore, nextCursor } = paginateCollaboratorFeedMerged(merged, take);
   const novedades = await attachInterviewNoShowRescheduleFlags(
-    page.map(({ createdAt, rawId, ...rest }) => rest),
+    page.map(({ createdAt, rawId, ...rest }) => {
+      let createdAtIso = null;
+      if (createdAt instanceof Date && !Number.isNaN(createdAt.getTime())) {
+        createdAtIso = createdAt.toISOString();
+      } else if (createdAt != null && String(createdAt).trim() !== '') {
+        const d = new Date(createdAt);
+        if (!Number.isNaN(d.getTime())) createdAtIso = d.toISOString();
+      }
+      return { ...rest, createdAt: createdAtIso };
+    }),
     organizationId,
   );
 
