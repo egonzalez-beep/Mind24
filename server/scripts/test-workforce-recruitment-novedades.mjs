@@ -124,37 +124,51 @@ check(
   'POST portal agendar desde NO_SHOW',
 );
 check(/sourceInterviewEventId/.test(publicRoutes), 'ruta exige id del NO_SHOW del aviso');
-check(/¿Agendamos la entrevista\?/.test(indexHtml), 'CTA Novedades agendar');
+check(/¿Reagendamos la entrevista\?/.test(indexHtml), 'CTA Novedades reagendar');
+check(
+  /\.tc-ws-novedades-item-cta\{[^}]*text-decoration:\s*none/.test(indexHtml),
+  'CTA sin subrayado',
+);
 check(/Reagendar entrevista/.test(indexHtml), 'modal título Reagendar entrevista');
 check(/Seleccionar fecha/.test(indexHtml), 'placeholder fecha personalizado');
 check(/tc-noshow-date-panel/.test(indexHtml), 'calendario desplegable propio');
 check(/tcEmpNoshowDateShiftMonth/.test(indexHtml), 'navegación de mes en calendario');
-check(/Seleccionar hora/.test(indexHtml), 'placeholder hora personalizado');
-check(/Sin hora/.test(indexHtml), 'opción Sin hora en desplegable');
-check(/tc-noshow-time-panel/.test(indexHtml), 'desplegable de hora propio');
 check(
-  /tcEmpNoshowTimeIsComplete/.test(indexHtml)
-    && /tcEmpNoshowTimeIsPartial/.test(indexHtml)
-    && /Falta:/.test(indexHtml),
-  'hora se guarda solo si está completa',
+  /rgba\(124,\s*58,\s*237,\s*\.28\)/.test(indexHtml)
+    && /tc-noshow-reschedule-card::-webkit-scrollbar/.test(indexHtml),
+  'scroll modal estilo Mind24 (no negro)',
 );
+check(/tc-noshow-reschedule-time-input/.test(indexHtml), 'hora tipada en input');
+check(/tcEmpNoshowAmpmToggle/.test(indexHtml), 'botón a. m. / p. m.');
+check(!/tc-noshow-time-panel/.test(indexHtml), 'sin desplegable de reloj');
 check(
-  !/tcEmpNoshowTimeSetOpen\(open\)[\s\S]{0,220}tcEmpNoshowTimeDraft\s*=\s*\{\s*hour:\s*tcEmpNoshowTimeCommitted/.test(
-    indexHtml,
-  ),
-  'reabrir selector no borra borrador parcial',
+  !/tc-noshow[\s\S]{0,400}Sin hora/.test(indexHtml)
+    && !/tcEmpNoshowTimeClear/.test(indexHtml),
+  'modal noshow sin Sin hora',
 );
 {
-  // Caso: solo minutos=30 → parcial; dos validaciones no envían; Sin hora → null.
-  const draft = { hour: null, minute: 30, ampm: null };
-  const isPartial = draft.hour != null || draft.minute != null || !!draft.ampm;
-  const isComplete = draft.hour != null && draft.minute != null && !!draft.ampm;
-  check(isPartial && !isComplete, 'caso minutos-only: parcial no completa');
-  check(!isComplete, 'caso minutos-only: no envía (falta hora y a. m./p. m.)');
-  const cleared = { hour: null, minute: null, ampm: null };
-  const clearedComplete =
-    cleared.hour != null && cleared.minute != null && !!cleared.ampm;
-  check(!clearedComplete, 'Sin hora → sin HH:mm (null al endpoint)');
+  const parse = (raw) => {
+    const s = String(raw || '').trim();
+    if (!s) return { empty: true };
+    const m = /^(\d{1,2})\s*[:.]\s*(\d{1,2})$/.exec(s);
+    if (!m) return { invalid: true };
+    const hour = Number(m[1]);
+    const minute = Number(m[2]);
+    if (
+      !Number.isFinite(hour)
+      || !Number.isFinite(minute)
+      || hour < 1
+      || hour > 12
+      || minute < 0
+      || minute > 59
+    ) {
+      return { invalid: true };
+    }
+    return { hour, minute };
+  };
+  check(parse('').empty === true, 'hora vacía → null');
+  check(parse('3:30').hour === 3 && parse('3:30').minute === 30, 'hora tipada 3:30 válida');
+  check(parse('30').invalid === true, 'hora incompleta no envía');
 }
 check(
   /canRescheduleInterviewNoShow/.test(indexHtml)
