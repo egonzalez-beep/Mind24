@@ -228,6 +228,12 @@ check(
 );
 check(indexHtml.includes('Entrevistas · '), 'el expediente anuncia Entrevistas · N');
 check(indexHtml.includes('Programar otra'), 'la acción compacta es Programar otra');
+check(
+  /function recCandOpenInterviewDetail[\s\S]*?overlay\.style\.visibility\s*=\s*''[\s\S]*?overlay\.style\.pointerEvents\s*=\s*''[\s\S]*?overlay\.classList\.remove\('hidden'\)/.test(
+    indexHtml,
+  ),
+  'reabrir entrevista limpia visibility/pointer-events del overlay',
+);
 check(indexHtml.includes('aria-expanded'), 'el acordeón expone aria-expanded');
 check(indexHtml.includes('__recInterviewEscape'), 'un repintado no registra otro Escape');
 check(indexHtml.includes("e.name==='AbortError'"), 'AbortError no se muestra como fallo');

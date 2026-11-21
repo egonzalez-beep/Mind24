@@ -13954,6 +13954,11 @@ function recCandOpenInterviewDetail(btn, appId, eventId){
   if(eventId&&!recCandFindInterview(appId,eventId)) return;
   const overlay=recCandEnsureInterviewDialog();
   recCandPaintInterviewDialog();
+  // mind24ResetUiBlockers (p. ej. al reabrir la ficha) deja visibility/pointer-events en línea.
+  overlay.style.visibility='';
+  overlay.style.pointerEvents='';
+  overlay.style.opacity='';
+  overlay.style.transition='';
   overlay.classList.remove('hidden');
   recCandFocusInterviewDialog();
 }
