@@ -1,4 +1,5 @@
 import { prisma } from '../db/client.js';
+import { canRescheduleInterviewNoShowFromAviso } from './workforceRecruitmentNovedad.service.js';
 
 const DEFAULT_LIST_LIMIT = 30;
 const MAX_LIST_LIMIT = 30;
@@ -139,7 +140,40 @@ function serializeRecruitmentRow(row) {
     createdAt: row.createdAt.toISOString(),
     readAt: row.readAt ? row.readAt.toISOString() : null,
     read: row.readAt != null,
+    canRescheduleInterviewNoShow: false,
   };
+}
+
+/** Marca avisos NO_SHOW vigentes según stage + interviewNoShowEventId actuales. */
+export async function attachInterviewNoShowRescheduleFlags(novedades, organizationId, db = prisma) {
+  if (!organizationId || !Array.isArray(novedades) || !novedades.length) return novedades || [];
+  const noshowAppIds = [
+    ...new Set(
+      novedades
+        .filter((n) => n?.eventType === 'INTERVIEW_NO_SHOW' && n.applicationId)
+        .map((n) => String(n.applicationId)),
+    ),
+  ];
+  if (!noshowAppIds.length) return novedades;
+  const apps = await db.recruitmentApplication.findMany({
+    where: { organizationId, id: { in: noshowAppIds } },
+    select: {
+      id: true,
+      interviewNoShowEventId: true,
+      stage: { select: { key: true } },
+    },
+  });
+  const byId = new Map(apps.map((a) => [a.id, a]));
+  return novedades.map((n) => {
+    if (n?.eventType !== 'INTERVIEW_NO_SHOW') return n;
+    const app = byId.get(n.applicationId);
+    const can = canRescheduleInterviewNoShowFromAviso({
+      metadata: n.metadata,
+      applicationStageKey: app?.stage?.key,
+      applicationInterviewNoShowEventId: app?.interviewNoShowEventId,
+    });
+    return { ...n, canRescheduleInterviewNoShow: can };
+  });
 }
 
 function serializeWorkplaceRow(row) {
@@ -196,7 +230,10 @@ export async function listCollaboratorNovedadesFeed({
   const merged = mergeCollaboratorFeedRows(recRows, wpRows);
 
   const { page, hasMore, nextCursor } = paginateCollaboratorFeedMerged(merged, take);
-  const novedades = page.map(({ createdAt, rawId, ...rest }) => rest);
+  const novedades = await attachInterviewNoShowRescheduleFlags(
+    page.map(({ createdAt, rawId, ...rest }) => rest),
+    organizationId,
+  );
 
   return { novedades, nextCursor, hasMore };
 }

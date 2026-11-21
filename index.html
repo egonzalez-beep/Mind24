@@ -17422,7 +17422,7 @@ function tcEmpNovedadesRenderList(){
       : reminder
       ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
       : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
-    const cta=noshow
+    const cta=noshow&&n.canRescheduleInterviewNoShow
       ? '<span class="tc-ws-novedades-item-cta">Agendar nueva entrevista</span>'
       : '';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
@@ -17534,7 +17534,7 @@ function tcEmpNoshowRescheduleShowError(msg){
   el.classList.remove('hidden');
 }
 function tcEmpOpenNoshowReschedule(item){
-  if(!item||!item.applicationId){
+  if(!item||!item.applicationId||!item.canRescheduleInterviewNoShow){
     if(typeof toast==='function') toast('Esta acción ya no está disponible.','error');
     return;
   }
@@ -17544,6 +17544,7 @@ function tcEmpOpenNoshowReschedule(item){
     return;
   }
   tcEmpNoshowRescheduleCtx={
+    novedadId:item.id||null,
     applicationId:item.applicationId,
     candidateId:item.candidateId||null,
     vacancyId:item.vacancyId||null,
@@ -17587,7 +17588,21 @@ async function tcEmpNoshowRescheduleSubmit(){
     );
     closeModal('modal-tc-noshow-reschedule');
     const candId=tcEmpNoshowRescheduleCtx.candidateId;
+    const novId=tcEmpNoshowRescheduleCtx.novedadId;
+    const appId=tcEmpNoshowRescheduleCtx.applicationId;
+    const srcEv=tcEmpNoshowRescheduleCtx.sourceInterviewEventId;
     tcEmpNoshowRescheduleCtx=null;
+    tcEmpNovedadesItems=(tcEmpNovedadesItems||[]).map(function(n){
+      if(novId&&n.id===novId) return Object.assign({},n,{canRescheduleInterviewNoShow:false});
+      if(n.eventType==='INTERVIEW_NO_SHOW'&&n.applicationId===appId){
+        const mid=n.metadata&&n.metadata.interviewEventId;
+        if(mid!=null&&String(mid)===String(srcEv)){
+          return Object.assign({},n,{canRescheduleInterviewNoShow:false});
+        }
+      }
+      return n;
+    });
+    if(tcEmpNovedadesOpen) tcEmpNovedadesRenderList();
     if(typeof toast==='function') toast('Entrevista agendada.','ok');
     if(candId) tcEmpQuickGoCandidates('in_process', candId);
   }catch(err){
@@ -17612,7 +17627,11 @@ function tcEmpNovedadesOpenItem(id){
     return;
   }
   if(item.eventType==='INTERVIEW_NO_SHOW'){
-    tcEmpOpenNoshowReschedule(item);
+    if(item.canRescheduleInterviewNoShow){
+      tcEmpOpenNoshowReschedule(item);
+      return;
+    }
+    tcEmpQuickGoCandidates(null, item.candidateId||null);
     return;
   }
   const filter=tcEmpNovedadesFilterForEventType(item.eventType);

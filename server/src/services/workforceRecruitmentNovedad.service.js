@@ -83,6 +83,26 @@ export function interviewNoShowDedupeKey({ applicationId, interviewEventId }) {
   return `interview_no_show:${appId}:${eventId}`;
 }
 
+/**
+ * CTA «Agendar» solo si la postulación sigue en cartera NO_SHOW y el aviso
+ * es el de la cita que provocó esa estancia (mismo id que interviewNoShowEventId).
+ */
+export function canRescheduleInterviewNoShowFromAviso({
+  metadata,
+  applicationStageKey,
+  applicationInterviewNoShowEventId,
+}) {
+  const eventId =
+    metadata?.interviewEventId != null ? String(metadata.interviewEventId).trim() : '';
+  if (!eventId) return false;
+  if (String(applicationStageKey || '').trim() !== 'INTERVIEW_NO_SHOW') return false;
+  const stayId =
+    applicationInterviewNoShowEventId != null
+      ? String(applicationInterviewNoShowEventId).trim()
+      : '';
+  return Boolean(stayId) && stayId === eventId;
+}
+
 function serializeNovedad(row) {
   return {
     id: row.id,

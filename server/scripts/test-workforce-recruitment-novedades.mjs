@@ -125,8 +125,27 @@ check(
 );
 check(/sourceInterviewEventId/.test(publicRoutes), 'ruta exige id del NO_SHOW del aviso');
 check(/Agendar nueva entrevista/.test(indexHtml), 'CTA Novedades agendar');
+check(
+  /canRescheduleInterviewNoShow/.test(indexHtml)
+    && /noshow&&n\.canRescheduleInterviewNoShow/.test(indexHtml),
+  'CTA solo si aviso vigente en cartera',
+);
+check(
+  /canRescheduleInterviewNoShow:false/.test(indexHtml)
+    || /canRescheduleInterviewNoShow:\s*false/.test(indexHtml),
+  'tras agendar quita CTA en lista local',
+);
 check(/sourceInterviewEventId/.test(indexHtml), 'UI envía id del evento del aviso');
 check(/modal-tc-noshow-reschedule/.test(indexHtml), 'modal agendar sin alta');
+{
+  const feedSvc = fs.readFileSync(
+    path.join(serverDir, 'src/services/workforceCollaboratorNovedadesFeed.service.js'),
+    'utf8',
+  );
+  check(/attachInterviewNoShowRescheduleFlags/.test(feedSvc), 'feed enriquece flag de CTA');
+  check(/canRescheduleInterviewNoShowFromAviso/.test(feedSvc), 'feed usa helper de vigencia');
+  check(/canRescheduleInterviewNoShowFromAviso/.test(novedadSvc), 'helper vigencia exportado');
+}
 check(/rec-kanban-col--sem-noshow/.test(indexHtml), 'Kanban columna cartera');
 {
   const parkSvc = fs.readFileSync(
@@ -198,7 +217,7 @@ check(/if\(tcEmpNovedadesPollInFlight\) return/.test(indexHtml), 'guard inFlight
 check(!/tcEmpNovedadesBuildFeed/.test(indexHtml), 'sin feed inferido');
 
 console.log('\n=== NO_SHOW dedupe key (unit) ===\n');
-const { interviewNoShowDedupeKey } = await import(
+const { interviewNoShowDedupeKey, canRescheduleInterviewNoShowFromAviso } = await import(
   '../src/services/workforceRecruitmentNovedad.service.js'
 );
 {
@@ -213,6 +232,43 @@ const { interviewNoShowDedupeKey } = await import(
   check(sameCita !== otherCitaSameSlot, 'dos citas distintas (mismo horario) → dos claves');
   check(interviewNoShowDedupeKey({ applicationId: 'app1', interviewEventId: '' }) == null, 'sin eventId no hay clave');
   check(interviewNoShowDedupeKey({ applicationId: '', interviewEventId: 'ev-a' }) == null, 'sin applicationId no hay clave');
+}
+
+console.log('\n=== CTA Agendar vigencia (unit) ===\n');
+{
+  const metaA = { interviewEventId: 'ev-a' };
+  check(
+    canRescheduleInterviewNoShowFromAviso({
+      metadata: metaA,
+      applicationStageKey: 'INTERVIEW_NO_SHOW',
+      applicationInterviewNoShowEventId: 'ev-a',
+    }),
+    'CTA: en cartera y aviso = estancia',
+  );
+  check(
+    !canRescheduleInterviewNoShowFromAviso({
+      metadata: metaA,
+      applicationStageKey: 'INTERVIEW_NO_SHOW',
+      applicationInterviewNoShowEventId: 'ev-b',
+    }),
+    'CTA: aviso A no coincide con estancia B',
+  );
+  check(
+    !canRescheduleInterviewNoShowFromAviso({
+      metadata: metaA,
+      applicationStageKey: 'INTERVIEW',
+      applicationInterviewNoShowEventId: 'ev-a',
+    }),
+    'CTA: fuera de cartera (otra entrevista / reagendada)',
+  );
+  check(
+    !canRescheduleInterviewNoShowFromAviso({
+      metadata: metaA,
+      applicationStageKey: 'INTERVIEW_NO_SHOW',
+      applicationInterviewNoShowEventId: null,
+    }),
+    'CTA: sin vínculo de estancia',
+  );
 }
 
 console.log('\n=== Park stay ↔ NO_SHOW event (unit) ===\n');
