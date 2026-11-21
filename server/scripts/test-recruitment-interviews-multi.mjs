@@ -786,6 +786,13 @@ check(
 );
 check(indexHtml.includes("row.eventType!=='RESCHEDULED'"), 'N no cuenta una reprogramación');
 check(indexHtml.includes('rec-cand-interview-row--history'), 'Reprogramada se ve como antecedente');
+check(
+  indexHtml.includes('recCandRowInterviewReschedule')
+    && indexHtml.includes('recCandRowInterviewAsk')
+    && indexHtml.includes('rec-cand-interview-actions')
+    && indexHtml.includes('recCandKeepInterviewsExpanded'),
+  'acciones Reprogramar/Realizada/No asistió/Cancelar viven en la fila programada',
+);
 
 async function oldForm(db, applicationId, scheduledAt) {
   return applyRecruitmentInterviewFormChange(db, {
@@ -1334,9 +1341,9 @@ if (!executablePath) {
       const list = host.querySelector('.rec-cand-interviews-list');
       const text = host.textContent;
       const listHeight = list.getBoundingClientRect().height;
-      const row = host.querySelector('.rec-cand-interview-row');
-      row.focus();
-      row.click();
+      const open = host.querySelector('.rec-cand-interview-open');
+      open.focus();
+      open.click();
       await new Promise((resolve) => setTimeout(resolve, 30));
       const dialog = document.querySelector('.rec-cand-interview-detail');
       const listHeightAfter = list.getBoundingClientRect().height;
@@ -1363,7 +1370,7 @@ if (!executablePath) {
         buttonCount: buttons.length,
         dialogWidth,
         detailHidden: !!(dialog && dialog.classList.contains('hidden')),
-        focusBack: document.activeElement === row,
+        focusBack: document.activeElement === open,
         focusedInside,
       };
     }, { interviews, width });
@@ -1403,14 +1410,18 @@ if (!executablePath) {
     return {
       count: host.textContent.includes('Entrevistas · 10'),
       scrolls: list.scrollHeight > list.clientHeight,
-      bounded: list.clientHeight <= 180,
+      bounded: list.clientHeight <= 220,
       closedSchedule: closedHost.querySelectorAll('.rec-cand-interviews-add').length,
-      closedRows: closedHost.querySelectorAll('button.rec-cand-interview-row').length,
+      closedRows: closedHost.querySelectorAll('.rec-cand-interview-row').length,
+      closedActions: closedHost.querySelectorAll('.rec-cand-interview-action').length,
       closedText: closedHost.textContent.includes('Entrevistas · 10'),
     };
   });
   check(many.count && many.scrolls && many.bounded, 'diez entrevistas usan scroll interno y no crecen sin límite');
-  check(many.closedSchedule === 0 && many.closedRows > 0 && many.closedText, 'G el historial cerrado no ofrece programar otra');
+  check(
+    many.closedSchedule === 0 && many.closedRows > 0 && many.closedActions === 0 && many.closedText,
+    'G el historial cerrado no ofrece programar otra ni acciones de fila',
+  );
 
   const abort = await page.evaluate(async () => {
     const err = document.createElement('p');
@@ -1459,7 +1470,7 @@ if (!executablePath) {
     st.detailCandidate = { id: 'cand-chain', archivedAt: null, applications: [chainApp] };
     host.querySelector('.rec-cand-interviews-toggle').click();
     const history = host.querySelector('.rec-cand-interview-row--history');
-    history.click();
+    history.querySelector('.rec-cand-interview-open').click();
     // Scope al overlay de entrevistas: el modal de contratación también usa .rec-iv-dialog.
     const dialogText = document.querySelector('#rec-iv-overlay .rec-iv-dialog').textContent;
     const scheduled = host.querySelector('.rec-cand-interview-status--scheduled');
@@ -1491,7 +1502,7 @@ if (!executablePath) {
     recEnsureState().detailCandidate = { id: 'cand-visual', archivedAt: null, applications: [app] };
     host.querySelector('.rec-cand-interviews-toggle').click();
     const rows = [...host.querySelectorAll('.rec-cand-interview-row')];
-    rows[1].click();
+    rows[1].querySelector('.rec-cand-interview-open').click();
     const safeDialog = document.querySelector('#rec-iv-overlay .rec-iv-dialog');
     const safeText = safeDialog.textContent.includes('alert(1)');
     const safeEscaped = safeDialog.innerHTML.includes('&lt;script');
@@ -1531,9 +1542,9 @@ if (!executablePath) {
     await Promise.resolve();
     let release;
     apiJson = () => new Promise((resolve) => { release = resolve; });
-    rows[0].click();
+    rows[0].querySelector('.rec-cand-interview-open').click();
     const pending = recCandInterviewAction('app-visual', 'n1', 'COMMENT', { comment: 'tarde' });
-    rows[1].click();
+    rows[1].querySelector('.rec-cand-interview-open').click();
     release({});
     await pending;
     const dialog = document.querySelector('#rec-iv-overlay .rec-iv-dialog');
@@ -1561,6 +1572,111 @@ if (!executablePath) {
   );
   check(dialogFlow.calls === 1, 'J un doble clic no envía dos solicitudes');
   check(dialogFlow.staleOpen && dialogFlow.showsSecond && dialogFlow.hidesFirst, 'M una respuesta vieja no pisa la entrevista recién abierta');
+
+  const rowActions = await page.evaluate(async () => {
+    const host = document.getElementById('interview-host');
+    const app = {
+      applicationId: 'app-row-actions',
+      closureOutcome: null,
+      stage: { key: 'CONTACT', name: 'Contacto' },
+      interviews: [
+        {
+          id: 'iv-a', eventType: 'SCHEDULED', scheduledAt: '2027-12-01T16:00:00.000Z',
+          scheduledTimeSpecified: true, label: 'Cita A', comment: null, stageName: 'Contacto',
+        },
+        {
+          id: 'iv-b', eventType: 'SCHEDULED', scheduledAt: '2027-12-08T18:00:00.000Z',
+          scheduledTimeSpecified: true, label: 'Cita B', comment: null, stageName: 'Contacto',
+        },
+        {
+          id: 'iv-old', eventType: 'ATTENDED', scheduledAt: '2026-10-01T16:00:00.000Z',
+          scheduledTimeSpecified: true, label: 'Pasada', comment: null, stageName: 'Contacto',
+        },
+      ],
+    };
+    host.innerHTML = recCandInterviewsBlockHtml(app);
+    const st = recEnsureState();
+    st.detailCandidate = { id: 'cand-row', archivedAt: null, applications: [app] };
+    host.querySelector('.rec-cand-interviews-toggle').click();
+    const rows = [...host.querySelectorAll('.rec-cand-interview-row')];
+    const scheduled = rows.filter((row) => row.querySelector('.rec-cand-interview-status--scheduled'));
+    const past = rows.find((row) => row.getAttribute('data-interview-id') === 'iv-old');
+    const a = scheduled.find((row) => row.getAttribute('data-interview-id') === 'iv-a');
+    const b = scheduled.find((row) => row.getAttribute('data-interview-id') === 'iv-b');
+    const actionCountA = a.querySelectorAll('.rec-cand-interview-action').length;
+    const actionCountB = b.querySelectorAll('.rec-cand-interview-action').length;
+    const actionCountPast = past.querySelectorAll('.rec-cand-interview-action').length;
+    a.querySelector('.rec-cand-interview-action').click();
+    const reschedule = {
+      mode: st.interviewDialogMode,
+      eventId: st.interviewDetailEventId,
+      title: document.querySelector('#rec-iv-overlay .rec-iv-title').textContent,
+      formDate: document.querySelector('#rec-iv-form input[name="date"]').value,
+    };
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const noshowBtn = [...b.querySelectorAll('.rec-cand-interview-action')]
+      .find((btn) => /No asistió/.test(btn.textContent));
+    noshowBtn.click();
+    const confirm = {
+      mode: st.interviewDialogMode,
+      pending: st.interviewPendingAction,
+      eventId: st.interviewDetailEventId,
+      ask: document.querySelector('#rec-iv-overlay .rec-iv-confirm').textContent,
+      name: document.querySelector('#rec-iv-overlay .rec-iv-name').textContent,
+    };
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    a.querySelector('.rec-cand-interview-open').click();
+    const detail = {
+      mode: st.interviewDialogMode,
+      eventId: st.interviewDetailEventId,
+      name: document.querySelector('#rec-iv-overlay .rec-iv-name').textContent,
+    };
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const panel = document.getElementById('rec-cand-interviews-panel-app-row-actions');
+    panel.classList.add('hidden');
+    host.querySelector('.rec-cand-interviews-toggle').setAttribute('aria-expanded', 'false');
+    recCandKeepInterviewsExpanded('app-row-actions');
+    return {
+      actionCountA,
+      actionCountB,
+      actionCountPast,
+      reschedule,
+      confirm,
+      detail,
+      keptOpen: !panel.classList.contains('hidden')
+        && host.querySelector('.rec-cand-interviews-toggle').getAttribute('aria-expanded') === 'true',
+      narrowWrap: getComputedStyle(a.querySelector('.rec-cand-interview-row-main')).flexDirection,
+    };
+  });
+  check(
+    rowActions.actionCountA === 4
+      && rowActions.actionCountB === 4
+      && rowActions.actionCountPast === 0,
+    'fila programada muestra 4 acciones; historial no',
+  );
+  check(
+    rowActions.reschedule.mode === 'reschedule'
+      && rowActions.reschedule.eventId === 'iv-a'
+      && rowActions.reschedule.title.includes('Reprogramar')
+      && !!rowActions.reschedule.formDate,
+    'Reprogramar de la cita A abre el formulario de esa cita',
+  );
+  check(
+    rowActions.confirm.mode === 'confirm'
+      && rowActions.confirm.pending === 'NO_SHOW'
+      && rowActions.confirm.eventId === 'iv-b'
+      && rowActions.confirm.name.includes('Cita B')
+      && /no asistió/i.test(rowActions.confirm.ask),
+    'No asistió de la cita B abre la confirmación de esa cita',
+  );
+  check(
+    rowActions.detail.mode === 'detail'
+      && rowActions.detail.eventId === 'iv-a'
+      && rowActions.detail.name.includes('Cita A')
+      && rowActions.keptOpen,
+    'el título abre el detalle y el bloque Entrevistas puede quedar expandido',
+  );
+
   check(abort.abortText === '', 'AbortError no muestra fallo');
   check(abort.epoch > 0, 'una respuesta vieja queda descartada');
   check(pageErrors.length === 0, pageErrors.length ? `errores de página: ${pageErrors[0]}` : 'la página no lanza errores');
