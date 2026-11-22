@@ -405,6 +405,7 @@ export async function updateRecruitmentApplication({
     existing.stage?.key === HIRED_STAGE_KEY;
   let resolvedEmploymentStart = null;
   if (movingToHired || editingHireDateOnly) {
+    // Validación temprana de formato/hoy; bajo el candado de la TX se relee contra la baja.
     resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
       organizationId,
       employmentStartDate,
@@ -419,6 +420,35 @@ export async function updateRecruitmentApplication({
   let serialized;
   try {
     serialized = await prisma.$transaction(async (tx) => {
+    if (editingHireDateOnly) {
+      const {
+        lockRecruitmentApplicationForEmploymentDates,
+        assertEmploymentStartCompatibleWithExit,
+      } = await import('./recruitmentApplicationEmploymentExit.service.js');
+      await lockRecruitmentApplicationForEmploymentDates(tx, organizationId, applicationId);
+      const locked = await tx.recruitmentApplication.findFirst({
+        where: { id: applicationId, organizationId },
+        include: {
+          stage: { select: { key: true } },
+          employmentExit: { select: { exitDate: true } },
+        },
+      });
+      if (!locked || locked.stage?.key !== HIRED_STAGE_KEY) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'La fecha de ingreso solo aplica a postulaciones contratadas.';
+        throw err;
+      }
+      resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
+        organizationId,
+        employmentStartDate,
+      );
+      assertEmploymentStartCompatibleWithExit(
+        resolvedEmploymentStart,
+        serializeEmploymentStartDate(locked.employmentExit?.exitDate),
+      );
+    }
+
     const data = {};
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;

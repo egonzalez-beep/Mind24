@@ -52,6 +52,10 @@ import {
   declineRecruitmentApplication,
 } from '../services/recruitmentProcessClosure.service.js';
 import {
+  EMPLOYMENT_EXIT_REASON_MAX,
+  registerRecruitmentApplicationEmploymentExit,
+} from '../services/recruitmentApplicationEmploymentExit.service.js';
+import {
   listVacancyAssignees,
   removeVacancyAssignee,
   setVacancyAssignee,
@@ -1180,6 +1184,36 @@ const declineApplicationSchema = z
     note: z.string().max(240).optional().nullable(),
   })
   .strict();
+
+const employmentExitSchema = z
+  .object({
+    exitDate: z.string().min(1).max(10),
+    reason: z.string().min(1).max(EMPLOYMENT_EXIT_REASON_MAX),
+    underWarranty: z.boolean(),
+  })
+  .strict();
+
+router.post('/applications/:id/employment-exit', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = employmentExitSchema.parse(req.body || {});
+    const result = await registerRecruitmentApplicationEmploymentExit({
+      organizationId: u.organizationId,
+      applicationId: req.params.id,
+      exitDate: body.exitDate,
+      reason: body.reason,
+      underWarranty: body.underWarranty,
+      registeredByUserId: u.id,
+    });
+    res.json({
+      applicationId: result.applicationId,
+      employmentStartDate: result.employmentStartDate,
+      employmentExit: result.employmentExit,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.post('/applications/:id/decline', async (req, res, next) => {
   try {

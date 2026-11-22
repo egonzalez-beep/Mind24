@@ -58,7 +58,13 @@ function classifyEventType(toStageKey) {
   return 'STAGE_CHANGED';
 }
 
-function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle }) {
+function formatExitDateLabel(exitDateKey) {
+  const m = String(exitDateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(exitDateKey || '').trim() || 'sin fecha';
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
+function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle, exitDateKey }) {
   const name = String(candidateName || 'Candidato').trim() || 'Candidato';
   const stage = String(stageName || 'etapa').trim() || 'etapa';
   const vacancy = String(vacancyTitle || 'vacante').trim() || 'vacante';
@@ -68,7 +74,16 @@ function buildNovedadMessage(eventType, { candidateName, stageName, vacancyTitle
   if (eventType === 'INTERVIEW_NO_SHOW') {
     return `${name} no se presentó a la entrevista para ${vacancy}.`;
   }
+  if (eventType === 'EMPLOYMENT_EXIT') {
+    return `Se registró la baja de ${name} en ${vacancy} el ${formatExitDateLabel(exitDateKey)}.`;
+  }
   return `${name} cambió a la etapa ${stage} en ${vacancy}.`;
+}
+
+export function employmentExitDedupeKey(applicationId) {
+  const appId = String(applicationId || '').trim();
+  if (!appId) return null;
+  return `application_employment_exit:${appId}`;
 }
 
 /**
@@ -392,6 +407,95 @@ export async function emitWorkforceRecruitmentNovedadForInterviewNoShow(
           interviewEventId: interviewEventId || null,
           scheduledAt: Number.isNaN(at.getTime()) ? null : at.toISOString(),
           scheduledTimeSpecified: scheduledTimeSpecified !== false,
+        },
+        dedupeKey,
+      },
+    ],
+    skipDuplicates: true,
+  });
+  if (!inserted?.count) return null;
+  return tx.workforceRecruitmentNovedad.findFirst({
+    where: { organizationId, dedupeKey },
+  });
+}
+
+/**
+ * Aviso inmediato al registrar baja de una contratación.
+ * Sin destinatario elegible → null (la baja se conserva).
+ * createMany+skipDuplicates evita que un reintento aborte la TX de la baja.
+ */
+export async function emitWorkforceRecruitmentNovedadForEmploymentExit(
+  tx,
+  { organizationId, applicationId, exitDateKey, underWarranty = false },
+) {
+  if (!organizationId || !applicationId || !exitDateKey) return null;
+  const dedupeKey = employmentExitDedupeKey(applicationId);
+  if (!dedupeKey) return null;
+
+  const app = await tx.recruitmentApplication.findFirst({
+    where: { id: applicationId, organizationId },
+    select: {
+      id: true,
+      organizationId: true,
+      candidateId: true,
+      vacancyId: true,
+      stageId: true,
+      candidate: {
+        select: {
+          id: true,
+          organizationId: true,
+          fullName: true,
+          registeredByWorkforceEmployeeId: true,
+          archivedAt: true,
+        },
+      },
+      vacancy: { select: { id: true, organizationId: true, title: true } },
+    },
+  });
+  if (!app?.candidate?.registeredByWorkforceEmployeeId) return null;
+  if (app.candidate.archivedAt) return null;
+  if (
+    app.organizationId !== organizationId ||
+    app.candidate.organizationId !== organizationId ||
+    app.vacancy?.organizationId !== organizationId
+  ) {
+    return null;
+  }
+  const recipient = await tx.workforceEmployee.findFirst({
+    where: { id: app.candidate.registeredByWorkforceEmployeeId, organizationId },
+    select: { id: true, isActive: true },
+  });
+  if (!recipient || recipient.isActive === false) return null;
+  const stage = await tx.recruitmentStage.findFirst({
+    where: { id: app.stageId, organizationId },
+    select: { id: true, key: true, name: true },
+  });
+  if (!stage) return null;
+
+  const message = buildNovedadMessage('EMPLOYMENT_EXIT', {
+    candidateName: app.candidate.fullName,
+    vacancyTitle: app.vacancy.title,
+    exitDateKey,
+  });
+  const inserted = await tx.workforceRecruitmentNovedad.createMany({
+    data: [
+      {
+        organizationId,
+        recipientWorkforceEmployeeId: recipient.id,
+        candidateId: app.candidateId,
+        applicationId: app.id,
+        vacancyId: app.vacancyId,
+        eventType: 'EMPLOYMENT_EXIT',
+        fromStageId: null,
+        toStageId: stage.id,
+        message,
+        metadata: {
+          candidateName: app.candidate.fullName,
+          vacancyTitle: app.vacancy.title,
+          toStageKey: stage.key,
+          toStageName: stage.name,
+          exitDate: exitDateKey,
+          underWarranty: underWarranty === true,
         },
         dedupeKey,
       },

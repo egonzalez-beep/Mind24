@@ -601,13 +601,23 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-hire-start-value{font-weight:600;font-variant-numeric:tabular-nums;}
 .rec-hire-start-value--set{color:#047857;}
 .rec-hire-start-value--empty{color:var(--slate-500);font-weight:500;}
-.rec-hire-start-edit{border:1px solid var(--slate-200);background:#fff;border-radius:6px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--slate-500);flex:0 0 auto;}
+.rec-hire-start-edit,.rec-hire-exit-btn{border:1px solid var(--slate-200);background:#fff;border-radius:6px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--slate-500);flex:0 0 auto;}
 .rec-hire-start-edit:hover{border-color:rgba(4,120,87,.35);color:#047857;}
-.rec-hire-start-edit:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
-.rec-hire-start-edit svg{width:13px;height:13px;display:block;}
+.rec-hire-exit-btn:hover{border-color:rgba(185,28,28,.35);color:#b91c1c;}
+.rec-hire-start-edit:focus-visible,.rec-hire-exit-btn:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}
+.rec-hire-start-edit svg,.rec-hire-exit-btn svg{width:13px;height:13px;display:block;}
 .rec-hire-start-form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;}
 .rec-hire-start-form .form-input{width:auto;min-width:9.5rem;padding:6px 8px;font-size:12px;}
 .rec-hire-start-form .rec-iv-btn{padding:6px 10px;font-size:12px;}
+.rec-hire-exit-details{margin-top:8px;padding-top:8px;border-top:1px dashed var(--slate-200);display:flex;flex-direction:column;gap:4px;}
+.rec-hire-exit-line{font-size:12px;color:var(--slate-600);line-height:1.35;overflow-wrap:anywhere;}
+.rec-hire-exit-line strong{font-weight:700;color:var(--slate-700);}
+.rec-hire-exit-warranty{display:inline-flex;align-items:center;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;}
+.rec-hire-exit-warranty--yes{color:#9a3412;background:#fff7ed;}
+.rec-hire-exit-warranty--no{color:var(--slate-500);background:var(--slate-50);}
+.rec-hire-exit-radios{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:4px;}
+.rec-hire-exit-radio{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:650;color:var(--slate-700);cursor:pointer;}
+.rec-hire-exit-radio input{accent-color:#7c3aed;}
 @media(max-width:520px){
   .rec-iv-overlay{align-items:flex-end;padding:0;}
   .rec-iv-dialog{width:100%;max-height:92vh;border-radius:18px 18px 0 0;}
@@ -3569,6 +3579,40 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <div class="rec-iv-form-actions rec-process-actions">
       <button type="button" class="rec-iv-btn rec-stages-ghost-btn" id="rec-hire-confirm-cancel" onclick="recHireConfirmCancel()">Cancelar</button>
       <button type="button" class="form-submit form-submit-purple" id="rec-hire-confirm-submit" onclick="recHireConfirmSubmit()">Confirmar contratación</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-rec-employment-exit" class="modal-overlay rec-modal-glass rec-iv-overlay hidden" onclick="recCandEmploymentExitBackdrop(event)">
+  <div class="modal-card rec-iv-dialog rec-process-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-exit-title" onclick="event.stopPropagation()">
+    <div class="rec-iv-head">
+      <h2 id="rec-exit-title" class="rec-iv-title modal-title" style="font-size:18px;margin:0;">Registrar baja</h2>
+      <button type="button" class="rec-iv-close modal-close" id="rec-exit-close" onclick="recCandCloseEmploymentExit()" aria-label="Cerrar">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--slate-600);margin:12px 0 4px;">Candidato</p>
+    <p id="rec-exit-candidate" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Vacante</p>
+    <p id="rec-exit-vacancy" style="font-size:14px;font-weight:700;margin:0 0 10px;"></p>
+    <p style="font-size:13px;color:var(--slate-600);margin:0 0 4px;">Fecha de ingreso</p>
+    <p id="rec-exit-start" style="font-size:14px;font-weight:700;margin:0 0 12px;"></p>
+    <div id="rec-exit-form-wrap">
+      <label class="rec-iv-label form-label" for="rec-exit-date">Fecha de baja</label>
+      <label class="rec-iv-field" style="margin-top:0;">
+        <span aria-hidden="true">📅</span>
+        <input type="date" id="rec-exit-date" class="form-input" required aria-label="Fecha de baja">
+      </label>
+      <label class="rec-iv-label form-label" for="rec-exit-reason">Motivo de baja</label>
+      <textarea id="rec-exit-reason" class="form-input" maxlength="160" rows="2" placeholder="Motivo breve" aria-label="Motivo de baja"></textarea>
+      <p class="rec-iv-label form-label" id="rec-exit-warranty-label">¿Aplica garantía?</p>
+      <div class="rec-hire-exit-radios" role="radiogroup" aria-labelledby="rec-exit-warranty-label">
+        <label class="rec-hire-exit-radio"><input type="radio" name="rec-exit-warranty" value="yes"> Sí</label>
+        <label class="rec-hire-exit-radio"><input type="radio" name="rec-exit-warranty" value="no"> No</label>
+      </div>
+    </div>
+    <p id="rec-exit-err" class="rec-iv-error" role="alert" tabindex="-1"></p>
+    <div class="rec-iv-form-actions rec-process-actions">
+      <button type="button" class="rec-iv-btn rec-stages-ghost-btn" id="rec-exit-cancel" onclick="recCandCloseEmploymentExit()">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-exit-submit" onclick="recCandConfirmEmploymentExit()">Guardar baja</button>
     </div>
   </div>
 </div>
@@ -14463,6 +14507,7 @@ async function recCandRemoveTag(tagId){
 }
 function recCandObsIconEdit(){ return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'; }
 function recCandObsIconTrash(){ return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>'; }
+function recCandObsIconExit(){ return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'; }
 function recCandRenderObservationsCard(notes,loading){
   const host=document.getElementById('rec-cand-observations-host');
   if(!host) return;
@@ -14635,6 +14680,17 @@ function recCandFmtEmploymentStart(dateKey){
   if(!m) return '';
   return m[3]+'/'+m[2]+'/'+m[1];
 }
+function recCandEmploymentExitDetailsHtml(exit){
+  if(!exit||!exit.exitDate) return '';
+  const dateLabel=recCandFmtEmploymentStart(String(exit.exitDate).slice(0,10))||String(exit.exitDate);
+  const warranty=exit.underWarranty===true;
+  const warCls='rec-hire-exit-warranty '+(warranty?'rec-hire-exit-warranty--yes':'rec-hire-exit-warranty--no');
+  return '<div class="rec-hire-exit-details">'+
+    '<p class="rec-hire-exit-line"><strong>Fecha de baja:</strong> '+tcEsc(dateLabel)+'</p>'+
+    '<p class="rec-hire-exit-line"><strong>Motivo:</strong> '+tcEsc(exit.reason||'')+'</p>'+
+    '<p class="rec-hire-exit-line"><strong>Garantía:</strong> <span class="'+warCls+'">'+(warranty?'Sí':'No')+'</span></p>'+
+    '</div>';
+}
 function recCandEmploymentStartHtml(a){
   const appId=recCandGetAppId(a);
   const safeId=String(appId||'').replace(/[^a-zA-Z0-9_-]/g,'');
@@ -14642,12 +14698,19 @@ function recCandEmploymentStartHtml(a){
   const hasDate=!!raw;
   const label=hasDate?recCandFmtEmploymentStart(raw):'Sin registrar';
   const valueCls='rec-hire-start-value '+(hasDate?'rec-hire-start-value--set':'rec-hire-start-value--empty');
+  const exit=a&&a.employmentExit?a.employmentExit:null;
+  const canRegister=!exit;
   return '<div class="rec-hire-start-block" data-app-id="'+tcEsc(appId)+'" id="rec-hire-start-'+safeId+'">'+
     '<div class="rec-hire-start-row" data-hire-start-view="1">'+
     '<span class="rec-hire-start-label">Fecha de ingreso:</span>'+
     '<span class="'+valueCls+'" data-hire-start-value="1">'+tcEsc(label)+'</span>'+
     '<button type="button" class="rec-hire-start-edit" onclick="recCandEditEmploymentStart(\''+tcEsc(appId)+'\')" aria-label="Editar fecha de ingreso" title="Editar fecha de ingreso">'+recCandObsIconEdit()+'</button>'+
-    '</div></div>';
+    (canRegister
+      ? '<button type="button" class="rec-hire-exit-btn" onclick="recCandOpenEmploymentExit(\''+tcEsc(appId)+'\')" aria-label="Registrar baja" title="Registrar baja">'+recCandObsIconExit()+'</button>'
+      : '')+
+    '</div>'+
+    recCandEmploymentExitDetailsHtml(exit)+
+    '</div>';
 }
 function recCandEditEmploymentStart(applicationId){
   const host=recCandHireStartHost(applicationId);
@@ -14657,10 +14720,13 @@ function recCandEditEmploymentStart(applicationId){
   const app=apps.find(function(a){ return recCandGetAppId(a)===applicationId; });
   if(!app||recCandAppStageKey(app)!=='HIRED') return;
   const current=app.employmentStartDate?String(app.employmentStartDate).slice(0,10):'';
-  const preset=current||recOrgTodayYmd();
+  const exitMax=app.employmentExit&&app.employmentExit.exitDate?String(app.employmentExit.exitDate).slice(0,10):'';
+  const today=recOrgTodayYmd();
+  const maxDate=exitMax&&exitMax<today?exitMax:today;
+  const preset=current||maxDate;
   host.innerHTML='<form class="rec-hire-start-form" onsubmit="return recCandSaveEmploymentStart(event,\''+tcEsc(applicationId)+'\')">'+
     '<label class="rec-hire-start-label" for="rec-hire-start-input-'+tcEsc(applicationId)+'">Fecha de ingreso</label>'+
-    '<input type="date" class="form-input" id="rec-hire-start-input-'+tcEsc(applicationId)+'" value="'+tcEsc(preset)+'" required>'+
+    '<input type="date" class="form-input" id="rec-hire-start-input-'+tcEsc(applicationId)+'" value="'+tcEsc(preset)+'" max="'+tcEsc(maxDate)+'" required>'+
     '<button type="submit" class="rec-iv-btn rec-iv-btn--ok" data-hire-save="1">Guardar</button>'+
     '<button type="button" class="rec-iv-btn" onclick="recCandCancelEmploymentStartEdit(\''+tcEsc(applicationId)+'\')">Cancelar</button>'+
     '<p class="rec-iv-error" data-hire-err="1" role="alert"></p></form>';
@@ -14719,6 +14785,191 @@ async function recCandSaveEmploymentStart(ev, applicationId){
     if(saveBtn){ saveBtn.disabled=false; saveBtn.dataset.recBusy='0'; }
   }
   return false;
+}
+var recEmploymentExitReturnFocus=null;
+var recEmploymentExitEpoch=0;
+function recCandEmploymentExitBusy(){
+  const submit=document.getElementById('rec-exit-submit');
+  return !!(submit&&submit.dataset.recBusy==='1');
+}
+function recCandSetEmploymentExitBusy(busy){
+  const submit=document.getElementById('rec-exit-submit');
+  const cancel=document.getElementById('rec-exit-cancel');
+  const closeBtn=document.getElementById('rec-exit-close');
+  const dateEl=document.getElementById('rec-exit-date');
+  const reasonEl=document.getElementById('rec-exit-reason');
+  const overlay=document.getElementById('modal-rec-employment-exit');
+  if(submit){
+    submit.dataset.recBusy=busy?'1':'0';
+    submit.disabled=!!busy;
+    if(!submit.classList.contains('hidden')) submit.textContent=busy?'Guardando…':'Guardar baja';
+  }
+  if(cancel) cancel.disabled=!!busy;
+  if(closeBtn) closeBtn.disabled=!!busy;
+  if(dateEl) dateEl.disabled=!!busy;
+  if(reasonEl) reasonEl.disabled=!!busy;
+  document.querySelectorAll('input[name="rec-exit-warranty"]').forEach(function(r){ r.disabled=!!busy; });
+  if(overlay) overlay.dataset.recBusy=busy?'1':'0';
+}
+function recCandEmploymentExitBackdrop(ev){
+  if(!ev||!ev.target||ev.target.id!=='modal-rec-employment-exit') return;
+  if(recCandEmploymentExitBusy()) return;
+  recCandCloseEmploymentExit();
+}
+function recCandBindEmploymentExitEscape(){
+  if(window.__recEmploymentExitEscape) return;
+  window.__recEmploymentExitEscape=true;
+  document.addEventListener('keydown',function(ev){
+    if(ev.key!=='Escape') return;
+    const open=document.getElementById('modal-rec-employment-exit');
+    if(!open||open.classList.contains('hidden')) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    if(recCandEmploymentExitBusy()) return;
+    recCandCloseEmploymentExit();
+  },true);
+}
+function recCandShowEmploymentExitOverlay(){
+  const overlay=document.getElementById('modal-rec-employment-exit');
+  if(!overlay) return;
+  // Misma técnica que Entrevistas: no usar openModal (mind24ResetUiBlockers cierra la ficha).
+  overlay.style.visibility='';
+  overlay.style.pointerEvents='';
+  overlay.style.opacity='';
+  overlay.style.transition='';
+  overlay.classList.remove('hidden');
+}
+function recCandCloseEmploymentExit(){
+  // No abortar ni invalidar un guardado en curso: Cancelar/X/Escape/fondo quedan bloqueados.
+  if(recCandEmploymentExitBusy()) return;
+  recEmploymentExitEpoch+=1;
+  const overlay=document.getElementById('modal-rec-employment-exit');
+  if(overlay){
+    overlay.classList.add('hidden');
+    overlay.removeAttribute('data-application-id');
+    overlay.dataset.recBusy='0';
+  }
+  recCandSetEmploymentExitBusy(false);
+  const submit=document.getElementById('rec-exit-submit');
+  if(submit) submit.classList.remove('hidden');
+  const back=recEmploymentExitReturnFocus;
+  recEmploymentExitReturnFocus=null;
+  if(back&&document.contains(back)&&typeof back.focus==='function') back.focus();
+}
+function recCandOpenEmploymentExit(applicationId){
+  const st=recEnsureState();
+  const c=st.detailCandidate;
+  const app=((c&&c.applications)||[]).find(function(row){ return recCandGetAppId(row)===applicationId; });
+  if(!app||recCandAppStageKey(app)!=='HIRED') return;
+  if(app.employmentExit) return;
+  if(recCandEmploymentExitBusy()) return;
+  recCandBindEmploymentExitEscape();
+  recEmploymentExitEpoch+=1;
+  recEmploymentExitReturnFocus=document.activeElement;
+  const who=document.getElementById('rec-exit-candidate');
+  const vac=document.getElementById('rec-exit-vacancy');
+  const startEl=document.getElementById('rec-exit-start');
+  const formWrap=document.getElementById('rec-exit-form-wrap');
+  const dateEl=document.getElementById('rec-exit-date');
+  const reasonEl=document.getElementById('rec-exit-reason');
+  const err=document.getElementById('rec-exit-err');
+  const submit=document.getElementById('rec-exit-submit');
+  const startRaw=app.employmentStartDate?String(app.employmentStartDate).slice(0,10):'';
+  if(who) who.textContent=(c&&c.fullName)||'—';
+  if(vac) vac.textContent=(app.vacancy&&app.vacancy.title)||'—';
+  if(startEl) startEl.textContent=startRaw?recCandFmtEmploymentStart(startRaw):'Sin registrar';
+  if(err) err.textContent='';
+  document.querySelectorAll('input[name="rec-exit-warranty"]').forEach(function(r){ r.checked=false; });
+  if(reasonEl) reasonEl.value='';
+  const modal=document.getElementById('modal-rec-employment-exit');
+  if(modal) modal.dataset.applicationId=applicationId;
+  recCandSetEmploymentExitBusy(false);
+  if(!startRaw){
+    if(formWrap) formWrap.classList.add('hidden');
+    if(submit){ submit.disabled=true; submit.classList.add('hidden'); }
+    const cancel=document.getElementById('rec-exit-cancel');
+    const closeBtn=document.getElementById('rec-exit-close');
+    if(cancel) cancel.disabled=false;
+    if(closeBtn) closeBtn.disabled=false;
+    if(err) err.textContent='Registra primero la fecha real de ingreso con el lápiz.';
+    recCandShowEmploymentExitOverlay();
+    if(err) err.focus();
+    return;
+  }
+  if(formWrap) formWrap.classList.remove('hidden');
+  if(submit) submit.classList.remove('hidden');
+  if(dateEl){
+    dateEl.min=startRaw;
+    dateEl.max=recOrgTodayYmd();
+    dateEl.value=recOrgTodayYmd();
+    if(dateEl.value<startRaw) dateEl.value=startRaw;
+  }
+  recCandShowEmploymentExitOverlay();
+  if(dateEl) dateEl.focus();
+}
+async function recCandConfirmEmploymentExit(){
+  const modal=document.getElementById('modal-rec-employment-exit');
+  const applicationId=modal&&modal.dataset.applicationId;
+  const dateEl=document.getElementById('rec-exit-date');
+  const reasonEl=document.getElementById('rec-exit-reason');
+  const err=document.getElementById('rec-exit-err');
+  if(recCandEmploymentExitBusy()) return;
+  const exitDate=(dateEl&&dateEl.value||'').trim();
+  const reason=(reasonEl&&reasonEl.value||'').trim();
+  const warEl=document.querySelector('input[name="rec-exit-warranty"]:checked');
+  if(err) err.textContent='';
+  if(!exitDate){
+    if(err){ err.textContent='Indica la fecha de baja.'; err.focus(); }
+    return;
+  }
+  if(!reason){
+    if(err){ err.textContent='Escribe un motivo de baja breve.'; err.focus(); }
+    if(reasonEl) reasonEl.focus();
+    return;
+  }
+  if(!warEl){
+    if(err){ err.textContent='Elige si aplica garantía: Sí o No.'; err.focus(); }
+    return;
+  }
+  if(recCandEmploymentExitBusy()) return;
+  recCandSetEmploymentExitBusy(true);
+  const epoch=++recEmploymentExitEpoch;
+  try{
+    const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/employment-exit',{
+      method:'POST',
+      body:JSON.stringify({
+        exitDate:exitDate,
+        reason:reason,
+        underWarranty:warEl.value==='yes',
+      }),
+    });
+    if(epoch!==recEmploymentExitEpoch) return;
+    const st=recEnsureState();
+    const cand=st.detailCandidate;
+    if(cand&&cand.applications){
+      cand.applications=cand.applications.map(function(a){
+        if(recCandGetAppId(a)!==applicationId) return a;
+        return Object.assign({}, a, {
+          employmentStartDate:(out&&out.employmentStartDate)||a.employmentStartDate,
+          employmentExit:(out&&out.employmentExit)||a.employmentExit,
+        });
+      });
+    }
+    const app=(cand&&cand.applications||[]).find(function(a){ return recCandGetAppId(a)===applicationId; });
+    const host=recCandHireStartHost(applicationId);
+    if(host&&app) host.outerHTML=recCandEmploymentStartHtml(app);
+    // El botón Registrar baja ya no existe; no devolver foco a un nodo desconectado.
+    recEmploymentExitReturnFocus=null;
+    recCandSetEmploymentExitBusy(false);
+    recCandCloseEmploymentExit();
+    const refreshed=recCandHireStartHost(applicationId);
+    const focusEl=refreshed&&(refreshed.querySelector('.rec-hire-start-edit')||refreshed);
+    if(focusEl&&typeof focusEl.focus==='function') focusEl.focus();
+  }catch(e){
+    if(epoch!==recEmploymentExitEpoch) return;
+    recCandSetEmploymentExitBusy(false);
+    if(err){ err.textContent=(e&&e.message)||'No se pudo registrar la baja.'; err.focus(); }
+  }
 }
 function recCandToggleAsidePanel(btn){
   const panel=document.getElementById('rec-cand-aside-panel');
@@ -17456,6 +17707,7 @@ function tcEmpNovedadesFilterForEventType(eventType){
   if(eventType==='REJECTED') return 'rejected';
   // No forzar En proceso: el candidato puede estar en otro filtro o ya no visible.
   if(eventType==='INTERVIEW_NO_SHOW') return null;
+  if(eventType==='EMPLOYMENT_EXIT') return 'hired';
   return 'in_process';
 }
 function tcEmpNovedadesUpdateBadge(count){

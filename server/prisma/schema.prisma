@@ -69,6 +69,7 @@ model Organization {
   recruitmentVacancyAssignees RecruitmentVacancyAssignee[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[]
   recruitmentApplicationInterviewEvents RecruitmentApplicationInterviewEvent[]
+  recruitmentApplicationEmploymentExits RecruitmentApplicationEmploymentExit[]
   recruitmentVacancyDocuments RecruitmentVacancyDocument[]
   recruitmentVacancyStages RecruitmentVacancyStage[]
   recruitmentCandidateResumes RecruitmentCandidateResume[]
@@ -88,6 +89,7 @@ enum WorkforceRecruitmentNovedadEventType {
   REJECTED
   DECLINED
   INTERVIEW_NO_SHOW
+  EMPLOYMENT_EXIT
 }
 
 enum RecruitmentApplicationClosureOutcome {
@@ -493,6 +495,7 @@ model User {
   orgNotificationReads       OrgNotificationRead[]
   recruitmentApplicationStageEvents RecruitmentApplicationStageEvent[] @relation("RecruitmentStageEventUser")
   recruitmentApplicationInterviewEventsAuthored RecruitmentApplicationInterviewEvent[] @relation("RecruitmentInterviewEventUser")
+  recruitmentApplicationEmploymentExitsAuthored RecruitmentApplicationEmploymentExit[] @relation("RecruitmentEmploymentExitRegisteredBy")
   recruitmentCandidateNotesAuthored RecruitmentCandidateNote[] @relation("RecruitmentCandidateNoteAuthor")
   recruitmentVacancyNotesAuthored RecruitmentVacancyNote[] @relation("RecruitmentVacancyNoteAuthor")
   recruitmentCandidateTagAssignmentsCreated RecruitmentCandidateTagAssignment[] @relation("RecruitmentCandidateTagAssignedBy")
@@ -982,6 +985,7 @@ model RecruitmentApplication {
 
   stageEvents RecruitmentApplicationStageEvent[]
   interviewEvents RecruitmentApplicationInterviewEvent[]
+  employmentExit RecruitmentApplicationEmploymentExit?
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
 
   /// Índice de consulta; el UNIQUE parcial vive solo en migration.sql (nombre arriba).
@@ -992,6 +996,24 @@ model RecruitmentApplication {
   @@index([organizationId, candidateId])
   @@index([hiredStageEnteredAt])
   @@index([candidateId, vacancyId, blocksReapplication])
+}
+
+/// Baja laboral de una contratación (1:1). No revierte HIRED ni limpia el ingreso.
+model RecruitmentApplicationEmploymentExit {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applicationId      String   @unique
+  application        RecruitmentApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  /// Día calendario de baja (AAAA-MM-DD).
+  exitDate           DateTime @db.Date
+  reason             String   @db.VarChar(160)
+  underWarranty      Boolean
+  registeredByUserId String
+  registeredBy       User @relation("RecruitmentEmploymentExitRegisteredBy", fields: [registeredByUserId], references: [id], onDelete: Restrict)
+  createdAt          DateTime @default(now())
+
+  @@index([organizationId])
 }
 
 enum RecruitmentApplicationInterviewEventType {

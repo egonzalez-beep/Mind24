@@ -119,18 +119,32 @@ export function serializeRecruitmentCandidate(row, extras = {}) {
   };
 }
 
+function serializeEmploymentStartDateValue(v) {
+  if (v == null) return null;
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function serializeCandidateApplicationEmploymentExit(row) {
+  const exit = row?.employmentExit;
+  if (!exit) return null;
+  return {
+    id: exit.id,
+    exitDate: serializeEmploymentStartDateValue(exit.exitDate),
+    reason: exit.reason || '',
+    underWarranty: exit.underWarranty === true,
+    registeredByUserId: exit.registeredByUserId || null,
+    registeredAt: exit.createdAt ? exit.createdAt.toISOString() : null,
+  };
+}
+
 function serializeCandidateApplicationProcess(row) {
-  const employmentStartDate = (() => {
-    const v = row.employmentStartDate;
-    if (v == null) return null;
-    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
-    const d = v instanceof Date ? v : new Date(v);
-    if (Number.isNaN(d.getTime())) return null;
-    const y = d.getUTCFullYear();
-    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(d.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  })();
+  const employmentStartDate = serializeEmploymentStartDateValue(row.employmentStartDate);
   return {
     applicationId: row.id,
     appliedAt: row.appliedAt.toISOString(),
@@ -142,6 +156,7 @@ function serializeCandidateApplicationProcess(row) {
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     employmentStartDate,
+    employmentExit: serializeCandidateApplicationEmploymentExit(row),
     vacancy: {
       id: row.vacancy.id,
       title: row.vacancy.title,
@@ -1053,6 +1068,7 @@ export async function getRecruitmentCandidate(organizationId, candidateId) {
       include: {
         vacancy: { select: { id: true, title: true, clientName: true, status: true } },
         stage: { select: { id: true, key: true, name: true } },
+        employmentExit: true,
         stageEvents: {
           select: { id: true, createdAt: true, toStage: { select: { key: true } } },
           orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
