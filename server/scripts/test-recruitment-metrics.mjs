@@ -65,6 +65,7 @@ const {
 } = await import('../src/services/recruitmentMetricsTrend.service.js');
 const { calendarDayDiff } = await import('../src/services/recruitmentVacancy.service.js');
 const { localDateKey } = await import('../src/services/remoteWorkSessionHistory.service.js');
+const { tallyVacancyHires } = await import('../src/services/recruitmentCoverage.service.js');
 
 let failed = 0;
 let pgSkip = false;
@@ -707,6 +708,93 @@ check(
   }) === null,
   'mes histórico: salió antes de cierre → no cuenta',
 );
+
+{
+  const earlyExitTimeline = [
+    { createdAt: d('2026-10-05T12:00:00.000Z'), toStageKey: 'HIRED' },
+    // < 24 h: la Baja no anula la contratación del mes.
+    { createdAt: d('2026-10-05T18:00:00.000Z'), toStageKey: 'EMPLOYMENT_EXIT' },
+  ];
+  const earlyExitApps = [
+    {
+      applicationId: appId,
+      currentStageKey: 'EMPLOYMENT_EXIT',
+      timeline: earlyExitTimeline,
+    },
+  ];
+  const earlyCurrent = consolidateTerminalApplications(earlyExitApps, 'HIRED', {
+    monthStart,
+    monthEnd,
+    endOfMonthInstant: endOct,
+    now: d('2026-10-26T12:00:00.000Z'),
+    isCurrentMonth: true,
+  });
+  const earlyClosed = consolidateTerminalApplications(earlyExitApps, 'HIRED', {
+    monthStart,
+    monthEnd,
+    endOfMonthInstant: endOct,
+    now: d('2026-11-15T12:00:00.000Z'),
+    isCurrentMonth: false,
+  });
+  check(
+    earlyCurrent.length === 1 && earlyClosed.length === 1,
+    'HIRED+Baja <24 h: 1 contratación en mes en curso y tras cerrar el mes',
+  );
+  check(
+    qualifyTerminalApplicationForMonth({
+      ...baseCtx,
+      currentStageKey: 'EMPLOYMENT_EXIT',
+      stageKey: 'HIRED',
+      isCurrentMonth: true,
+      now: d('2026-10-26T12:00:00.000Z'),
+      timeline: earlyExitTimeline,
+    }) != null,
+    'mes actual: contratación + Baja mismo mes (<24 h) → HIRED cuenta una vez',
+  );
+  check(
+    qualifyTerminalApplicationForMonth({
+      ...baseCtx,
+      currentStageKey: 'EMPLOYMENT_EXIT',
+      stageKey: 'HIRED',
+      isCurrentMonth: false,
+      now: d('2026-11-15T12:00:00.000Z'),
+      timeline: earlyExitTimeline,
+    }) != null,
+    'mes histórico: HIRED luego Baja <24 h en octubre → oct sí cuenta al cierre',
+  );
+}
+
+check(
+  qualifyTerminalApplicationForMonth({
+    ...baseCtx,
+    currentStageKey: 'NEW',
+    stageKey: 'HIRED',
+    isCurrentMonth: true,
+    now: d('2026-10-26T12:00:00.000Z'),
+    timeline: [
+      { createdAt: d('2026-10-05T12:00:00.000Z'), toStageKey: 'HIRED' },
+      { createdAt: d('2026-10-05T18:00:00.000Z'), toStageKey: 'NEW' },
+    ],
+  }) === null,
+  'HIRED → otra etapa <24 h (no Baja) sigue sin contar',
+);
+
+{
+  const entered = d('2026-10-01T12:00:00.000Z');
+  const nowCov = d('2026-10-26T12:00:00.000Z');
+  const beforeExit = tallyVacancyHires(
+    [{ candidateId: 'c-exit', stageKey: 'HIRED', hiredStageEnteredAt: entered, fullName: 'Ana' }],
+    nowCov,
+  );
+  const afterExit = tallyVacancyHires(
+    [{ candidateId: 'c-exit', stageKey: 'EMPLOYMENT_EXIT', hiredStageEnteredAt: entered, fullName: 'Ana' }],
+    nowCov,
+  );
+  check(
+    beforeExit.currentCount === 1 && afterExit.currentCount === 0,
+    'Baja deja de ocupar plaza en cobertura vigente',
+  );
+}
 
 check(
   effectiveStageKeyAt(

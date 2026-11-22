@@ -230,7 +230,7 @@ export async function buildPrimaryActivePreviewByCandidateId(
       candidateId: { in: candidateIds },
       closureOutcome: null,
       // Preview «activo» = cola operativa; INTERVIEW_NO_SHOW queda solo en su columna.
-      stage: { key: { notIn: ['HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
+      stage: { key: { notIn: ['HIRED', 'EMPLOYMENT_EXIT', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
     },
     include: {
       vacancy: { select: { id: true, title: true } },
@@ -279,9 +279,25 @@ export function recruitmentTerminalRecencyMs(row) {
 }
 
 function previewFromTerminalRow(row, kind) {
+  const stageName =
+    kind === 'declined'
+      ? 'Declinó'
+      : kind === 'hired'
+        ? 'Contratado'
+        : kind === 'exited'
+          ? 'Baja'
+          : 'Rechazado';
+  const listPreviewKind =
+    kind === 'declined'
+      ? 'declined'
+      : kind === 'hired'
+        ? 'hired'
+        : kind === 'exited'
+          ? 'exited'
+          : 'rejected';
   return {
-    listPreviewKind: kind === 'declined' ? 'declined' : kind === 'hired' ? 'hired' : 'rejected',
-    stageName: kind === 'declined' ? 'Declinó' : kind === 'hired' ? 'Contratado' : 'Rechazado',
+    listPreviewKind,
+    stageName,
     stageKey: row.stage?.key || null,
     vacancyTitle: row.vacancy?.title || '—',
     vacancyId: row.vacancy?.id || null,
@@ -292,20 +308,24 @@ function previewFromTerminalRow(row, kind) {
 
 /**
  * Un candidato, un resultado. Abierto gana fuera de esta función.
- * Si hay contratación, gana sobre rechazo y declinación.
- * Si no, gana el terminal más reciente entre DECLINED y REJECTED.
+ * Si hay contratación vigente, gana. Si no, Baja; luego declinación/rechazo.
  */
 export function pickCandidateTerminalListPreview(rows) {
   const list = Array.isArray(rows) ? rows : [];
   const hired = list.filter(
     (row) => classifyRecruitmentApplication(row.stage?.key, row.closureOutcome) === 'hired',
   );
+  const exited = list.filter(
+    (row) => classifyRecruitmentApplication(row.stage?.key, row.closureOutcome) === 'exited',
+  );
   const pool = hired.length
     ? hired
-    : list.filter((row) => {
-        const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
-        return kind === 'declined' || kind === 'rejected';
-      });
+    : exited.length
+      ? exited
+      : list.filter((row) => {
+          const kind = classifyRecruitmentApplication(row.stage?.key, row.closureOutcome);
+          return kind === 'declined' || kind === 'rejected';
+        });
   if (!pool.length) return null;
   const pick = pool.slice().sort((a, b) => recruitmentTerminalRecencyMs(b) - recruitmentTerminalRecencyMs(a))[0];
   const kind = classifyRecruitmentApplication(pick.stage?.key, pick.closureOutcome);
@@ -323,7 +343,7 @@ export async function buildLatestTerminalPreviewByCandidateId(organizationId, ca
       candidateId: { in: candidateIds },
       OR: [
         { closureOutcome: { not: null } },
-        { stage: { key: { in: ['HIRED', 'REJECTED'] } } },
+        { stage: { key: { in: ['HIRED', 'EMPLOYMENT_EXIT', 'REJECTED'] } } },
       ],
     },
     include: {
@@ -743,7 +763,7 @@ export function buildWorkforceRegisteredCandidatesWhere(organizationId, workforc
           organizationId,
           closureOutcome: null,
           // Cartera de inasistencia: fuera de «En proceso» / cola activa.
-          stage: { key: { notIn: ['HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
+          stage: { key: { notIn: ['HIRED', 'EMPLOYMENT_EXIT', 'REJECTED', 'INTERVIEW_NO_SHOW'] } },
         },
       },
     });

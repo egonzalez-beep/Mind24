@@ -4,10 +4,16 @@ import {
   parseEmploymentStartDateInput,
   serializeEmploymentStartDate,
 } from './recruitmentApplication.service.js';
-import { HIRED_STAGE_KEY } from './recruitmentCoverage.service.js';
+import { HIRED_STAGE_KEY, nextHiredStageEnteredAt } from './recruitmentCoverage.service.js';
+import { EMPLOYMENT_EXIT_STAGE_KEY } from './recruitmentStage.service.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { localDateKey } from './remoteWorkSessionHistory.service.js';
-import { emitWorkforceRecruitmentNovedadForEmploymentExit } from './workforceRecruitmentNovedad.service.js';
+import {
+  cancelOpenStageNovedadWaits,
+  emitWorkforceRecruitmentNovedadForEmploymentExit,
+} from './workforceRecruitmentNovedad.service.js';
+import { expectedBlocksReapplication } from './recruitmentProcessClosure.service.js';
+import { assertStageEnabledForVacancy } from './recruitmentVacancyStage.service.js';
 
 export const EMPLOYMENT_EXIT_REASON_MAX = 160;
 export const EMPLOYMENT_EXIT_MISSING_START_MESSAGE =
@@ -22,6 +28,10 @@ export const EMPLOYMENT_EXIT_AFTER_TODAY_MESSAGE =
   'La fecha de baja no puede ser posterior a hoy.';
 export const EMPLOYMENT_START_AFTER_EXIT_MESSAGE =
   'La fecha de ingreso no puede ser posterior a la fecha de baja.';
+export const EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE =
+  'Para pasar a Baja usa Registrar baja.';
+
+const POSITION_GAP = 1000;
 
 /**
  * Candado compartido por postulación para baja e ingreso.
@@ -116,9 +126,17 @@ function isApplicationUniqueConflict(err) {
   return parts.some((t) => String(t).includes('applicationId'));
 }
 
+async function nextPositionInExitStage(tx, vacancyId, stageId) {
+  const agg = await tx.recruitmentApplication.aggregate({
+    where: { vacancyId, stageId },
+    _max: { position: true },
+  });
+  return (agg._max.position ?? 0) + POSITION_GAP;
+}
+
 /**
- * Registra la baja 1:1 de una contratación HIRED.
- * Conserva HIRED y employmentStartDate. Emite una novedad deduplicada (opcional si no hay destinatario).
+ * Registra la baja 1:1, mueve a etapa Baja, registra transición y emite aviso deduplicado.
+ * Única entrada permitida a EMPLOYMENT_EXIT. Conserva employmentStartDate.
  */
 export async function registerRecruitmentApplicationEmploymentExit({
   organizationId,
@@ -151,10 +169,12 @@ export async function registerRecruitmentApplicationEmploymentExit({
 
   let created;
   let startKey;
+  let application = null;
+  let vacancyId = null;
   let candidateName = null;
   let vacancyTitle = null;
   try {
-    created = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       await lockRecruitmentApplicationForEmploymentDates(tx, organizationId, applicationId);
 
       const app = await tx.recruitmentApplication.findFirst({
@@ -200,8 +220,17 @@ export async function registerRecruitmentApplicationEmploymentExit({
         now,
       });
 
-      candidateName = app.candidate?.fullName || null;
-      vacancyTitle = app.vacancy?.title || null;
+      const exitStage = await tx.recruitmentStage.findFirst({
+        where: { organizationId, key: EMPLOYMENT_EXIT_STAGE_KEY, isActive: true },
+        select: { id: true, key: true, name: true },
+      });
+      if (!exitStage) {
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = 'La etapa Baja no está configurada en la organización.';
+        throw err;
+      }
+      await assertStageEnabledForVacancy(organizationId, app.vacancyId, exitStage.id, tx);
 
       const row = await tx.recruitmentApplicationEmploymentExit.create({
         data: {
@@ -214,14 +243,64 @@ export async function registerRecruitmentApplicationEmploymentExit({
           createdAt: now,
         },
       });
+
+      const position = await nextPositionInExitStage(tx, app.vacancyId, exitStage.id);
+      await cancelOpenStageNovedadWaits(tx, app.id);
+      await tx.recruitmentApplication.update({
+        where: { id: app.id },
+        data: {
+          stageId: exitStage.id,
+          position,
+          hiredStageEnteredAt: nextHiredStageEnteredAt({
+            fromKey: HIRED_STAGE_KEY,
+            toKey: EMPLOYMENT_EXIT_STAGE_KEY,
+            previousEnteredAt: app.hiredStageEnteredAt,
+            now,
+          }),
+          blocksReapplication: expectedBlocksReapplication(EMPLOYMENT_EXIT_STAGE_KEY, null),
+        },
+      });
+      await tx.recruitmentApplicationStageEvent.create({
+        data: {
+          organizationId,
+          applicationId: app.id,
+          fromStageId: app.stageId,
+          toStageId: exitStage.id,
+          changedByUserId: registeredByUserId,
+          novedadEligibleAt: null,
+          createdAt: now,
+        },
+      });
+
       await emitWorkforceRecruitmentNovedadForEmploymentExit(tx, {
         organizationId,
         applicationId: app.id,
         exitDateKey: exitKey,
         underWarranty,
       });
-      return row;
+
+      const updated = await tx.recruitmentApplication.findFirst({
+        where: { id: app.id, organizationId },
+        include: {
+          stage: { select: { id: true, key: true, name: true } },
+          employmentExit: true,
+          candidate: true,
+        },
+      });
+
+      return {
+        exit: row,
+        application: updated,
+        vacancyId: app.vacancyId,
+        candidateName: app.candidate?.fullName || null,
+        vacancyTitle: app.vacancy?.title || null,
+      };
     });
+    created = result.exit;
+    application = result.application;
+    vacancyId = result.vacancyId;
+    candidateName = result.candidateName;
+    vacancyTitle = result.vacancyTitle;
   } catch (e) {
     if (isApplicationUniqueConflict(e)) {
       const err = new Error('CONFLICT');
@@ -232,10 +311,40 @@ export async function registerRecruitmentApplicationEmploymentExit({
     throw e;
   }
 
+  if (vacancyId) {
+    try {
+      const { reconcileVacancyCoverage } = await import('./recruitmentCoverage.service.js');
+      await reconcileVacancyCoverage(organizationId, vacancyId, now);
+    } catch (_e) {
+      /* cobertura: no aborta la baja ya persistida */
+    }
+  }
+
   return {
     applicationId,
     employmentStartDate: startKey,
     employmentExit: serializeEmploymentExit(created),
+    application: application
+      ? {
+          id: application.id,
+          candidateId: application.candidateId,
+          vacancyId: application.vacancyId,
+          stageId: application.stageId,
+          stage: application.stage
+            ? {
+                id: application.stage.id,
+                key: application.stage.key,
+                name: application.stage.name,
+              }
+            : null,
+          employmentStartDate: startKey,
+          employmentExit: serializeEmploymentExit(application.employmentExit || created),
+          hiredStageEnteredAt: application.hiredStageEnteredAt
+            ? application.hiredStageEnteredAt.toISOString()
+            : null,
+          blocksReapplication: application.blocksReapplication !== false,
+        }
+      : null,
     candidateName,
     vacancyTitle,
   };

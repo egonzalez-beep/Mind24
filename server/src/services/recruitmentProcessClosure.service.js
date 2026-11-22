@@ -19,13 +19,16 @@ export const DECLINE_REASON_KEYS = [
   'OTHER',
 ];
 
-const TERMINAL_STAGE_KEYS = ['HIRED', 'REJECTED'];
+const TERMINAL_STAGE_KEYS = ['HIRED', 'EMPLOYMENT_EXIT', 'REJECTED'];
 
 export const CLOSED_PROCESS_STAGE_MESSAGE =
   'Este proceso ya está cerrado. Inicia un nuevo proceso para continuar con el candidato.';
 
 export const HIRED_STAGE_MOVE_MESSAGE =
   'Este candidato ya está contratado. Liberar la contratación es una operación aparte.';
+
+export const EMPLOYMENT_EXIT_STAGE_MOVE_MESSAGE =
+  'Esta contratación ya tiene baja registrada. El movimiento debe hacerse con Registrar baja.';
 
 /** Índice único parcial: como máximo una postulación que bloquea reaplicación por par candidato–vacante. */
 export const BLOCKS_REAPPLICATION_UNIQUE_INDEX =
@@ -46,16 +49,17 @@ function businessError(code, message) {
 export function classifyRecruitmentApplication(stageKey, closureOutcome) {
   if (closureOutcome === 'DECLINED') return 'declined';
   if (closureOutcome === 'REJECTED' || stageKey === 'REJECTED') return 'rejected';
+  if (stageKey === 'EMPLOYMENT_EXIT') return 'exited';
   if (stageKey === 'HIRED') return 'hired';
   return 'active';
 }
 
 /**
  * Valor esperado de blocksReapplication. No redefine “proceso abierto”:
- * HIRED bloquea reaplicación aunque no esté abierto y nunca debe ser false.
+ * HIRED y Baja bloquean reaplicación aunque no estén abiertos y nunca deben ser false.
  */
 export function expectedBlocksReapplication(stageKey, closureOutcome) {
-  if (stageKey === 'HIRED') return true;
+  if (stageKey === 'HIRED' || stageKey === 'EMPLOYMENT_EXIT') return true;
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
   if (kind === 'declined' || kind === 'rejected') return false;
   return true;
@@ -101,12 +105,17 @@ export function recruitmentTerminalOutcomeAt(row) {
   const stageKey = row?.stageKey ?? row?.stage?.key ?? null;
   const closureOutcome = row?.closureOutcome ?? null;
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
-  if (kind !== 'hired' && kind !== 'rejected') return null;
+  if (kind !== 'hired' && kind !== 'rejected' && kind !== 'exited') return null;
 
   const closedAt = terminalEventInstant(row?.closedAt);
   if (closedAt) return closedAt;
 
-  const target = kind === 'hired' ? 'HIRED' : 'REJECTED';
+  if (kind === 'exited') {
+    const exitAt = terminalEventInstant(row?.employmentExit?.createdAt || row?.employmentExit?.registeredAt);
+    if (exitAt) return exitAt;
+  }
+
+  const target = kind === 'hired' ? 'HIRED' : kind === 'exited' ? 'EMPLOYMENT_EXIT' : 'REJECTED';
   const events = (Array.isArray(row?.stageEvents) ? row.stageEvents : [])
     .map((event, index) => ({
       at: terminalEventInstant(event?.createdAt),
@@ -148,14 +157,20 @@ export function isRecruitmentApplicationInActiveVacancyQueue(stageKey, closureOu
 
 export function isRecruitmentApplicationVisibleInKanban(stageKey, closureOutcome) {
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
-  return kind === 'active' || kind === 'hired' || kind === 'rejected' || kind === 'declined';
+  return (
+    kind === 'active'
+    || kind === 'hired'
+    || kind === 'exited'
+    || kind === 'rejected'
+    || kind === 'declined'
+  );
 }
 
 export const recruitmentApplicationIsOpen = isRecruitmentApplicationOpen;
 
 export function recruitmentProcessClosureIsImmutable(stageKey, closureOutcome) {
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
-  return kind === 'rejected' || kind === 'declined';
+  return kind === 'rejected' || kind === 'declined' || kind === 'exited';
 }
 
 export function openApplicationWhere() {
@@ -276,6 +291,7 @@ export function assertRecruitmentProcessStageChangeAllowed({ stageKey, closureOu
   if (!stageChanged) return;
   const kind = classifyRecruitmentApplication(stageKey, closureOutcome);
   if (kind === 'hired') throw businessError('CONFLICT', HIRED_STAGE_MOVE_MESSAGE);
+  if (kind === 'exited') throw businessError('CONFLICT', CLOSED_PROCESS_STAGE_MESSAGE);
   if (kind === 'rejected' || kind === 'declined') {
     throw businessError('CONFLICT', CLOSED_PROCESS_STAGE_MESSAGE);
   }

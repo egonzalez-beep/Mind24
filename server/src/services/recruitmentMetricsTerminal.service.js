@@ -40,14 +40,22 @@ export function qualifyTerminalApplicationForMonth({
   );
   if (!entries.length) return null;
 
+  /** Contratación seguida de Baja en el mismo mes sigue contando una sola vez como HIRED. */
+  const hireSurvivesExit =
+    stageKey === 'HIRED'
+    && (currentStageKey === 'EMPLOYMENT_EXIT'
+      || effectiveStageKeyAt(timeline, endOfMonthInstant) === 'EMPLOYMENT_EXIT');
+
   if (!isCurrentMonth) {
     const atClose = effectiveStageKeyAt(timeline, endOfMonthInstant);
-    if (atClose !== stageKey) return null;
+    if (atClose !== stageKey && !(stageKey === 'HIRED' && atClose === 'EMPLOYMENT_EXIT')) {
+      return null;
+    }
     const entryAt = entries[entries.length - 1].createdAt;
     return { applicationId, entryAt };
   }
 
-  if (currentStageKey !== stageKey) return null;
+  if (currentStageKey !== stageKey && !hireSurvivesExit) return null;
 
   const lastEntry = entries[entries.length - 1];
   const entryMs = lastEntry.createdAt.getTime();
@@ -56,12 +64,25 @@ export function qualifyTerminalApplicationForMonth({
   for (const ev of timeline) {
     if (ev.createdAt.getTime() <= entryMs) continue;
     if (ev.toStageKey !== stageKey) {
+      // HIRED → Baja cuenta aunque sea en <24 h; el resto conserva la ventana.
+      if (stageKey === 'HIRED' && ev.toStageKey === 'EMPLOYMENT_EXIT') break;
       if (ev.createdAt.getTime() < minEndMs) return null;
       break;
     }
   }
 
-  if (now.getTime() < minEndMs) return null;
+  if (currentStageKey === stageKey && now.getTime() < minEndMs) return null;
+  if (hireSurvivesExit) {
+    // Baja temprana no anula la contratación; otras salidas <24 h sí.
+    const leftEarly = timeline.some(
+      (ev) =>
+        ev.createdAt.getTime() > entryMs
+        && ev.createdAt.getTime() < minEndMs
+        && ev.toStageKey !== stageKey
+        && ev.toStageKey !== 'EMPLOYMENT_EXIT',
+    );
+    if (leftEarly) return null;
+  }
 
   return { applicationId, entryAt: lastEntry.createdAt };
 }

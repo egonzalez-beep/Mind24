@@ -15,10 +15,13 @@ export const RECRUITMENT_DEFAULT_STAGES = [
    */
   { key: 'INTERVIEW_NO_SHOW', name: 'No asistió a entrevista', position: 7500, isTerminal: false },
   { key: 'HIRED', name: 'Contratado', position: 8000, isTerminal: true },
+  /** Baja laboral posterior al ingreso; terminal junto a Contratado. */
+  { key: 'EMPLOYMENT_EXIT', name: 'Baja', position: 8500, isTerminal: true },
   { key: 'REJECTED', name: 'Descartado', position: 9000, isTerminal: true },
 ];
 
 export const INTERVIEW_NO_SHOW_STAGE_KEY = 'INTERVIEW_NO_SHOW';
+export const EMPLOYMENT_EXIT_STAGE_KEY = 'EMPLOYMENT_EXIT';
 
 export const RECRUITMENT_VACANCY_STATUSES = ['ACTIVE', 'PAUSED', 'COVERED', 'CLOSED'];
 

@@ -32,10 +32,18 @@ const migPath = path.join(
   serverDir,
   'prisma/migrations/20261121200000_recruitment_application_employment_exit/migration.sql',
 );
+const stageMigPath = path.join(
+  serverDir,
+  'prisma/migrations/20261121210000_recruitment_employment_exit_stage/migration.sql',
+);
 check(fs.existsSync(migPath), 'migración aditiva existe');
+check(fs.existsSync(stageMigPath), 'migración etapa Baja existe');
 const migBuf = fs.readFileSync(migPath);
+const stageMigBuf = fs.readFileSync(stageMigPath);
 check(migBuf[0] !== 0xef && migBuf[1] !== 0xbb, 'migración UTF-8 sin BOM');
+check(stageMigBuf[0] !== 0xef && stageMigBuf[1] !== 0xbb, 'migración etapa UTF-8 sin BOM');
 const mig = migBuf.toString('utf8');
+const stageMig = stageMigBuf.toString('utf8');
 check(/ADD VALUE 'EMPLOYMENT_EXIT'/.test(mig), 'enum novedad EMPLOYMENT_EXIT');
 check(/CREATE TABLE "RecruitmentApplicationEmploymentExit"/.test(mig), 'tabla 1:1');
 check(/"exitDate" DATE NOT NULL/.test(mig), 'exitDate DATE');
@@ -51,6 +59,19 @@ check(
     && !/\bDROP TABLE\b|\bDROP COLUMN\b|\bUPDATE\s+"/.test(migCode),
   'migración solo aditiva',
 );
+check(/'EMPLOYMENT_EXIT'/.test(stageMig) && /'Baja'/.test(stageMig), 'etapa Baja en catálogo');
+check(/INSERT INTO "RecruitmentVacancyStage"/.test(stageMig), 'habilita Baja en vacantes existentes');
+check(
+  /INSERT INTO "RecruitmentApplicationStageEvent"/.test(stageMig)
+    && /UPDATE "RecruitmentApplication"/.test(stageMig)
+    && !/WorkforceRecruitmentNovedad/.test(stageMig),
+  'backfill HIRED→Baja con evento y sin nuevo aviso',
+);
+const stageMigCode = stageMig
+  .split(/\r?\n/)
+  .filter((l) => !l.trim().startsWith('--'))
+  .join('\n');
+check(!/\bDROP TABLE\b|\bDROP COLUMN\b/.test(stageMigCode), 'migración etapa solo aditiva/UPDATE dirigido');
 
 check(/model RecruitmentApplicationEmploymentExit/.test(schema), 'modelo Prisma');
 check(/employmentExit RecruitmentApplicationEmploymentExit\?/.test(schema), 'relación 1:1 en Application');
@@ -78,11 +99,51 @@ check(/registerRecruitmentApplicationEmploymentExit/.test(exitSvc), 'servicio re
 check(/EMPLOYMENT_EXIT_MISSING_START_MESSAGE/.test(exitSvc), 'mensaje sin fecha de ingreso');
 check(/assertEmploymentStartCompatibleWithExit/.test(exitSvc), 'compatibilidad ingreso vs baja');
 check(
+  /EMPLOYMENT_EXIT_STAGE_KEY/.test(exitSvc)
+    && /recruitmentApplicationStageEvent\.create/.test(exitSvc)
+    && /emitWorkforceRecruitmentNovedadForEmploymentExit/.test(exitSvc)
+    && /stageId:\s*exitStage\.id/.test(exitSvc),
+  'baja mueve etapa + evento + aviso en la misma transacción',
+);
+check(
+  /EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE/.test(exitSvc)
+    && /EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE/.test(appSvc),
+  'bloquea altas/movimientos genéricos a Baja',
+);
+check(
   /lockRecruitmentApplicationForEmploymentDates/.test(exitSvc)
     && /FOR UPDATE/.test(exitSvc)
     && /lockRecruitmentApplicationForEmploymentDates/.test(appSvc)
     && /editingHireDateOnly/.test(appSvc),
   'mismo candado FOR UPDATE en baja y edición de ingreso',
+);
+const stageSvc = fs.readFileSync(path.join(serverDir, 'src/services/recruitmentStage.service.js'), 'utf8');
+const vacStageSvc = fs.readFileSync(
+  path.join(serverDir, 'src/services/recruitmentVacancyStage.service.js'),
+  'utf8',
+);
+const metricsSvc = fs.readFileSync(
+  path.join(serverDir, 'src/services/recruitmentMetricsTerminal.service.js'),
+  'utf8',
+);
+const coverageSvc = fs.readFileSync(
+  path.join(serverDir, 'src/services/recruitmentCoverage.service.js'),
+  'utf8',
+);
+check(/key: 'EMPLOYMENT_EXIT'/.test(stageSvc) && /name: 'Baja'/.test(stageSvc), 'catálogo default incluye Baja');
+check(
+  /REQUIRED_VACANCY_STAGE_KEYS[\s\S]*EMPLOYMENT_EXIT/.test(vacStageSvc),
+  'EMPLOYMENT_EXIT obligatoria por vacante',
+);
+check(
+  /hireSurvivesExit/.test(metricsSvc)
+    && /toStageKey === 'EMPLOYMENT_EXIT'/.test(metricsSvc),
+  'métricas conservan HIRED tras Baja mismo mes',
+);
+check(
+  /status !== 'ACTIVE'/.test(coverageSvc)
+    && /Solo Activa → Cubierta/.test(coverageSvc),
+  'reconcile no reabre Cubierta al liberar plaza',
 );
 check(/emitWorkforceRecruitmentNovedadForEmploymentExit/.test(novSvc), 'emisor novedad');
 check(/application_employment_exit:/.test(novSvc), 'dedupeKey por application');
@@ -131,6 +192,43 @@ check(
 }
 check(/recCandEmploymentExitDetailsHtml/.test(indexHtml), 'detalle Fecha/Motivo/Garantía');
 check(/eventType==='EMPLOYMENT_EXIT'/.test(indexHtml), 'filtro Novedades hired para baja');
+check(
+  /targetStageKey==='EMPLOYMENT_EXIT'/.test(indexHtml)
+    && /recCandOpenEmploymentExit\(appId,\s*\{/.test(indexHtml)
+    && /source:'kanban'/.test(indexHtml.slice(indexHtml.indexOf("targetStageKey==='EMPLOYMENT_EXIT'"))),
+  'Kanban abre el mismo modal al soltar en Baja',
+);
+check(
+  /recCandLandEmploymentExitOnKanban/.test(indexHtml)
+    && /La tarjeta permanece en Contratado hasta que el servidor confirme/.test(indexHtml),
+  'aterrizaje Kanban solo tras confirmación del servidor',
+);
+check(
+  /sk!=='HIRED'&&sk!=='EMPLOYMENT_EXIT'/.test(indexHtml.replace(/\s+/g, ''))
+    || /sk!=='HIRED'&&sk!=='EMPLOYMENT_EXIT'/.test(indexHtml),
+  'editar ingreso permitido también en Baja',
+);
+check(
+  /isExit\?'Baja'/.test(indexHtml)
+    && /Antecedente: Contratado/.test(indexHtml)
+    && /EMPLOYMENT_EXIT/.test(indexHtml),
+  'historial muestra Baja con antecedente de contratación',
+);
+check(
+  /canDrag=stageKey!=='EMPLOYMENT_EXIT'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED'/.test(
+    indexHtml.replace(/\s+/g, ''),
+  ),
+  'Contratado es arrastrable; Baja/Descartado/Declinó no',
+);
+check(
+  /function recKanbanHiredDragAllowsTarget/.test(indexHtml)
+    && /fromKey==='HIRED'\)returntargetKey==='EMPLOYMENT_EXIT'/.test(indexHtml.replace(/\s+/g, '')),
+  'arrastre desde Contratado solo permite Baja',
+);
+check(
+  /Desde Contratado solo se puede mover a Baja/.test(indexHtml),
+  'drop fuera de Baja desde Contratado se rechaza',
+);
 
 const {
   parseEmploymentStartDateInput,
@@ -451,6 +549,7 @@ if (!executablePath) {
 
     // Fallo: conserva datos y rehabilita controles.
     st.detailCandidate.applications[0].employmentExit = null;
+    st.detailCandidate.applications[0].stage = { key: 'HIRED', name: 'Contratado' };
     host.innerHTML = recCandHistoryAsideHtml(st.detailCandidate.applications);
     const btnRetry = host.querySelector('[data-app-id="app-a"] .rec-hire-exit-btn');
     btnRetry.click();
@@ -470,6 +569,189 @@ if (!executablePath) {
       cancelEnabled: !document.getElementById('rec-exit-cancel').disabled,
     };
 
+    // Kanban real: tarjeta HIRED renderizada → dragstart → solo Baja acepta.
+    let slot = document.getElementById('rec-pipeline-slot');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.id = 'rec-pipeline-slot';
+      document.body.appendChild(slot);
+    }
+    // Cerrar modal de fallo previo para no interferir con el flujo Kanban.
+    recCandSetEmploymentExitBusy(false);
+    recCandCloseEmploymentExit();
+    st.selectedId = 'v-k';
+    st.kanbanError = '';
+    st.kanbanCollapsed = {};
+    st.kanbanHideEmpty = false;
+    st.kanbanStages = [
+      { stageId: 'st-new', stage: { id: 'st-new', key: 'NEW', name: 'Nuevo' }, isEnabled: true },
+      { stageId: 'st-hired', stage: { id: 'st-hired', key: 'HIRED', name: 'Contratado' }, isEnabled: true },
+      { stageId: 'st-exit', stage: { id: 'st-exit', key: 'EMPLOYMENT_EXIT', name: 'Baja' }, isEnabled: true },
+      { stageId: 'st-rej', stage: { id: 'st-rej', key: 'REJECTED', name: 'Descartado' }, isEnabled: true },
+    ];
+    st.kanbanApplications = [{
+      id: 'app-k',
+      employmentStartDate: '2026-10-01',
+      employmentExit: null,
+      stageId: 'st-hired',
+      stage: { id: 'st-hired', key: 'HIRED', name: 'Contratado' },
+      candidateId: 'cand-k',
+      candidate: { id: 'cand-k', fullName: 'Luis Kanban', profile: 'Ops' },
+      vacancy: { id: 'v-k', title: 'Picking' },
+      updatedAt: '2026-11-21T12:00:00.000Z',
+    }];
+    st.vacancies = [{ id: 'v-k', title: 'Picking' }];
+    recKanbanRender('v-k');
+    const board = document.getElementById('rec-kanban-board');
+    const card = board && board.querySelector('.rec-kanban-card[data-app-id="app-k"]');
+    const colNew = board && board.querySelector('.rec-kanban-col[data-stage-key="NEW"]');
+    const colExit = board && board.querySelector('.rec-kanban-col[data-stage-key="EMPLOYMENT_EXIT"]');
+    const colRej = board && board.querySelector('.rec-kanban-col[data-stage-key="REJECTED"]');
+    function mockDt() {
+      return { dropEffect: 'none', effectAllowed: 'all', setData() {}, getData() { return 'app-k'; } };
+    }
+    function fireDragStart(el) {
+      const dt = mockDt();
+      const ev = {
+        currentTarget: el,
+        preventDefault() { ev._prevented = true; },
+        _prevented: false,
+        dataTransfer: dt,
+      };
+      recKanbanCardDragStart(ev);
+      return ev;
+    }
+    function fireOver(col) {
+      const dt = mockDt();
+      const ev = {
+        currentTarget: col,
+        clientX: 10,
+        preventDefault() { ev._prevented = true; },
+        _prevented: false,
+        dataTransfer: dt,
+      };
+      recKanbanColDragOver(ev);
+      return ev;
+    }
+    const dragStartEv = card ? fireDragStart(card) : null;
+    const overNew = colNew ? fireOver(colNew) : null;
+    const overRej = colRej ? fireOver(colRej) : null;
+    const overExit = colExit ? fireOver(colExit) : null;
+    const dragProbe = {
+      rendered: !!card,
+      draggable: card && card.getAttribute('draggable') === 'true',
+      dragStarted: !!(dragStartEv && !dragStartEv._prevented && st.kanbanDragAppId === 'app-k'),
+      fromKey: st.kanbanDragFromStageKey,
+      newRejected: !!(overNew && !overNew._prevented && overNew.dataTransfer.dropEffect === 'none'),
+      rejRejected: !!(overRej && !overRej._prevented && overRej.dataTransfer.dropEffect === 'none'),
+      exitAllowed: !!(overExit && overExit._prevented && overExit.dataTransfer.dropEffect === 'move'),
+    };
+    // Drop en Nuevo: rechazo explícito, tarjeta sigue en Contratado.
+    st.kanbanError = '';
+    if (colNew) {
+      await recKanbanColDrop({
+        preventDefault() {},
+        currentTarget: colNew,
+        dataTransfer: mockDt(),
+      });
+    }
+    const afterBadDrop = {
+      err: st.kanbanError || '',
+      stillHired: !!(card && card.closest('.rec-kanban-col')?.getAttribute('data-stage-key') === 'HIRED'),
+      modalClosed: !exitModal || exitModal.classList.contains('hidden'),
+    };
+    // Drop en Baja: abre modal; tarjeta permanece en Contratado.
+    if (colExit) {
+      await recKanbanColDrop({
+        preventDefault() {},
+        currentTarget: colExit,
+        dataTransfer: mockDt(),
+      });
+    }
+    const cardBefore = board && board.querySelector('.rec-kanban-card[data-app-id="app-k"]');
+    const kanbanOpen = {
+      modalOpen: exitModal && !exitModal.classList.contains('hidden'),
+      stillHired: cardBefore && cardBefore.closest('.rec-kanban-col')?.getAttribute('data-stage-key') === 'HIRED',
+      candidate: (document.getElementById('rec-exit-candidate') || {}).textContent || '',
+    };
+    recCandCloseEmploymentExit();
+    if (card) recKanbanCardDragEnd({ currentTarget: card });
+    const cardAfterCancel = board && board.querySelector('.rec-kanban-card[data-app-id="app-k"]');
+    const kanbanCancel = {
+      modalClosed: !exitModal || exitModal.classList.contains('hidden'),
+      stillHired: cardAfterCancel && cardAfterCancel.closest('.rec-kanban-col')?.getAttribute('data-stage-key') === 'HIRED',
+      stageId: st.kanbanApplications[0].stageId,
+    };
+    recCandOpenEmploymentExit('app-k', {
+      source: 'kanban',
+      fromStageId: 'st-hired',
+      targetStageId: 'st-exit',
+      vacancyId: 'v-k',
+    });
+    document.getElementById('rec-exit-reason').value = 'Fin de contrato';
+    document.querySelector('input[name="rec-exit-warranty"][value="no"]').checked = true;
+    apiJson = () => Promise.resolve({
+      applicationId: 'app-k',
+      employmentStartDate: '2026-10-01',
+      employmentExit: {
+        id: 'ex-k',
+        exitDate: '2026-11-18',
+        reason: 'Fin de contrato',
+        underWarranty: false,
+        registeredAt: '2026-11-21T12:00:00.000Z',
+      },
+      application: {
+        id: 'app-k',
+        candidateId: 'cand-k',
+        vacancyId: 'v-k',
+        stageId: 'st-exit',
+        stage: { id: 'st-exit', key: 'EMPLOYMENT_EXIT', name: 'Baja' },
+        employmentStartDate: '2026-10-01',
+        employmentExit: {
+          id: 'ex-k',
+          exitDate: '2026-11-18',
+          reason: 'Fin de contrato',
+          underWarranty: false,
+          registeredAt: '2026-11-21T12:00:00.000Z',
+        },
+      },
+      headcount: { activeVacancies: 1, headcount: 0 },
+    });
+    await recCandConfirmEmploymentExit();
+    const cardAfterOk = board && board.querySelector('.rec-kanban-card[data-app-id="app-k"]');
+    const kanbanOk = {
+      landedExit: cardAfterOk && cardAfterOk.closest('.rec-kanban-col')?.getAttribute('data-stage-key') === 'EMPLOYMENT_EXIT',
+      stageKey: st.kanbanApplications[0].stage && st.kanbanApplications[0].stage.key,
+      noDrag: cardAfterOk && cardAfterOk.getAttribute('draggable') === 'false',
+    };
+    // Error: tarjeta permanece en Contratado.
+    st.kanbanApplications[0].stageId = 'st-hired';
+    st.kanbanApplications[0].stage = { id: 'st-hired', key: 'HIRED', name: 'Contratado' };
+    st.kanbanApplications[0].employmentExit = null;
+    const hiredCol = board && board.querySelector('.rec-kanban-col[data-stage-key="HIRED"] .rec-kanban-col-body');
+    if (cardAfterOk && hiredCol) hiredCol.appendChild(cardAfterOk);
+    if (cardAfterOk) {
+      cardAfterOk.setAttribute('data-stage-key', 'HIRED');
+      cardAfterOk.setAttribute('data-stage-id', 'st-hired');
+      cardAfterOk.setAttribute('draggable', 'true');
+    }
+    recCandOpenEmploymentExit('app-k', {
+      source: 'kanban',
+      fromStageId: 'st-hired',
+      targetStageId: 'st-exit',
+      vacancyId: 'v-k',
+    });
+    document.getElementById('rec-exit-reason').value = 'Error esperado';
+    document.querySelector('input[name="rec-exit-warranty"][value="yes"]').checked = true;
+    apiJson = () => Promise.reject(Object.assign(new Error('Fallo kanban'), { code: 'VALIDATION_ERROR' }));
+    await recCandConfirmEmploymentExit();
+    const cardAfterErr = board && board.querySelector('.rec-kanban-card[data-app-id="app-k"]');
+    const kanbanErr = {
+      stillOpen: exitModal && !exitModal.classList.contains('hidden'),
+      stillHired: cardAfterErr && cardAfterErr.closest('.rec-kanban-col')?.getAttribute('data-stage-key') === 'HIRED',
+      err: (document.getElementById('rec-exit-err') || {}).textContent || '',
+    };
+
     return {
       afterOpen,
       afterEsc,
@@ -481,6 +763,12 @@ if (!executablePath) {
       afterSave,
       afterFail,
       failDate,
+      dragProbe,
+      afterBadDrop,
+      kanbanOpen,
+      kanbanCancel,
+      kanbanOk,
+      kanbanErr,
     };
   });
   if (flow.error) {
@@ -540,6 +828,46 @@ if (!executablePath) {
         && flow.afterFail.submitLabel === 'Guardar baja'
         && flow.afterFail.cancelEnabled,
       'si falla, conserva datos, muestra error y rehabilita controles',
+    );
+    check(
+      flow.dragProbe.rendered
+        && flow.dragProbe.draggable
+        && flow.dragProbe.dragStarted
+        && flow.dragProbe.fromKey === 'HIRED'
+        && flow.dragProbe.newRejected
+        && flow.dragProbe.rejRejected
+        && flow.dragProbe.exitAllowed,
+      'dragstart desde Contratado: solo Baja acepta el arrastre',
+    );
+    check(
+      /solo se puede mover a Baja/i.test(flow.afterBadDrop.err)
+        && flow.afterBadDrop.stillHired
+        && flow.afterBadDrop.modalClosed,
+      'soltar Contratado en otra columna se rechaza sin abrir modal',
+    );
+    check(
+      flow.kanbanOpen.modalOpen
+        && flow.kanbanOpen.stillHired
+        && /Luis/.test(flow.kanbanOpen.candidate),
+      'arrastre a Baja abre modal y deja la tarjeta en Contratado',
+    );
+    check(
+      flow.kanbanCancel.modalClosed
+        && flow.kanbanCancel.stillHired
+        && flow.kanbanCancel.stageId === 'st-hired',
+      'cancelar baja desde Kanban no mueve la tarjeta',
+    );
+    check(
+      flow.kanbanOk.landedExit
+        && flow.kanbanOk.stageKey === 'EMPLOYMENT_EXIT'
+        && flow.kanbanOk.noDrag,
+      'tras confirmar desde Kanban, aterriza en Baja sin arrastre',
+    );
+    check(
+      flow.kanbanErr.stillOpen
+        && flow.kanbanErr.stillHired
+        && /Fallo kanban/.test(flow.kanbanErr.err),
+      'error al guardar desde Kanban deja la tarjeta en Contratado',
     );
   }
   await browser.close();

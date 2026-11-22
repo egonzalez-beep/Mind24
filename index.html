@@ -463,6 +463,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-hero-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
 .rec-cand-stage-pill{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(124,58,237,.1);color:var(--purple-dark);}
 .rec-cand-stage-pill--hired{background:rgba(16,185,129,.12);color:#047857;}
+.rec-cand-stage-pill--exit{background:rgba(217,119,6,.12);color:#9a3412;}
 .rec-cand-stage-pill--rej{background:rgba(244,63,94,.1);color:#BE123C;}
 .rec-cand-hero-ctrls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;}
 .rec-cand-stage-change-select{font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-700);border:1px solid var(--slate-200);background:#fff;border-radius:8px;padding:6px 28px 6px 10px;cursor:pointer;max-width:180px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
@@ -526,6 +527,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-cand-history-sub{color:var(--slate-600);}
 .rec-cand-history-outcome{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .rec-cand-history-outcome--hired{color:#047857;}
+.rec-cand-history-outcome--exit{color:#9a3412;}
 .rec-cand-history-outcome--rej{color:#b91c1c;}
 .rec-cand-history-outcome--dec{color:#9A3412;}
 .rec-cand-history-result{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:0 1 auto;max-width:46%;min-width:0;}
@@ -1234,6 +1236,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-kanban-col--sem-hired .rec-kanban-col-title{color:#0f766e;}
 .rec-kanban-col--sem-hired .rec-kanban-col-count{color:#0d9488;border-color:rgba(45,212,191,.42);}
 .rec-kanban-col--sem-hired .rec-kanban-col-icon-compact{color:#0d9488;}
+.rec-kanban-col--sem-exit{background:rgba(255,251,235,.65);border-color:rgba(217,119,6,.28);box-shadow:inset 3px 0 0 rgba(180,83,9,.28);}
+.rec-kanban-col--sem-exit .rec-kanban-col-title{color:#9a3412;}
+.rec-kanban-col--sem-exit .rec-kanban-col-count{color:#b45309;border-color:rgba(251,191,36,.42);}
+.rec-kanban-col--sem-exit .rec-kanban-col-icon-compact{color:#c2410c;}
 .rec-kanban-col--sem-noshow{background:rgba(255,251,235,.7);border-color:rgba(245,158,11,.28);box-shadow:inset 3px 0 0 rgba(245,158,11,.35);}
 .rec-kanban-col--sem-noshow .rec-kanban-col-title{color:#92400e;}
 .rec-kanban-col--sem-noshow .rec-kanban-col-count{color:#b45309;border-color:rgba(245,158,11,.4);}
@@ -10105,6 +10111,7 @@ function recKanbanStageIconSvg(stage){
     FINALIST:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     INTERVIEW_NO_SHOW:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     HIRED:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+    EMPLOYMENT_EXIT:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     DECLINED:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     REJECTED:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
   };
@@ -10116,6 +10123,7 @@ function recKanbanColSemanticMod(stage){
   if(key==='FINALIST') return ' rec-kanban-col--sem-finalist';
   if(key==='INTERVIEW_NO_SHOW') return ' rec-kanban-col--sem-noshow';
   if(key==='HIRED') return ' rec-kanban-col--sem-hired';
+  if(key==='EMPLOYMENT_EXIT') return ' rec-kanban-col--sem-exit';
   if(key==='DECLINED') return ' rec-kanban-col--sem-declined';
   if(key==='REJECTED') return ' rec-kanban-col--sem-rejected';
   return '';
@@ -10733,7 +10741,7 @@ function recStagesSetProcessViewVisible(visible){
   if(sub) sub.classList.toggle('hidden',!visible);
   if(funnel) funnel.classList.toggle('hidden',!visible);
 }
-var REC_REQUIRED_STAGE_KEYS=['NEW','HIRED','REJECTED','INTERVIEW_NO_SHOW'];
+var REC_REQUIRED_STAGE_KEYS=['NEW','HIRED','REJECTED','INTERVIEW_NO_SHOW','EMPLOYMENT_EXIT'];
 function recStageIsRequiredKey(key){ return REC_REQUIRED_STAGE_KEYS.indexOf(key)>=0; }
 function recStageEditorEnsure(){
   const st=recEnsureState();
@@ -11739,7 +11747,7 @@ function recKanbanApplicationIsOpen(app){
   if(!app) return false;
   if(app.closureOutcome==='DECLINED'||app.closureOutcome==='REJECTED') return false;
   const k=app.stage&&app.stage.key;
-  return k!=='HIRED'&&k!=='REJECTED';
+  return k!=='HIRED'&&k!=='EMPLOYMENT_EXIT'&&k!=='REJECTED';
 }
 function recKanbanPickOperationalApplications(apps){
   const rows=(apps||[]).filter(Boolean);
@@ -11824,7 +11832,8 @@ function recKanbanRender(vacancyId){
       const updated=recKanbanRelativeUpdated(app.updatedAt||c.updatedAt);
       const stageKey=stage.key||'';
       const reasonText=app.closureOutcome==='DECLINED'&&typeof recCandClosureReasonText==='function'?recCandClosureReasonText(app):'';
-      const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED';
+      // Contratado arrastra solo hacia Baja; Baja/Descartado/Declinó no arrastran.
+      const canDrag=stageKey!=='EMPLOYMENT_EXIT'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED';
       html+='<div class="rec-kanban-card" draggable="'+(canDrag?'true':'false')+'" data-app-id="'+tcEsc(app.id)+'" data-stage-id="'+tcEsc(sid)+'" data-stage-key="'+tcEsc(stageKey)+'" data-candidate-id="'+tcEsc(c.id||app.candidateId)+'"'+
         ' ondragstart="recKanbanCardDragStart(event)" ondragend="recKanbanCardDragEnd(event)" onclick="recKanbanCardClick(event,\''+tcEsc(c.id||app.candidateId)+'\')">'+
         '<span class="rec-kanban-card-handle" aria-hidden="true">⋮⋮</span>'+
@@ -11964,7 +11973,8 @@ async function recKanbanSilentReconcile(vacancyId, epoch){
   if(st.kanbanPendingMoves&&Object.keys(st.kanbanPendingMoves).length) return;
   try{
     const appsJ=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(vacancyId)+'/applications');
-    const apps=appsJ.applications||[];
+    if(!appsJ||!Array.isArray(appsJ.applications)) return;
+    const apps=appsJ.applications;
     if(epoch!=null&&st.kanbanEpoch!==epoch) return;
     if(st.kanbanPendingMoves&&Object.keys(st.kanbanPendingMoves).length) return;
     st.kanbanApplications=apps;
@@ -12003,7 +12013,8 @@ function recKanbanCardDragStart(ev){
   const st=recEnsureState();
   const card=ev.currentTarget;
   const lockedKey=card.getAttribute('data-stage-key');
-  if(lockedKey==='HIRED'||lockedKey==='REJECTED'||lockedKey==='DECLINED'||card.getAttribute('draggable')==='false'){
+  // HIRED sí arrastra (solo hacia Baja). Baja/Descartado/Declinó no.
+  if(lockedKey==='EMPLOYMENT_EXIT'||lockedKey==='REJECTED'||lockedKey==='DECLINED'||card.getAttribute('draggable')==='false'){
     ev.preventDefault();
     return;
   }
@@ -12013,6 +12024,7 @@ function recKanbanCardDragStart(ev){
     return;
   }
   st.kanbanDragAppId=appId;
+  st.kanbanDragFromStageKey=lockedKey||'';
   st.kanbanDragging=true;
   card.classList.add('rec-kanban-card--dragging');
   if(ev.dataTransfer){
@@ -12024,6 +12036,7 @@ function recKanbanCardDragEnd(ev){
   const st=recEnsureState();
   recKanbanAutoScrollStop();
   st.kanbanDragAppId=null;
+  st.kanbanDragFromStageKey=null;
   st.kanbanDragging=false;
   st.kanbanSuppressClick=true;
   setTimeout(function(){ st.kanbanSuppressClick=false; }, 50);
@@ -12031,11 +12044,23 @@ function recKanbanCardDragEnd(ev){
   document.querySelectorAll('.rec-kanban-col--over').forEach(function(el){ el.classList.remove('rec-kanban-col--over'); });
   recKanbanRestoreEmptyAfterDrag();
 }
+function recKanbanHiredDragAllowsTarget(fromKey, targetKey){
+  if(fromKey==='HIRED') return targetKey==='EMPLOYMENT_EXIT';
+  return true;
+}
 function recKanbanColDragOver(ev){
+  const st=recEnsureState();
   const col=ev.currentTarget.closest('.rec-kanban-col');
   recKanbanAutoScrollFromPointer(ev.clientX);
+  const targetKey=col&&(col.getAttribute('data-stage-key')||'');
+  const fromKey=st.kanbanDragFromStageKey||'';
   if(col&&col.classList.contains('rec-kanban-col--collapsed')){
     if(ev.dataTransfer) ev.dataTransfer.dropEffect='none';
+    return;
+  }
+  if(!recKanbanHiredDragAllowsTarget(fromKey, targetKey)){
+    if(ev.dataTransfer) ev.dataTransfer.dropEffect='none';
+    if(col) col.classList.remove('rec-kanban-col--over');
     return;
   }
   ev.preventDefault();
@@ -12061,6 +12086,11 @@ async function recKanbanColDrop(ev){
   const app=(st.kanbanApplications||[]).find(function(a){ return a.id===appId; });
   const fromStageId=app&&(app.stageId||(app.stage&&app.stage.id));
   if(!app||String(fromStageId)===String(targetStageId)) return;
+  const fromKey=(app.stage&&app.stage.key)||st.kanbanDragFromStageKey||'';
+  if(fromKey==='HIRED'&&targetStageKey!=='EMPLOYMENT_EXIT'){
+    recKanbanSetErr('Desde Contratado solo se puede mover a Baja.');
+    return;
+  }
   if(targetStageKey==='HIRED'){
     const cand=app.candidate||{};
     const vacTitle=(st.vacancies||[]).find(function(v){ return v.id===st.selectedId; });
@@ -12072,6 +12102,21 @@ async function recKanbanColDrop(ev){
       candidateId:app.candidateId||cand.id,
       candidateName:cand.fullName||'el candidato',
       vacancyTitle:(vacTitle&&vacTitle.title)||'la vacante',
+      vacancyId:st.selectedId,
+    });
+    return;
+  }
+  if(targetStageKey==='EMPLOYMENT_EXIT'){
+    const fromKey=app.stage&&app.stage.key;
+    if(fromKey!=='HIRED'){
+      recKanbanSetErr('Solo se puede pasar a Baja desde Contratado.');
+      return;
+    }
+    // La tarjeta permanece en Contratado hasta que el servidor confirme.
+    recCandOpenEmploymentExit(appId,{
+      source:'kanban',
+      fromStageId:fromStageId,
+      targetStageId:targetStageId,
       vacancyId:st.selectedId,
     });
     return;
@@ -12110,7 +12155,7 @@ async function recKanbanCommitStageMove(appId, fromStageId, targetStageId, toCol
       Object.assign(app,out.application);
       recKanbanUpdateCardFoot(card,app);
       const landedKey=app.stage&&app.stage.key;
-      if(landedKey==='HIRED'||landedKey==='REJECTED'){
+      if(landedKey==='HIRED'||landedKey==='EMPLOYMENT_EXIT'||landedKey==='REJECTED'){
         card.setAttribute('data-stage-key',landedKey);
         card.setAttribute('draggable','false');
       }
@@ -13570,7 +13615,7 @@ function recCandAppStageKey(a){
 function recCandAppIsClosed(a){
   if(a&&a.closureOutcome) return true;
   const k=recCandAppStageKey(a);
-  return k==='HIRED'||k==='REJECTED';
+  return k==='HIRED'||k==='EMPLOYMENT_EXIT'||k==='REJECTED';
 }
 function recCandPartitionApplications(apps){
   const active=[];
@@ -13618,6 +13663,7 @@ function recCandGetAppId(a){
 function recCandStagePillClass(stage){
   const k=stage&&stage.key;
   if(k==='HIRED') return 'rec-cand-stage-pill--hired';
+  if(k==='EMPLOYMENT_EXIT') return 'rec-cand-stage-pill--exit';
   if(k==='REJECTED') return 'rec-cand-stage-pill--rej';
   return '';
 }
@@ -14641,12 +14687,17 @@ function recCandHistoryAsideHtml(closedApps){
       const vac=a.vacancy||{};
       const sk=recCandAppStageKey(a);
       const isHired=sk==='HIRED';
-      const outcome=a.closureOutcome==='DECLINED'?'Declinó':(isHired?'Contratado':'Rechazado');
-      const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(isHired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej');
-      const terminalKind=a.closureOutcome==='DECLINED'?'':(isHired?'hired':(a.closureOutcome==='REJECTED'||sk==='REJECTED'?'rejected':''));
+      const isExit=sk==='EMPLOYMENT_EXIT';
+      const showHireBlock=isHired||isExit;
+      const outcome=a.closureOutcome==='DECLINED'?'Declinó':(isExit?'Baja':(isHired?'Contratado':'Rechazado'));
+      const ocCls=a.closureOutcome==='DECLINED'?'rec-cand-history-outcome--dec':(isExit?'rec-cand-history-outcome--exit':(isHired?'rec-cand-history-outcome--hired':'rec-cand-history-outcome--rej'));
+      const terminalKind=a.closureOutcome==='DECLINED'?'':(isExit?'exited':(isHired?'hired':(a.closureOutcome==='REJECTED'||sk==='REJECTED'?'rejected':'')));
       const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
-      const terminalLabel=(!isHired&&terminalKind)?recCandFmtTerminalDate(a.terminalOutcomeAt,tz):'';
-      const terminalKey=terminalLabel?recCandTerminalDateKey(a.terminalOutcomeAt,tz):'';
+      const terminalAt=isExit&&a.employmentExit&&a.employmentExit.registeredAt
+        ? a.employmentExit.registeredAt
+        : a.terminalOutcomeAt;
+      const terminalLabel=(!isHired&&terminalKind)?recCandFmtTerminalDate(terminalAt,tz):'';
+      const terminalKey=terminalLabel?recCandTerminalDateKey(terminalAt,tz):'';
       const dateId=terminalLabel?('rec-hist-date-'+String(a.applicationId||'').replace(/[^a-zA-Z0-9_-]/g,'')):'';
       const period=[a.appliedAt?('Inicio '+recCandFmtDetailDate(a.appliedAt)):'', terminalKind?'':(a.closedAt?('Cierre '+recCandFmtDetailDate(a.closedAt)):'' )].filter(Boolean).join(' · ');
       const stageName=(a.stage&&a.stage.name)||'';
@@ -14661,13 +14712,14 @@ function recCandHistoryAsideHtml(closedApps){
         (terminalLabel?'<time class="rec-cand-history-terminal-date" id="'+dateId+'" datetime="'+tcEsc(terminalKey)+'">'+tcEsc(terminalLabel)+'</time>':'')+
         '</div>'
       );
-      return '<div class="rec-cand-history-item'+(isHired?' rec-cand-history-item--hired':'')+'">'+
+      return '<div class="rec-cand-history-item'+(showHireBlock?' rec-cand-history-item--hired':'')+(isExit?' rec-cand-history-item--exit':'')+'">'+
         '<div class="rec-cand-history-top"><p class="rec-cand-aside-row-title">'+tcEsc((vac.title||'—')+titleHint)+'</p>'+
         resultBlock+
         '</div>'+
         (period?'<p class="rec-cand-history-period">'+tcEsc(period)+'</p>':'')+
-        ((!isHired&&stageName)?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
-        (isHired?recCandEmploymentStartHtml(a):'')+
+        ((isExit)?'<p class="rec-cand-history-stage">Antecedente: Contratado</p>':'')+
+        ((!showHireBlock&&stageName)?'<p class="rec-cand-history-stage">Última etapa: '+tcEsc(stageName)+'</p>':'')+
+        (showHireBlock?recCandEmploymentStartHtml(a):'')+
         (reasonLabel?'<p class="rec-cand-history-reason">'+tcEsc(reasonLabel)+'</p>':'')+
         (note?'<p class="rec-cand-history-note" title="'+tcEsc(note)+'">'+tcEsc(note)+'</p>':'')+
         recCandInterviewsBlockHtml(a,{ readonly:true })+
@@ -14718,7 +14770,8 @@ function recCandEditEmploymentStart(applicationId){
   const st=recEnsureState();
   const apps=((st.detailCandidate&&st.detailCandidate.applications)||[]);
   const app=apps.find(function(a){ return recCandGetAppId(a)===applicationId; });
-  if(!app||recCandAppStageKey(app)!=='HIRED') return;
+  const sk=recCandAppStageKey(app);
+  if(!app||(sk!=='HIRED'&&sk!=='EMPLOYMENT_EXIT')) return;
   const current=app.employmentStartDate?String(app.employmentStartDate).slice(0,10):'';
   const exitMax=app.employmentExit&&app.employmentExit.exitDate?String(app.employmentExit.exitDate).slice(0,10):'';
   const today=recOrgTodayYmd();
@@ -14788,6 +14841,7 @@ async function recCandSaveEmploymentStart(ev, applicationId){
 }
 var recEmploymentExitReturnFocus=null;
 var recEmploymentExitEpoch=0;
+var recEmploymentExitPending=null;
 function recCandEmploymentExitBusy(){
   const submit=document.getElementById('rec-exit-submit');
   return !!(submit&&submit.dataset.recBusy==='1');
@@ -14843,6 +14897,7 @@ function recCandCloseEmploymentExit(){
   // No abortar ni invalidar un guardado en curso: Cancelar/X/Escape/fondo quedan bloqueados.
   if(recCandEmploymentExitBusy()) return;
   recEmploymentExitEpoch+=1;
+  recEmploymentExitPending=null;
   const overlay=document.getElementById('modal-rec-employment-exit');
   if(overlay){
     overlay.classList.add('hidden');
@@ -14856,15 +14911,63 @@ function recCandCloseEmploymentExit(){
   recEmploymentExitReturnFocus=null;
   if(back&&document.contains(back)&&typeof back.focus==='function') back.focus();
 }
-function recCandOpenEmploymentExit(applicationId){
+function recCandResolveEmploymentExitApp(applicationId){
   const st=recEnsureState();
   const c=st.detailCandidate;
-  const app=((c&&c.applications)||[]).find(function(row){ return recCandGetAppId(row)===applicationId; });
-  if(!app||recCandAppStageKey(app)!=='HIRED') return;
-  if(app.employmentExit) return;
+  const fromDetail=((c&&c.applications)||[]).find(function(row){ return recCandGetAppId(row)===applicationId; });
+  if(fromDetail){
+    return { app:fromDetail, candidate:c, vacancyTitle:(fromDetail.vacancy&&fromDetail.vacancy.title)||'' };
+  }
+  const fromKanban=(st.kanbanApplications||[]).find(function(a){ return a.id===applicationId; });
+  if(fromKanban){
+    const vac=(st.vacancies||[]).find(function(v){ return v.id===st.selectedId; });
+    return {
+      app:fromKanban,
+      candidate:fromKanban.candidate||null,
+      vacancyTitle:(fromKanban.vacancy&&fromKanban.vacancy.title)||(vac&&vac.title)||'',
+    };
+  }
+  return null;
+}
+function recCandLandEmploymentExitOnKanban(applicationId, out){
+  const st=recEnsureState();
+  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===applicationId; });
+  const card=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+applicationId+'"]');
+  if(!app||!card) return;
+  const serverApp=out&&out.application?out.application:null;
+  const targetStageId=(serverApp&&serverApp.stageId)||(recEmploymentExitPending&&recEmploymentExitPending.targetStageId)||'';
+  const fromCol=card.closest('.rec-kanban-col');
+  const toCol=targetStageId?recKanbanFindCol(targetStageId):null;
+  if(serverApp){
+    Object.assign(app, {
+      stageId:serverApp.stageId||app.stageId,
+      stage:serverApp.stage||app.stage,
+      employmentStartDate:serverApp.employmentStartDate!=null?serverApp.employmentStartDate:app.employmentStartDate,
+      employmentExit:serverApp.employmentExit||(out&&out.employmentExit)||app.employmentExit,
+      hiredStageEnteredAt:serverApp.hiredStageEnteredAt!=null?serverApp.hiredStageEnteredAt:null,
+      blocksReapplication:serverApp.blocksReapplication!=null?serverApp.blocksReapplication:app.blocksReapplication,
+    });
+  }else if(out&&out.employmentExit){
+    app.employmentExit=out.employmentExit;
+  }
+  if(toCol&&fromCol&&toCol!==fromCol){
+    recKanbanMoveCardInDom(card,fromCol,toCol,{ animate:true });
+    recKanbanSyncColCounts(fromCol);
+    recKanbanSyncColCounts(toCol);
+  }
+  card.setAttribute('data-stage-key','EMPLOYMENT_EXIT');
+  card.setAttribute('data-stage-id',app.stageId||targetStageId||'');
+  card.setAttribute('draggable','false');
+  recKanbanUpdateCardFoot(card,app);
+}
+function recCandOpenEmploymentExit(applicationId, opts){
+  const resolved=recCandResolveEmploymentExitApp(applicationId);
+  if(!resolved||recCandAppStageKey(resolved.app)!=='HIRED') return;
+  if(resolved.app.employmentExit) return;
   if(recCandEmploymentExitBusy()) return;
   recCandBindEmploymentExitEscape();
   recEmploymentExitEpoch+=1;
+  recEmploymentExitPending=Object.assign({ applicationId:applicationId, source:(opts&&opts.source)||'detail' }, opts||{});
   recEmploymentExitReturnFocus=document.activeElement;
   const who=document.getElementById('rec-exit-candidate');
   const vac=document.getElementById('rec-exit-vacancy');
@@ -14874,9 +14977,10 @@ function recCandOpenEmploymentExit(applicationId){
   const reasonEl=document.getElementById('rec-exit-reason');
   const err=document.getElementById('rec-exit-err');
   const submit=document.getElementById('rec-exit-submit');
+  const app=resolved.app;
   const startRaw=app.employmentStartDate?String(app.employmentStartDate).slice(0,10):'';
-  if(who) who.textContent=(c&&c.fullName)||'—';
-  if(vac) vac.textContent=(app.vacancy&&app.vacancy.title)||'—';
+  if(who) who.textContent=(resolved.candidate&&resolved.candidate.fullName)||'—';
+  if(vac) vac.textContent=resolved.vacancyTitle||'—';
   if(startEl) startEl.textContent=startRaw?recCandFmtEmploymentStart(startRaw):'Sin registrar';
   if(err) err.textContent='';
   document.querySelectorAll('input[name="rec-exit-warranty"]').forEach(function(r){ r.checked=false; });
@@ -14945,19 +15049,51 @@ async function recCandConfirmEmploymentExit(){
     });
     if(epoch!==recEmploymentExitEpoch) return;
     const st=recEnsureState();
+    if(out&&out.headcount) recRenderHeadcount(out.headcount);
+    // Solo tras confirmación del servidor: aterriza la tarjeta en Baja.
+    recCandLandEmploymentExitOnKanban(applicationId, out);
+    const serverApp=out&&out.application?out.application:null;
     const cand=st.detailCandidate;
     if(cand&&cand.applications){
       cand.applications=cand.applications.map(function(a){
         if(recCandGetAppId(a)!==applicationId) return a;
         return Object.assign({}, a, {
-          employmentStartDate:(out&&out.employmentStartDate)||a.employmentStartDate,
+          employmentStartDate:(out&&out.employmentStartDate)!=null?out.employmentStartDate:a.employmentStartDate,
           employmentExit:(out&&out.employmentExit)||a.employmentExit,
+          stageId:serverApp&&serverApp.stageId?serverApp.stageId:a.stageId,
+          stage:serverApp&&serverApp.stage
+            ? serverApp.stage
+            : Object.assign({}, a.stage||{}, { key:'EMPLOYMENT_EXIT', name:(a.stage&&a.stage.key==='EMPLOYMENT_EXIT'&&a.stage.name)||'Baja' }),
         });
       });
     }
-    const app=(cand&&cand.applications||[]).find(function(a){ return recCandGetAppId(a)===applicationId; });
-    const host=recCandHireStartHost(applicationId);
-    if(host&&app) host.outerHTML=recCandEmploymentStartHtml(app);
+    const candidateId=(serverApp&&serverApp.candidateId)||(cand&&cand.id)||null;
+    let renderedFresh=false;
+    if(candidateId&&st.detailCandidateId===candidateId){
+      try{
+        const c=await recCandFetchDetail(candidateId);
+        if(epoch!==recEmploymentExitEpoch) return;
+        st.detailCandidate=c;
+        await recCandRenderDetail(c,false);
+        renderedFresh=true;
+      }catch(_e){ /* fallback abajo */ }
+    }
+    if(!renderedFresh){
+      const app=(cand&&cand.applications||[]).find(function(a){ return recCandGetAppId(a)===applicationId; });
+      const host=recCandHireStartHost(applicationId);
+      if(host&&app) host.outerHTML=recCandEmploymentStartHtml(app);
+      else if(cand&&typeof recCandRenderDetail==='function'&&st.detailCandidateId===candidateId){
+        try{ await recCandRenderDetail(cand,false); }catch(_e2){}
+      }
+    }
+    recCandMarkPipelineDirty();
+    const vacId=(serverApp&&serverApp.vacancyId)
+      ||(recEmploymentExitPending&&recEmploymentExitPending.vacancyId)
+      ||st.selectedId;
+    if(vacId){
+      st.kanbanEpoch=(st.kanbanEpoch||0)+1;
+      recKanbanSilentReconcile(vacId, st.kanbanEpoch);
+    }
     // El botón Registrar baja ya no existe; no devolver foco a un nodo desconectado.
     recEmploymentExitReturnFocus=null;
     recCandSetEmploymentExitBusy(false);

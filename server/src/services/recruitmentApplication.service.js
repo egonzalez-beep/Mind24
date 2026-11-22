@@ -243,6 +243,15 @@ export async function createRecruitmentApplication({
       });
       const position = await nextPositionInStage(vacancyId, targetStageId, tx);
       const toKey = targetStage?.key ?? null;
+      if (toKey === 'EMPLOYMENT_EXIT') {
+        const { EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE } = await import(
+          './recruitmentApplicationEmploymentExit.service.js'
+        );
+        const err = new Error('VALIDATION_ERROR');
+        err.code = 'VALIDATION_ERROR';
+        err.message = EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE;
+        throw err;
+      }
       let resolvedEmploymentStart = null;
       if (toKey === HIRED_STAGE_KEY) {
         resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
@@ -398,11 +407,22 @@ export async function updateRecruitmentApplication({
     });
     previewToKey = nextPreview?.key ?? null;
   }
+  const { EMPLOYMENT_EXIT_STAGE_KEY } = await import('./recruitmentStage.service.js');
+  const {
+    EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE,
+  } = await import('./recruitmentApplicationEmploymentExit.service.js');
+  if (stageChanged && previewToKey === EMPLOYMENT_EXIT_STAGE_KEY) {
+    const err = new Error('VALIDATION_ERROR');
+    err.code = 'VALIDATION_ERROR';
+    err.message = EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE;
+    throw err;
+  }
+  const hireDateStages = new Set([HIRED_STAGE_KEY, EMPLOYMENT_EXIT_STAGE_KEY]);
   const movingToHired = stageChanged && previewToKey === HIRED_STAGE_KEY;
   const editingHireDateOnly =
     !stageChanged &&
     employmentStartDate !== undefined &&
-    existing.stage?.key === HIRED_STAGE_KEY;
+    hireDateStages.has(existing.stage?.key);
   let resolvedEmploymentStart = null;
   if (movingToHired || editingHireDateOnly) {
     // Validación temprana de formato/hoy; bajo el candado de la TX se relee contra la baja.
@@ -433,7 +453,7 @@ export async function updateRecruitmentApplication({
           employmentExit: { select: { exitDate: true } },
         },
       });
-      if (!locked || locked.stage?.key !== HIRED_STAGE_KEY) {
+      if (!locked || !hireDateStages.has(locked.stage?.key)) {
         const err = new Error('VALIDATION_ERROR');
         err.code = 'VALIDATION_ERROR';
         err.message = 'La fecha de ingreso solo aplica a postulaciones contratadas.';

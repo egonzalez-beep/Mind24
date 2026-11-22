@@ -1205,10 +1205,13 @@ router.post('/applications/:id/employment-exit', async (req, res, next) => {
       underWarranty: body.underWarranty,
       registeredByUserId: u.id,
     });
+    const headcount = await getActiveVacancyHeadcount(u.organizationId);
     res.json({
       applicationId: result.applicationId,
       employmentStartDate: result.employmentStartDate,
       employmentExit: result.employmentExit,
+      application: result.application,
+      headcount,
     });
   } catch (e) {
     next(e);

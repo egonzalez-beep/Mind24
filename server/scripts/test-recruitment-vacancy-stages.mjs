@@ -101,7 +101,7 @@ check(
 );
 check(/REQUIRED_VACANCY_STAGE_KEYS/.test(vacancyStageSvc), 'etapas obligatorias');
 check(
-  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED,INTERVIEW_NO_SHOW',
+  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED,INTERVIEW_NO_SHOW,EMPLOYMENT_EXIT',
   'NEW HIRED REJECTED INTERVIEW_NO_SHOW obligatorios',
 );
 check(/VACANCY_STAGE_POSITION_GAP\s*=\s*1000/.test(vacancyStageSvc), 'gap position 1000');
