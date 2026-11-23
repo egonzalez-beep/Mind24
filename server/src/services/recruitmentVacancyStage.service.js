@@ -1,8 +1,122 @@
 import { prisma } from '../db/client.js';
 import {
   ensureOrganizationRecruitmentStages,
+  normalizeRecruitmentStageName,
+  RECRUITMENT_RESERVED_STAGE_KEYS,
   serializeRecruitmentStage,
 } from './recruitmentStage.service.js';
+
+/**
+ * Orden del recorrido principal al inicializar el pipeline de una vacante nueva.
+ * Referencias (si está activa en el catálogo) se inserta después de Psicometría.
+ * INTERVIEW_NO_SHOW queda como cartera antes de Finalista → Aprobado → Contratado.
+ * Salidas al final: Baja → (Declinó virtual en UI) → Descartado.
+ */
+export const DEFAULT_VACANCY_SEED_MAIN_KEYS = [
+  'NEW',
+  'CONTACT',
+  'INITIAL_INTERVIEW',
+  'CLIENT_INTERVIEW',
+  'EVALUATIONS',
+  'PSYCHOMETRICS',
+  'FINALIST',
+  'APPROVED',
+  'HIRED',
+];
+
+export const DEFAULT_VACANCY_SEED_EXIT_KEYS = ['EMPLOYMENT_EXIT', 'REJECTED'];
+
+export function isReferencesCatalogStage(stage) {
+  if (!stage) return false;
+  const key = String(stage.key || '')
+    .trim()
+    .toUpperCase();
+  if (key === 'REFERENCES' || key === 'REFERENCIAS') return true;
+  const name = normalizeRecruitmentStageName(stage.name).toLowerCase();
+  return name === 'referencias' || name === 'references';
+}
+
+function compareStagesDeterministic(a, b) {
+  const posA = Number(a.position) || 0;
+  const posB = Number(b.position) || 0;
+  if (posA !== posB) return posA - posB;
+  const nameA = normalizeRecruitmentStageName(a.name).toLowerCase();
+  const nameB = normalizeRecruitmentStageName(b.name).toLowerCase();
+  if (nameA !== nameB) return nameA < nameB ? -1 : 1;
+  const idA = String(a.id || '');
+  const idB = String(b.id || '');
+  if (idA === idB) return 0;
+  return idA < idB ? -1 : 1;
+}
+
+/**
+ * Ordena etapas activas del catálogo para el seed inicial de una vacante.
+ * No muta el catálogo org ni vacantes ya configuradas.
+ */
+export function orderActiveStagesForNewVacancySeed(orgStages) {
+  const stages = Array.isArray(orgStages) ? orgStages.filter(Boolean) : [];
+  if (!stages.length) return [];
+
+  const byKey = new Map();
+  for (const s of stages) {
+    if (s.key && !byKey.has(s.key)) byKey.set(s.key, s);
+  }
+
+  const used = new Set();
+  const ordered = [];
+
+  function take(stage) {
+    if (!stage || used.has(stage.id)) return;
+    used.add(stage.id);
+    ordered.push(stage);
+  }
+
+  function takeKey(key) {
+    take(byKey.get(key));
+  }
+
+  // Tramo principal hasta Psicometría.
+  for (const key of DEFAULT_VACANCY_SEED_MAIN_KEYS) {
+    if (key === 'FINALIST') break;
+    takeKey(key);
+  }
+
+  // Referencias/References: la primera (orden determinista) tras Psicometría;
+  // el resto queda en el bloque de personalizadas activas.
+  const referencesCandidates = stages
+    .filter((s) => isReferencesCatalogStage(s) && !used.has(s.id))
+    .sort(compareStagesDeterministic);
+  if (referencesCandidates.length) take(referencesCandidates[0]);
+
+  // Personalizadas (y coincidencias extra de Referencias): orden determinista aunque coincidan posiciones.
+  const customs = stages
+    .filter((s) => {
+      if (used.has(s.id)) return false;
+      const key = String(s.key || '');
+      if (RECRUITMENT_RESERVED_STAGE_KEYS.has(key)) return false;
+      if (s.isTerminal) return false;
+      return true;
+    })
+    .sort(compareStagesDeterministic);
+  for (const s of customs) take(s);
+
+  // Cartera No asistió: fuera del tramo Finalista → Aprobado → Contratado.
+  takeKey('INTERVIEW_NO_SHOW');
+
+  // Finalista → Aprobado → Contratado (contiguo).
+  takeKey('FINALIST');
+  takeKey('APPROVED');
+  takeKey('HIRED');
+
+  // Salidas visibles: Baja → Descartado (Declinó es columna virtual ante Descartado).
+  for (const key of DEFAULT_VACANCY_SEED_EXIT_KEYS) takeKey(key);
+
+  // Cualquier etapa activa restante (p. ej. terminal custom): al final, determinista.
+  const leftovers = stages.filter((s) => !used.has(s.id)).sort(compareStagesDeterministic);
+  for (const s of leftovers) take(s);
+
+  return ordered;
+}
 
 async function assertVacancyInOrg(vacancyId, organizationId, tx = prisma) {
   const row = await tx.recruitmentVacancy.findFirst({
@@ -76,18 +190,21 @@ export function serializeRecruitmentVacancyStage(row) {
 }
 
 /**
- * Crea filas VacancyStage para todas las etapas activas del catálogo org (orden catalog.position).
+ * Crea filas VacancyStage para todas las etapas activas del catálogo org.
+ * Aplica el orden inicial de vacante nueva (no el position crudo del catálogo).
  * Idempotente vía skipDuplicates en unique (vacancyId, stageId).
+ * Vacantes ya configuradas no pasan por aquí (ensure solo si count === 0).
  */
 export async function seedVacancyStagesFromOrganizationCatalog(organizationId, vacancyId, tx = prisma) {
   await ensureOrganizationRecruitmentStages(organizationId, tx);
   const orgStages = await tx.recruitmentStage.findMany({
     where: { organizationId, isActive: true },
-    orderBy: { position: 'asc' },
+    orderBy: [{ position: 'asc' }, { name: 'asc' }, { id: 'asc' }],
   });
   if (!orgStages.length) return;
+  const ordered = orderActiveStagesForNewVacancySeed(orgStages);
   await tx.recruitmentVacancyStage.createMany({
-    data: orgStages.map((s, i) => ({
+    data: ordered.map((s, i) => ({
       organizationId,
       vacancyId,
       stageId: s.id,

@@ -35,10 +35,15 @@ const appSvc = fs.readFileSync(path.join(rootDir, 'src/services/recruitmentAppli
 const {
   ensureVacancyRecruitmentStages,
   seedVacancyStagesFromOrganizationCatalog,
+  orderActiveStagesForNewVacancySeed,
+  isReferencesCatalogStage,
   REQUIRED_VACANCY_STAGE_KEYS,
   VACANCY_STAGE_POSITION_GAP,
 } = await import('../src/services/recruitmentVacancyStage.service.js');
-const { ensureOrganizationRecruitmentStages } = await import('../src/services/recruitmentStage.service.js');
+const {
+  ensureOrganizationRecruitmentStages,
+  createOrganizationRecruitmentStage,
+} = await import('../src/services/recruitmentStage.service.js');
 const { prisma } = await import('../src/db/client.js');
 const { createApp } = await import('../src/app.js');
 const { hashPassword } = await import('../src/services/auth.service.js');
@@ -106,12 +111,77 @@ check(
 );
 check(/VACANCY_STAGE_POSITION_GAP\s*=\s*1000/.test(vacancyStageSvc), 'gap position 1000');
 check(/skipDuplicates:\s*true/.test(vacancyStageSvc), 'seed vacancy stages skipDuplicates');
+check(/orderActiveStagesForNewVacancySeed/.test(vacancyStageSvc), 'orden inicial de vacante nueva');
+check(/isReferencesCatalogStage/.test(vacancyStageSvc), 'detecta Referencias del catálogo');
+check(
+  /const ordered = orderActiveStagesForNewVacancySeed\(orgStages\)/.test(vacancyStageSvc.replace(/\s+/g, ' '))
+    || /orderActiveStagesForNewVacancySeed\(orgStages\)/.test(vacancyStageSvc),
+  'seedVacancyStages usa el orden inicial (no solo catalog.position)',
+);
+check(
+  /if \(count > 0\) return;[\s\S]{0,80}seedVacancyStagesFromOrganizationCatalog/.test(vacancyStageSvc),
+  'ensure no reescribe vacantes que ya tienen configuración',
+);
 check(/listEnabledVacancyStagesForDistribution/.test(vacancySvc), 'stageDistribution por vacante');
 check(/assertStageEnabledForVacancy/.test(appSvc), 'move application valida funnel');
 check(/ensureVacancyRecruitmentStages/.test(appSvc), 'create application ensure config');
 check(/assertNewStageIsFirst/.test(vacancyStageSvc), 'guardrail NEW primero');
 check(/assertTerminalStagesAtEnd/.test(vacancyStageSvc), 'guardrail terminales al final');
 check(/stage\.isTerminal/.test(vacancyStageSvc), 'validación terminales vía isTerminal');
+
+console.log('\n=== Orden seed vacante nueva (puro) ===\n');
+
+{
+  const base = [
+    { id: 'n', key: 'NEW', name: 'Nuevo', position: 1000, isTerminal: false },
+    { id: 'c', key: 'CONTACT', name: 'Contactación', position: 2000, isTerminal: false },
+    { id: 'ii', key: 'INITIAL_INTERVIEW', name: 'Entrevista inicial', position: 3000, isTerminal: false },
+    { id: 'ci', key: 'CLIENT_INTERVIEW', name: 'Entrevista cliente / supervisor', position: 4000, isTerminal: false },
+    { id: 'ev', key: 'EVALUATIONS', name: 'Evaluaciones', position: 5000, isTerminal: false },
+    { id: 'ps', key: 'PSYCHOMETRICS', name: 'Psicometría', position: 6000, isTerminal: false },
+    { id: 'fi', key: 'FINALIST', name: 'Finalista', position: 7000, isTerminal: false },
+    { id: 'ns', key: 'INTERVIEW_NO_SHOW', name: 'No asistió a entrevista', position: 7500, isTerminal: false },
+    { id: 'ap', key: 'APPROVED', name: 'Aprobado', position: 7600, isTerminal: false },
+    { id: 'hi', key: 'HIRED', name: 'Contratado', position: 8000, isTerminal: true },
+    { id: 'ex', key: 'EMPLOYMENT_EXIT', name: 'Baja', position: 8500, isTerminal: true },
+    { id: 'rj', key: 'REJECTED', name: 'Descartado', position: 9000, isTerminal: true },
+  ];
+  const withoutRef = orderActiveStagesForNewVacancySeed(base).map((s) => s.key);
+  check(
+    withoutRef.join(',') ===
+      'NEW,CONTACT,INITIAL_INTERVIEW,CLIENT_INTERVIEW,EVALUATIONS,PSYCHOMETRICS,INTERVIEW_NO_SHOW,FINALIST,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
+    'sin Referencias: No asistió antes de Finalista→Aprobado→Contratado; Baja antes de Descartado',
+  );
+
+  const withRef = orderActiveStagesForNewVacancySeed([
+    ...base,
+    { id: 'ref', key: 'CUSTOM_REF', name: 'Referencias', position: 9999, isTerminal: false },
+    { id: 'x2', key: 'ZETA', name: 'Zeta custom', position: 6500, isTerminal: false },
+    { id: 'x1', key: 'ALPHA', name: 'Alpha custom', position: 6500, isTerminal: false },
+  ]).map((s) => s.key);
+  check(
+    withRef.join(',') ===
+      'NEW,CONTACT,INITIAL_INTERVIEW,CLIENT_INTERVIEW,EVALUATIONS,PSYCHOMETRICS,CUSTOM_REF,ALPHA,ZETA,INTERVIEW_NO_SHOW,FINALIST,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
+    'con Referencias + customs: Referencias tras Psicometría; customs deterministas; cartera fuera del tramo',
+  );
+
+  const dualRef = orderActiveStagesForNewVacancySeed([
+    ...base,
+    { id: 'ref-es', key: 'REF_ES', name: 'Referencias', position: 6100, isTerminal: false },
+    { id: 'ref-en', key: 'REFERENCES', name: 'References', position: 6200, isTerminal: false },
+    { id: 'x1', key: 'ALPHA', name: 'Alpha custom', position: 6500, isTerminal: false },
+  ]).map((s) => s.key);
+  check(
+    dualRef.join(',') ===
+      'NEW,CONTACT,INITIAL_INTERVIEW,CLIENT_INTERVIEW,EVALUATIONS,PSYCHOMETRICS,REF_ES,REFERENCES,ALPHA,INTERVIEW_NO_SHOW,FINALIST,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
+    'Referencias + References: primera tras Psicometría; la otra en personalizadas',
+  );
+
+  check(isReferencesCatalogStage({ key: 'REFERENCES', name: 'X' }), 'key REFERENCES cuenta como Referencias');
+  check(isReferencesCatalogStage({ key: 'FOO', name: '  Referencias ' }), 'nombre Referencias cuenta');
+  check(isReferencesCatalogStage({ key: 'FOO', name: 'References' }), 'nombre References cuenta');
+  check(!isReferencesCatalogStage({ key: 'REFERENCIAS_LABORALES', name: 'Referencias laborales' }), 'Referencias laborales es custom, no el slot');
+}
 
 console.log('\n=== Recruitment 1C.1 — integración (DB) ===\n');
 
@@ -199,20 +269,31 @@ if (dbOk) {
     const vsCount = await prisma.recruitmentVacancyStage.count({
       where: { organizationId: orgA.id, vacancyId },
     });
-    check(vsCount === 9, 'vacante nueva recibe 9 VacancyStage');
+    check(vsCount === 12, 'vacante nueva recibe 12 VacancyStage');
+
+    const seededOrder = await prisma.recruitmentVacancyStage.findMany({
+      where: { vacancyId },
+      include: { stage: true },
+      orderBy: { position: 'asc' },
+    });
+    check(
+      seededOrder.map((r) => r.stage.key).join(',') ===
+        'NEW,CONTACT,INITIAL_INTERVIEW,CLIENT_INTERVIEW,EVALUATIONS,PSYCHOMETRICS,INTERVIEW_NO_SHOW,FINALIST,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
+      'vacante nueva sin Referencias: orden inicial esperado',
+    );
 
     await seedVacancyStagesFromOrganizationCatalog(orgA.id, vacancyId);
     const vsCount2 = await prisma.recruitmentVacancyStage.count({
       where: { organizationId: orgA.id, vacancyId },
     });
-    check(vsCount2 === 9, 'seed idempotente (sin duplicados)');
+    check(vsCount2 === 12, 'seed idempotente (sin duplicados)');
 
     await Promise.all([
       ensureVacancyRecruitmentStages(orgA.id, vacancyId),
       ensureVacancyRecruitmentStages(orgA.id, vacancyId),
     ]);
     check(
-      (await prisma.recruitmentVacancyStage.count({ where: { vacancyId } })) === 9,
+      (await prisma.recruitmentVacancyStage.count({ where: { vacancyId } })) === 12,
       'ensure idempotente',
     );
 
@@ -241,11 +322,18 @@ if (dbOk) {
     });
     const byKey = Object.fromEntries(stages.map((s) => [s.key, s]));
 
+    const requiredBaseline = (omitKey) =>
+      ['NEW', 'INTERVIEW_NO_SHOW', 'APPROVED', 'HIRED', 'EMPLOYMENT_EXIT', 'REJECTED']
+        .filter((k) => k !== omitKey)
+        .map((k) => byKey[k].id);
+
     const minimalFunnel = [
       byKey.NEW.id,
       byKey.CONTACT.id,
       byKey.INTERVIEW_NO_SHOW.id,
+      byKey.APPROVED.id,
       byKey.HIRED.id,
+      byKey.EMPLOYMENT_EXIT.id,
       byKey.REJECTED.id,
     ];
     const putA = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyId}/stages`, {
@@ -255,9 +343,10 @@ if (dbOk) {
     });
     check(putA.res.status === 200, 'PUT funnel minimal');
     const enabledA = putA.data.vacancyStages.filter((r) => r.isEnabled);
-    check(enabledA.length === 5, '5 etapas habilitadas vacante A');
+    check(enabledA.length === 7, '7 etapas habilitadas vacante A');
     check(
-      enabledA.map((r) => r.stage.key).join(',') === 'NEW,CONTACT,INTERVIEW_NO_SHOW,HIRED,REJECTED',
+      enabledA.map((r) => r.stage.key).join(',') ===
+        'NEW,CONTACT,INTERVIEW_NO_SHOW,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
       'orden funnel vacante A',
     );
     check(
@@ -272,7 +361,9 @@ if (dbOk) {
       byKey.INITIAL_INTERVIEW.id,
       byKey.FINALIST.id,
       byKey.INTERVIEW_NO_SHOW.id,
+      byKey.APPROVED.id,
       byKey.HIRED.id,
+      byKey.EMPLOYMENT_EXIT.id,
       byKey.REJECTED.id,
     ];
     const putB = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyIdB}/stages`, {
@@ -288,11 +379,12 @@ if (dbOk) {
       .join(',');
     check(
       enabledBKeys ===
-        'NEW,PSYCHOMETRICS,CONTACT,INITIAL_INTERVIEW,FINALIST,INTERVIEW_NO_SHOW,HIRED,REJECTED',
+        'NEW,PSYCHOMETRICS,CONTACT,INITIAL_INTERVIEW,FINALIST,INTERVIEW_NO_SHOW,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
       'funnels distintos entre vacantes',
     );
 
-    const missingHired = [byKey.NEW.id, byKey.CONTACT.id, byKey.REJECTED.id];
+    // En errores de requerido: omitir solo la etapa bajo prueba.
+    const missingHired = [byKey.CONTACT.id, ...requiredBaseline('HIRED')];
     const badRequired = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyId}/stages`, {
       method: 'PUT',
       cookie: adminCookie,
@@ -307,7 +399,7 @@ if (dbOk) {
       method: 'PUT',
       cookie: adminCookie,
       body: {
-        stageIds: [byKey.CONTACT.id, byKey.NEW.id, byKey.HIRED.id, byKey.REJECTED.id],
+        stageIds: [byKey.CONTACT.id, ...requiredBaseline()],
       },
     });
     check(
@@ -325,8 +417,11 @@ if (dbOk) {
         body: {
           stageIds: [
             byKey.NEW.id,
+            byKey.INTERVIEW_NO_SHOW.id,
+            byKey.APPROVED.id,
             byKey.HIRED.id,
             byKey.INITIAL_INTERVIEW.id,
+            byKey.EMPLOYMENT_EXIT.id,
             byKey.REJECTED.id,
           ],
         },
@@ -350,8 +445,10 @@ if (dbOk) {
             byKey.CONTACT.id,
             byKey.INITIAL_INTERVIEW.id,
             byKey.INTERVIEW_NO_SHOW.id,
+            byKey.APPROVED.id,
             byKey.REJECTED.id,
             byKey.HIRED.id,
+            byKey.EMPLOYMENT_EXIT.id,
           ],
         },
       },
@@ -377,7 +474,9 @@ if (dbOk) {
           byKey.CONTACT.id,
           stagesB[0].id,
           byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
           byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
           byKey.REJECTED.id,
         ],
       },
@@ -405,7 +504,9 @@ if (dbOk) {
           byKey.CONTACT.id,
           byKey.PSYCHOMETRICS.id,
           byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
           byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
           byKey.REJECTED.id,
         ],
       },
@@ -429,6 +530,7 @@ if (dbOk) {
     const events = await prisma.recruitmentApplicationStageEvent.count({ where: { applicationId: appId } });
     check(events >= 2, 'StageEvent al mover');
 
+    // Omite solo PSYCHOMETRICS (tiene candidatos); el resto de obligatorias sí van.
     const blockDisable = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyId}/stages`, {
       method: 'PUT',
       cookie: adminCookie,
@@ -437,7 +539,9 @@ if (dbOk) {
           byKey.NEW.id,
           byKey.CONTACT.id,
           byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
           byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
           byKey.REJECTED.id,
         ],
       },
@@ -456,7 +560,9 @@ if (dbOk) {
           byKey.NEW.id,
           byKey.PSYCHOMETRICS.id,
           byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
           byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
           byKey.REJECTED.id,
         ],
       },
@@ -478,13 +584,95 @@ if (dbOk) {
     });
     const dist = detail.data.vacancy?.stageDistribution || [];
     check(
-      dist.length === 5 &&
-        dist.map((d) => d.key).join(',') === 'NEW,PSYCHOMETRICS,INTERVIEW_NO_SHOW,HIRED,REJECTED',
+      dist.length === 7 &&
+        dist.map((d) => d.key).join(',') ===
+          'NEW,PSYCHOMETRICS,INTERVIEW_NO_SHOW,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
       'stageDistribution solo enabled y orden vacancy',
     );
     check(
       dist.find((d) => d.key === 'PSYCHOMETRICS')?.count === 1,
       'counts en stageDistribution',
+    );
+
+    // Vacante existente conserva su orden editable (no se reescribe con el seed nuevo).
+    const existingCustomOrder = [
+      byKey.NEW.id,
+      byKey.PSYCHOMETRICS.id,
+      byKey.CONTACT.id,
+      byKey.INTERVIEW_NO_SHOW.id,
+      byKey.FINALIST.id,
+      byKey.APPROVED.id,
+      byKey.HIRED.id,
+      byKey.EMPLOYMENT_EXIT.id,
+      byKey.REJECTED.id,
+    ];
+    const putExisting = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyId}/stages`, {
+      method: 'PUT',
+      cookie: adminCookie,
+      body: { stageIds: existingCustomOrder },
+    });
+    check(putExisting.res.status === 200, 'vacante existente: guardar orden propio');
+    const existingKeysBefore = putExisting.data.vacancyStages
+      .filter((r) => r.isEnabled)
+      .map((r) => r.stage.key)
+      .join(',');
+    await ensureVacancyRecruitmentStages(orgA.id, vacancyId);
+    await seedVacancyStagesFromOrganizationCatalog(orgA.id, vacancyId);
+    const existingAfter = await prisma.recruitmentVacancyStage.findMany({
+      where: { vacancyId, isEnabled: true },
+      include: { stage: true },
+      orderBy: { position: 'asc' },
+    });
+    check(
+      existingAfter.map((r) => r.stage.key).join(',') === existingKeysBefore
+        && existingKeysBefore ===
+          'NEW,PSYCHOMETRICS,CONTACT,INTERVIEW_NO_SHOW,FINALIST,APPROVED,HIRED,EMPLOYMENT_EXIT,REJECTED',
+      'vacante existente conserva orden propio tras ensure/seed',
+    );
+
+    // Vacante nueva con Referencias + personalizadas (posiciones empatadas).
+    const refStage = await createOrganizationRecruitmentStage(orgA.id, 'Referencias');
+    const customAlpha = await createOrganizationRecruitmentStage(orgA.id, 'Alpha custom');
+    const customZeta = await createOrganizationRecruitmentStage(orgA.id, 'Zeta custom');
+    await prisma.recruitmentStage.updateMany({
+      where: { id: { in: [customAlpha.id, customZeta.id] } },
+      data: { position: 6500 },
+    });
+    const createVacRef = await jsonFetch(base, '/api/org/recruitment/vacancies', {
+      method: 'POST',
+      cookie: adminCookie,
+      body: { title: 'Vacante con Referencias', clientName: 'Cliente', positionsTotal: 1 },
+    });
+    const vacancyRefId = createVacRef.data.vacancy?.id;
+    check(createVacRef.res.status === 201 && vacancyRefId, 'crear vacante con Referencias en catálogo');
+    const refSeeded = await prisma.recruitmentVacancyStage.findMany({
+      where: { vacancyId: vacancyRefId, isEnabled: true },
+      include: { stage: true },
+      orderBy: { position: 'asc' },
+    });
+    const refKeys = refSeeded.map((r) => r.stage.key);
+    const psychIdx = refKeys.indexOf('PSYCHOMETRICS');
+    const refIdx = refKeys.indexOf(refStage.key);
+    const alphaIdx = refKeys.indexOf(customAlpha.key);
+    const zetaIdx = refKeys.indexOf(customZeta.key);
+    const noShowIdx = refKeys.indexOf('INTERVIEW_NO_SHOW');
+    const finalistIdx = refKeys.indexOf('FINALIST');
+    const approvedIdx = refKeys.indexOf('APPROVED');
+    const hiredIdx = refKeys.indexOf('HIRED');
+    const exitIdx = refKeys.indexOf('EMPLOYMENT_EXIT');
+    const rejectedIdx = refKeys.indexOf('REJECTED');
+    check(
+      psychIdx >= 0
+        && refIdx === psychIdx + 1
+        && alphaIdx === refIdx + 1
+        && zetaIdx === alphaIdx + 1
+        && noShowIdx === zetaIdx + 1
+        && finalistIdx === noShowIdx + 1
+        && approvedIdx === finalistIdx + 1
+        && hiredIdx === approvedIdx + 1
+        && exitIdx === hiredIdx + 1
+        && rejectedIdx === exitIdx + 1,
+      'vacante nueva con Referencias+customs: orden Psicometría→Referencias→customs→No asistió→Finalista→Aprobado→Contratado→Baja→Descartado',
     );
 
     try {

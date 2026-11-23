@@ -186,7 +186,9 @@ if (dbOk) {
           byKey.CONTACT.id,
           custom.id,
           byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
           byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
           byKey.REJECTED.id,
         ],
       },
@@ -198,7 +200,15 @@ if (dbOk) {
       method: 'PUT',
       cookie,
       body: {
-        stageIds: [byKey.NEW.id, otherOrgStage.id, byKey.HIRED.id, byKey.REJECTED.id],
+        stageIds: [
+          byKey.NEW.id,
+          otherOrgStage.id,
+          byKey.INTERVIEW_NO_SHOW.id,
+          byKey.APPROVED.id,
+          byKey.HIRED.id,
+          byKey.EMPLOYMENT_EXIT.id,
+          byKey.REJECTED.id,
+        ],
       },
     });
     check(crossPut.res.status === 404, 'multi-org PUT stage ajena');
