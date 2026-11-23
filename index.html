@@ -1244,12 +1244,19 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-kanban-col--sem-approved .rec-kanban-col-title{color:#1d4ed8;}
 .rec-kanban-col--sem-approved .rec-kanban-col-count{color:#2563eb;border-color:rgba(147,197,253,.5);}
 .rec-kanban-col--sem-approved .rec-kanban-col-icon-compact{color:#2563eb;}
-.rec-kanban-sched{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);display:flex;flex-direction:column;gap:6px;}
-.rec-kanban-sched-date{margin:0;font-size:11px;font-weight:650;color:#1d4ed8;font-variant-numeric:tabular-nums;}
-.rec-kanban-sched-actions{display:flex;flex-wrap:wrap;gap:6px;}
-.rec-kanban-sched-btn{font:inherit;font-size:11px;font-weight:650;border:1px solid var(--slate-200);background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer;color:var(--slate-700);}
-.rec-kanban-sched-btn:hover{background:var(--slate-50);}
-.rec-kanban-sched-btn--primary{border-color:rgba(37,99,235,.35);color:#1d4ed8;background:rgba(239,246,255,.8);}
+.rec-sched-hire{display:flex;align-items:center;gap:6px;margin-top:6px;min-width:0;}
+.rec-sched-hire--detail{margin-top:8px;padding-top:8px;border-top:1px solid var(--slate-100);}
+.rec-sched-hire-row{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;}
+.rec-sched-hire-date{margin:0;font-size:11px;font-weight:650;color:#1d4ed8;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.rec-sched-hire-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:8px;border:1px solid rgba(37,99,235,.35);background:rgba(239,246,255,.85);color:#1d4ed8;cursor:pointer;flex-shrink:0;line-height:0;}
+.rec-sched-hire-btn svg{display:block;}
+.rec-sched-hire-btn:hover{background:rgba(219,234,254,.95);}
+.rec-sched-hire-btn:focus-visible{outline:2px solid #2563eb;outline-offset:2px;}
+.rec-sched-hire-btn--icon{border-color:transparent;background:transparent;width:26px;height:26px;}
+.rec-sched-hire-btn--icon:hover{background:rgba(239,246,255,.9);border-color:rgba(37,99,235,.2);}
+.rec-sched-hire-btn--danger{color:#b91c1c;}
+.rec-sched-hire-btn--danger:hover{background:rgba(254,226,226,.85);border-color:rgba(248,113,113,.35);}
+.rec-sched-hire-btn--danger:focus-visible{outline-color:#dc2626;}
 .mind24-notif-item--scheduled-hire{background:rgba(239,246,255,.55);border-color:rgba(59,130,246,.18);box-shadow:inset 3px 0 0 rgba(37,99,235,.55);}
 .mind24-notif-item--scheduled-hire.mind24-notif-item--unread{background:rgba(219,234,254,.75);border-color:rgba(59,130,246,.28);box-shadow:inset 3px 0 0 #2563eb;}
 .mind24-notif-item--scheduled-hire .mind24-notif-item-msg{color:var(--primary);font-weight:700;}
@@ -9923,6 +9930,8 @@ function recEnsureState(){
       kanbanError:null,
       kanbanDragAppId:null,
       kanbanPendingMoves:{},
+      kanbanMoveSeq:0,
+      kanbanEpoch:0,
       kanbanSuppressClick:false,
       vacancyStagesCache:{},
       vacancySearchQuery:'',
@@ -11716,6 +11725,9 @@ async function recKanbanLoad(vacancyId){
   recEnsureState().kanbanDragging=false;
   const slot=document.getElementById('rec-pipeline-slot');
   const st=recEnsureState();
+  // Cambio de vacante: invalida moves en vuelo y reconciliados del tablero anterior.
+  st.kanbanEpoch=(st.kanbanEpoch||0)+1;
+  st.kanbanPendingMoves={};
   if(!vacancyId||!slot){
     st.kanbanStages=[]; st.kanbanApplications=[];
     if(slot) slot.innerHTML='';
@@ -11930,33 +11942,135 @@ function recKanbanFmtScheduledHire(ymd){
   if(parts.length!==3) return String(ymd);
   return parts[2]+'/'+parts[1]+'/'+parts[0];
 }
-function recKanbanScheduledHireHtml(app){
-  const appId=app&&app.id;
+function recScheduledHireIconCalendar(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>';
+}
+function recScheduledHireIconCalendarPlus(){
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>';
+}
+function recScheduledHireControlsHtml(app, opts){
+  opts=opts||{};
+  const appId=app&&(app.id||(typeof recCandGetAppId==='function'?recCandGetAppId(app):null));
   if(!appId) return '';
+  const stageKey=(app.stage&&app.stage.key)||'';
+  if(stageKey!=='APPROVED') return '';
   const raw=app.scheduledEmploymentStartDate?String(app.scheduledEmploymentStartDate).slice(0,10):'';
+  const surface=opts.surface==='detail'?' rec-sched-hire--detail':'';
+  const stop=opts.stopPropagation===false?'':'event.stopPropagation();';
   if(!raw){
-    return '<div class="rec-kanban-sched">'+
-      '<div class="rec-kanban-sched-actions">'+
-      '<button type="button" class="rec-kanban-sched-btn rec-kanban-sched-btn--primary" onclick="event.stopPropagation();recScheduledHireOpen(\''+tcEsc(appId)+'\')">Programar contratación</button>'+
-      '</div></div>';
+    return '<div class="rec-sched-hire'+surface+'" data-sched-hire-for="'+tcEsc(appId)+'">'+
+      '<button type="button" class="rec-sched-hire-btn" onclick="'+stop+'recScheduledHireOpen(\''+tcEsc(appId)+'\')" aria-label="Programar contratación" title="Programar contratación">'+
+      recScheduledHireIconCalendarPlus()+'</button></div>';
   }
-  return '<div class="rec-kanban-sched">'+
-    '<p class="rec-kanban-sched-date">Ingreso programado: '+tcEsc(recKanbanFmtScheduledHire(raw))+'</p>'+
-    '<div class="rec-kanban-sched-actions">'+
-    '<button type="button" class="rec-kanban-sched-btn" onclick="event.stopPropagation();recScheduledHireOpen(\''+tcEsc(appId)+'\')">Cambiar fecha</button>'+
-    '<button type="button" class="rec-kanban-sched-btn" onclick="event.stopPropagation();recScheduledHireClear(\''+tcEsc(appId)+'\')">Quitar programación</button>'+
+  const pretty=recKanbanFmtScheduledHire(raw);
+  return '<div class="rec-sched-hire'+surface+'" data-sched-hire-for="'+tcEsc(appId)+'">'+
+    '<div class="rec-sched-hire-row">'+
+    '<button type="button" class="rec-sched-hire-btn rec-sched-hire-btn--icon" onclick="'+stop+'recScheduledHireOpen(\''+tcEsc(appId)+'\')" aria-label="Ver fecha programada de ingreso '+tcEsc(pretty)+'" title="Fecha programada de ingreso">'+
+    recScheduledHireIconCalendar()+'</button>'+
+    '<span class="rec-sched-hire-date">'+tcEsc(pretty)+'</span>'+
+    '<button type="button" class="rec-sched-hire-btn rec-sched-hire-btn--icon" onclick="'+stop+'recScheduledHireOpen(\''+tcEsc(appId)+'\')" aria-label="Cambiar fecha programada" title="Cambiar fecha">'+
+    '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'+
+    '<button type="button" class="rec-sched-hire-btn rec-sched-hire-btn--icon rec-sched-hire-btn--danger" onclick="'+stop+'recScheduledHireClear(\''+tcEsc(appId)+'\')" aria-label="Quitar programación" title="Quitar programación">'+
+    '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'+
     '</div></div>';
 }
-function recKanbanPatchScheduledHireLocal(applicationId, scheduledYmd){
+function recKanbanScheduledHireHtml(app){
+  return recScheduledHireControlsHtml(app,{ surface:'kanban', stopPropagation:true });
+}
+function recScheduledHireResolveApp(applicationId){
   const st=recEnsureState();
-  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===applicationId; });
-  if(app) app.scheduledEmploymentStartDate=scheduledYmd||null;
-  const card=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+applicationId+'"]');
-  if(!card||!app) return;
-  let host=card.querySelector('.rec-kanban-sched');
-  const html=recKanbanScheduledHireHtml(app);
+  const id=String(applicationId||'');
+  if(!id) return null;
+  const fromKanban=(st.kanbanApplications||[]).find(function(a){ return String(a.id)===id; });
+  if(fromKanban) return fromKanban;
+  const detailApps=((st.detailCandidate&&st.detailCandidate.applications)||[]);
+  const fromDetail=detailApps.find(function(a){
+    return String((typeof recCandGetAppId==='function'?recCandGetAppId(a):a.id)||'')===id;
+  });
+  if(fromDetail) return fromDetail;
+  if(st.detailPrimaryApplication&&String(recCandGetAppId(st.detailPrimaryApplication))===id){
+    return st.detailPrimaryApplication;
+  }
+  const others=st.detailOtherActiveApps||[];
+  return others.find(function(a){ return String(recCandGetAppId(a))===id; })||null;
+}
+function recScheduledHireWriteLocalState(applicationId, scheduledYmd){
+  const st=recEnsureState();
+  const ymd=scheduledYmd||null;
+  const id=String(applicationId||'');
+  (st.kanbanApplications||[]).forEach(function(a){
+    if(String(a.id)===id) a.scheduledEmploymentStartDate=ymd;
+  });
+  const detailApps=((st.detailCandidate&&st.detailCandidate.applications)||[]);
+  detailApps.forEach(function(a){
+    if(String(recCandGetAppId(a))===id) a.scheduledEmploymentStartDate=ymd;
+  });
+  if(st.detailPrimaryApplication&&String(recCandGetAppId(st.detailPrimaryApplication))===id){
+    st.detailPrimaryApplication.scheduledEmploymentStartDate=ymd;
+  }
+  (st.detailOtherActiveApps||[]).forEach(function(a){
+    if(String(recCandGetAppId(a))===id) a.scheduledEmploymentStartDate=ymd;
+  });
+}
+function recScheduledHireMountHtml(hostParent, app, opts){
+  if(!hostParent||!app) return;
+  const html=recScheduledHireControlsHtml(app, opts);
+  let host=hostParent.querySelector('[data-sched-hire-for="'+String(app.id||recCandGetAppId(app))+'"]');
+  if(!html){
+    if(host) host.remove();
+    return;
+  }
   if(host) host.outerHTML=html;
-  else if(html) card.insertAdjacentHTML('beforeend', html);
+  else hostParent.insertAdjacentHTML('beforeend', html);
+}
+function recKanbanSyncScheduledHireControls(card, app){
+  if(!card) return;
+  const stageKey=(app&&app.stage&&app.stage.key)||card.getAttribute('data-stage-key')||'';
+  Array.prototype.slice.call(card.querySelectorAll('[data-sched-hire-for], .rec-sched-hire, .rec-kanban-sched')).forEach(function(node){
+    node.remove();
+  });
+  if(stageKey!=='APPROVED') return;
+  const html=recKanbanScheduledHireHtml(app);
+  if(html) card.insertAdjacentHTML('beforeend', html);
+}
+function recScheduledHireSyncViews(applicationId, scheduledYmd){
+  recScheduledHireWriteLocalState(applicationId, scheduledYmd);
+  const app=recScheduledHireResolveApp(applicationId);
+  if(!app) return;
+  if(scheduledYmd!=null) app.scheduledEmploymentStartDate=scheduledYmd;
+  else app.scheduledEmploymentStartDate=null;
+  const stageKey=(app.stage&&app.stage.key)||'';
+  const card=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+applicationId+'"]');
+  if(card){
+    if(stageKey) card.setAttribute('data-stage-key', stageKey);
+    recKanbanSyncScheduledHireControls(card, app);
+  }
+  const detailHtml=recScheduledHireControlsHtml(app,{ surface:'detail', stopPropagation:false });
+  Array.prototype.slice.call(document.querySelectorAll('[data-sched-hire-for="'+applicationId+'"]')).forEach(function(host){
+    if(card&&card.contains(host)) return;
+    if(detailHtml) host.outerHTML=detailHtml;
+    else host.remove();
+  });
+  // Si la ficha está abierta pero aún no hay host (p. ej. acabó de pasar a Aprobado), insertar.
+  const detailModal=document.getElementById('modal-rec-candidate-detail');
+  if(detailModal&&!detailModal.classList.contains('hidden')&&detailHtml){
+    const st=recEnsureState();
+    const hero=document.querySelector('#rec-cand-pipeline-host .rec-cand-pipeline-hero');
+    if(hero&&!hero.querySelector('[data-sched-hire-for="'+applicationId+'"]')){
+      if(st.detailPrimaryApplication&&String(recCandGetAppId(st.detailPrimaryApplication))===String(applicationId)){
+        const updated=hero.querySelector('.rec-cand-hero-updated');
+        if(updated) updated.insertAdjacentHTML('beforebegin', detailHtml);
+        else hero.insertAdjacentHTML('beforeend', detailHtml);
+      }
+    }
+    const asideRow=document.querySelector('#rec-cand-body-aside .rec-cand-aside-row[data-app-id="'+applicationId+'"]');
+    if(asideRow&&!asideRow.querySelector('[data-sched-hire-for="'+applicationId+'"]')){
+      asideRow.insertAdjacentHTML('beforeend', detailHtml);
+    }
+  }
+}
+function recKanbanPatchScheduledHireLocal(applicationId, scheduledYmd){
+  recScheduledHireSyncViews(applicationId, scheduledYmd);
 }
 var recScheduledHireReturnFocus=null;
 var recScheduledHireEpoch=0;
@@ -11995,18 +12109,19 @@ function recScheduledHireClose(){
 async function recScheduledHireOpen(applicationId){
   const st=recEnsureState();
   await recEnsureRecruitmentOrgTimeZone();
-  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===applicationId; });
+  const app=recScheduledHireResolveApp(applicationId);
   if(!app||!(app.stage&&app.stage.key==='APPROVED')) return;
   if(recScheduledHireBusy()) return;
   recScheduledHireEpoch+=1;
   recScheduledHireReturnFocus=document.activeElement;
-  const cand=app.candidate||{};
-  const vac=(st.vacancies||[]).find(function(v){ return v.id===st.selectedId; });
+  const cand=app.candidate||(st.detailCandidate)||{};
+  const vacId=(app.vacancy&&app.vacancy.id)||null;
+  const vac=(st.vacancies||[]).find(function(v){ return vacId?v.id===vacId:v.id===st.selectedId; });
   const who=document.getElementById('rec-sched-hire-candidate');
   const vacEl=document.getElementById('rec-sched-hire-vacancy');
   const dateEl=document.getElementById('rec-sched-hire-date');
   const err=document.getElementById('rec-sched-hire-err');
-  if(who) who.textContent=cand.fullName||'—';
+  if(who) who.textContent=cand.fullName||(st.detailCandidate&&st.detailCandidate.fullName)||'—';
   if(vacEl) vacEl.textContent=(app.vacancy&&app.vacancy.title)||(vac&&vac.title)||'—';
   if(err) err.textContent='';
   const today=recOrgTodayYmd();
@@ -12017,8 +12132,16 @@ async function recScheduledHireOpen(applicationId){
   }
   const modal=document.getElementById('modal-rec-scheduled-hire');
   if(modal) modal.dataset.applicationId=applicationId;
+  // openModal resetea overlays; conserva la ficha técnica abierta debajo.
+  const detailModal=document.getElementById('modal-rec-candidate-detail');
+  const keepDetail=detailModal&&!detailModal.classList.contains('hidden');
   recScheduledHireSetBusy(false);
   openModal('modal-rec-scheduled-hire');
+  if(keepDetail&&detailModal){
+    detailModal.classList.remove('hidden');
+    detailModal.style.pointerEvents='auto';
+    detailModal.style.visibility='visible';
+  }
   if(dateEl) dateEl.focus();
 }
 async function recScheduledHireSave(){
@@ -12042,7 +12165,7 @@ async function recScheduledHireSave(){
     });
     if(epoch!==recScheduledHireEpoch) return;
     const ymd=(out&&out.scheduledEmploymentStartDate)||date;
-    recKanbanPatchScheduledHireLocal(applicationId, ymd);
+    recScheduledHireSyncViews(applicationId, ymd);
     recScheduledHireSetBusy(false);
     recScheduledHireClose();
   }catch(e){
@@ -12052,17 +12175,18 @@ async function recScheduledHireSave(){
   }
 }
 async function recScheduledHireClear(applicationId){
-  const st=recEnsureState();
-  const app=(st.kanbanApplications||[]).find(function(a){ return a.id===applicationId; });
+  const app=recScheduledHireResolveApp(applicationId);
   if(!app||!(app.stage&&app.stage.key==='APPROVED')) return;
   if(!app.scheduledEmploymentStartDate) return;
   try{
     await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/scheduled-hire',{
       method:'DELETE',
     });
-    recKanbanPatchScheduledHireLocal(applicationId, null);
+    recScheduledHireSyncViews(applicationId, null);
   }catch(e){
-    recKanbanSetErr((e&&e.message)||'No se pudo quitar la programación.');
+    const msg=(e&&e.message)||'No se pudo quitar la programación.';
+    if(typeof recKanbanSetErr==='function') recKanbanSetErr(msg);
+    if(typeof recCandSetOpErr==='function') recCandSetOpErr(msg);
   }
 }
 function recKanbanFindCol(stageId){
@@ -12315,13 +12439,38 @@ async function recKanbanCommitStageMove(appId, fromStageId, targetStageId, toCol
   const fromCol=recKanbanFindCol(fromStageId)||card.closest('.rec-kanban-col');
   toCol=toCol||recKanbanFindCol(targetStageId);
   if(!toCol) return null;
+  const fromKey=card.getAttribute('data-stage-key')
+    ||(fromCol&&fromCol.getAttribute('data-stage-key'))
+    ||(app.stage&&app.stage.key)
+    ||'';
+  const toKey=(toCol.getAttribute('data-stage-key')||'');
+  const prevScheduled=app.scheduledEmploymentStartDate!=null?app.scheduledEmploymentStartDate:null;
+  const prevStageSnapshot=app.stage?Object.assign({},app.stage):null;
   if(!st.kanbanPendingMoves) st.kanbanPendingMoves={};
-  st.kanbanEpoch=(st.kanbanEpoch||0)+1;
-  const moveEpoch=st.kanbanEpoch;
-  st.kanbanPendingMoves[appId]=moveEpoch;
+  // Token por postulación: permite moves concurrentes de otras tarjetas.
+  // Cambio de vacante (Load) limpia pending y sube epoch.
+  st.kanbanMoveSeq=(st.kanbanMoveSeq||0)+1;
+  const moveToken=st.kanbanMoveSeq;
+  st.kanbanPendingMoves[appId]=moveToken;
+  function moveStillOwned(){
+    return st.selectedId===vacancyId && st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]===moveToken;
+  }
   card.classList.add('rec-kanban-card--pending');
   app.stageId=targetStageId;
-  if(app.stage) app.stage.id=targetStageId;
+  // Copia el stage: no mutar el objeto compartido de kanbanStages.
+  app.stage=Object.assign({}, app.stage||{}, {
+    id:targetStageId,
+    key:toKey||(app.stage&&app.stage.key)||'',
+  });
+  if(toKey&&!app.stage.name){
+    const colStage=toCol&&(st.kanbanStages||[]).map(function(x){ return x.stage; }).find(function(s){ return s&&s.id===targetStageId; });
+    if(colStage&&colStage.name) app.stage.name=colStage.name;
+  }
+  card.setAttribute('data-stage-key',toKey||'');
+  // Al salir de Aprobado, retira el control de inmediato; al entrar, espera confirmación del servidor.
+  if(fromKey==='APPROVED'&&toKey!=='APPROVED'){
+    recKanbanSyncScheduledHireControls(card, app);
+  }
   recKanbanMoveCardInDom(card,fromCol,toCol,{ animate:true });
   recKanbanSyncColCounts(fromCol);
   recKanbanSyncColCounts(toCol);
@@ -12331,38 +12480,74 @@ async function recKanbanCommitStageMove(appId, fromStageId, targetStageId, toCol
       method:'PATCH',
       body:JSON.stringify(payload),
     });
-    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) return out;
+    if(!moveStillOwned()) return out;
+    const liveCard=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+appId+'"]')||card;
     if(out&&out.application){
-      Object.assign(app,out.application);
-      recKanbanUpdateCardFoot(card,app);
+      const landed=out.application;
+      Object.assign(app, landed);
+      if(landed.stage) app.stage=Object.assign({}, landed.stage);
+      recKanbanUpdateCardFoot(liveCard,app);
       const landedKey=app.stage&&app.stage.key;
+      if(landedKey) liveCard.setAttribute('data-stage-key',landedKey);
       if(landedKey==='HIRED'||landedKey==='EMPLOYMENT_EXIT'||landedKey==='REJECTED'){
-        card.setAttribute('data-stage-key',landedKey);
-        card.setAttribute('draggable','false');
+        liveCard.setAttribute('draggable','false');
+      }
+      if(landedKey==='APPROVED'){
+        recKanbanSyncScheduledHireControls(liveCard, app);
+      }else{
+        app.scheduledEmploymentStartDate=null;
+        recKanbanSyncScheduledHireControls(liveCard, app);
       }
     }else{
       app.updatedAt=new Date().toISOString();
-      recKanbanUpdateCardFoot(card,app);
+      recKanbanUpdateCardFoot(liveCard,app);
+      if(toKey==='APPROVED') recKanbanSyncScheduledHireControls(liveCard, app);
+      else if(fromKey==='APPROVED'){
+        app.scheduledEmploymentStartDate=null;
+        recKanbanSyncScheduledHireControls(liveCard, app);
+      }
     }
     recKanbanSetErr('');
     if(out&&out.vacancy&&out.vacancy.status) recApplyVacancyStatusLocal(out.vacancy.id, out.vacancy.status);
     if(out&&out.headcount) recRenderHeadcount(out.headcount);
-    if(st.detailCandidateId===candidateId) recCandMarkPipelineDirty();
-    recKanbanSilentReconcile(vacancyId, moveEpoch);
+    if(st.detailCandidateId===candidateId){
+      recCandMarkPipelineDirty();
+      // Mantén ficha abierta: sincroniza controles de programación sin cerrar la ficha.
+      if(toKey==='APPROVED'||fromKey==='APPROVED'){
+        const detailApp=recScheduledHireResolveApp(appId);
+        if(detailApp&&app.stage){
+          if(!detailApp.stage) detailApp.stage={};
+          detailApp.stage.key=app.stage.key;
+          detailApp.stage.id=app.stage.id||app.stageId;
+          detailApp.scheduledEmploymentStartDate=app.scheduledEmploymentStartDate||null;
+        }
+        recScheduledHireSyncViews(appId, app.scheduledEmploymentStartDate||null);
+      }
+    }
+    recKanbanSilentReconcile(vacancyId, st.kanbanEpoch);
     await recKanbanRefreshRelatedPanels(vacancyId,candidateId);
     return out;
   }catch(e){
-    if(st.kanbanEpoch!==moveEpoch||st.kanbanPendingMoves[appId]!==moveEpoch) throw e;
+    // Solo restaura esta tarjeta si sigue siendo dueña del move y de la vacante.
+    if(!moveStillOwned()) throw e;
+    const liveCard=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+appId+'"]')||card;
     app.stageId=fromStageId;
-    if(app.stage) app.stage.id=fromStageId;
-    recKanbanMoveCardInDom(card,toCol,fromCol,{ animate:false });
-    recKanbanSyncColCounts(fromCol);
-    recKanbanSyncColCounts(toCol);
+    app.scheduledEmploymentStartDate=prevScheduled;
+    if(prevStageSnapshot) app.stage=Object.assign({}, prevStageSnapshot);
+    else app.stage=Object.assign({}, app.stage||{}, { id:fromStageId, key:fromKey });
+    liveCard.setAttribute('data-stage-key',fromKey||'');
+    const liveToCol=recKanbanFindCol(targetStageId)||toCol;
+    const liveFromCol=recKanbanFindCol(fromStageId)||fromCol;
+    recKanbanMoveCardInDom(liveCard,liveToCol,liveFromCol,{ animate:false });
+    recKanbanSyncColCounts(liveFromCol);
+    recKanbanSyncColCounts(liveToCol);
+    recKanbanSyncScheduledHireControls(liveCard, app);
     recKanbanSetErr((e&&e.message)||'No se pudo cambiar la etapa. Intenta nuevamente.');
     throw e;
   }finally{
-    if(st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]===moveEpoch) delete st.kanbanPendingMoves[appId];
-    card.classList.remove('rec-kanban-card--pending');
+    if(st.kanbanPendingMoves&&st.kanbanPendingMoves[appId]===moveToken) delete st.kanbanPendingMoves[appId];
+    const doneCard=document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="'+appId+'"]')||card;
+    if(doneCard) doneCard.classList.remove('rec-kanban-card--pending');
   }
 }
 function recKanbanCardClick(ev,candidateId){
@@ -13960,7 +14145,26 @@ async function recCandCommitPrimaryStage(selectEl, newStageId, prev, extraBody){
     });
     selectEl.setAttribute('data-prev',newStageId);
     selectEl.value=newStageId;
+    const toKey=(out&&out.application&&out.application.stage&&out.application.stage.key)
+      ||(selectEl.options[selectEl.selectedIndex]&&selectEl.options[selectEl.selectedIndex].getAttribute('data-stage-key'))
+      ||'';
+    const fromKey=(app.stage&&app.stage.key)||'';
+    if(out&&out.application){
+      Object.assign(app, out.application);
+      if(st.detailPrimaryApplication&&recCandGetAppId(st.detailPrimaryApplication)===appId){
+        Object.assign(st.detailPrimaryApplication, out.application);
+      }
+    }else if(toKey){
+      if(!app.stage) app.stage={};
+      app.stage.id=newStageId;
+      app.stage.key=toKey;
+      if(toKey!=='APPROVED') app.scheduledEmploymentStartDate=null;
+    }
     recCandMarkPipelineDirty();
+    // Actualiza controles de programación en ficha + Kanban sin cerrar la ficha.
+    if(fromKey==='APPROVED'||toKey==='APPROVED'){
+      recScheduledHireSyncViews(appId, app.scheduledEmploymentStartDate||null);
+    }
     if(vacId) await recKanbanRefreshRelated(vacId,candidateId);
     else if(candidateId){
       const c=await recCandFetchDetail(candidateId);
@@ -14416,6 +14620,7 @@ function recCandHeroHtml(app){
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
     '<div id="rec-cand-hero-rail"></div>'+ivRow+
+    (stage.key==='APPROVED'?recScheduledHireControlsHtml(app,{ surface:'detail', stopPropagation:false }):'')+
     '<p class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</p></article>';
 }
 function recCandToggleHeroInterviewEdit(forceOpen){
@@ -14852,13 +15057,16 @@ function recCandAsideRowHtml(a){
   const vac=a.vacancy||{};
   const vacId=vac.id||'';
   const stageName=(a.stage&&a.stage.name)||'—';
-  return '<div class="rec-cand-aside-row" style="cursor:default;">'+
+  const stageKey=(a.stage&&a.stage.key)||'';
+  return '<div class="rec-cand-aside-row" style="cursor:default;" data-app-id="'+tcEsc(recCandGetAppId(a)||'')+'">'+
     '<button type="button" class="rec-cand-aside-row-main" style="background:transparent;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">'+
     '<p class="rec-cand-aside-row-title">'+tcEsc(vac.title||'—')+'</p>'+
     '<p class="rec-cand-aside-row-sub">'+tcEsc(vac.clientName||'')+'</p></button>'+
     '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;">'+
     '<span class="rec-cand-aside-pill">'+tcEsc(stageName)+'</span>'+
-    recCandDeclineButtonHtml(a)+'</span></div>'+
+    recCandDeclineButtonHtml(a)+'</span>'+
+    (stageKey==='APPROVED'?recScheduledHireControlsHtml(a,{ surface:'detail', stopPropagation:false }):'')+
+    '</div>'+
     recCandInterviewsBlockHtml(a);
 }
 function recCandHistoryAsideHtml(closedApps){

@@ -134,11 +134,48 @@ const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const publicHtml = fs.readFileSync(path.join(serverDir, 'public/index.html'));
 check(Buffer.from(indexHtml).equals(publicHtml), 'HTML espejo index ↔ public');
 check(/modal-rec-scheduled-hire/.test(indexHtml), 'modal Programar contratación');
-check(/Programar contratación/.test(indexHtml), 'CTA en tarjeta Aprobado');
-check(/Cambiar fecha/.test(indexHtml) && /Quitar programación/.test(indexHtml), 'acciones cambiar/quitar');
+check(
+  /aria-label="Programar contratación"/.test(indexHtml) && /recScheduledHireIconCalendarPlus/.test(indexHtml),
+  'CTA compacto calendario+ en Aprobado',
+);
+check(
+  /aria-label="Cambiar fecha programada"/.test(indexHtml)
+    && /aria-label="Quitar programación"/.test(indexHtml)
+    && /rec-sched-hire-date/.test(indexHtml),
+  'acciones compactas editar/quitar',
+);
+check(
+  /recKanbanSyncScheduledHireControls/.test(indexHtml)
+    && /recScheduledHireSyncViews/.test(indexHtml)
+    && /recScheduledHireResolveApp/.test(indexHtml),
+  'sync Kanban↔ficha por applicationId',
+);
+check(
+  /recCandHeroHtml[\s\S]{0,2500}recScheduledHireControlsHtml/.test(indexHtml)
+    && /recCandAsideRowHtml[\s\S]{0,1500}recScheduledHireControlsHtml/.test(indexHtml),
+  'controles también en ficha técnica (héroe y otros procesos)',
+);
 check(/RECRUITMENT_SCHEDULED_HIRE/.test(indexHtml), 'campana Admin destaca aviso');
 check(/notifApplicationFocusId/.test(indexHtml), 'abre la postulación correcta desde campana');
 check(/'APPROVED'/.test(indexHtml) && /REC_REQUIRED_STAGE_KEYS/.test(indexHtml), 'Aprobado requerido en UI');
+check(
+  /kanbanMoveSeq/.test(indexHtml)
+    && /moveStillOwned/.test(indexHtml)
+    && /st\.kanbanPendingMoves\[appId\]===moveToken/.test(indexHtml)
+    && /st\.selectedId===vacancyId/.test(indexHtml),
+  'respuesta de move validada por applicationId + vacante',
+);
+check(
+  /st\.kanbanEpoch=\(st\.kanbanEpoch\|\|0\)\+1/.test(indexHtml.replace(/\s+/g, ''))
+    && /st\.kanbanPendingMoves=\{\}/.test(indexHtml.replace(/\s+/g, ''))
+    && /async function recKanbanLoad/.test(indexHtml),
+  'cambio de vacante invalida pending y sube epoch',
+);
+check(
+  !/st\.kanbanEpoch=\(st\.kanbanEpoch\|\|0\)\+1;\s*const moveEpoch=st\.kanbanEpoch/.test(indexHtml)
+    && !/st\.kanbanEpoch!==moveEpoch\|\|st\.kanbanPendingMoves\[appId\]!==moveEpoch/.test(indexHtml),
+  'CommitStageMove ya no descarta por epoch global del move',
+);
 
 const {
   buildScheduledHireReminderMessage,
@@ -380,13 +417,15 @@ check(
 console.log('\n=== Escenarios UI (DOM sintético) ===\n');
 
 {
-  // Aprobar sin fecha: HTML de tarjeta sin programación.
-  const openHtml = indexHtml.includes("if(!raw)")
-    && indexHtml.includes('Programar contratación');
-  check(openHtml, 'tarjeta Aprobado sin fecha ofrece Programar contratación');
   check(
-    /Ingreso programado:/.test(indexHtml) && /Cambiar fecha/.test(indexHtml),
-    'con fecha muestra Cambiar / Quitar',
+    /aria-label="Programar contratación"/.test(indexHtml) && /rec-sched-hire-btn/.test(indexHtml),
+    'tarjeta Aprobado sin fecha ofrece CTA calendario+',
+  );
+  check(
+    /rec-sched-hire-date/.test(indexHtml)
+      && /Cambiar fecha programada/.test(indexHtml)
+      && /Quitar programación/.test(indexHtml),
+    'con fecha muestra fecha + lápiz + basura',
   );
 }
 
@@ -419,17 +458,59 @@ if (!executablePath) {
   const page = await browser.newPage();
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded' });
   const flow = await page.evaluate(async () => {
+    function hasProgramCta(root) {
+      return !!(root && root.querySelector('[aria-label="Programar contratación"]'));
+    }
+    function dateLabel(root) {
+      const el = root && root.querySelector('.rec-sched-hire-date');
+      return el ? el.textContent.trim() : '';
+    }
+    function hostFor(appId) {
+      return document.querySelector('[data-sched-hire-for="' + appId + '"]');
+    }
+    function dateFor(appId) {
+      const host = hostFor(appId);
+      if (!host) return '';
+      const el = host.querySelector('.rec-sched-hire-date');
+      return el ? el.textContent.trim() : '';
+    }
+    function ctaFor(appId) {
+      const host = hostFor(appId);
+      return !!(host && host.querySelector('[aria-label="Programar contratación"]'));
+    }
     let slot = document.getElementById('rec-pipeline-slot');
     if (!slot) {
       slot = document.createElement('div');
       slot.id = 'rec-pipeline-slot';
       document.body.appendChild(slot);
     }
+    let detailHost = document.getElementById('rec-cand-pipeline-host');
+    if (!detailHost) {
+      detailHost = document.createElement('div');
+      detailHost.id = 'rec-cand-pipeline-host';
+      document.body.appendChild(detailHost);
+    }
+    let aside = document.getElementById('rec-cand-body-aside');
+    if (!aside) {
+      aside = document.createElement('div');
+      aside.id = 'rec-cand-body-aside';
+      document.body.appendChild(aside);
+    }
+    const modalDetail = document.getElementById('modal-rec-candidate-detail') || document.createElement('div');
+    modalDetail.id = 'modal-rec-candidate-detail';
+    modalDetail.classList.remove('hidden');
+    if (!modalDetail.parentElement) document.body.appendChild(modalDetail);
+
     const st = recEnsureState();
     st.recruitmentOrgTimeZone = 'America/Mexico_City';
     st.selectedId = 'v1';
-    st.vacancies = [{ id: 'v1', title: 'Operador de Producción' }];
+    st.detailCandidateId = 'c1';
+    st.vacancies = [
+      { id: 'v1', title: 'Operador de Producción' },
+      { id: 'v2', title: 'Supervisor de Turno' },
+    ];
     st.kanbanStages = [
+      { stageId: 'st-contact', stage: { id: 'st-contact', key: 'CONTACT', name: 'Contactación' }, isEnabled: true },
       { stageId: 'st-appr', stage: { id: 'st-appr', key: 'APPROVED', name: 'Aprobado' }, isEnabled: true },
       { stageId: 'st-hired', stage: { id: 'st-hired', key: 'HIRED', name: 'Contratado' }, isEnabled: true },
     ];
@@ -446,29 +527,45 @@ if (!executablePath) {
     recKanbanRender('v1');
     const card = document.querySelector('.rec-kanban-card[data-app-id="app-1"]');
     const noDate = {
-      hasCta: !!(card && /Programar contratación/.test(card.textContent)),
-      noSchedLabel: !!(card && !/Ingreso programado/.test(card.textContent)),
+      hasCta: hasProgramCta(card),
+      noSchedLabel: !dateLabel(card),
     };
     const today = recOrgTodayYmd();
     apiJson = (url, opts) => {
       const method = (opts && opts.method) || 'GET';
       if (method === 'PUT' && /scheduled-hire/.test(url)) {
         const body = JSON.parse(opts.body || '{}');
+        const appId = decodeURIComponent(url.split('/applications/')[1].split('/')[0]);
         return Promise.resolve({
-          applicationId: 'app-1',
+          applicationId: appId,
           scheduledEmploymentStartDate: body.scheduledEmploymentStartDate,
           application: {
-            id: 'app-1',
+            id: appId,
             scheduledEmploymentStartDate: body.scheduledEmploymentStartDate,
             stage: { key: 'APPROVED' },
           },
         });
       }
       if (method === 'DELETE' && /scheduled-hire/.test(url)) {
+        const appId = decodeURIComponent(url.split('/applications/')[1].split('/')[0]);
         return Promise.resolve({
-          applicationId: 'app-1',
+          applicationId: appId,
           scheduledEmploymentStartDate: null,
-          application: { id: 'app-1', scheduledEmploymentStartDate: null, stage: { key: 'APPROVED' } },
+          application: { id: appId, scheduledEmploymentStartDate: null, stage: { key: 'APPROVED' } },
+        });
+      }
+      if (method === 'PATCH' && /applications\//.test(url)) {
+        const body = JSON.parse(opts.body || '{}');
+        const appId = decodeURIComponent(url.split('/applications/')[1].split(/[/?]/)[0]);
+        const stageId = body.stageId;
+        const stage = (st.kanbanStages || []).map((x) => x.stage).find((s) => s && s.id === stageId) || { id: stageId, key: 'APPROVED' };
+        return Promise.resolve({
+          application: {
+            id: appId,
+            stageId,
+            stage,
+            scheduledEmploymentStartDate: stage.key === 'APPROVED' ? (st.kanbanApplications[0] && st.kanbanApplications[0].scheduledEmploymentStartDate) : null,
+          },
         });
       }
       return Promise.reject(new Error('unexpected ' + method + ' ' + url));
@@ -483,10 +580,12 @@ if (!executablePath) {
     };
     document.getElementById('rec-sched-hire-date').value = today;
     await recScheduledHireSave();
+    const cardAfter = document.querySelector('.rec-kanban-card[data-app-id="app-1"]');
     const afterSave = {
       closed: !modal || modal.classList.contains('hidden'),
-      label: (document.querySelector('.rec-kanban-card[data-app-id="app-1"]') || {}).textContent || '',
+      label: dateLabel(cardAfter),
       local: st.kanbanApplications[0].scheduledEmploymentStartDate,
+      hasEdit: !!(cardAfter && cardAfter.querySelector('[aria-label="Cambiar fecha programada"]')),
     };
     await recScheduledHireOpen('app-1');
     const nextDay = today.slice(0, 8) + String(Math.min(28, Number(today.slice(8, 10)) + 1)).padStart(2, '0');
@@ -495,25 +594,267 @@ if (!executablePath) {
     await recScheduledHireSave();
     const afterChange = {
       local: st.kanbanApplications[0].scheduledEmploymentStartDate,
-      shown: /Ingreso programado/.test(
-        (document.querySelector('.rec-kanban-card[data-app-id="app-1"]') || {}).textContent || '',
-      ),
+      shown: dateLabel(document.querySelector('.rec-kanban-card[data-app-id="app-1"]')),
     };
     await recScheduledHireClear('app-1');
     const afterClear = {
       local: st.kanbanApplications[0].scheduledEmploymentStartDate,
-      ctaBack: /Programar contratación/.test(
-        (document.querySelector('.rec-kanban-card[data-app-id="app-1"]') || {}).textContent || '',
-      ),
+      ctaBack: hasProgramCta(document.querySelector('.rec-kanban-card[data-app-id="app-1"]')),
     };
-    // Campana: deep-link prioriza applicationId.
+
+    // Movimiento a Aprobado: el control aparece al confirmar; al salir desaparece.
+    st.kanbanApplications[0].stageId = 'st-contact';
+    st.kanbanApplications[0].stage = { id: 'st-contact', key: 'CONTACT', name: 'Contactación' };
+    st.kanbanApplications[0].scheduledEmploymentStartDate = null;
+    recKanbanRender('v1');
+    const moveCard = document.querySelector('.rec-kanban-card[data-app-id="app-1"]');
+    const beforeMove = !hasProgramCta(moveCard);
+    await recKanbanCommitStageMove('app-1', 'st-contact', 'st-appr', recKanbanFindCol('st-appr'));
+    const afterEnter = hasProgramCta(document.querySelector('.rec-kanban-card[data-app-id="app-1"]'));
+    await recKanbanCommitStageMove('app-1', 'st-appr', 'st-contact', recKanbanFindCol('st-contact'));
+    const afterLeave = !hasProgramCta(document.querySelector('.rec-kanban-card[data-app-id="app-1"]'));
+    // Evita que un SilentReconcile del move pise el tablero del escenario dual.
+    st.kanbanEpoch = (st.kanbanEpoch || 0) + 1;
+    st.kanbanPendingMoves = {};
+
+    // Ficha + Kanban sync; dos postulaciones independientes.
+    st.kanbanApplications = [{
+      id: 'app-1',
+      stageId: 'st-appr',
+      stage: { id: 'st-appr', key: 'APPROVED', name: 'Aprobado' },
+      scheduledEmploymentStartDate: null,
+      candidateId: 'c1',
+      candidate: { id: 'c1', fullName: 'Ana Pérez' },
+      vacancy: { id: 'v1', title: 'Operador de Producción' },
+    }];
+    recKanbanRender('v1');
+    const app1 = {
+      applicationId: 'app-1',
+      id: 'app-1',
+      stage: { id: 'st-appr', key: 'APPROVED', name: 'Aprobado' },
+      scheduledEmploymentStartDate: null,
+      vacancy: { id: 'v1', title: 'Operador de Producción' },
+      candidate: { id: 'c1', fullName: 'Ana Pérez' },
+    };
+    const app2 = {
+      applicationId: 'app-2',
+      id: 'app-2',
+      stage: { id: 'st-appr', key: 'APPROVED', name: 'Aprobado' },
+      scheduledEmploymentStartDate: null,
+      vacancy: { id: 'v2', title: 'Supervisor de Turno' },
+      candidate: { id: 'c1', fullName: 'Ana Pérez' },
+    };
+    st.detailCandidate = { id: 'c1', fullName: 'Ana Pérez', applications: [app1, app2] };
+    st.detailPrimaryApplication = app1;
+    st.detailOtherActiveApps = [app2];
+    detailHost.innerHTML = recCandHeroHtml(app1);
+    aside.innerHTML = '<div id="rec-cand-aside-panel">' + recCandAsideRowHtml(app2) + '</div>';
+    await recScheduledHireOpen('app-1');
+    document.getElementById('rec-sched-hire-date').value = today;
+    await recScheduledHireSave();
+    const cardEl = document.querySelector('#rec-kanban-board .rec-kanban-card[data-app-id="app-1"]')
+      || document.querySelector('.rec-kanban-card[data-app-id="app-1"]');
+    const syncFromKanban = {
+      hero: dateFor('app-1'),
+      card: dateLabel(cardEl),
+      otherStillEmpty: !dateFor('app-2') && ctaFor('app-2'),
+      detailStillOpen: !modalDetail.classList.contains('hidden'),
+    };
+    await recScheduledHireOpen('app-2');
+    document.getElementById('rec-sched-hire-date').value = today;
+    await recScheduledHireSave();
+    const dual = {
+      app2Aside: dateFor('app-2'),
+      app1Unchanged: dateFor('app-1') === syncFromKanban.hero,
+      detailStillOpen: !modalDetail.classList.contains('hidden'),
+    };
+    await recScheduledHireClear('app-1');
+    const clearSync = {
+      heroCta: ctaFor('app-1'),
+      cardCta: hasProgramCta(document.querySelector('.rec-kanban-card[data-app-id="app-1"]')),
+      app2Kept: !!dateFor('app-2'),
+    };
+
     st.notifApplicationFocusId = 'app-focus';
     const picked = recCandPickPrimaryApplication(st, [
       { applicationId: 'other', vacancy: { id: 'v1' } },
       { applicationId: 'app-focus', vacancy: { id: 'v2' } },
     ]);
     const deepLink = picked && picked.applicationId === 'app-focus';
-    return { noDate, afterOpen, afterSave, afterChange, afterClear, deepLink, today, changedTo };
+
+    // Moves concurrentes a Aprobado: respuesta por applicationId (ambos órdenes + fallo aislado).
+    function makeContactApps() {
+      return [
+        {
+          id: 'app-a',
+          stageId: 'st-contact',
+          stage: { id: 'st-contact', key: 'CONTACT', name: 'Contactación' },
+          scheduledEmploymentStartDate: null,
+          candidateId: 'c-a',
+          candidate: { id: 'c-a', fullName: 'Ana A' },
+          vacancy: { id: 'v1', title: 'Operador de Producción' },
+          updatedAt: '2026-11-22T12:00:00.000Z',
+        },
+        {
+          id: 'app-b',
+          stageId: 'st-contact',
+          stage: { id: 'st-contact', key: 'CONTACT', name: 'Contactación' },
+          scheduledEmploymentStartDate: null,
+          candidateId: 'c-b',
+          candidate: { id: 'c-b', fullName: 'Beto B' },
+          vacancy: { id: 'v1', title: 'Operador de Producción' },
+          updatedAt: '2026-11-22T12:00:00.000Z',
+        },
+      ];
+    }
+    function patchOk(appId, stageId) {
+      const stage =
+        (st.kanbanStages || []).map((x) => x.stage).find((s) => s && s.id === stageId)
+        || { id: stageId, key: 'APPROVED', name: 'Aprobado' };
+      const app = (st.kanbanApplications || []).find((a) => a.id === appId);
+      return {
+        application: {
+          id: appId,
+          stageId,
+          stage: Object.assign({}, stage),
+          scheduledEmploymentStartDate:
+            stage.key === 'APPROVED' ? (app && app.scheduledEmploymentStartDate) || null : null,
+        },
+      };
+    }
+    function installDeferredPatch(deferredByApp) {
+      apiJson = (url, opts) => {
+        const method = (opts && opts.method) || 'GET';
+        if (method === 'PATCH' && /applications\//.test(url)) {
+          const body = JSON.parse(opts.body || '{}');
+          const appId = decodeURIComponent(url.split('/applications/')[1].split(/[/?]/)[0]);
+          const entry = deferredByApp[appId];
+          if (entry) {
+            return new Promise((resolve, reject) => {
+              entry.resolve = resolve;
+              entry.reject = reject;
+              entry.body = body;
+              entry.ready = true;
+            });
+          }
+          return Promise.resolve(patchOk(appId, body.stageId));
+        }
+        if (method === 'GET' && /\/applications$/.test(url)) {
+          return Promise.resolve({ applications: (st.kanbanApplications || []).slice() });
+        }
+        return Promise.reject(new Error('unexpected ' + method + ' ' + url));
+      };
+    }
+    async function waitReady(entry, label) {
+      for (let i = 0; i < 80; i += 1) {
+        if (entry.ready) return;
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      throw new Error('timeout waiting for PATCH ' + label);
+    }
+    async function runOverlappingOrder(firstId, secondId) {
+      st.selectedId = 'v1';
+      st.kanbanEpoch = (st.kanbanEpoch || 0) + 1;
+      st.kanbanPendingMoves = {};
+      st.kanbanApplications = makeContactApps();
+      recKanbanRender('v1');
+      const deferred = {
+        'app-a': { ready: false, resolve: null, reject: null, body: null },
+        'app-b': { ready: false, resolve: null, reject: null, body: null },
+      };
+      installDeferredPatch(deferred);
+      const pA = recKanbanCommitStageMove('app-a', 'st-contact', 'st-appr', recKanbanFindCol('st-appr'));
+      const pB = recKanbanCommitStageMove('app-b', 'st-contact', 'st-appr', recKanbanFindCol('st-appr'));
+      await waitReady(deferred['app-a'], 'app-a');
+      await waitReady(deferred['app-b'], 'app-b');
+      const midPending =
+        !!st.kanbanPendingMoves['app-a'] && !!st.kanbanPendingMoves['app-b'];
+      deferred[firstId].resolve(patchOk(firstId, deferred[firstId].body.stageId));
+      await Promise.race([
+        firstId === 'app-a' ? pA : pB,
+        new Promise((_, rej) => setTimeout(() => rej(new Error('first resolve timeout')), 2000)),
+      ]);
+      const afterFirst = {
+        firstCta: ctaFor(firstId) || hasProgramCta(document.querySelector('.rec-kanban-card[data-app-id="' + firstId + '"]')),
+        secondStillPending: !!st.kanbanPendingMoves[secondId],
+        firstKey: (document.querySelector('.rec-kanban-card[data-app-id="' + firstId + '"]') || {}).getAttribute
+          ? document.querySelector('.rec-kanban-card[data-app-id="' + firstId + '"]').getAttribute('data-stage-key')
+          : '',
+      };
+      deferred[secondId].resolve(patchOk(secondId, deferred[secondId].body.stageId));
+      await Promise.all([pA, pB]);
+      const cardA = document.querySelector('.rec-kanban-card[data-app-id="app-a"]');
+      const cardB = document.querySelector('.rec-kanban-card[data-app-id="app-b"]');
+      return {
+        midPending,
+        afterFirst,
+        bothCta: hasProgramCta(cardA) && hasProgramCta(cardB),
+        keys: {
+          a: cardA && cardA.getAttribute('data-stage-key'),
+          b: cardB && cardB.getAttribute('data-stage-key'),
+        },
+        pendingEmpty: !st.kanbanPendingMoves['app-a'] && !st.kanbanPendingMoves['app-b'],
+      };
+    }
+    const overlapAB = await runOverlappingOrder('app-a', 'app-b');
+    const overlapBA = await runOverlappingOrder('app-b', 'app-a');
+
+    st.selectedId = 'v1';
+    st.kanbanEpoch = (st.kanbanEpoch || 0) + 1;
+    st.kanbanPendingMoves = {};
+    st.kanbanApplications = makeContactApps();
+    recKanbanRender('v1');
+    const failDeferred = {
+      'app-a': { ready: false, resolve: null, reject: null, body: null },
+      'app-b': { ready: false, resolve: null, reject: null, body: null },
+    };
+    installDeferredPatch(failDeferred);
+    const failPA = recKanbanCommitStageMove('app-a', 'st-contact', 'st-appr', recKanbanFindCol('st-appr'));
+    const failPB = recKanbanCommitStageMove('app-b', 'st-contact', 'st-appr', recKanbanFindCol('st-appr'));
+    await waitReady(failDeferred['app-a'], 'fail-a');
+    await waitReady(failDeferred['app-b'], 'fail-b');
+    failDeferred['app-a'].resolve(patchOk('app-a', failDeferred['app-a'].body.stageId));
+    await failPA;
+    failDeferred['app-b'].reject(Object.assign(new Error('stage conflict'), { status: 409 }));
+    let failCaught = false;
+    try {
+      await failPB;
+    } catch (_e) {
+      failCaught = true;
+    }
+    const cardOk = document.querySelector('.rec-kanban-card[data-app-id="app-a"]');
+    const cardFail = document.querySelector('.rec-kanban-card[data-app-id="app-b"]');
+    const isolatedFail = {
+      failCaught,
+      okCta: hasProgramCta(cardOk),
+      okKey: cardOk && cardOk.getAttribute('data-stage-key'),
+      failKey: cardFail && cardFail.getAttribute('data-stage-key'),
+      failNoCta: !hasProgramCta(cardFail),
+      failInContactCol: !!(cardFail && cardFail.closest('.rec-kanban-col[data-stage-id="st-contact"]')),
+      okInApprovedCol: !!(cardOk && cardOk.closest('.rec-kanban-col[data-stage-id="st-appr"]')),
+    };
+
+    return {
+      noDate,
+      afterOpen,
+      afterSave,
+      afterChange: {
+        local: afterChange.local,
+        shown: afterChange.shown,
+        pretty: recKanbanFmtScheduledHire(changedTo),
+      },
+      afterClear,
+      move: { beforeMove, afterEnter, afterLeave },
+      syncFromKanban,
+      dual,
+      clearSync,
+      deepLink,
+      overlapAB,
+      overlapBA,
+      isolatedFail,
+      today,
+      changedTo,
+    };
   });
   check(flow.noDate.hasCta && flow.noDate.noSchedLabel, 'aprobar sin fecha: CTA Programar');
   check(
@@ -523,18 +864,73 @@ if (!executablePath) {
       && flow.afterOpen.min === flow.today,
     'modal con contexto y min=hoy',
   );
+  const prettyToday = flow.today.slice(8, 10) + '/' + flow.today.slice(5, 7) + '/' + flow.today.slice(0, 4);
   check(
     flow.afterSave.closed
       && flow.afterSave.local === flow.today
-      && /Ingreso programado/.test(flow.afterSave.label),
+      && flow.afterSave.hasEdit
+      && flow.afterSave.label === prettyToday,
     'programar para hoy muestra fecha en tarjeta',
   );
+  const prettyChanged =
+    flow.changedTo.slice(8, 10) + '/' + flow.changedTo.slice(5, 7) + '/' + flow.changedTo.slice(0, 4);
   check(
-    flow.afterChange.local === flow.changedTo && flow.afterChange.shown,
+    flow.afterChange.local === flow.changedTo && flow.afterChange.shown === prettyChanged,
     'cambiar fecha actualiza la tarjeta',
   );
   check(flow.afterClear.local == null && flow.afterClear.ctaBack, 'quitar programación restaura CTA');
+  check(
+    flow.move.beforeMove && flow.move.afterEnter && flow.move.afterLeave,
+    'ícono aparece al entrar a Aprobado y desaparece al salir',
+  );
+  check(
+    flow.syncFromKanban.hero === prettyToday
+      && flow.syncFromKanban.card === prettyToday
+      && flow.syncFromKanban.otherStillEmpty
+      && flow.syncFromKanban.detailStillOpen,
+    'programar desde Kanban se refleja en ficha sin tocar la otra postulación',
+  );
+  check(
+    flow.dual.app2Aside === prettyToday
+      && flow.dual.app1Unchanged
+      && flow.dual.detailStillOpen,
+    'dos postulaciones: editar una no altera la otra y la ficha sigue abierta',
+  );
+  check(
+    flow.clearSync.heroCta && flow.clearSync.cardCta && flow.clearSync.app2Kept,
+    'quitar desde una vista sincroniza Kanban/ficha y conserva la otra postulación',
+  );
   check(flow.deepLink, 'campana abre la postulación correcta por applicationId');
+  check(
+    flow.overlapAB.midPending
+      && flow.overlapAB.afterFirst.firstCta
+      && flow.overlapAB.afterFirst.secondStillPending
+      && flow.overlapAB.bothCta
+      && flow.overlapAB.keys.a === 'APPROVED'
+      && flow.overlapAB.keys.b === 'APPROVED'
+      && flow.overlapAB.pendingEmpty,
+    'overlap A→B: ambas confirman y muestran calendario',
+  );
+  check(
+    flow.overlapBA.midPending
+      && flow.overlapBA.afterFirst.firstCta
+      && flow.overlapBA.afterFirst.secondStillPending
+      && flow.overlapBA.bothCta
+      && flow.overlapBA.keys.a === 'APPROVED'
+      && flow.overlapBA.keys.b === 'APPROVED'
+      && flow.overlapBA.pendingEmpty,
+    'overlap B→A: ambas confirman y muestran calendario',
+  );
+  check(
+    flow.isolatedFail.failCaught
+      && flow.isolatedFail.okCta
+      && flow.isolatedFail.okKey === 'APPROVED'
+      && flow.isolatedFail.okInApprovedCol
+      && flow.isolatedFail.failKey === 'CONTACT'
+      && flow.isolatedFail.failNoCta
+      && flow.isolatedFail.failInContactCol,
+    'si una falla, solo esa tarjeta se restaura',
+  );
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
 }

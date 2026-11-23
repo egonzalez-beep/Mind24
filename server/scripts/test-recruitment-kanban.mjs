@@ -81,7 +81,13 @@ check(/async function recKanbanLoad[\s\S]{0,240}recKanbanAutoScrollStop/.test(in
 check(/function recSwitchModuleTab[\s\S]{0,280}recKanbanAutoScrollStop/.test(indexHtml), 'cambiar de pestaña detiene el autoscroll');
 check(/name!=='dash-recruitment'&&window\.__REC_STATE/.test(indexHtml), 'salir de la vista detiene el autoscroll');
 check(/kanbanDragScrollBound/.test(indexHtml), 'el listener de arrastre se registra una vez');
-check(/kanbanEpoch/.test(dropBlock) && /kanbanEpoch!==moveEpoch/.test(dropBlock), 'una respuesta anterior no pisa un movimiento nuevo');
+check(
+  /st\.selectedId===vacancyId/.test(commitBlock)
+    && /st\.kanbanPendingMoves\[appId\]===moveToken/.test(commitBlock)
+    && /if\(!moveStillOwned\(\)\) return out;/.test(commitBlock)
+    && /if\(!moveStillOwned\(\)\) throw e;/.test(commitBlock),
+  'una respuesta anterior no pisa un movimiento nuevo ni otra vacante',
+);
 check(/requestAnimationFrame\(recKanbanAutoScrollTick\)/.test(indexHtml), 'autoscroll con un solo frame loop');
 check(/recKanbanPrefersReducedMotion\(\)\?3:16/.test(indexHtml), 'menor velocidad si el usuario prefiere menos movimiento');
 check(/scrollLeft/.test(indexHtml.match(/function recKanbanAutoScrollTick[\s\S]*?^function /m)?.[0] || ''), 'el autoscroll mueve el tablero, no la página');
