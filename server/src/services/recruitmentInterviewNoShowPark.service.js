@@ -143,6 +143,10 @@ export async function parkApplicationAfterInterviewNoShow(tx, {
     toStageId: parkStage.id,
     changedByUserId,
   });
+  {
+    const { syncVacancyActiveQueueEmptiedAt } = await import('./recruitmentVacancy.service.js');
+    await syncVacancyActiveQueueEmptiedAt(organizationId, app.vacancyId, tx);
+  }
   return {
     parked: true,
     parkStageId: parkStage.id,
@@ -335,6 +339,12 @@ export async function rescheduleAfterInterviewNoShowForWorkforce({
       toStageId: returnStage.id,
       changedByUserId: orgAdmin.id,
     });
+
+    // Reingreso a proceso (reagenda): limpia ancla del semáforo.
+    {
+      const { syncVacancyActiveQueueEmptiedAt } = await import('./recruitmentVacancy.service.js');
+      await syncVacancyActiveQueueEmptiedAt(organizationId, app.vacancyId, tx);
+    }
 
     const event = await tx.recruitmentApplicationInterviewEvent.create({
       data: {

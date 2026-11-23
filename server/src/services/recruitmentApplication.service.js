@@ -1,6 +1,9 @@
 import { prisma } from '../db/client.js';
 import { assertRecruitmentCandidateInOrg, serializeRecruitmentCandidate } from './recruitmentCandidate.service.js';
-import { assertRecruitmentVacancyInOrg } from './recruitmentVacancy.service.js';
+import {
+  assertRecruitmentVacancyInOrg,
+  syncVacancyActiveQueueEmptiedAt,
+} from './recruitmentVacancy.service.js';
 import { getStageByKeyForOrg, serializeRecruitmentStage } from './recruitmentStage.service.js';
 import {
   assertNewStageEnabledForVacancy,
@@ -326,6 +329,7 @@ export async function createRecruitmentApplication({
       candidateId,
       now: new Date(),
     });
+    await syncVacancyActiveQueueEmptiedAt(organizationId, vacancyId, tx);
     return serializeApplication(current);
   };
   let serialized;
@@ -646,6 +650,10 @@ export async function updateRecruitmentApplication({
         where: { id: applicationId, organizationId },
         include: { candidate: true, stage: true },
       });
+    }
+
+    if (stageChanged && written.count === 1) {
+      await syncVacancyActiveQueueEmptiedAt(organizationId, existing.vacancyId, tx);
     }
 
     return serializeApplication(updated);

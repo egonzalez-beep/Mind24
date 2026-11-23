@@ -1172,11 +1172,23 @@ router.patch('/applications/:id', async (req, res, next) => {
     });
     const headcount = await getActiveVacancyHeadcount(u.organizationId);
     const { prisma } = await import('../db/client.js');
-    const vacancy = await prisma.recruitmentVacancy.findFirst({
+    const { computeVacancyAgingTrafficLight } = await import(
+      '../services/recruitmentVacancy.service.js'
+    );
+    const vacancyRow = await prisma.recruitmentVacancy.findFirst({
       where: { id: application.vacancyId, organizationId: u.organizationId },
       select: { id: true, status: true },
     });
-    res.json({ application, vacancy, headcount });
+    const agingTrafficLight = application.vacancyId
+      ? await computeVacancyAgingTrafficLight(u.organizationId, application.vacancyId)
+      : null;
+    res.json({
+      application,
+      vacancy: vacancyRow
+        ? { id: vacancyRow.id, status: vacancyRow.status, agingTrafficLight }
+        : null,
+      headcount,
+    });
   } catch (e) {
     next(e);
   }
@@ -1276,6 +1288,13 @@ router.post('/applications/:id/decline', async (req, res, next) => {
       createdByUserId: u.id,
     });
     const application = result.application;
+    const { computeVacancyAgingTrafficLight } = await import(
+      '../services/recruitmentVacancy.service.js'
+    );
+    const agingTrafficLight =
+      application?.vacancyId
+        ? await computeVacancyAgingTrafficLight(u.organizationId, application.vacancyId)
+        : null;
     res.json({
       alreadyClosed: result.alreadyClosed === true,
       application: application
@@ -1289,6 +1308,9 @@ router.post('/applications/:id/decline', async (req, res, next) => {
             closureReason: application.closureReason || null,
             closureNote: application.closureNote || null,
           }
+        : null,
+      vacancy: application?.vacancyId
+        ? { id: application.vacancyId, agingTrafficLight }
         : null,
     });
   } catch (e) {

@@ -322,6 +322,7 @@ function createMemoryDb({ locking = false } = {}) {
     novedades: [],
     employees: [],
     stages: [],
+    vacancies: [],
     orgNotifications: [],
     failNovedad: false,
   };
@@ -332,6 +333,7 @@ function createMemoryDb({ locking = false } = {}) {
     workforceRecruitmentNovedad: 'novedades',
     workforceEmployee: 'employees',
     recruitmentStage: 'stages',
+    recruitmentVacancy: 'vacancies',
     orgNotification: 'orgNotifications',
   };
   function rowsOf(name) {
@@ -347,6 +349,7 @@ function createMemoryDb({ locking = false } = {}) {
         novedades: store.novedades,
         employees: store.employees,
         stages: store.stages,
+        vacancies: store.vacancies,
         orgNotifications: store.orgNotifications,
       });
       const releases = [];
@@ -384,6 +387,7 @@ function createMemoryDb({ locking = false } = {}) {
           store.novedades = snap.novedades;
           store.employees = snap.employees;
           store.stages = snap.stages;
+          store.vacancies = snap.vacancies;
           store.orgNotifications = snap.orgNotifications;
         }
         throw err;
@@ -477,6 +481,18 @@ function seedOpenApplication(db, extras = {}) {
   const now = new Date('2026-11-08T12:00:00.000Z');
   db.store.stages.push({ id: 'stage-contact', organizationId: 'org-1', key: 'CONTACT', name: 'Contacto' });
   db.store.employees.push({ id: 'emp-1', organizationId: 'org-1', isActive: true });
+  if (!db.store.vacancies.some((v) => v.id === 'vac-1')) {
+    db.store.vacancies.push({
+      id: 'vac-1',
+      organizationId: 'org-1',
+      title: extras.vacancyTitle || 'Operador de producción',
+      activeQueueEmptiedAt: extras.activeQueueEmptiedAt ?? null,
+      status: 'ACTIVE',
+      positionsTotal: 1,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
   db.store.candidates.push({
     id: 'cand-1',
     organizationId: 'org-1',
@@ -495,7 +511,10 @@ function seedOpenApplication(db, extras = {}) {
     closureReason: null,
     closureNote: null,
     closedAt: null,
+    appliedAt: now,
+    updatedAt: now,
     stage: { id: 'stage-contact', key: 'CONTACT', name: 'Contacto' },
+    stageEvents: [],
     candidate: {
       id: 'cand-1',
       organizationId: 'org-1',
@@ -964,6 +983,16 @@ for (const reason of DECLINE_REASON_KEYS.filter((key) => key !== 'OTHER')) {
   const db = createMemoryDb();
   const now = seedOpenApplication(db);
   db.store.stages.push({ id: 'stage-final', organizationId: 'org-1', key: 'FINALIST', name: 'Finalista' });
+  db.store.vacancies.push({
+    id: 'vac-2',
+    organizationId: 'org-1',
+    title: 'Vacante 2',
+    activeQueueEmptiedAt: null,
+    status: 'ACTIVE',
+    positionsTotal: 1,
+    createdAt: now,
+    updatedAt: now,
+  });
   db.store.applications.push({
     id: 'app-2',
     organizationId: 'org-1',
@@ -971,7 +1000,10 @@ for (const reason of DECLINE_REASON_KEYS.filter((key) => key !== 'OTHER')) {
     vacancyId: 'vac-2',
     stageId: 'stage-final',
     closureOutcome: null,
+    appliedAt: now,
+    updatedAt: now,
     stage: { key: 'FINALIST', name: 'Finalista' },
+    stageEvents: [],
   });
   await declineRecruitmentApplication({
     organizationId: 'org-1',

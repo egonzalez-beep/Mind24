@@ -840,6 +840,9 @@ model RecruitmentVacancy {
   coveredAt           DateTime?                @db.Timestamptz(6)
   /// MANUAL si la fijó un administrador; AUTOMATIC si la cerró la cobertura confirmada.
   coverageSource      RecruitmentVacancyCoverageSource?
+  /// Última vez que la cola operativa (inProcess) pasó a 0 con postulaciones existentes.
+  /// Semáforo de tarjetas activas con plazas pendientes; se limpia al reingresar alguien a proceso.
+  activeQueueEmptiedAt DateTime?               @db.Timestamptz(6)
   jobDescription      String?                  @db.Text
   notes               String?                  @db.Text
   createdAt           DateTime                 @default(now())

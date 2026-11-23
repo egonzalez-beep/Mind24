@@ -14,8 +14,287 @@ import {
   isHireConfirmedAt,
   listCurrentHiresForVacancy,
   officialCoveragePercent,
+  pendingPositions,
   reconcileVacancyCoverage,
 } from './recruitmentCoverage.service.js';
+import {
+  MIND24_DEFAULT_IANA_TIMEZONE,
+  resolveOrganizationIanaTimezone,
+} from './organizationTimezone.service.js';
+import { localDateKey } from './remoteWorkSessionHistory.service.js';
+
+/** 0–4 habitual (sin tinte); 5–9 naranja; desde 10 rojo. */
+export const VACANCY_AGING_HABITUAL_MAX_DAYS = 4;
+export const VACANCY_AGING_ORANGE_MAX_DAYS = 9;
+
+export function vacancyAgingLevelFromDays(days) {
+  if (!Number.isFinite(days) || days < 0) return null;
+  if (days <= VACANCY_AGING_HABITUAL_MAX_DAYS) return null;
+  if (days <= VACANCY_AGING_ORANGE_MAX_DAYS) return 'orange';
+  return 'red';
+}
+
+export function vacancyDateKeyInTimeZone(instant, timeZone = MIND24_DEFAULT_IANA_TIMEZONE) {
+  if (!instant) return localDateKey(new Date(), timeZone);
+  return localDateKey(instant instanceof Date ? instant : new Date(instant), timeZone);
+}
+
+/**
+ * Semáforo de tarjeta: solo ACTIVE con plazas pendientes y sin candidatos en proceso.
+ * Sin postulaciones → ancla createdAt. Con postulaciones y cola vacía → activeQueueEmptiedAt.
+ * Con alguien en proceso → null (color habitual). Días en TZ de la organización.
+ */
+export function resolveVacancyAgingTrafficLight({
+  status,
+  positionsTotal,
+  hiredConfirmed = 0,
+  applicationTotal = 0,
+  inProcess = 0,
+  createdAt = null,
+  activeQueueEmptiedAt = null,
+  timeZone = MIND24_DEFAULT_IANA_TIMEZONE,
+  todayKey = null,
+  now = new Date(),
+} = {}) {
+  if (status !== 'ACTIVE') return null;
+  if (pendingPositions(positionsTotal, hiredConfirmed) <= 0) return null;
+  if (Number(inProcess) > 0) return null;
+
+  let anchor = null;
+  if (Number(applicationTotal) <= 0) {
+    anchor = createdAt;
+  } else {
+    anchor = activeQueueEmptiedAt;
+  }
+  if (!anchor) return null;
+  const fromKey = vacancyDateKeyInTimeZone(anchor, timeZone);
+  const toKey = todayKey || vacancyDateKeyInTimeZone(now, timeZone);
+  const days = Math.max(0, calendarDayDiff(fromKey, toKey));
+  return vacancyAgingLevelFromDays(days);
+}
+
+/**
+ * Infiera cuándo la cola operativa quedó vacía a partir del historial de etapas/cierres.
+ * Devuelve el último instante en que inProcess pasó a 0, o null si no se puede determinar.
+ */
+export function inferActiveQueueEmptiedAtFromHistory(appsWithHistory) {
+  const apps = Array.isArray(appsWithHistory) ? appsWithHistory : [];
+  if (!apps.length) return null;
+
+  const timeline = [];
+  for (const app of apps) {
+    const appId = app.id;
+    if (!appId) continue;
+    const events = Array.isArray(app.events)
+      ? app.events
+          .map((ev) => ({
+            at: ev.createdAt instanceof Date ? ev.createdAt : new Date(ev.createdAt),
+            fromKey: ev.fromStageKey || ev.fromStage?.key || null,
+            toKey: ev.toStageKey || ev.toStage?.key || null,
+          }))
+          .filter((ev) => ev.at && !Number.isNaN(ev.at.getTime()))
+          .sort((a, b) => a.at.getTime() - b.at.getTime())
+      : [];
+
+    if (!events.length) {
+      const applied = app.appliedAt ? new Date(app.appliedAt) : null;
+      if (applied && !Number.isNaN(applied.getTime())) {
+        timeline.push({
+          at: applied,
+          appId,
+          inQueue: isRecruitmentApplicationInActiveVacancyQueue('NEW', null),
+        });
+      }
+      const currentlyIn = isRecruitmentApplicationInActiveVacancyQueue(
+        app.stageKey || app.stage?.key,
+        app.closureOutcome,
+      );
+      if (!currentlyIn) {
+        const leftRaw = app.closedAt || app.updatedAt;
+        const leftAt = leftRaw ? new Date(leftRaw) : null;
+        if (leftAt && !Number.isNaN(leftAt.getTime())) {
+          timeline.push({ at: leftAt, appId, inQueue: false });
+        }
+      }
+      continue;
+    }
+
+    let currentKey = null;
+    for (const ev of events) {
+      currentKey = ev.toKey || currentKey;
+      timeline.push({
+        at: ev.at,
+        appId,
+        inQueue: isRecruitmentApplicationInActiveVacancyQueue(currentKey, null),
+      });
+    }
+    if (app.closureOutcome === 'DECLINED' && app.closedAt) {
+      const closedAt = new Date(app.closedAt);
+      if (!Number.isNaN(closedAt.getTime())) {
+        timeline.push({ at: closedAt, appId, inQueue: false });
+      }
+    }
+  }
+
+  timeline.sort((a, b) => a.at.getTime() - b.at.getTime());
+  const inSet = new Set();
+  let lastEmptied = null;
+  for (const item of timeline) {
+    if (item.inQueue) {
+      inSet.add(item.appId);
+      continue;
+    }
+    // Solo ancla cuando alguien que sí estaba en cola sale y deja la cola en 0.
+    // Ej.: No asistió el 10 (vacía) y declina el 20 → sigue contando desde el 10.
+    if (!inSet.has(item.appId)) continue;
+    inSet.delete(item.appId);
+    if (inSet.size === 0) lastEmptied = item.at;
+  }
+  return lastEmptied;
+}
+
+async function loadVacancyAppsForAgingHistory(organizationId, vacancyId, tx = prisma) {
+  const apps = await tx.recruitmentApplication.findMany({
+    where: { organizationId, vacancyId },
+    select: {
+      id: true,
+      closureOutcome: true,
+      appliedAt: true,
+      closedAt: true,
+      updatedAt: true,
+      stage: { select: { key: true } },
+      stageEvents: {
+        select: {
+          createdAt: true,
+          fromStage: { select: { key: true } },
+          toStage: { select: { key: true } },
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+  });
+  return apps.map((app) => ({
+    id: app.id,
+    stageKey: app.stage?.key,
+    closureOutcome: app.closureOutcome,
+    appliedAt: app.appliedAt,
+    closedAt: app.closedAt,
+    updatedAt: app.updatedAt,
+    events: (app.stageEvents || []).map((ev) => ({
+      createdAt: ev.createdAt,
+      fromStageKey: ev.fromStage?.key || null,
+      toStageKey: ev.toStage?.key || null,
+    })),
+  }));
+}
+
+/**
+ * Actualiza activeQueueEmptiedAt según la cola operativa actual de la vacante.
+ * Limpia el ancla al reingresar alguien a proceso; al quedar vacía recupera historial si falta.
+ */
+export async function syncVacancyActiveQueueEmptiedAt(
+  organizationId,
+  vacancyId,
+  tx = prisma,
+  now = new Date(),
+) {
+  if (!organizationId || !vacancyId) return null;
+  const apps = await tx.recruitmentApplication.findMany({
+    where: { organizationId, vacancyId },
+    select: {
+      closureOutcome: true,
+      stage: { select: { key: true } },
+    },
+  });
+  let inProcess = 0;
+  for (const app of apps) {
+    if (isRecruitmentApplicationInActiveVacancyQueue(app.stage?.key, app.closureOutcome)) {
+      inProcess += 1;
+    }
+  }
+  const vacancy = await tx.recruitmentVacancy.findFirst({
+    where: { id: vacancyId, organizationId },
+    select: { id: true, activeQueueEmptiedAt: true },
+  });
+  if (!vacancy) return null;
+
+  if (inProcess > 0) {
+    if (vacancy.activeQueueEmptiedAt != null) {
+      await tx.recruitmentVacancy.update({
+        where: { id: vacancyId },
+        data: { activeQueueEmptiedAt: null },
+      });
+    }
+    return { inProcess, activeQueueEmptiedAt: null };
+  }
+
+  if (apps.length === 0) {
+    if (vacancy.activeQueueEmptiedAt != null) {
+      await tx.recruitmentVacancy.update({
+        where: { id: vacancyId },
+        data: { activeQueueEmptiedAt: null },
+      });
+    }
+    return { inProcess: 0, activeQueueEmptiedAt: null };
+  }
+
+  if (vacancy.activeQueueEmptiedAt == null) {
+    let emptiedAt = now;
+    try {
+      const history = await loadVacancyAppsForAgingHistory(organizationId, vacancyId, tx);
+      const inferred = inferActiveQueueEmptiedAtFromHistory(history);
+      if (inferred) emptiedAt = inferred;
+    } catch (_e) {
+      /* si el historial no está disponible, ancla en ahora */
+    }
+    await tx.recruitmentVacancy.update({
+      where: { id: vacancyId },
+      data: { activeQueueEmptiedAt: emptiedAt },
+    });
+    return { inProcess: 0, activeQueueEmptiedAt: emptiedAt };
+  }
+  return { inProcess: 0, activeQueueEmptiedAt: vacancy.activeQueueEmptiedAt };
+}
+
+/** Calcula agingTrafficLight actual (y backfill de emptiedAt legacy si hace falta). */
+export async function computeVacancyAgingTrafficLight(organizationId, vacancyId, tx = prisma) {
+  const vacancy = await tx.recruitmentVacancy.findFirst({
+    where: { id: vacancyId, organizationId },
+  });
+  if (!vacancy) return null;
+  const apps = await tx.recruitmentApplication.findMany({
+    where: { organizationId, vacancyId },
+    select: {
+      candidateId: true,
+      hiredStageEnteredAt: true,
+      closureOutcome: true,
+      stage: { select: { key: true } },
+    },
+  });
+  const summary = summarizeApplications(apps);
+  let emptiedAt = vacancy.activeQueueEmptiedAt ?? null;
+  if (
+    vacancy.status === 'ACTIVE'
+    && pendingPositions(vacancy.positionsTotal, summary.hiredConfirmed) > 0
+    && summary.inProcess === 0
+    && summary.total > 0
+    && emptiedAt == null
+  ) {
+    const sync = await syncVacancyActiveQueueEmptiedAt(organizationId, vacancyId, tx);
+    emptiedAt = sync?.activeQueueEmptiedAt ?? null;
+  }
+  const timeZone = await resolveOrganizationIanaTimezone(organizationId);
+  return resolveVacancyAgingTrafficLight({
+    status: vacancy.status,
+    positionsTotal: vacancy.positionsTotal,
+    hiredConfirmed: summary.hiredConfirmed,
+    applicationTotal: summary.total,
+    inProcess: summary.inProcess,
+    createdAt: vacancy.createdAt,
+    activeQueueEmptiedAt: emptiedAt,
+    timeZone,
+  });
+}
 
 export function emptyApplicationSummary() {
   return { total: 0, inProcess: 0, finalists: 0, hired: 0, hiredConfirmed: 0, rejected: 0 };
@@ -207,6 +486,20 @@ export function parseTargetCoverageDate(value) {
 }
 
 export function serializeRecruitmentVacancy(row, extras = {}) {
+  const applicationSummary = extras.applicationSummary ?? emptyApplicationSummary();
+  const agingTrafficLight =
+    extras.agingTrafficLight !== undefined
+      ? extras.agingTrafficLight
+      : resolveVacancyAgingTrafficLight({
+          status: row.status,
+          positionsTotal: row.positionsTotal,
+          hiredConfirmed: applicationSummary.hiredConfirmed,
+          applicationTotal: applicationSummary.total,
+          inProcess: applicationSummary.inProcess,
+          createdAt: row.createdAt,
+          activeQueueEmptiedAt: row.activeQueueEmptiedAt ?? null,
+          timeZone: extras.timeZone || MIND24_DEFAULT_IANA_TIMEZONE,
+        });
   return {
     id: row.id,
     title: row.title,
@@ -220,28 +513,64 @@ export function serializeRecruitmentVacancy(row, extras = {}) {
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    applicationSummary: extras.applicationSummary ?? emptyApplicationSummary(),
+    applicationSummary,
     primaryAssignee: extras.primaryAssignee ?? null,
     executiveSnapshot: extras.executiveSnapshot ?? null,
     stageDistribution: extras.stageDistribution ?? null,
     hiredCandidates: extras.hiredCandidates ?? undefined,
     coveredAt: row.coveredAt ? row.coveredAt.toISOString() : null,
     coverageSource: row.coverageSource ?? null,
+    agingTrafficLight: agingTrafficLight ?? null,
   };
 }
 
 async function enrichVacancies(organizationId, rows) {
   const ids = rows.map((r) => r.id);
-  const [summaryMap, assigneeMap] = await Promise.all([
+  const [summaryMap, assigneeMap, timeZone] = await Promise.all([
     buildApplicationSummariesByVacancyId(organizationId, ids),
     buildPrimaryAssigneesByVacancyId(organizationId, ids),
+    resolveOrganizationIanaTimezone(organizationId),
   ]);
-  return rows.map((row) =>
-    serializeRecruitmentVacancy(row, {
-      applicationSummary: summaryMap.get(row.id) ?? emptyApplicationSummary(),
+
+  // Legacy: cola vacía sin ancla → recuperar desde historial y persistir.
+  const needBackfill = rows.filter((row) => {
+    const summary = summaryMap.get(row.id) ?? emptyApplicationSummary();
+    return (
+      row.status === 'ACTIVE'
+      && pendingPositions(row.positionsTotal, summary.hiredConfirmed) > 0
+      && summary.inProcess === 0
+      && summary.total > 0
+      && row.activeQueueEmptiedAt == null
+    );
+  });
+  const emptiedById = new Map(rows.map((r) => [r.id, r.activeQueueEmptiedAt ?? null]));
+  if (needBackfill.length) {
+    await Promise.all(
+      needBackfill.map(async (row) => {
+        const sync = await syncVacancyActiveQueueEmptiedAt(organizationId, row.id);
+        emptiedById.set(row.id, sync?.activeQueueEmptiedAt ?? null);
+      }),
+    );
+  }
+
+  return rows.map((row) => {
+    const applicationSummary = summaryMap.get(row.id) ?? emptyApplicationSummary();
+    return serializeRecruitmentVacancy(row, {
+      applicationSummary,
       primaryAssignee: assigneeMap.get(row.id) ?? null,
-    }),
-  );
+      timeZone,
+      agingTrafficLight: resolveVacancyAgingTrafficLight({
+        status: row.status,
+        positionsTotal: row.positionsTotal,
+        hiredConfirmed: applicationSummary.hiredConfirmed,
+        applicationTotal: applicationSummary.total,
+        inProcess: applicationSummary.inProcess,
+        createdAt: row.createdAt,
+        activeQueueEmptiedAt: emptiedById.get(row.id) ?? null,
+        timeZone,
+      }),
+    });
+  });
 }
 
 export async function assertRecruitmentVacancyInOrg(vacancyId, organizationId, db = prisma) {
@@ -327,22 +656,19 @@ export async function listRecruitmentVacancies(organizationId, { status } = {}) 
 
 export async function getRecruitmentVacancy(organizationId, vacancyId) {
   const row = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
-  const ids = [row.id];
-  const [summaryMap, assigneeMap, stageDistribution, hiredCandidates] = await Promise.all([
-    buildApplicationSummariesByVacancyId(organizationId, ids),
-    buildPrimaryAssigneesByVacancyId(organizationId, ids),
+  // Misma ruta de aging/TZ que el listado (enrichVacancies), más extras de detalle.
+  const [enriched, stageDistribution, hiredCandidates] = await Promise.all([
+    enrichVacancies(organizationId, [row]),
     buildStageDistributionForVacancy(organizationId, vacancyId),
     listCurrentHiresForVacancy(organizationId, vacancyId),
   ]);
-  const applicationSummary = summaryMap.get(row.id) ?? emptyApplicationSummary();
-  const vacancy = serializeRecruitmentVacancy(row, {
-    applicationSummary,
-    primaryAssignee: assigneeMap.get(row.id) ?? null,
-    executiveSnapshot: buildExecutiveSnapshot(row, applicationSummary),
+  const vacancy = enriched[0];
+  return {
+    ...vacancy,
+    executiveSnapshot: buildExecutiveSnapshot(row, vacancy.applicationSummary),
     stageDistribution,
     hiredCandidates,
-  });
-  return vacancy;
+  };
 }
 
 export async function updateRecruitmentVacancy(organizationId, vacancyId, patch) {

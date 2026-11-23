@@ -56,6 +56,10 @@ check(/stopPropagation/.test(indexHtml.match(/function recOpenVacancyDetail[\s\S
 check(/recOpenVacancyDetail/.test(carouselBlock), 'icono abre detalle');
 check(/recSelectVacancy/.test(carouselBlock), 'card selecciona vacante');
 check(!/rec-vac-stats/.test(carouselBlock), 'cards sin métricas');
+check(/agingTrafficLight/.test(carouselBlock) && /recVacCardAgingClass/.test(indexHtml), 'semáforo aplica clase a la tarjeta');
+check(/recVacApplyAgingTint/.test(indexHtml), 'tinte de tarjeta se actualiza en vivo');
+check(/rec-vac-card--aging-orange/.test(indexHtml) && /rec-vac-card--aging-red/.test(indexHtml), 'CSS semáforo naranja/rojo');
+check(!/\.rec-vac-card--aging-green\{/.test(indexHtml), 'sin tinte verde de semáforo');
 check(/detailVacancyId/.test(indexHtml), 'estado detalle independiente');
 check(/modal-rec-vacancy-detail/.test(indexHtml), 'modal detalle de vacante');
 check(/rec-detail-jd/.test(indexHtml) && /rec-detail-notes/.test(indexHtml), 'JD y notas en detalle');

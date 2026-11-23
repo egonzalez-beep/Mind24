@@ -793,6 +793,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-carousel::-webkit-scrollbar{height:5px;}
 .rec-carousel::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
 .rec-vac-card{flex:0 0 min(228px,76vw);min-width:196px;max-width:252px;background:#fff;border:1px solid var(--slate-200);border-radius:11px;padding:7px 9px 6px;cursor:pointer;text-align:left;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.04);position:relative;}
+.rec-vac-card--aging-orange{background:#fff7ed;border-color:#fdba74;}
+.rec-vac-card--aging-red{background:#fff1f2;border-color:#fb7185;}
 .rec-vac-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
 .rec-vac-card-head-actions{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 .rec-vac-detail-btn{flex-shrink:0;width:24px;height:24px;border:1px solid var(--slate-200);background:#fff;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);padding:0;transition:var(--tr-fast);}
@@ -801,7 +803,11 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-vac-hired-badge{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:18px;height:18px;color:#0d9488;opacity:.88;}
 .rec-vac-hired-badge svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .rec-vac-card:hover{border-color:rgba(124,58,237,.32);box-shadow:0 4px 14px rgba(124,58,237,.07);}
+.rec-vac-card--aging-orange:hover{border-color:#f97316;box-shadow:0 4px 14px rgba(249,115,22,.14);}
+.rec-vac-card--aging-red:hover{border-color:#f43f5e;box-shadow:0 4px 14px rgba(244,63,94,.14);}
 .rec-vac-card.selected{background:linear-gradient(180deg,rgba(245,243,255,.95),#fff);border-color:rgba(124,58,237,.38);box-shadow:0 0 0 1px rgba(124,58,237,.22),0 4px 14px rgba(124,58,237,.08);}
+.rec-vac-card--aging-orange.selected{background:linear-gradient(180deg,rgba(255,237,213,.98),#fff7ed);border-color:rgba(124,58,237,.38);box-shadow:0 0 0 1px rgba(124,58,237,.22),0 4px 14px rgba(249,115,22,.12);}
+.rec-vac-card--aging-red.selected{background:linear-gradient(180deg,rgba(255,228,230,.98),#fff1f2);border-color:rgba(124,58,237,.38);box-shadow:0 0 0 1px rgba(124,58,237,.22),0 4px 14px rgba(244,63,94,.12);}
 .rec-vac-card-title{flex:1;min-width:0;font-size:12px;font-weight:700;color:var(--primary);line-height:1.25;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .rec-vac-card-row{display:flex;align-items:center;gap:6px;margin-top:3px;min-width:0;}
 .rec-vac-card-row--meta-line{flex-wrap:wrap;gap:8px 12px;align-items:center;}
@@ -11610,10 +11616,13 @@ function recRenderCarousel(){
   list.forEach(function(v){
     const card=document.createElement('div');
     const isSel=v.id===st.selectedId;
-    card.className='rec-vac-card'+(isSel?' selected':'');
+    const aging=v.agingTrafficLight;
+    const agingCls=typeof recVacCardAgingClass==='function'?recVacCardAgingClass(aging):'';
+    card.className='rec-vac-card'+(isSel?' selected':'')+(agingCls?' '+agingCls:'');
     card.setAttribute('role','listitem');
     card.tabIndex=0;
     card.dataset.vacancyId=v.id;
+    if(agingCls) card.dataset.aging=aging;
     card.onclick=function(){ recSelectVacancy(v.id); };
     card.onkeydown=function(ev){
       if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); recSelectVacancy(v.id); }
@@ -11688,6 +11697,23 @@ function recSelectVacancy(id){
     card.classList.toggle('selected',card.dataset.vacancyId===id);
   });
   recRenderSelectedPanel();
+}
+/** Semáforo de tarjeta: solo tinte (naranja/rojo); 0–4 y en proceso = habitual. */
+function recVacCardAgingClass(level){
+  if(level==='orange'||level==='red') return 'rec-vac-card--aging-'+level;
+  return '';
+}
+function recVacApplyAgingTint(vacancyId, level){
+  const st=recEnsureState();
+  const v=(st.allVacancies||[]).find(function(row){ return row.id===vacancyId; });
+  if(v) v.agingTrafficLight=level||null;
+  const card=document.querySelector('.rec-vac-card[data-vacancy-id="'+vacancyId+'"]');
+  if(!card) return;
+  card.classList.remove('rec-vac-card--aging-orange','rec-vac-card--aging-red','rec-vac-card--aging-green','rec-vac-card--aging-yellow');
+  const cls=recVacCardAgingClass(level);
+  if(cls) card.classList.add(cls);
+  if(level==='orange'||level==='red') card.dataset.aging=level;
+  else delete card.dataset.aging;
 }
 function recFindVacancy(id){
   return (recEnsureState().allVacancies||[]).find(v=>v.id===id)||null;
@@ -12509,6 +12535,9 @@ async function recKanbanCommitStageMove(appId, fromStageId, targetStageId, toCol
     }
     recKanbanSetErr('');
     if(out&&out.vacancy&&out.vacancy.status) recApplyVacancyStatusLocal(out.vacancy.id, out.vacancy.status);
+    if(out&&out.vacancy&&out.vacancy.id&&typeof recVacApplyAgingTint==='function'){
+      recVacApplyAgingTint(out.vacancy.id, out.vacancy.agingTrafficLight);
+    }
     if(out&&out.headcount) recRenderHeadcount(out.headcount);
     if(st.detailCandidateId===candidateId){
       recCandMarkPipelineDirty();
@@ -19522,6 +19551,9 @@ async function recCandConfirmDecline(){
     const out=await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(applicationId)+'/decline',{method:'POST',body:JSON.stringify(body)});
     if(epoch!==recDeclineEpoch) return;
     recKanbanPlaceDeclinedApplication(applicationId, out&&out.application);
+    if(out&&out.vacancy&&out.vacancy.id&&typeof recVacApplyAgingTint==='function'){
+      recVacApplyAgingTint(out.vacancy.id, out.vacancy.agingTrafficLight);
+    }
     recCandCloseDecline();
     const st=recEnsureState();
     const fresh=await recCandFetchDetail(st.detailCandidateId);

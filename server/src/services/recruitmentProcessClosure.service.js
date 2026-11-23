@@ -478,6 +478,10 @@ export async function declineRecruitmentApplication({
       where: { id: applicationId, organizationId },
       include: { candidate: true, stage: true, vacancy: { select: { id: true, title: true } } },
     });
+    {
+      const { syncVacancyActiveQueueEmptiedAt } = await import('./recruitmentVacancy.service.js');
+      await syncVacancyActiveQueueEmptiedAt(organizationId, app.vacancyId, tx, now);
+    }
     return { application: closed, alreadyClosed: false };
   });
 }
