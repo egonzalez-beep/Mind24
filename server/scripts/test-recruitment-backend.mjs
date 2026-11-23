@@ -120,7 +120,7 @@ check(/router\.use\('\/recruitment'/.test(orgRoutes), 'mount /recruitment');
 check(/\/vacancies/.test(recruitmentRoutes), 'rutas vacantes');
 check(/\/candidates/.test(recruitmentRoutes), 'rutas candidatos');
 check(/\/applications/.test(recruitmentRoutes), 'rutas applications');
-check(RECRUITMENT_DEFAULT_STAGES.length === 10, '10 etapas default');
+check(RECRUITMENT_DEFAULT_STAGES.length === 12, '12 etapas default');
 check(RECRUITMENT_DEFAULT_STAGES[0].key === 'NEW', 'etapa NEW');
 check(RECRUITMENT_VACANCY_STATUSES.join(',') === 'ACTIVE,PAUSED,COVERED,CLOSED', 'status vacante');
 const vacancySvc = fs.readFileSync(path.join(rootDir, 'src/services/recruitmentVacancy.service.js'), 'utf8');
@@ -295,7 +295,7 @@ if (dbOk) {
       where: { organizationId: orgA.id },
       orderBy: { position: 'asc' },
     });
-    check(stages.length === 10, 'etapas default en org');
+    check(stages.length === 12, 'etapas default en org');
     const contactStage = stages.find((s) => s.key === 'CONTACT');
 
     const moveStage = await jsonFetch(base, `/api/org/recruitment/applications/${appId}`, {

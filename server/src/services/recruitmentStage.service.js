@@ -14,6 +14,8 @@ export const RECRUITMENT_DEFAULT_STAGES = [
    * En Kanban se muestra como última columna activa (contraíble).
    */
   { key: 'INTERVIEW_NO_SHOW', name: 'No asistió a entrevista', position: 7500, isTerminal: false },
+  /** Oferta aceptada; aún no ingresa. Permite programar fecha de ingreso. */
+  { key: 'APPROVED', name: 'Aprobado', position: 7600, isTerminal: false },
   { key: 'HIRED', name: 'Contratado', position: 8000, isTerminal: true },
   /** Baja laboral posterior al ingreso; terminal junto a Contratado. */
   { key: 'EMPLOYMENT_EXIT', name: 'Baja', position: 8500, isTerminal: true },
@@ -21,6 +23,7 @@ export const RECRUITMENT_DEFAULT_STAGES = [
 ];
 
 export const INTERVIEW_NO_SHOW_STAGE_KEY = 'INTERVIEW_NO_SHOW';
+export const APPROVED_STAGE_KEY = 'APPROVED';
 export const EMPLOYMENT_EXIT_STAGE_KEY = 'EMPLOYMENT_EXIT';
 
 export const RECRUITMENT_VACANCY_STATUSES = ['ACTIVE', 'PAUSED', 'COVERED', 'CLOSED'];

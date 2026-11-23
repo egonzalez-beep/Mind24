@@ -392,6 +392,11 @@ export async function declineRecruitmentApplication({
 }) {
   const { closureReason, closureNote } = normalizeDeclineReason(reason, note);
   return db.$transaction(async (tx) => {
+    const { lockRecruitmentApplicationRow } = await import(
+      './recruitmentApplicationEmploymentExit.service.js'
+    );
+    await lockRecruitmentApplicationRow(tx, organizationId, applicationId);
+
     const app = await tx.recruitmentApplication.findFirst({
       where: { id: applicationId, organizationId },
       include: {
@@ -403,7 +408,15 @@ export async function declineRecruitmentApplication({
       throw businessError('NOT_FOUND', 'Postulación no encontrada.');
     }
     if (app.closureOutcome === 'DECLINED') {
-      return { application: app, alreadyClosed: true };
+      const { clearScheduledHireOnApplication } = await import(
+        './recruitmentApplicationScheduledHire.service.js'
+      );
+      await clearScheduledHireOnApplication(tx, { organizationId, applicationId });
+      const cleaned = await tx.recruitmentApplication.findFirst({
+        where: { id: applicationId, organizationId },
+        include: { stage: { select: { id: true, key: true, name: true } }, candidate: { select: { id: true, archivedAt: true } } },
+      });
+      return { application: cleaned || app, alreadyClosed: true };
     }
     if (!recruitmentApplicationIsOpen(app.stage?.key, app.closureOutcome)) {
       throw businessError('CONFLICT', CLOSED_PROCESS_STAGE_MESSAGE);
@@ -421,6 +434,7 @@ export async function declineRecruitmentApplication({
         closureNote,
         closedAt: now,
         blocksReapplication: false,
+        scheduledEmploymentStartDate: null,
       },
     });
     if (won.count !== 1) {
@@ -429,12 +443,22 @@ export async function declineRecruitmentApplication({
         include: { stage: { select: { key: true } } },
       });
       if (fresh?.closureOutcome === 'DECLINED') {
+        const { clearScheduledHireOnApplication } = await import(
+          './recruitmentApplicationScheduledHire.service.js'
+        );
+        await clearScheduledHireOnApplication(tx, { organizationId, applicationId });
         return { application: fresh, alreadyClosed: true };
       }
       if (fresh && recruitmentApplicationIsOpen(fresh.stage?.key, fresh.closureOutcome)) {
         throw businessError('CONFLICT', 'La etapa cambió en otra operación. Actualiza el expediente.');
       }
       throw businessError('CONFLICT', 'El proceso ya no está activo.');
+    }
+    {
+      const { invalidateScheduledHireNotificationsForApplication } = await import(
+        './orgNotification.service.js'
+      );
+      await invalidateScheduledHireNotificationsForApplication(tx, organizationId, applicationId);
     }
     await cancelOpenStageNovedadWaits(tx, applicationId);
     await emitWorkforceRecruitmentNovedadForDecline(tx, { organizationId, applicationId });

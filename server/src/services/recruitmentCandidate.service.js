@@ -156,6 +156,7 @@ function serializeCandidateApplicationProcess(row) {
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     employmentStartDate,
+    scheduledEmploymentStartDate: serializeEmploymentStartDateValue(row.scheduledEmploymentStartDate),
     employmentExit: serializeCandidateApplicationEmploymentExit(row),
     vacancy: {
       id: row.vacancy.id,

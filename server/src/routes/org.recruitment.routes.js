@@ -56,6 +56,10 @@ import {
   registerRecruitmentApplicationEmploymentExit,
 } from '../services/recruitmentApplicationEmploymentExit.service.js';
 import {
+  clearRecruitmentApplicationScheduledHire,
+  setRecruitmentApplicationScheduledHire,
+} from '../services/recruitmentApplicationScheduledHire.service.js';
+import {
   listVacancyAssignees,
   removeVacancyAssignee,
   setVacancyAssignee,
@@ -1212,6 +1216,48 @@ router.post('/applications/:id/employment-exit', async (req, res, next) => {
       employmentExit: result.employmentExit,
       application: result.application,
       headcount,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const scheduledHireSchema = z
+  .object({
+    scheduledEmploymentStartDate: z.string().min(1).max(10),
+  })
+  .strict();
+
+router.put('/applications/:id/scheduled-hire', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const body = scheduledHireSchema.parse(req.body || {});
+    const result = await setRecruitmentApplicationScheduledHire({
+      organizationId: u.organizationId,
+      applicationId: req.params.id,
+      scheduledEmploymentStartDate: body.scheduledEmploymentStartDate,
+    });
+    res.json({
+      applicationId: result.applicationId,
+      scheduledEmploymentStartDate: result.scheduledEmploymentStartDate,
+      application: result.application,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/applications/:id/scheduled-hire', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const result = await clearRecruitmentApplicationScheduledHire({
+      organizationId: u.organizationId,
+      applicationId: req.params.id,
+    });
+    res.json({
+      applicationId: result.applicationId,
+      scheduledEmploymentStartDate: null,
+      application: result.application,
     });
   } catch (e) {
     next(e);

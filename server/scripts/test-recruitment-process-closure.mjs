@@ -75,6 +75,7 @@ function matchWhere(row, where) {
       if ('lte' in expected) return value != null && new Date(value).getTime() <= new Date(expected.lte).getTime();
       if ('notIn' in expected) return !expected.notIn.includes(value);
       if ('in' in expected) return expected.in.includes(value);
+      if ('startsWith' in expected) return String(value ?? '').startsWith(expected.startsWith);
       if (value && typeof value === 'object' && !(value instanceof Date)) return matchWhere(value, expected);
       return false;
     }
@@ -321,6 +322,7 @@ function createMemoryDb({ locking = false } = {}) {
     novedades: [],
     employees: [],
     stages: [],
+    orgNotifications: [],
     failNovedad: false,
   };
   const tables = {
@@ -330,6 +332,7 @@ function createMemoryDb({ locking = false } = {}) {
     workforceRecruitmentNovedad: 'novedades',
     workforceEmployee: 'employees',
     recruitmentStage: 'stages',
+    orgNotification: 'orgNotifications',
   };
   function rowsOf(name) {
     return store[tables[name]];
@@ -344,20 +347,33 @@ function createMemoryDb({ locking = false } = {}) {
         novedades: store.novedades,
         employees: store.employees,
         stages: store.stages,
+        orgNotifications: store.orgNotifications,
       });
       const releases = [];
       const tx = Object.create(db);
-      if (locking) {
-        tx.$queryRaw = async (_query, candidateId) => {
-          releases.push(await acquire(candidateId));
+      // Candado de candidato ($queryRaw) y de postulación ($executeRaw / FOR UPDATE).
+      tx.$queryRaw = async (_query, candidateId) => {
+        if (locking) {
+          releases.push(await acquire(`cand:${candidateId}`));
           if (store.lockWait) {
             const wait = store.lockWait;
             store.lockWait = null;
             await wait;
           }
-          return [{ id: candidateId }];
-        };
-      }
+        }
+        return [{ id: candidateId }];
+      };
+      tx.$executeRaw = async (_strings, applicationId) => {
+        if (locking) {
+          releases.push(await acquire(`app:${applicationId}`));
+          if (store.lockWait) {
+            const wait = store.lockWait;
+            store.lockWait = null;
+            await wait;
+          }
+        }
+        return 1;
+      };
       try {
         return await fn(tx);
       } catch (err) {
@@ -368,6 +384,7 @@ function createMemoryDb({ locking = false } = {}) {
           store.novedades = snap.novedades;
           store.employees = snap.employees;
           store.stages = snap.stages;
+          store.orgNotifications = snap.orgNotifications;
         }
         throw err;
       } finally {
@@ -377,8 +394,10 @@ function createMemoryDb({ locking = false } = {}) {
   };
   for (const name of Object.keys(tables)) {
     db[name] = {
-      async findFirst({ where } = {}) {
-        return rowsOf(name).find((row) => matchWhere(row, where)) || null;
+      async findFirst({ where, include } = {}) {
+        const row = rowsOf(name).find((item) => matchWhere(item, where)) || null;
+        if (!row) return null;
+        return { ...row };
       },
       async findMany({ where, take } = {}) {
         let rows = rowsOf(name).filter((row) => matchWhere(row, where));
@@ -398,6 +417,18 @@ function createMemoryDb({ locking = false } = {}) {
         const hits = rowsOf(name).filter((row) => matchWhere(row, where));
         for (const row of hits) Object.assign(row, data);
         return { count: hits.length };
+      },
+      async deleteMany({ where } = {}) {
+        const rows = rowsOf(name);
+        const keep = [];
+        let removed = 0;
+        for (const row of rows) {
+          if (matchWhere(row, where)) removed += 1;
+          else keep.push(row);
+        }
+        rows.length = 0;
+        rows.push(...keep);
+        return { count: removed };
       },
       async create({ data }) {
         if (name === 'workforceRecruitmentNovedad' && store.failNovedad) {
@@ -572,6 +603,175 @@ check(true, 'repetir HIRED no reescribe el cierre');
     threw = err.code === 'VALIDATION_ERROR';
   }
   check(!threw && db.store.applications[0].closureOutcome === 'DECLINED' && db.store.applications[0].closureReason == null && db.store.applications[0].closureNote == null, 'declinar sin motivo deja el cierre en blanco');
+}
+
+{
+  const db = createMemoryDb();
+  seedOpenApplication(db);
+  db.store.applications[0].stage = { id: 'stage-approved', key: 'APPROVED', name: 'Aprobado' };
+  db.store.applications[0].stageId = 'stage-approved';
+  db.store.applications[0].scheduledEmploymentStartDate = new Date('2026-11-22T00:00:00.000Z');
+  db.store.orgNotifications.push({
+    id: 'notif-sched',
+    organizationId: 'org-1',
+    type: 'RECRUITMENT_SCHEDULED_HIRE',
+    recruitmentApplicationId: 'app-1',
+    dedupeKey: 'recruitment_scheduled_hire:app-1:2026-11-22',
+    message: 'Hoy está previsto el ingreso',
+  });
+  db.store.orgNotifications.push({
+    id: 'notif-other',
+    organizationId: 'org-1',
+    type: 'RECRUITMENT_CANDIDATE_CREATED',
+    recruitmentApplicationId: null,
+    dedupeKey: 'recruitment_candidate_created:cand-1',
+    message: 'otro aviso',
+  });
+  await declineRecruitmentApplication({
+    organizationId: 'org-1',
+    applicationId: 'app-1',
+    reason: 'PERSONAL',
+    db,
+  });
+  const app = db.store.applications[0];
+  check(app.closureOutcome === 'DECLINED', 'Declinó desde Aprobado con ingreso programado');
+  check(app.scheduledEmploymentStartDate == null, 'Declinó limpia la fecha programada');
+  check(
+    db.store.orgNotifications.every((n) => n.type !== 'RECRUITMENT_SCHEDULED_HIRE')
+      && db.store.orgNotifications.some((n) => n.id === 'notif-other'),
+    'Declinó invalida el aviso de ingreso y conserva otros',
+  );
+}
+
+{
+  // Declinó gana el candado primero; el movimiento pendiente fuera de Aprobado relee y se rechaza.
+  const db = createMemoryDb({ locking: true });
+  seedOpenApplication(db);
+  db.store.applications[0].stage = { id: 'stage-approved', key: 'APPROVED', name: 'Aprobado' };
+  db.store.applications[0].stageId = 'stage-approved';
+  db.store.applications[0].scheduledEmploymentStartDate = new Date('2026-11-22T00:00:00.000Z');
+  db.store.stages.push({ id: 'stage-hired', organizationId: 'org-1', key: 'HIRED', name: 'Contratado' });
+  await declineRecruitmentApplication({
+    organizationId: 'org-1',
+    applicationId: 'app-1',
+    reason: 'PERSONAL',
+    db,
+  });
+  const { lockRecruitmentApplicationRow } = await import(
+    '../src/services/recruitmentApplicationEmploymentExit.service.js'
+  );
+  let moveRejected = false;
+  await db.$transaction(async (tx) => {
+    await lockRecruitmentApplicationRow(tx, 'org-1', 'app-1');
+    const locked = await tx.recruitmentApplication.findFirst({
+      where: { id: 'app-1', organizationId: 'org-1' },
+      include: { stage: { select: { key: true } } },
+    });
+    try {
+      assertRecruitmentProcessStageChangeAllowed({
+        stageKey: locked.stage?.key,
+        closureOutcome: locked.closureOutcome,
+        stageChanged: true,
+      });
+      await tx.recruitmentApplication.updateMany({
+        where: { id: 'app-1', organizationId: 'org-1', stageId: 'stage-approved' },
+        data: { stageId: 'stage-hired', closureOutcome: null, closedAt: null },
+      });
+    } catch (err) {
+      moveRejected = err.message === CLOSED_PROCESS_STAGE_MESSAGE;
+    }
+  });
+  const app = db.store.applications[0];
+  check(
+    moveRejected
+      && app.closureOutcome === 'DECLINED'
+      && app.stageId === 'stage-approved'
+      && app.stage.key === 'APPROVED',
+    'si Declinó gana primero, el move fuera de Aprobado se rechaza y conserva el cierre',
+  );
+}
+
+{
+  // Aprobado → Contactación gana; el movimiento pendiente a Descartado ve stageId distinto.
+  const STAGE_CHANGED_BOARD_MESSAGE = 'La etapa cambió en otra operación. Actualiza el tablero.';
+  const db = createMemoryDb({ locking: true });
+  seedOpenApplication(db);
+  db.store.applications[0].stage = { id: 'stage-approved', key: 'APPROVED', name: 'Aprobado' };
+  db.store.applications[0].stageId = 'stage-approved';
+  db.store.stages.push(
+    { id: 'stage-approved', organizationId: 'org-1', key: 'APPROVED', name: 'Aprobado' },
+    { id: 'stage-rejected', organizationId: 'org-1', key: 'REJECTED', name: 'Descartado' },
+  );
+  const { lockRecruitmentApplicationRow } = await import(
+    '../src/services/recruitmentApplicationEmploymentExit.service.js'
+  );
+  const startedStageId = 'stage-approved';
+
+  await db.$transaction(async (tx) => {
+    await lockRecruitmentApplicationRow(tx, 'org-1', 'app-1');
+    await tx.recruitmentApplication.update({
+      where: { id: 'app-1' },
+      data: {
+        stageId: 'stage-contact',
+        stage: { id: 'stage-contact', key: 'CONTACT', name: 'Contactación' },
+        scheduledEmploymentStartDate: null,
+      },
+    });
+  });
+
+  let pendingRejected = false;
+  let wroteHistory = false;
+  await db.$transaction(async (tx) => {
+    await lockRecruitmentApplicationRow(tx, 'org-1', 'app-1');
+    const locked = await tx.recruitmentApplication.findFirst({
+      where: { id: 'app-1', organizationId: 'org-1' },
+      include: { stage: { select: { key: true } } },
+    });
+    try {
+      if (locked.stageId !== startedStageId) {
+        const err = new Error('CONFLICT');
+        err.code = 'CONFLICT';
+        err.message = STAGE_CHANGED_BOARD_MESSAGE;
+        throw err;
+      }
+      assertRecruitmentProcessStageChangeAllowed({
+        stageKey: locked.stage?.key,
+        closureOutcome: locked.closureOutcome,
+        stageChanged: true,
+      });
+      await tx.recruitmentApplication.updateMany({
+        where: { id: 'app-1', organizationId: 'org-1', stageId: startedStageId },
+        data: {
+          stageId: 'stage-rejected',
+          closureOutcome: 'REJECTED',
+          closedAt: new Date('2026-11-23T12:00:00.000Z'),
+        },
+      });
+      await tx.recruitmentApplicationStageEvent.create({
+        data: {
+          id: 'ev-reject-stale',
+          applicationId: 'app-1',
+          organizationId: 'org-1',
+          fromStageId: startedStageId,
+          toStageId: 'stage-rejected',
+        },
+      });
+      wroteHistory = true;
+    } catch (err) {
+      pendingRejected = err.message === STAGE_CHANGED_BOARD_MESSAGE;
+    }
+  });
+
+  const app = db.store.applications[0];
+  check(
+    pendingRejected
+      && !wroteHistory
+      && app.stageId === 'stage-contact'
+      && app.stage.key === 'CONTACT'
+      && app.closureOutcome == null
+      && !db.store.events.some((e) => e.id === 'ev-reject-stale'),
+    'Aprobado→Contactación gana: el Descartado pendiente choca y la tarjeta queda en Contactación',
+  );
 }
 
 for (const reason of DECLINE_REASON_KEYS.filter((key) => key !== 'OTHER')) {
@@ -1083,6 +1283,17 @@ const closureSvc = fs.readFileSync(path.join(serverDir, 'src/services/recruitmen
 check(/scheduleNovedad: true/.test(appSvc) && (appSvc.match(/scheduleNovedad: true/g) || []).length === 1, 'la espera de dos horas del movimiento manual sigue una sola vez');
 const updateSlice = appSvc.slice(appSvc.indexOf('export async function updateRecruitmentApplication'));
 check(updateSlice.indexOf('assertRecruitmentProcessStageChangeAllowed') < updateSlice.indexOf('recordStageEvent'), 'un proceso cerrado se rechaza antes de registrar otro movimiento');
+check(
+  /fromClosureOutcome\s*=\s*locked\.closureOutcome/.test(updateSlice)
+    && /fromStageKey\s*=\s*locked\.stage\?\.key/.test(updateSlice)
+    && /locked\.stageId !== existing\.stageId/.test(updateSlice)
+    && /La etapa cambió en otra operación\. Actualiza el tablero\./.test(updateSlice)
+    && updateSlice.indexOf('lockRecruitmentApplicationRow')
+      < updateSlice.indexOf('locked.stageId !== existing.stageId')
+    && updateSlice.indexOf('locked.stageId !== existing.stageId')
+      < updateSlice.indexOf('assertRecruitmentProcessStageChangeAllowed'),
+  'salir de Aprobado relee stageId/cierre tras el candado antes de validar o escribir',
+);
 check(/kanbanVisibleApplicationWhere\(\)/.test(appSvc), 'el listado del Kanban usa la consulta de visibilidad');
 check(/selectOperationalApplicationsForVacancyKanban/.test(appSvc), 'el listado Kanban aplica selección operativa por candidato');
 {
@@ -1129,9 +1340,18 @@ check(/selectOperationalApplicationsForVacancyKanban/.test(appSvc), 'el listado 
 check(/FOR UPDATE/.test(closureSvc), 'el candado es SELECT FOR UPDATE');
 check(/lockRecruitmentCandidateForProcessChange\(tx, candidateId\)/.test(appSvc), 'crear una postulación toma el candado del candidato');
 check(/lockRecruitmentCandidateForProcessChange\(tx, row\.id\)/.test(closureSvc), 'el autoarchivo toma el mismo candado');
+check(
+  /lockRecruitmentApplicationRow/.test(closureSvc)
+    && /invalidateScheduledHireNotificationsForApplication/.test(closureSvc),
+  'Declinó usa candado de postulación y limpia aviso de ingreso',
+);
 check(/function recKanbanApplicationIsVisible/.test(indexHtml), 'el tablero distingue visibilidad de proceso activo');
 check(/function recKanbanPickOperationalApplications/.test(indexHtml), 'el tablero elige una aplicación operativa por candidato');
-check(indexHtml.includes("const canDrag=stageKey!=='HIRED'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED'") && indexHtml.includes('return !!app'), 'Declinó, Descartado y Contratado se pintan y no se arrastran');
+check(
+  indexHtml.includes("const canDrag=stageKey!=='EMPLOYMENT_EXIT'&&stageKey!=='REJECTED'&&stageKey!=='DECLINED'")
+    && indexHtml.includes('return !!app'),
+  'Declinó, Descartado y Baja se pintan y no se arrastran',
+);
 check(indexHtml.includes("name:'Declinó'") && indexHtml.includes('recKanbanBoardColumns'), 'la columna Declinó es virtual');
 check(/virtual\?'':' ondragover=/.test(indexHtml), 'Declinó no acepta un arrastre de etapa');
 const candidateCreateSvc = fs.readFileSync(path.join(serverDir, 'src/services/recruitmentCandidateCreate.service.js'), 'utf8');
@@ -1164,7 +1384,12 @@ check(!/lockRecruitmentCandidateForProcessChange/.test(candidateCreateSvc), 'el 
 }
 check(/recKanbanPlaceDeclinedApplication\(applicationId/.test(indexHtml) && !/recKanbanLoad\(/.test(indexHtml.slice(indexHtml.indexOf('async function recCandConfirmDecline'), indexHtml.indexOf('function recCandOpenArchiveDialog'))), 'declinar mueve la tarjeta a Declinó sin recargar el tablero');
 check(/terminalKind\?'':\(a\.closedAt\?\('Cierre '\+recCandFmtDetailDate\(a\.closedAt\)\)/.test(indexHtml), 'Declinó conserva el cierre y Contratado o Rechazado no lo repiten');
-check(/recCandFmtTerminalDate\(a\.terminalOutcomeAt/.test(indexHtml) && /\.rec-cand-history-outcome--hired\{color:#047857;\}/.test(indexHtml) && /\.rec-cand-history-outcome--rej\{color:#b91c1c;\}/.test(indexHtml), 'la fecha compacta queda bajo el resultado, verde o rojo');
+check(
+  /recCandFmtTerminalDate\(/.test(indexHtml)
+    && /\.rec-cand-history-outcome--hired\{color:#047857;\}/.test(indexHtml)
+    && /\.rec-cand-history-outcome--rej\{color:#b91c1c;\}/.test(indexHtml),
+  'la fecha compacta queda bajo el resultado, verde o rojo',
+);
 check(/closurePatchForStageMove/.test(appSvc), 'el rechazo canónico se escribe en el mismo movimiento');
 check(/syncCandidateAutoArchive/.test(appSvc), 'mover la etapa reevalúa el autoarchivo');
 check(/clearCandidateAutoArchive/.test(appSvc), 'crear una postulación cancela el autoarchivo en la misma transacción');

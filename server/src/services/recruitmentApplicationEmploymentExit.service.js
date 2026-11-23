@@ -34,10 +34,11 @@ export const EMPLOYMENT_EXIT_GENERIC_MOVE_MESSAGE =
 const POSITION_GAP = 1000;
 
 /**
- * Candado compartido por postulación para baja e ingreso.
- * Serializa ambas escrituras: releer y validar fechas después de adquirirlo.
+ * Candado de fila por postulación (SELECT … FOR UPDATE).
+ * Lo comparten baja/ingreso, programación de Aprobado, emisión del recordatorio
+ * y salir de Aprobado (incluido Declinó). Adquirir antes de validar y de tocar avisos.
  */
-export async function lockRecruitmentApplicationForEmploymentDates(
+export async function lockRecruitmentApplicationRow(
   tx,
   organizationId,
   applicationId,
@@ -48,6 +49,15 @@ export async function lockRecruitmentApplicationForEmploymentDates(
     WHERE id = ${applicationId} AND "organizationId" = ${organizationId}
     FOR UPDATE
   `;
+}
+
+/** Alias estable para baja e edición de fecha de ingreso. */
+export async function lockRecruitmentApplicationForEmploymentDates(
+  tx,
+  organizationId,
+  applicationId,
+) {
+  return lockRecruitmentApplicationRow(tx, organizationId, applicationId);
 }
 
 function normalizeExitReason(raw) {

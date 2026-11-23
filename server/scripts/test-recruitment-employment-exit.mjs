@@ -111,11 +111,13 @@ check(
   'bloquea altas/movimientos genéricos a Baja',
 );
 check(
-  /lockRecruitmentApplicationForEmploymentDates/.test(exitSvc)
+  /lockRecruitmentApplicationRow/.test(exitSvc)
+    && /lockRecruitmentApplicationForEmploymentDates/.test(exitSvc)
     && /FOR UPDATE/.test(exitSvc)
-    && /lockRecruitmentApplicationForEmploymentDates/.test(appSvc)
-    && /editingHireDateOnly/.test(appSvc),
-  'mismo candado FOR UPDATE en baja y edición de ingreso',
+    && /lockRecruitmentApplicationRow/.test(appSvc)
+    && /editingHireDateOnly/.test(appSvc)
+    && /leavingApproved/.test(appSvc),
+  'mismo candado FOR UPDATE en baja, ingreso, Aprobado y Declinó',
 );
 const stageSvc = fs.readFileSync(path.join(serverDir, 'src/services/recruitmentStage.service.js'), 'utf8');
 const vacStageSvc = fs.readFileSync(

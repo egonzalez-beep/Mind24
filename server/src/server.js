@@ -6,6 +6,7 @@ import { startRecruitmentCoverageSweep } from './services/recruitmentCoverage.se
 import { startDailyGoalsReminderSweep } from './services/workforceDailyGoalsReminder.service.js';
 import { startRecruitmentStageNovedadSweep } from './services/workforceRecruitmentNovedad.service.js';
 import { startCandidateAutoArchiveSweep } from './services/recruitmentProcessClosure.service.js';
+import { startScheduledHireReminderSweep } from './services/recruitmentScheduledHireReminder.service.js';
 import { resolveTimeclockPublicLinkBase } from './services/timeclockToken.service.js';
 
 const app = createApp();
@@ -31,6 +32,7 @@ app.listen(env.PORT, () => {
   startDailyGoalsReminderSweep();
   startRecruitmentStageNovedadSweep();
   startCandidateAutoArchiveSweep();
+  startScheduledHireReminderSweep();
   try {
     console.log(`[timeclock] public link base: ${resolveTimeclockPublicLinkBase()}`);
   } catch (e) {

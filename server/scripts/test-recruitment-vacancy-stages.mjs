@@ -101,8 +101,8 @@ check(
 );
 check(/REQUIRED_VACANCY_STAGE_KEYS/.test(vacancyStageSvc), 'etapas obligatorias');
 check(
-  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED,INTERVIEW_NO_SHOW,EMPLOYMENT_EXIT',
-  'NEW HIRED REJECTED INTERVIEW_NO_SHOW obligatorios',
+  REQUIRED_VACANCY_STAGE_KEYS.join(',') === 'NEW,HIRED,REJECTED,INTERVIEW_NO_SHOW,APPROVED,EMPLOYMENT_EXIT',
+  'NEW HIRED REJECTED INTERVIEW_NO_SHOW APPROVED EMPLOYMENT_EXIT obligatorios',
 );
 check(/VACANCY_STAGE_POSITION_GAP\s*=\s*1000/.test(vacancyStageSvc), 'gap position 1000');
 check(/skipDuplicates:\s*true/.test(vacancyStageSvc), 'seed vacancy stages skipDuplicates');
@@ -177,7 +177,7 @@ if (dbOk) {
     check(loginA.res.status === 200 && adminCookie, 'login admin');
 
     const catalogRes = await jsonFetch(base, '/api/org/recruitment/stages', { cookie: adminCookie });
-    check(catalogRes.res.status === 200 && catalogRes.data.stages?.length === 10, 'GET catálogo 10 etapas');
+    check(catalogRes.res.status === 200 && catalogRes.data.stages?.length === 12, 'GET catálogo 12 etapas');
     check(
       catalogRes.data.stages[0].key === 'NEW' &&
         catalogRes.data.stages.every((s) => s.isActive === true),
@@ -232,8 +232,8 @@ if (dbOk) {
     const lazyCfg = await jsonFetch(base, `/api/org/recruitment/vacancies/${vacancyIdB}/stages`, {
       cookie: adminCookie,
     });
-    check(lazyCfg.res.status === 200 && lazyCfg.data.vacancyStages?.length === 10, 'lazy init en GET stages');
-    check(lazyCfg.data.catalog?.length === 10, 'GET stages incluye catalog');
+    check(lazyCfg.res.status === 200 && lazyCfg.data.vacancyStages?.length === 12, 'lazy init en GET stages');
+    check(lazyCfg.data.catalog?.length === 12, 'GET stages incluye catalog');
 
     const stages = await prisma.recruitmentStage.findMany({
       where: { organizationId: orgA.id },

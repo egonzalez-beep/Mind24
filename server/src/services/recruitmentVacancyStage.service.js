@@ -18,7 +18,49 @@ async function assertVacancyInOrg(vacancyId, organizationId, tx = prisma) {
 }
 
 export const VACANCY_STAGE_POSITION_GAP = 1000;
-export const REQUIRED_VACANCY_STAGE_KEYS = ['NEW', 'HIRED', 'REJECTED', 'INTERVIEW_NO_SHOW', 'EMPLOYMENT_EXIT'];
+export const REQUIRED_VACANCY_STAGE_KEYS = [
+  'NEW',
+  'HIRED',
+  'REJECTED',
+  'INTERVIEW_NO_SHOW',
+  'APPROVED',
+  'EMPLOYMENT_EXIT',
+];
+
+/**
+ * Posición al insertar APPROVED en una vacante existente (migración / backfill).
+ * Con Finalista habilitada: entre Finalista y la primera terminal (p. ej. Contratado),
+ * después del último eslabón ya presente en ese tramo (no reordena el resto).
+ * Sin Finalista: antes de la primera etapa terminal.
+ */
+export function resolveApprovedVacancyStageInsertPosition({
+  finalistEnabledPosition = null,
+  firstTerminalPosition = null,
+  maxPositionBeforeFirstTerminal = null,
+} = {}) {
+  const term = Number.isFinite(firstTerminalPosition) ? Number(firstTerminalPosition) : null;
+  const maxBefore =
+    maxPositionBeforeFirstTerminal != null && Number.isFinite(maxPositionBeforeFirstTerminal)
+      ? Number(maxPositionBeforeFirstTerminal)
+      : null;
+
+  if (finalistEnabledPosition != null && Number.isFinite(finalistEnabledPosition)) {
+    const fin = Number(finalistEnabledPosition);
+    const high = term != null && term > fin ? term : fin + 600;
+    const low =
+      maxBefore != null && maxBefore >= fin && maxBefore < high ? maxBefore : fin;
+    const gap = high - low;
+    return low + Math.max(1, Math.floor(gap / 2));
+  }
+
+  if (term != null) {
+    const low = maxBefore != null && maxBefore < term ? maxBefore : term - 600;
+    const gap = term - low;
+    return low + Math.max(1, Math.floor(gap / 2));
+  }
+
+  return 7600;
+}
 
 export function serializeRecruitmentVacancyStage(row) {
   return {

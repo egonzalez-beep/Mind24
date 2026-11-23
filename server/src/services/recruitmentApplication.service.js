@@ -110,6 +110,7 @@ function serializeApplication(row) {
     interviewTimeSpecified: row.interviewTimeSpecified !== false,
     hiredStageEnteredAt: row.hiredStageEnteredAt ? row.hiredStageEnteredAt.toISOString() : null,
     employmentStartDate: serializeEmploymentStartDate(row.employmentStartDate),
+    scheduledEmploymentStartDate: serializeEmploymentStartDate(row.scheduledEmploymentStartDate),
     interviewNoShowFromStageId: row.interviewNoShowFromStageId || null,
     notes: row.notes,
     closedAt: row.closedAt ? row.closedAt.toISOString() : null,
@@ -440,51 +441,96 @@ export async function updateRecruitmentApplication({
   let serialized;
   try {
     serialized = await prisma.$transaction(async (tx) => {
-    if (editingHireDateOnly) {
+    const leavingApproved =
+      stageChanged && existing.stage?.key === 'APPROVED';
+    let fromStageKey = existing.stage?.key ?? null;
+    let fromClosureOutcome = existing.closureOutcome;
+    let fromStageId = existing.stageId;
+    let fromHiredStageEnteredAt = existing.hiredStageEnteredAt ?? null;
+    let candidateArchivedAt = existing.candidate?.archivedAt ?? null;
+
+    if (editingHireDateOnly || leavingApproved) {
       const {
-        lockRecruitmentApplicationForEmploymentDates,
+        lockRecruitmentApplicationRow,
         assertEmploymentStartCompatibleWithExit,
       } = await import('./recruitmentApplicationEmploymentExit.service.js');
-      await lockRecruitmentApplicationForEmploymentDates(tx, organizationId, applicationId);
-      const locked = await tx.recruitmentApplication.findFirst({
-        where: { id: applicationId, organizationId },
-        include: {
-          stage: { select: { key: true } },
-          employmentExit: { select: { exitDate: true } },
-        },
-      });
-      if (!locked || !hireDateStages.has(locked.stage?.key)) {
-        const err = new Error('VALIDATION_ERROR');
-        err.code = 'VALIDATION_ERROR';
-        err.message = 'La fecha de ingreso solo aplica a postulaciones contratadas.';
-        throw err;
+      await lockRecruitmentApplicationRow(tx, organizationId, applicationId);
+      if (leavingApproved) {
+        // Tras el candado: relee etapa/cierre. Si otro move ya cambió stageId, conflicto
+        // antes de escribir. Si Declinó ganó, conservar cierre y rechazar el move.
+        const locked = await tx.recruitmentApplication.findFirst({
+          where: { id: applicationId, organizationId },
+          include: {
+            stage: { select: { key: true } },
+            candidate: { select: { archivedAt: true } },
+          },
+        });
+        if (!locked) {
+          const err = new Error('NOT_FOUND');
+          err.code = 'NOT_FOUND';
+          err.message = 'Postulación no encontrada.';
+          throw err;
+        }
+        if (locked.stageId !== existing.stageId) {
+          const err = new Error('CONFLICT');
+          err.code = 'CONFLICT';
+          err.message = 'La etapa cambió en otra operación. Actualiza el tablero.';
+          throw err;
+        }
+        fromStageKey = locked.stage?.key ?? null;
+        fromClosureOutcome = locked.closureOutcome;
+        fromStageId = locked.stageId;
+        fromHiredStageEnteredAt = locked.hiredStageEnteredAt ?? null;
+        candidateArchivedAt = locked.candidate?.archivedAt ?? null;
+        assertRecruitmentProcessStageChangeAllowed({
+          stageKey: fromStageKey,
+          closureOutcome: fromClosureOutcome,
+          stageChanged,
+        });
       }
-      resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
-        organizationId,
-        employmentStartDate,
-      );
-      assertEmploymentStartCompatibleWithExit(
-        resolvedEmploymentStart,
-        serializeEmploymentStartDate(locked.employmentExit?.exitDate),
-      );
+      if (editingHireDateOnly) {
+        const locked = await tx.recruitmentApplication.findFirst({
+          where: { id: applicationId, organizationId },
+          include: {
+            stage: { select: { key: true } },
+            employmentExit: { select: { exitDate: true } },
+          },
+        });
+        if (!locked || !hireDateStages.has(locked.stage?.key)) {
+          const err = new Error('VALIDATION_ERROR');
+          err.code = 'VALIDATION_ERROR';
+          err.message = 'La fecha de ingreso solo aplica a postulaciones contratadas.';
+          throw err;
+        }
+        resolvedEmploymentStart = await assertEmploymentStartDateForOrg(
+          organizationId,
+          employmentStartDate,
+        );
+        assertEmploymentStartCompatibleWithExit(
+          resolvedEmploymentStart,
+          serializeEmploymentStartDate(locked.employmentExit?.exitDate),
+        );
+      }
     }
 
     const data = {};
     if (notes !== undefined) data.notes = notes?.trim() || null;
     if (position != null) data.position = position;
 
-    let toStageKey = existing.stage?.key ?? null;
-    if (stageChanged && existing.candidate?.archivedAt) {
+    let toStageKey = fromStageKey;
+    if (stageChanged && candidateArchivedAt) {
       const err = new Error('VALIDATION_ERROR');
       err.code = 'VALIDATION_ERROR';
       err.message = 'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.';
       throw err;
     }
-    assertRecruitmentProcessStageChangeAllowed({
-      stageKey: existing.stage?.key,
-      closureOutcome: existing.closureOutcome,
-      stageChanged,
-    });
+    if (!leavingApproved) {
+      assertRecruitmentProcessStageChangeAllowed({
+        stageKey: fromStageKey,
+        closureOutcome: fromClosureOutcome,
+        stageChanged,
+      });
+    }
     if (stageChanged) {
       await assertStageEnabledForVacancy(organizationId, existing.vacancyId, stageId, tx);
       const nextStage = await tx.recruitmentStage.findFirst({
@@ -494,18 +540,26 @@ export async function updateRecruitmentApplication({
       toStageKey = nextStage?.key ?? null;
       data.stageId = stageId;
       data.hiredStageEnteredAt = nextHiredStageEnteredAt({
-        fromKey: existing.stage?.key ?? null,
+        fromKey: fromStageKey,
         toKey: toStageKey,
-        previousEnteredAt: existing.hiredStageEnteredAt ?? null,
+        previousEnteredAt: fromHiredStageEnteredAt,
         now: new Date(),
       });
       if (position == null) {
         data.position = await nextPositionInStage(existing.vacancyId, stageId, tx);
       }
       // Sale de cartera de inasistencia: limpia origen; mover no crea cita.
-      if (existing.stage?.key === 'INTERVIEW_NO_SHOW' && toStageKey !== 'INTERVIEW_NO_SHOW') {
+      if (fromStageKey === 'INTERVIEW_NO_SHOW' && toStageKey !== 'INTERVIEW_NO_SHOW') {
         data.interviewNoShowFromStageId = null;
         data.interviewNoShowEventId = null;
+      }
+      // Sale de Aprobado: quita programación (mismo candado que el recordatorio).
+      if (fromStageKey === 'APPROVED' && toStageKey !== 'APPROVED') {
+        data.scheduledEmploymentStartDate = null;
+        const { invalidateScheduledHireNotificationsForApplication } = await import(
+          './orgNotification.service.js'
+        );
+        await invalidateScheduledHireNotificationsForApplication(tx, organizationId, applicationId);
       }
     }
     if (resolvedEmploymentStart) {
@@ -517,15 +571,15 @@ export async function updateRecruitmentApplication({
       data,
       closurePatchForStageMove({
         stageChanged,
-        fromStageKey: existing.stage?.key,
-        fromOutcome: existing.closureOutcome,
+        fromStageKey,
+        fromOutcome: fromClosureOutcome,
         toStageKey,
         now: new Date(),
       }),
     );
 
     const where = stageChanged
-      ? { id: applicationId, organizationId, stageId: existing.stageId }
+      ? { id: applicationId, organizationId, stageId: fromStageId }
       : { id: applicationId, organizationId };
     let written = { count: 1 };
     if (Object.keys(data).length) {

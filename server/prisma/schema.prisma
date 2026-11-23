@@ -116,6 +116,7 @@ enum OrgNotificationType {
   GOAL_PERIOD_REPORTED
   PLATFORM_ANNOUNCEMENT
   RECRUITMENT_CANDIDATE_CREATED
+  RECRUITMENT_SCHEDULED_HIRE
 }
 
 enum WorkforceWorkplaceInboxEventType {
@@ -429,6 +430,8 @@ model OrgNotification {
   recruitmentVacancy     RecruitmentVacancy? @relation(fields: [recruitmentVacancyId], references: [id], onDelete: SetNull)
   recruitmentStageId     String?
   recruitmentStage       RecruitmentStage? @relation(fields: [recruitmentStageId], references: [id], onDelete: SetNull)
+  recruitmentApplicationId String?
+  recruitmentApplication   RecruitmentApplication? @relation(fields: [recruitmentApplicationId], references: [id], onDelete: SetNull)
   dedupeKey           String
   createdAt           DateTime            @default(now())
 
@@ -436,6 +439,7 @@ model OrgNotification {
 
   @@unique([organizationId, dedupeKey])
   @@index([organizationId, createdAt])
+  @@index([recruitmentApplicationId])
 }
 
 model OrgNotificationRead {
@@ -963,6 +967,8 @@ model RecruitmentApplication {
   hiredStageEnteredAt DateTime? @db.Timestamptz(6)
   /// Día calendario de ingreso laboral (AAAA-MM-DD). Distinto de hiredStageEnteredAt.
   employmentStartDate DateTime? @db.Date
+  /// Día calendario programado de ingreso mientras está en APPROVED (Aprobado). Distinto de employmentStartDate.
+  scheduledEmploymentStartDate DateTime? @db.Date
   /// Etapa de entrevista de origen al aparcar por NO_SHOW. Se limpia al recuperar.
   interviewNoShowFromStageId String?
   interviewNoShowFromStage   RecruitmentStage? @relation("RecruitmentApplicationInterviewNoShowFrom", fields: [interviewNoShowFromStageId], references: [id], onDelete: SetNull)
@@ -987,6 +993,7 @@ model RecruitmentApplication {
   interviewEvents RecruitmentApplicationInterviewEvent[]
   employmentExit RecruitmentApplicationEmploymentExit?
   workforceRecruitmentNovedades WorkforceRecruitmentNovedad[]
+  orgNotifications OrgNotification[]
 
   /// Índice de consulta; el UNIQUE parcial vive solo en migration.sql (nombre arriba).
   @@index([organizationId])
@@ -995,6 +1002,7 @@ model RecruitmentApplication {
   @@index([vacancyId, stageId, position])
   @@index([organizationId, candidateId])
   @@index([hiredStageEnteredAt])
+  @@index([organizationId, scheduledEmploymentStartDate])
   @@index([candidateId, vacancyId, blocksReapplication])
 }
 

@@ -8,7 +8,10 @@ export const ORG_NOTIFICATION_TYPES = [
   'GOAL_PERIOD_REPORTED',
   'PLATFORM_ANNOUNCEMENT',
   'RECRUITMENT_CANDIDATE_CREATED',
+  'RECRUITMENT_SCHEDULED_HIRE',
 ];
+
+export const RECRUITMENT_SCHEDULED_HIRE = 'RECRUITMENT_SCHEDULED_HIRE';
 
 const DEFAULT_LIST_LIMIT = 25;
 const MAX_LIST_LIMIT = 30;
@@ -39,6 +42,8 @@ async function upsertOrgNotification(client, data) {
     recruitmentCandidateId,
     recruitmentVacancyId,
     recruitmentStageId,
+    recruitmentApplicationId,
+    allowMessageUpdate = false,
   } = data;
   const create = {
     organizationId,
@@ -53,6 +58,7 @@ async function upsertOrgNotification(client, data) {
     recruitmentCandidateId: recruitmentCandidateId ?? null,
     recruitmentVacancyId: recruitmentVacancyId ?? null,
     recruitmentStageId: recruitmentStageId ?? null,
+    recruitmentApplicationId: recruitmentApplicationId ?? null,
   };
   try {
     return await client.orgNotification.upsert({
@@ -60,7 +66,7 @@ async function upsertOrgNotification(client, data) {
         organizationId_dedupeKey: { organizationId, dedupeKey },
       },
       create,
-      update: {},
+      update: allowMessageUpdate ? { message } : {},
     });
   } catch (err) {
     if (!isDedupeUniqueConflict(err)) throw err;
@@ -68,8 +74,96 @@ async function upsertOrgNotification(client, data) {
       where: { organizationId_dedupeKey: { organizationId, dedupeKey } },
     });
     if (!existing) throw err;
+    if (allowMessageUpdate && existing.message !== message) {
+      return client.orgNotification.update({
+        where: { id: existing.id },
+        data: { message },
+      });
+    }
     return existing;
   }
+}
+
+export function scheduledHireReminderDedupeKey(applicationId, scheduledYmd) {
+  if (!applicationId || !scheduledYmd) return null;
+  return `recruitment_scheduled_hire:${applicationId}:${scheduledYmd}`;
+}
+
+export function scheduledHireReminderDedupePrefix(applicationId) {
+  if (!applicationId) return null;
+  return `recruitment_scheduled_hire:${applicationId}:`;
+}
+
+export function buildScheduledHireReminderMessage({
+  candidateName,
+  vacancyTitle,
+  scheduledYmd,
+  todayYmd,
+}) {
+  const name = compactNotifLabel(candidateName) || 'el candidato';
+  const vacancy = compactNotifLabel(vacancyTitle) || 'la vacante';
+  if (scheduledYmd && todayYmd && scheduledYmd < todayYmd) {
+    const [y, m, d] = String(scheduledYmd).split('-');
+    const pretty = y && m && d ? `${d}/${m}/${y}` : scheduledYmd;
+    return `Pendiente de confirmar: el ingreso de ${name} a ${vacancy} estaba previsto el ${pretty}. Confirma si se presentó.`;
+  }
+  return `Hoy está previsto el ingreso de ${name} a ${vacancy}. Confirma si se presentó.`;
+}
+
+export async function invalidateScheduledHireNotificationsForApplication(
+  client,
+  organizationId,
+  applicationId,
+) {
+  if (!organizationId || !applicationId) return 0;
+  const prefix = scheduledHireReminderDedupePrefix(applicationId);
+  const result = await client.orgNotification.deleteMany({
+    where: {
+      organizationId,
+      type: RECRUITMENT_SCHEDULED_HIRE,
+      OR: [
+        { recruitmentApplicationId: applicationId },
+        { dedupeKey: { startsWith: prefix } },
+      ],
+    },
+  });
+  return result.count;
+}
+
+export async function notifyRecruitmentScheduledHire(
+  tx,
+  {
+    organizationId,
+    applicationId,
+    candidateId,
+    vacancyId,
+    stageId,
+    candidateName,
+    vacancyTitle,
+    scheduledYmd,
+    todayYmd,
+  },
+) {
+  if (!organizationId || !applicationId || !scheduledYmd) return null;
+  const dedupeKey = scheduledHireReminderDedupeKey(applicationId, scheduledYmd);
+  if (!dedupeKey) return null;
+  const message = buildScheduledHireReminderMessage({
+    candidateName,
+    vacancyTitle,
+    scheduledYmd,
+    todayYmd,
+  });
+  return upsertOrgNotification(tx, {
+    organizationId,
+    type: RECRUITMENT_SCHEDULED_HIRE,
+    message,
+    recruitmentCandidateId: candidateId || null,
+    recruitmentVacancyId: vacancyId || null,
+    recruitmentStageId: stageId || null,
+    recruitmentApplicationId: applicationId,
+    dedupeKey,
+    allowMessageUpdate: true,
+  });
 }
 
 function compactNotifLabel(value) {
@@ -288,6 +382,7 @@ function serializeNotification(row, readSet) {
     recruitmentCandidateId: row.recruitmentCandidateId || null,
     recruitmentVacancyId: row.recruitmentVacancyId || null,
     recruitmentStageId: row.recruitmentStageId || null,
+    recruitmentApplicationId: row.recruitmentApplicationId || null,
     createdAt: row.createdAt,
     read: readSet.has(row.id),
   };
@@ -300,6 +395,14 @@ export async function listOrgNotificationsForUser({
   cursor,
 }) {
   await syncOverdueTaskNotifications(organizationId);
+  try {
+    const { syncScheduledHireRemindersForOrg } = await import(
+      './recruitmentScheduledHireReminder.service.js'
+    );
+    await syncScheduledHireRemindersForOrg(organizationId);
+  } catch (_e) {
+    /* campana: no bloquea el listado */
+  }
 
   const take = Math.min(Math.max(Number(limit) || DEFAULT_LIST_LIMIT, 1), MAX_LIST_LIMIT);
   const where = { organizationId };
@@ -332,6 +435,14 @@ export async function listOrgNotificationsForUser({
 
 export async function countUnreadOrgNotifications(organizationId, userId) {
   await syncOverdueTaskNotifications(organizationId);
+  try {
+    const { syncScheduledHireRemindersForOrg } = await import(
+      './recruitmentScheduledHireReminder.service.js'
+    );
+    await syncScheduledHireRemindersForOrg(organizationId);
+  } catch (_e) {
+    /* badge: no bloquea */
+  }
   return prisma.orgNotification.count({
     where: {
       organizationId,
