@@ -687,6 +687,70 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-cand-form-section-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
 .rec-cand-form-section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-600);}
 .rec-cand-form-grid-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+
+.rec-cand-form--workforce .rec-cand-form-modal{
+  display:flex;flex-direction:column;min-height:0;max-height:min(90vh,780px);max-height:min(90dvh,780px);
+  padding:0;overflow:hidden;background:#fafbff;
+}
+.rec-cand-form--workforce .rec-cand-form-header{flex:none;margin:0;padding:18px 62px 14px 24px;border-bottom:1px solid var(--slate-200);background:#fff;}
+.rec-cand-form--workforce .rec-cand-form-body{
+  min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;padding:2px 20px 16px 24px;scroll-padding-block:12px;
+}
+.rec-cand-form--workforce .rec-cand-form-body,
+#tc-ws-cand-list-scroll{scrollbar-width:thin;scrollbar-color:rgba(124,58,237,.34) transparent;}
+.rec-cand-form--workforce .rec-cand-form-body::-webkit-scrollbar,#tc-ws-cand-list-scroll::-webkit-scrollbar{width:6px;}
+.rec-cand-form--workforce .rec-cand-form-body::-webkit-scrollbar-track,#tc-ws-cand-list-scroll::-webkit-scrollbar-track{background:transparent;}
+.rec-cand-form--workforce .rec-cand-form-body::-webkit-scrollbar-thumb,#tc-ws-cand-list-scroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,.34);border-radius:999px;}
+.rec-cand-form--workforce .rec-cand-form-body::-webkit-scrollbar-thumb:hover,#tc-ws-cand-list-scroll::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,.5);}
+.rec-cand-form--workforce .rec-cand-form-footer{flex:none;margin:0;padding:12px 24px;background:#fff;}
+.rec-cand-form--workforce #rec-cand-form-err{flex:none;padding:0 18px 8px;}
+.rec-cand-form--workforce .rec-cand-form-grid-row{row-gap:9px;}
+.rec-cand-form--workforce .form-label{margin-bottom:6px;}
+.rec-cand-form--workforce .rec-cand-form-body>.rec-cand-form-section-head{margin-top:12px;padding-top:11px;}
+.rec-cand-form--workforce #rec-cand-form-identity>.rec-cand-form-section-head{padding-top:0;border:0;}
+.rec-cand-form--workforce .rec-cand-form-process-block{margin:14px 0 4px;padding:12px 16px;background:#f5f1ff;border-color:rgba(124,58,237,.28);border-left-color:var(--purple);}
+.rec-cand-form--workforce .rec-cand-form-process-block .rec-cand-form-section-title{font-size:12px;letter-spacing:.03em;color:var(--purple-dark);}
+.rec-cand-form--workforce #rec-cand-form-vac-wrap:has(+ #rec-cand-form-stage-wrap.hidden){grid-column:1/-1;}
+.rec-cand-form--workforce .rec-cand-form-cv-section--lead{margin-top:16px;}
+.rec-cand-form-fold>summary{list-style:none;}
+.rec-cand-form-fold>summary::-webkit-details-marker{display:none;}
+.rec-cand-form-fold-caret,.rec-cand-form-picker-trigger,.rec-cand-form-interview-custom{display:none;}
+.rec-cand-form--workforce .rec-cand-form-fold{margin-top:8px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;}
+.rec-cand-form--workforce .rec-cand-form-fold>summary{margin:0;padding:10px 12px;border:0;cursor:pointer;min-height:40px;}
+.rec-cand-form--workforce .rec-cand-form-fold>summary:hover{background:var(--purple-light);border-radius:10px;}
+.rec-cand-form--workforce .rec-cand-form-fold-caret{display:block;margin-left:auto;color:var(--slate-500);transition:transform 150ms ease;}
+.rec-cand-form--workforce .rec-cand-form-fold[open] .rec-cand-form-fold-caret{transform:rotate(180deg);}
+.rec-cand-form--workforce .rec-cand-form-fold-content{padding:2px 12px 12px;}
+.rec-cand-form--workforce .rec-cand-form-fold-content>.rec-cand-form-grid-row+.rec-cand-form-grid-row{margin-top:10px;}
+.rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-native{display:none;}
+.rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-interview-custom{display:block;}
+.rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-picker-trigger{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;text-align:left;cursor:pointer;background:#fff;
+}
+.rec-cand-form-picker-trigger:disabled{cursor:default;color:var(--slate-500);}
+.rec-cand-form-picker-trigger[aria-expanded="true"]{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.rec-cand-form-picker-trigger>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-cand-form-picker-trigger.is-placeholder>span:first-child{color:var(--slate-500);font-weight:500;}
+.rec-cand-form-picker-trigger>svg,.rec-cand-form-fold-caret{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;}
+.rec-cand-form-picker{display:none;}
+.rec-cand-form-picker:popover-open{display:flex;position:fixed;inset:auto;margin:0;box-sizing:border-box;min-width:0;overflow:auto;overscroll-behavior:contain;}
+.rec-cand-form-picker .rec-cand-ms-list{overscroll-behavior:contain;}
+.rec-cand-form-picker .rec-cand-ms-option{border:0;background:#fff;text-align:left;font:inherit;font-size:13px;justify-content:space-between;overflow-wrap:anywhere;}
+.rec-cand-form-picker .rec-cand-ms-option:hover,.rec-cand-form-picker .rec-cand-ms-option[aria-pressed="true"]{background:var(--purple-light);color:var(--purple-dark);}
+.rec-cand-form-picker .rec-cand-ms-option:focus-visible{outline:2px solid var(--purple);outline-offset:-2px;}
+.rec-cand-form-picker .rec-cand-form-date-clear{border:0;background:transparent;cursor:pointer;color:var(--purple-dark);font:inherit;font-size:12px;align-self:flex-end;padding:6px;}
+.rec-cand-form--workforce .rec-cand-form-interview-row{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;}
+.rec-cand-form--workforce .form-input[aria-invalid="true"]{border-color:#dc2626;box-shadow:0 0 0 2px rgba(220,38,38,.12);}
+.rec-cand-form-field-error{margin:5px 0 0;color:#b91c1c;font-size:12px;line-height:1.35;}
+@media(max-width:520px){
+  .rec-cand-form--workforce .rec-cand-form-header{padding:14px 54px 12px 14px;}
+  .rec-cand-form--workforce .rec-cand-form-body{padding:1px 10px 12px 14px;}
+  .rec-cand-form--workforce .rec-cand-form-footer{flex-direction:row;padding:9px 14px;}
+  .rec-cand-form--workforce .rec-cand-form-footer .form-submit{width:auto;min-width:0;flex:1;}
+  .rec-cand-form--workforce .rec-cand-form-interview-row{grid-template-columns:1fr;}
+}
+@media(prefers-reduced-motion:reduce){.rec-cand-form-fold-caret{transition:none;}}
 .rec-cand-form-interview-wrap{margin-top:12px;}
 .rec-cand-form-interview-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .rec-cand-exp-loc-sub{font-size:12px;color:var(--slate-600);margin:4px 0 0;line-height:1.35;}
@@ -3398,7 +3462,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
       </div>
     </header>
-    <div class="rec-cand-form-body">
+    <div class="rec-cand-form-body" oninput="if(event.target.hasAttribute('aria-invalid')) recCandFormSetFieldError(event.target,'')">
       <div id="rec-cand-form-cv-section" class="rec-cand-form-cv-section--lead">
         <div class="rec-cand-form-section-head">
           <span class="rec-cand-form-section-icon" id="rec-cand-form-cv-icon" aria-hidden="true"></span>
@@ -3429,39 +3493,41 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <p id="rec-cand-form-cv-err" class="rec-cand-editor-err hidden" style="font-size:12px;color:#DC2626;margin-top:8px;"></p>
         <p id="rec-cand-form-cv-parse-msg" class="rec-cand-form-cv-parse-msg hidden" role="status"></p>
       </div>
-      <div class="rec-cand-form-section-head">
-        <span class="rec-cand-form-section-icon" id="rec-cand-form-data-icon" aria-hidden="true"></span>
-        <span class="rec-cand-form-section-title">Datos del candidato</span>
-      </div>
-      <div class="rec-cand-form-grid-row">
-        <div class="rec-cand-form-span-full">
-          <label class="form-label">Nombre completo *</label>
-          <input type="text" id="rec-cand-form-name" class="form-input" maxlength="200" placeholder="Ej. Juan Pérez García" autocomplete="name">
+      <div id="rec-cand-form-identity">
+        <div class="rec-cand-form-section-head">
+          <span class="rec-cand-form-section-icon" id="rec-cand-form-data-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">Datos del candidato</span>
         </div>
-        <div>
-          <label class="form-label">WhatsApp *</label>
-          <div class="rec-cand-form-field-icon-wrap">
-            <span class="rec-cand-form-field-icon rec-cand-form-field-icon--wa" id="rec-cand-form-wa-icon" aria-hidden="true"></span>
-            <input type="tel" id="rec-cand-form-whatsapp" class="form-input" maxlength="40" autocomplete="tel" placeholder="+52 55 1234 5678">
+        <div class="rec-cand-form-grid-row">
+          <div class="rec-cand-form-span-full">
+            <label class="form-label" for="rec-cand-form-name">Nombre completo *</label>
+            <input type="text" id="rec-cand-form-name" class="form-input" maxlength="200" placeholder="Ej. Juan Pérez García" autocomplete="name">
           </div>
-        </div>
-        <div>
-          <label class="form-label">Teléfono secundario</label>
-          <div class="rec-cand-form-field-icon-wrap">
-            <span class="rec-cand-form-field-icon" id="rec-cand-form-phone-icon" aria-hidden="true"></span>
-            <input type="tel" id="rec-cand-form-phone" class="form-input" maxlength="40" autocomplete="tel" placeholder="+52 55 1234 5678">
+          <div>
+            <label class="form-label" for="rec-cand-form-whatsapp">WhatsApp *</label>
+            <div class="rec-cand-form-field-icon-wrap">
+              <span class="rec-cand-form-field-icon rec-cand-form-field-icon--wa" id="rec-cand-form-wa-icon" aria-hidden="true"></span>
+              <input type="tel" id="rec-cand-form-whatsapp" class="form-input" maxlength="40" autocomplete="tel" placeholder="+52 55 1234 5678">
+            </div>
           </div>
-        </div>
-        <div>
-          <label class="form-label">Email</label>
-          <div class="rec-cand-form-field-icon-wrap">
-            <span class="rec-cand-form-field-icon" id="rec-cand-form-email-icon" aria-hidden="true"></span>
-            <input type="email" id="rec-cand-form-email" class="form-input" maxlength="200" autocomplete="email" placeholder="ejemplo@correo.com">
+          <div>
+            <label class="form-label" for="rec-cand-form-phone">Teléfono secundario</label>
+            <div class="rec-cand-form-field-icon-wrap">
+              <span class="rec-cand-form-field-icon" id="rec-cand-form-phone-icon" aria-hidden="true"></span>
+              <input type="tel" id="rec-cand-form-phone" class="form-input" maxlength="40" autocomplete="tel" placeholder="+52 55 1234 5678">
+            </div>
           </div>
-        </div>
-        <div class="rec-cand-form-curp">
-          <label class="form-label" for="rec-cand-form-curp">CURP <span class="rec-cand-form-optional">Opcional</span></label>
-          <input type="text" id="rec-cand-form-curp" class="form-input" maxlength="18" placeholder="Ej. GOSE900101HQRTMN09" autocomplete="off" spellcheck="false" autocapitalize="characters" inputmode="text" oninput="recCandCurpFieldInput(this)" onpaste="recCandCurpFieldPaste(event)" onblur="recCandCurpFieldBlur(this)">
+          <div>
+            <label class="form-label" for="rec-cand-form-email">Email</label>
+            <div class="rec-cand-form-field-icon-wrap">
+              <span class="rec-cand-form-field-icon" id="rec-cand-form-email-icon" aria-hidden="true"></span>
+              <input type="email" id="rec-cand-form-email" class="form-input" maxlength="200" autocomplete="email" placeholder="ejemplo@correo.com">
+            </div>
+          </div>
+          <div class="rec-cand-form-curp">
+            <label class="form-label" for="rec-cand-form-curp">CURP <span class="rec-cand-form-optional">Opcional</span></label>
+            <input type="text" id="rec-cand-form-curp" class="form-input" maxlength="18" placeholder="Ej. GOSE900101HQRTMN09" autocomplete="off" spellcheck="false" autocapitalize="characters" inputmode="text" oninput="recCandCurpFieldInput(this)" onpaste="recCandCurpFieldPaste(event)" onblur="recCandCurpFieldBlur(this)">
+          </div>
         </div>
       </div>
       <div class="rec-cand-form-section-head">
@@ -3470,17 +3536,17 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       </div>
       <div class="rec-cand-form-grid-row rec-cand-form-grid-row--3">
         <div>
-          <label class="form-label">Perfil principal *</label>
+          <label class="form-label" for="rec-cand-form-profile">Perfil principal *</label>
           <select id="rec-cand-form-profile" class="form-input"></select>
           <div id="rec-cand-form-profile-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-profile-other" class="form-input" maxlength="300" placeholder="Especifica el perfil"></div>
         </div>
         <div>
-          <label class="form-label">Perfil secundario</label>
+          <label class="form-label" for="rec-cand-form-profile2">Perfil secundario</label>
           <select id="rec-cand-form-profile2" class="form-input"><option value="">— Ninguno —</option></select>
           <div id="rec-cand-form-profile2-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-profile2-other" class="form-input" maxlength="300" placeholder="Especifica el perfil secundario"></div>
         </div>
         <div>
-          <label class="form-label">Fuente</label>
+          <label class="form-label" for="rec-cand-form-source">Fuente</label>
           <select id="rec-cand-form-source" class="form-input"><option value="">— Sin especificar —</option></select>
           <div id="rec-cand-form-source-other-wrap" class="rec-cand-form-other hidden"><input type="text" id="rec-cand-form-source-other" class="form-input" maxlength="120" placeholder="Especifica la fuente"></div>
         </div>
@@ -3492,67 +3558,101 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
         <div class="rec-cand-form-grid-row">
           <div id="rec-cand-form-vac-wrap">
-            <label class="form-label">Asignar a vacante <span class="rec-cand-form-optional">Opcional</span></label>
+            <label class="form-label" for="rec-cand-form-vacancy">Asignar a vacante <span class="rec-cand-form-optional">Opcional</span></label>
             <select id="rec-cand-form-vacancy" class="form-input"><option value="">Seleccionar vacante</option></select>
           </div>
           <div id="rec-cand-form-stage-wrap" class="hidden">
-            <label class="form-label">Etapa inicial</label>
+            <label class="form-label" for="rec-cand-form-stage">Etapa inicial</label>
             <select id="rec-cand-form-stage" class="form-input" onchange="recCandFormStageChanged()"></select>
           </div>
         </div>
         <div id="rec-cand-form-interview-wrap" class="hidden rec-cand-form-interview-wrap">
-          <label class="form-label">Fecha de entrevista <span class="rec-cand-form-optional">Opcional</span></label>
           <div class="rec-cand-form-interview-row">
             <div>
-              <label class="form-label" style="font-size:11px;margin-bottom:4px;">Fecha</label>
-              <input type="date" id="rec-cand-form-interview-date" class="form-input" aria-label="Fecha de entrevista">
+              <label class="form-label" for="rec-cand-form-interview-date" id="rec-cand-form-date-label">Fecha de entrevista <span class="rec-cand-form-optional">Opcional</span></label>
+              <input type="date" id="rec-cand-form-interview-date" class="form-input rec-cand-form-native">
+              <button type="button" id="rec-cand-form-date-trigger" class="form-input rec-cand-form-picker-trigger is-placeholder" aria-labelledby="rec-cand-form-date-label rec-cand-form-date-trigger" aria-controls="rec-cand-form-date-picker" aria-expanded="false" aria-haspopup="dialog">
+                <span>Seleccionar fecha</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4m8-4v4M3 10h18"/></svg>
+              </button>
             </div>
             <div>
-              <label class="form-label" style="font-size:11px;margin-bottom:4px;">Hora <span style="font-weight:400;color:var(--slate-500);">(opcional)</span></label>
-              <input type="time" id="rec-cand-form-interview-time" class="form-input" aria-label="Hora de entrevista (opcional)" step="60">
+              <label class="form-label" for="rec-cand-form-interview-time" id="rec-cand-form-time-label">Hora <span class="rec-cand-form-optional">Opcional</span></label>
+              <input type="time" id="rec-cand-form-interview-time" class="form-input rec-cand-form-native" step="60">
+              <div class="rec-cand-form-interview-custom">
+                <div class="tc-noshow-time-row">
+                  <input type="text" class="form-input" id="rec-cand-form-time-input" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="Ej. 3:30">
+                  <button type="button" class="tc-noshow-ampm-btn" id="rec-cand-form-time-period" aria-label="Cambiar entre a. m. y p. m." aria-pressed="false">a. m.</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="rec-cand-form-section-head">
-        <span class="rec-cand-form-section-icon" id="rec-cand-form-loc-icon" aria-hidden="true"></span>
-        <span class="rec-cand-form-section-title">Ubicación</span>
-      </div>
-      <div class="rec-cand-form-grid-row">
-        <div>
-          <label class="form-label">Estado</label>
-          <input type="text" id="rec-cand-form-state" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
+      <details class="rec-cand-form-fold" open>
+        <summary class="rec-cand-form-section-head">
+          <span class="rec-cand-form-section-icon" id="rec-cand-form-loc-icon" aria-hidden="true"></span>
+          <span class="rec-cand-form-section-title">Ubicación</span>
+          <svg class="rec-cand-form-fold-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+        </summary>
+        <div class="rec-cand-form-fold-content">
+          <div class="rec-cand-form-grid-row">
+            <div>
+              <label class="form-label" for="rec-cand-form-state">Estado</label>
+              <input type="text" id="rec-cand-form-state" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
+            </div>
+            <div>
+              <label class="form-label" for="rec-cand-form-city">Ciudad</label>
+              <input type="text" id="rec-cand-form-city" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
+            </div>
+          </div>
+          <div class="rec-cand-form-grid-row">
+            <div>
+              <label class="form-label" for="rec-cand-form-locality">Localidad</label>
+              <input type="text" id="rec-cand-form-locality" class="form-input" maxlength="120" placeholder="Ej. Centro Sur">
+            </div>
+            <div>
+              <label class="form-label" for="rec-cand-form-neighborhood">Colonia</label>
+              <input type="text" id="rec-cand-form-neighborhood" class="form-input" maxlength="120" placeholder="Ej. Col. Centro Sur">
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="form-label">Ciudad</label>
-          <input type="text" id="rec-cand-form-city" class="form-input" maxlength="120" placeholder="Ej. Querétaro">
-        </div>
-      </div>
-      <div class="rec-cand-form-grid-row">
-        <div>
-          <label class="form-label">Localidad</label>
-          <input type="text" id="rec-cand-form-locality" class="form-input" maxlength="120" placeholder="Ej. Centro Sur">
-        </div>
-        <div>
-          <label class="form-label">Colonia</label>
-          <input type="text" id="rec-cand-form-neighborhood" class="form-input" maxlength="120" placeholder="Ej. Col. Centro Sur">
-        </div>
-      </div>
-      <div id="rec-cand-form-notes-section">
-        <div class="rec-cand-form-section-head">
+      </details>
+      <details id="rec-cand-form-notes-section" class="rec-cand-form-fold" open>
+        <summary class="rec-cand-form-section-head">
           <span class="rec-cand-form-section-icon" id="rec-cand-form-notes-icon" aria-hidden="true"></span>
           <span class="rec-cand-form-section-title">Notas</span>
+          <svg class="rec-cand-form-fold-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+        </summary>
+        <div class="rec-cand-form-fold-content">
+          <textarea aria-label="Notas" id="rec-cand-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Agrega notas relevantes sobre el candidato…"></textarea>
+          <p class="rec-cand-form-hint" style="margin-top:6px;">Se guardará como observación colaborativa en la ficha.</p>
         </div>
-        <textarea id="rec-cand-form-notes" class="form-input rec-cand-form-notes" rows="3" maxlength="20000" placeholder="Agrega notas relevantes sobre el candidato…"></textarea>
-        <p class="rec-cand-form-hint" style="margin-top:6px;">Se guardará como observación colaborativa en la ficha.</p>
-      </div>
+      </details>
     </div>
     <input type="hidden" id="rec-cand-form-id">
-    <p id="rec-cand-form-err" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;text-align:center;"></p>
+    <p id="rec-cand-form-err" role="alert" class="hidden" style="font-size:13px;color:#DC2626;margin:12px 0 0;text-align:center;"></p>
     <footer class="rec-cand-form-footer">
       <button type="button" class="rec-stages-ghost-btn" onclick="closeModal('modal-rec-candidate-form')">Cancelar</button>
       <button type="button" class="form-submit form-submit-purple" id="rec-cand-form-submit" onclick="recCandSubmitForm()">Guardar candidato</button>
     </footer>
+    <div id="rec-cand-form-select-picker" class="rec-cand-ms-menu rec-cand-form-picker" popover="auto" role="dialog">
+      <p class="rec-cand-ms-kicker" id="rec-cand-form-picker-title"></p>
+      <input type="search" class="form-input rec-cand-ms-search" id="rec-cand-form-picker-search" placeholder="Buscar opciones" aria-label="Buscar opciones" autocomplete="off" hidden>
+      <div class="rec-cand-ms-list" id="rec-cand-form-picker-options"></div>
+    </div>
+    <div id="rec-cand-form-date-picker" class="rec-cand-ms-menu rec-cand-form-picker" popover="auto" role="dialog" aria-label="Fecha de entrevista">
+      <div class="tc-noshow-date-nav">
+        <button type="button" class="tc-noshow-date-nav-btn" data-month="-1" aria-label="Mes anterior">‹</button>
+        <span class="tc-noshow-date-nav-label" id="rec-cand-form-date-month" aria-live="polite"></span>
+        <button type="button" class="tc-noshow-date-nav-btn" data-month="1" aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="tc-noshow-date-weekdays" aria-hidden="true">
+        <span class="tc-noshow-date-weekday">D</span><span class="tc-noshow-date-weekday">L</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">J</span><span class="tc-noshow-date-weekday">V</span><span class="tc-noshow-date-weekday">S</span>
+      </div>
+      <div class="tc-noshow-date-grid" id="rec-cand-form-date-grid"></div>
+      <button type="button" class="rec-cand-form-date-clear">Quitar fecha</button>
+    </div>
   </div>
 </div>
 
@@ -6168,7 +6268,10 @@ function closeModal(id){
     if(!recCandTryCloseDetailModal()) return;
   }
   if(id==='modal-rec-vacancy'&&typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
-  if(id==='modal-rec-candidate-form'&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
+  if(id==='modal-rec-candidate-form'){
+    recCandFormClosePickers(false);
+    if(typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
+  }
   if(id==='modal-rec-vacancy-detail'&&typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const m=document.getElementById(id);
   if(m){
@@ -6193,6 +6296,7 @@ function closeModal(id){
 function closeAllModals(){
   if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const candForm=document.getElementById('modal-rec-candidate-form');
+  recCandFormClosePickers(false);
   if(candForm&&!candForm.classList.contains('hidden')&&typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
   const evalModal=document.getElementById('modal-evaluacion');
   const evalWasOpen=evalModal&&!evalModal.classList.contains('hidden');
@@ -6262,7 +6366,11 @@ function mind24MaybeOpenApplyEvalDeepLink(){
 function showStep(showId,hideId){ const s=document.getElementById(showId),h=document.getElementById(hideId); if(h)h.classList.add('hidden'); if(s){s.classList.remove('hidden');s.classList.add('slide-up');setTimeout(()=>s.classList.remove('slide-up'),500);} }
 // ── Nav scroll ──
 window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNav'); const land=document.getElementById('view-landing'); if(!land.classList.contains('hidden'))nav.classList.toggle('scrolled',window.scrollY>20); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeAllModals(); });
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  if(recCandFormClosePickers(true)){ e.preventDefault(); return; }
+  closeAllModals();
+});
 document.addEventListener('DOMContentLoaded',function(){
   mind24EnsureFitnessModalInBody();
   mind24EnsureMedidaModalInBody();
@@ -13754,6 +13862,7 @@ function recCandFormSyncInterviewVisibility(){
     const tEl=document.getElementById('rec-cand-form-interview-time');
     if(dEl) dEl.value='';
     if(tEl) tEl.value='';
+    recCandFormResetInterviewPicker();
   }
 }
 function recCandFormStageChanged(){
@@ -15646,6 +15755,7 @@ async function recCandEnsureVacancyPickerOptions(selectEl){
       return '<option value="'+tcEsc(v.id)+'">'+tcEsc(label)+'</option>';
     }).join('');
   if(prev) selectEl.value=prev;
+  if(isForm) recCandFormSyncSelectPicker(selectEl);
 }
 async function recCandLoadEnabledStagesForVacancy(vacancyId){
   if(!vacancyId) return [];
@@ -15673,20 +15783,19 @@ function recCandFillStageSelect(selectEl,stageRows,preferredStageId){
 async function recCandFormVacancyChanged(vacancyId){
   const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
   const stageSel=document.getElementById('rec-cand-form-stage');
-  if(!vacancyId){
-    if(stageWrap) stageWrap.classList.add('hidden');
-    recCandFormSyncInterviewVisibility();
-    return;
-  }
-  if(stageWrap) stageWrap.classList.remove('hidden');
+  const request=++recCandFormStageLoad;
+  stageWrap.classList.toggle('hidden',!vacancyId);
+  stageSel.replaceChildren();
+  recCandFormSyncSelectPicker(stageSel);
+  recCandFormSyncInterviewVisibility();
+  if(!vacancyId) return;
   try{
     const rows=await recCandLoadEnabledStagesForVacancy(vacancyId);
+    if(request!==recCandFormStageLoad) return;
     recCandFillStageSelect(stageSel,rows,null);
+    recCandFormSyncSelectPicker(stageSel);
     recCandFormSyncInterviewVisibility();
-  }catch(e){
-    if(stageSel) stageSel.innerHTML='';
-    recCandFormSyncInterviewVisibility();
-  }
+  }catch(_error){ /* Mantiene la etapa vacía si el catálogo no está disponible. */ }
 }
 async function recCandAssignToVacancy(candidateId,vacancyId,stageId,interviewFields,employmentStartDate){
   const body={ candidateId:candidateId };
@@ -16880,7 +16989,10 @@ function recCandFormApplyParsedFields(fields){
     const el=document.getElementById(id);
     if(!el) return;
     el.value=merged.current[id];
-    if(id==='rec-cand-form-profile') recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
+    if(id==='rec-cand-form-profile'){
+      recCandToggleOtherWrap('rec-cand-form-profile','rec-cand-form-profile-other-wrap');
+      recCandFormSyncSelectPicker(el);
+    }
     recCandFormMarkPrefill(id);
     n+=1;
   });
@@ -17264,7 +17376,10 @@ function recCandCvExtractBindOnce(){
 }
 function recCandFormResetModalScroll(){
   const card=document.querySelector('#modal-rec-candidate-form .modal-card.rec-modal-scroll');
-  if(card) card.scrollTop=0;
+  if(card){
+    card.scrollTop=0;
+    card.querySelector('.rec-cand-form-body').scrollTop=0;
+  }
 }
 function recCandRenderFormCvPanel(){
   recCandCvExtractBindOnce();
@@ -17355,11 +17470,320 @@ async function recCandDeleteCv(){
     await recCandRenderDetail(c,false);
   }catch(e){ recCandSetCvErr((e&&e.message)||'No se pudo eliminar.'); }
 }
+let recCandFormPickerSelect=null;
+let recCandFormCalendarMonth=null;
+let recCandFormStageLoad=0;
+
+function recCandFormUsePickers(){
+  return recCandFormIsWorkforce()&&typeof HTMLElement.prototype.showPopover==='function';
+}
+function recCandFormApplyWorkspaceLayout(){
+  const modal=document.getElementById('modal-rec-candidate-form');
+  const body=modal.querySelector('.rec-cand-form-body');
+  const workforce=recCandFormIsWorkforce();
+  const identity=document.getElementById('rec-cand-form-identity');
+  const cv=document.getElementById('rec-cand-form-cv-section');
+  const process=document.getElementById('rec-cand-form-process-block');
+  const phone=document.getElementById('rec-cand-form-phone').closest('.rec-cand-form-field-icon-wrap').parentElement;
+  const email=document.getElementById('rec-cand-form-email').closest('.rec-cand-form-field-icon-wrap').parentElement;
+  modal.classList.toggle('rec-cand-form--workforce',workforce);
+  modal.classList.toggle('rec-cand-form--pickers',recCandFormUsePickers());
+  if(workforce){
+    body.prepend(identity,process);
+    body.insertBefore(cv,body.querySelector('.rec-cand-form-fold'));
+    phone.before(email);
+  }else{
+    body.prepend(cv,identity);
+    body.insertBefore(process,body.querySelector('.rec-cand-form-fold'));
+    email.before(phone);
+  }
+  body.querySelectorAll('.rec-cand-form-fold').forEach(function(fold){
+    fold.open=!workforce;
+    const summary=fold.firstElementChild;
+    summary.tabIndex=workforce?0:-1;
+    summary.onclick=workforce?null:function(event){ event.preventDefault(); };
+  });
+  if(recCandFormUsePickers()) recCandFormBindPickers();
+  document.getElementById('rec-cand-form-date-label').htmlFor=recCandFormUsePickers()?'rec-cand-form-date-trigger':'rec-cand-form-interview-date';
+  document.getElementById('rec-cand-form-time-label').htmlFor=recCandFormUsePickers()?'rec-cand-form-time-input':'rec-cand-form-interview-time';
+  body.querySelectorAll('select').forEach(function(select){
+    const label=document.getElementById(select.id+'-label');
+    if(label) label.htmlFor=recCandFormUsePickers()?select.id+'-trigger':select.id;
+  });
+}
+function recCandFormSyncSelectPicker(select){
+  const trigger=select?.nextElementSibling;
+  if(!trigger?.classList.contains('rec-cand-form-picker-trigger')) return;
+  const option=select.options[select.selectedIndex];
+  trigger.querySelector('span').textContent=(option?.label||'Sin opciones disponibles').trim();
+  trigger.classList.toggle('is-placeholder',!option||!option.value);
+  trigger.disabled=select.disabled||!select.options.length;
+}
+function recCandFormPositionPicker(picker,trigger){
+  const rect=trigger.getBoundingClientRect();
+  const viewportWidth=document.documentElement.clientWidth;
+  const viewportHeight=document.documentElement.clientHeight;
+  const width=Math.min(Math.max(rect.width,248),380,viewportWidth-24);
+  const left=Math.max(12,Math.min(rect.left,viewportWidth-width-12));
+  const spaceBelow=viewportHeight-rect.bottom-16;
+  const spaceAbove=rect.top-16;
+  const above=spaceBelow<250&&spaceAbove>spaceBelow;
+  const space=above?spaceAbove:spaceBelow;
+  picker.style.width=width+'px';
+  picker.style.left=left+'px';
+  picker.style.top=above||space<156?'auto':(rect.bottom+6)+'px';
+  picker.style.bottom=space<156?'12px':above?(viewportHeight-rect.top+6)+'px':'auto';
+  picker.style.maxHeight=Math.min(350,space<156?viewportHeight-24:space)+'px';
+}
+function recCandFormPickerTrigger(picker){
+  return picker.id==='rec-cand-form-date-picker'
+    ? document.getElementById('rec-cand-form-date-trigger')
+    : recCandFormPickerSelect?.nextElementSibling;
+}
+function recCandFormClosePickers(returnFocus){
+  if(typeof HTMLElement.prototype.hidePopover!=='function') return false;
+  const openPickers=document.querySelectorAll('#modal-rec-candidate-form .rec-cand-form-picker:popover-open');
+  openPickers.forEach(function(picker){
+    const trigger=recCandFormPickerTrigger(picker);
+    picker.hidePopover();
+    if(returnFocus&&trigger) trigger.focus({preventScroll:true});
+  });
+  return openPickers.length>0;
+}
+function recCandFormTrackPicker(){
+  const picker=document.querySelector('#modal-rec-candidate-form .rec-cand-form-picker:popover-open');
+  if(!picker) return;
+  const trigger=recCandFormPickerTrigger(picker);
+  if(!trigger) return;
+  const anchor=trigger.getBoundingClientRect();
+  const visible=trigger.closest('.rec-cand-form-body').getBoundingClientRect();
+  if(anchor.bottom<=visible.top||anchor.top>=visible.bottom) picker.hidePopover();
+  else recCandFormPositionPicker(picker,trigger);
+}
+function recCandFormRenderSelectOptions(){
+  if(!recCandFormPickerSelect) return;
+  const select=recCandFormPickerSelect;
+  const options=document.getElementById('rec-cand-form-picker-options');
+  const search=document.getElementById('rec-cand-form-picker-search');
+  const normalize=function(value){ return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); };
+  const query=normalize(search.value.trim());
+  const visible=Array.from(select.options).filter(function(option){
+    return !option.hidden&&normalize(option.label).includes(query);
+  });
+  options.innerHTML=visible.map(function(option){
+    const checked=option.selected;
+    return '<button type="button" class="rec-cand-ms-option" data-option-index="'+option.index+'" aria-pressed="'+checked+'"'+(option.disabled?' disabled':'')+'><span>'+tcEsc(option.label)+'</span>'+(checked?'<span aria-hidden="true">✓</span>':'')+'</button>';
+  }).join('')||'<p class="rec-cand-ms-empty" role="status">No hay coincidencias.</p>';
+}
+function recCandFormOpenSelectPicker(select,trigger){
+  const picker=document.getElementById('rec-cand-form-select-picker');
+  const same=picker.matches(':popover-open')&&recCandFormPickerSelect===select;
+  recCandFormClosePickers(false);
+  if(same) return;
+  recCandFormPickerSelect=select;
+  const search=document.getElementById('rec-cand-form-picker-search');
+  const title=document.getElementById('rec-cand-form-picker-title');
+  title.textContent=document.getElementById(select.id+'-label').textContent.trim();
+  search.value='';
+  search.hidden=select.id==='rec-cand-form-stage';
+  recCandFormRenderSelectOptions();
+  recCandFormPositionPicker(picker,trigger);
+  picker.showPopover({source:trigger});
+  trigger.setAttribute('aria-expanded','true');
+  const selected=picker.querySelector('[aria-pressed="true"]:not(:disabled)');
+  const target=search.hidden?(selected||picker.querySelector('[data-option-index]:not(:disabled)')):search;
+  if(target) target.focus({preventScroll:true});
+  if(selected){
+    const list=document.getElementById('rec-cand-form-picker-options');
+    list.scrollTop+=selected.getBoundingClientRect().top-list.getBoundingClientRect().top;
+  }
+}
+function recCandFormCalendarRender(){
+  const view=recCandFormCalendarMonth;
+  const value=document.getElementById('rec-cand-form-interview-date').value;
+  const today=recCandInterviewLocalPartsFromIso(new Date().toISOString(),false).date;
+  document.getElementById('rec-cand-form-date-month').textContent=TC_NOSHOW_MONTHS[view.getMonth()]+' '+view.getFullYear();
+  document.getElementById('rec-cand-form-date-grid').innerHTML=recInterviewCalendarDaysHtml(view.getFullYear(),view.getMonth(),value,today);
+  document.querySelector('#rec-cand-form-date-picker .rec-cand-form-date-clear').hidden=!value;
+}
+function recCandFormSyncDateLabel(){
+  const value=document.getElementById('rec-cand-form-interview-date').value;
+  const button=document.getElementById('rec-cand-form-date-trigger');
+  button.querySelector('span').textContent=tcEmpNoshowDateDisplayLabel(value)||'Seleccionar fecha';
+  button.classList.toggle('is-placeholder',!value);
+}
+function recCandFormSyncManualTime(){
+  const input=document.getElementById('rec-cand-form-time-input');
+  const time=document.getElementById('rec-cand-form-interview-time');
+  const period=document.getElementById('rec-cand-form-time-period');
+  const pm=period.getAttribute('aria-pressed')==='true';
+  const parsed=tcEmpNoshowParseTypedTime(input.value.replace(/^(\d{1,2})(\d{2})$/,'$1:$2'));
+  period.textContent=pm?'p. m.':'a. m.';
+  time.value=parsed.hour==null?'':tcEmpNoshowTimeToHHmm(parsed.hour,parsed.minute,pm?'pm':'am');
+}
+function recCandFormResetInterviewPicker(){
+  const input=document.getElementById('rec-cand-form-time-input');
+  input.value='';
+  document.getElementById('rec-cand-form-time-period').setAttribute('aria-pressed','false');
+  recCandFormSetFieldError(input,'');
+  recCandFormSetFieldError(document.getElementById('rec-cand-form-date-trigger'),'');
+  recCandFormSyncDateLabel();
+  recCandFormSyncManualTime();
+}
+function recCandFormBindPickers(){
+  const picker=document.getElementById('rec-cand-form-select-picker');
+  if(picker.dataset.bound) return;
+  picker.dataset.bound='true';
+  picker.setAttribute('aria-labelledby','rec-cand-form-picker-title');
+  const modal=document.getElementById('modal-rec-candidate-form');
+  modal.querySelectorAll('.rec-cand-form-body select').forEach(function(select){
+    select.classList.add('rec-cand-form-native');
+    const trigger=document.createElement('button');
+    trigger.type='button';
+    trigger.id=select.id+'-trigger';
+    trigger.className='form-input rec-cand-form-picker-trigger';
+    const label=select.labels[0];
+    label.id=select.id+'-label';
+    trigger.setAttribute('aria-labelledby',label.id+' '+trigger.id);
+    trigger.setAttribute('aria-controls',picker.id);
+    trigger.setAttribute('aria-expanded','false');
+    trigger.setAttribute('aria-haspopup','dialog');
+    trigger.innerHTML='<span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>';
+    trigger.addEventListener('click',function(){ recCandFormOpenSelectPicker(select,trigger); });
+    select.after(trigger);
+    select.addEventListener('change',function(){ recCandFormSyncSelectPicker(select); });
+    recCandFormSyncSelectPicker(select);
+  });
+  const search=document.getElementById('rec-cand-form-picker-search');
+  search.addEventListener('input',recCandFormRenderSelectOptions);
+  picker.addEventListener('click',function(event){
+    const option=event.target.closest('[data-option-index]');
+    if(!option||!recCandFormPickerSelect) return;
+    const select=recCandFormPickerSelect;
+    const index=Number(option.dataset.optionIndex);
+    recCandFormClosePickers(true);
+    if(select.selectedIndex!==index){
+      select.selectedIndex=index;
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+  });
+  picker.addEventListener('keydown',function(event){
+    if(event.key!=='ArrowDown'&&event.key!=='ArrowUp'&&!(event.key==='Enter'&&event.target===search)) return;
+    const choices=Array.from(picker.querySelectorAll('[data-option-index]:not(:disabled)'));
+    const index=choices.indexOf(event.target);
+    const next=index+(event.key==='ArrowUp'?-1:1);
+    event.preventDefault();
+    if(event.key==='Enter'){ if(choices[0]) choices[0].click(); }
+    else if(next<0&&!search.hidden) search.focus();
+    else if(choices.length) choices[Math.max(0,Math.min(next,choices.length-1))].focus();
+  });
+  picker.addEventListener('beforetoggle',function(event){
+    if(event.newState!=='closed'||!recCandFormPickerSelect) return;
+    recCandFormPickerSelect.nextElementSibling.setAttribute('aria-expanded','false');
+    recCandFormPickerSelect=null;
+  });
+
+  const datePicker=document.getElementById('rec-cand-form-date-picker');
+  const dateTrigger=document.getElementById('rec-cand-form-date-trigger');
+  const dateInput=document.getElementById('rec-cand-form-interview-date');
+  dateTrigger.addEventListener('click',function(){
+    const same=datePicker.matches(':popover-open');
+    recCandFormClosePickers(false);
+    if(same) return;
+    const today=recCandInterviewLocalPartsFromIso(new Date().toISOString(),false).date;
+    const month=tcEmpNoshowParseYmd(dateInput.value||today);
+    const now=new Date();
+    recCandFormCalendarMonth=month?new Date(month.y,month.m,1):new Date(now.getFullYear(),now.getMonth(),1);
+    recCandFormCalendarRender();
+    recCandFormPositionPicker(datePicker,dateTrigger);
+    datePicker.showPopover({source:dateTrigger});
+    dateTrigger.setAttribute('aria-expanded','true');
+    const firstDay=datePicker.querySelector('.is-selected')||datePicker.querySelector('.is-today');
+    (firstDay||datePicker.querySelector('[data-month]')).focus({preventScroll:true});
+  });
+  datePicker.addEventListener('beforetoggle',function(event){
+    if(event.newState==='closed') dateTrigger.setAttribute('aria-expanded','false');
+  });
+  datePicker.addEventListener('click',function(event){
+    const control=event.target.closest('button');
+    if(!control) return;
+    if(control.dataset.month){
+      recCandFormCalendarMonth.setMonth(recCandFormCalendarMonth.getMonth()+Number(control.dataset.month));
+      recCandFormCalendarRender();
+      return;
+    }
+    dateInput.value=control.dataset.ymd||'';
+    recCandFormSyncDateLabel();
+    recCandFormSetFieldError(dateTrigger,'');
+    recCandFormClosePickers(true);
+  });
+  datePicker.addEventListener('keydown',function(event){
+    const step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[event.key];
+    if(!step||!event.target.dataset.ymd) return;
+    const days=Array.from(datePicker.querySelectorAll('[data-ymd]'));
+    const next=days[days.indexOf(event.target)+step];
+    if(next){ event.preventDefault(); next.focus(); }
+  });
+
+  const timeInput=document.getElementById('rec-cand-form-time-input');
+  const period=document.getElementById('rec-cand-form-time-period');
+  timeInput.addEventListener('input',recCandFormSyncManualTime);
+  timeInput.addEventListener('blur',function(){
+    if(/^\d{3,4}$/.test(timeInput.value)) timeInput.value=timeInput.value.replace(/^(\d{1,2})(\d{2})$/,'$1:$2');
+  });
+  period.addEventListener('click',function(){
+    period.setAttribute('aria-pressed',String(period.getAttribute('aria-pressed')!=='true'));
+    recCandFormSyncManualTime();
+  });
+  modal.querySelector('.rec-cand-form-body').addEventListener('scroll',recCandFormTrackPicker,{passive:true});
+  window.addEventListener('resize',recCandFormTrackPicker);
+}
+function recCandFormSetFieldError(field,message){
+  const errorId=field.id+'-error';
+  let error=document.getElementById(errorId);
+  if(!message){
+    if(!error) return;
+    error.remove();
+    field.removeAttribute('aria-invalid');
+    field.removeAttribute('aria-describedby');
+    return;
+  }
+  if(!error){
+    error=document.createElement('p');
+    error.id=errorId;
+    error.className='rec-cand-form-field-error';
+    error.setAttribute('role','alert');
+    (field.closest('.rec-cand-form-field-icon-wrap,.tc-noshow-time-row')||field).after(error);
+  }
+  error.textContent=message;
+  field.setAttribute('aria-invalid','true');
+  field.setAttribute('aria-describedby',errorId);
+  field.focus();
+}
+function recCandFormWorkforceError(body){
+  if(!body.fullName) return ['rec-cand-form-name','Indica el nombre completo del candidato.'];
+  if(!body.whatsapp) return ['rec-cand-form-whatsapp','Indica el WhatsApp del candidato.'];
+  if(body.whatsapp.length<5) return ['rec-cand-form-whatsapp','WhatsApp no válido.'];
+  if(body.phone&&body.phone.length<5) return ['rec-cand-form-phone','Teléfono no válido.'];
+  if(document.getElementById('rec-cand-form-email').validity.typeMismatch) return ['rec-cand-form-email','Escribe un correo válido.'];
+  const curpError=recCandCurpClientError(body.curp);
+  if(curpError) return ['rec-cand-form-curp',curpError];
+  const time=document.getElementById('rec-cand-form-time-input');
+  if(recCandFormUsePickers()&&time.value.trim()&&!body._interview?.interviewTime){
+    return [time.id,'Escribe la hora como 3:30 o déjala vacía.'];
+  }
+  if(!body._interview?.interviewDate&&body._interview?.interviewTime){
+    return [recCandFormUsePickers()?'rec-cand-form-date-trigger':'rec-cand-form-interview-date','Selecciona la fecha de entrevista.'];
+  }
+  return null;
+}
+
 function recCandOpenForm(mode,candidate,opts){
   opts=opts||{};
   recCandFormApiMode=opts.context==='workforce'?'workforce':'admin';
   recEnsureRecruitmentOrgTimeZone();
   recCandCatalogInits();
+  recCandFormApplyWorkspaceLayout();
   recCandFormApplyDecorIcons();
   recCandFormBindFieldTouchOnce();
   recCandCvExtractBindOnce();
@@ -17376,6 +17800,7 @@ function recCandOpenForm(mode,candidate,opts){
   const cvSection=document.getElementById('rec-cand-form-cv-section');
   const notesSection=document.getElementById('rec-cand-form-notes-section');
   const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
+  recCandFormStageLoad+=1;
   const isEdit=mode==='edit'&&candidate;
   if(procBlock) procBlock.classList.toggle('hidden',!!isEdit);
   if(cvSection) cvSection.classList.toggle('hidden',!!isEdit);
@@ -17427,8 +17852,9 @@ function recCandOpenForm(mode,candidate,opts){
     recEnsureState().candFormOriginalCurp='';
     set('rec-cand-form-interview-date','');
     set('rec-cand-form-interview-time','');
-    recCandFormSyncInterviewVisibility();
     set('rec-cand-form-vacancy','');
+    set('rec-cand-form-stage','');
+    recCandFormSyncInterviewVisibility();
     if(stageWrap) stageWrap.classList.add('hidden');
     recEnsureState().candFormPendingCvFile=null;
     recEnsureState().candFormCvAnalyzing=false;
@@ -17441,6 +17867,9 @@ function recCandOpenForm(mode,candidate,opts){
   }
   const err=document.getElementById('rec-cand-form-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
+  const formModal=document.getElementById('modal-rec-candidate-form');
+  formModal.querySelectorAll('.form-input[aria-invalid=true]').forEach(function(field){ recCandFormSetFieldError(field,''); });
+  formModal.querySelectorAll('select').forEach(recCandFormSyncSelectPicker);
   openModal('modal-rec-candidate-form');
   if(!isEdit){
     requestAnimationFrame(function(){
@@ -17584,6 +18013,10 @@ async function recCandSubmitForm(){
   const id=(document.getElementById('rec-cand-form-id').value||'').trim();
   const body=recCandReadFormBody();
   if(err){ err.classList.add('hidden'); }
+  if(recCandFormIsWorkforce()){
+    const invalid=recCandFormWorkforceError(body);
+    if(invalid){ recCandFormSetFieldError(document.getElementById(invalid[0]),invalid[1]); return; }
+  }
   if(!id&&!body.whatsapp){
     if(err){ err.textContent='Indica el WhatsApp del candidato.'; err.classList.remove('hidden'); }
     return;
@@ -18510,13 +18943,14 @@ function tcEmpNoshowDateRenderGrid(){
   const y=tcEmpNoshowDateView.y;
   const m=tcEmpNoshowDateView.m;
   if(monthLabel) monthLabel.textContent=TC_NOSHOW_MONTHS[m]+' '+String(y);
-  const first=new Date(y,m,1);
-  const startPad=first.getDay();
-  const daysInMonth=new Date(y,m+1,0).getDate();
-  const prevDays=new Date(y,m,0).getDate();
   const today=new Date();
   const todayYmd=tcEmpNoshowYmd(today.getFullYear(),today.getMonth(),today.getDate());
-  const selected=tcEmpNoshowDateYmd;
+  grid.innerHTML=recInterviewCalendarDaysHtml(y,m,tcEmpNoshowDateYmd,todayYmd);
+}
+function recInterviewCalendarDaysHtml(y,m,selected,todayYmd){
+  const startPad=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
   let html='';
   for(let i=0;i<42;i+=1){
     let cellY=y; let cellM=m; let cellD; let muted=false;
@@ -18536,7 +18970,7 @@ function tcEmpNoshowDateRenderGrid(){
       +(ymd===selected?' is-selected':'');
     html+='<button type="button" class="'+cls+'" data-ymd="'+ymd+'" aria-label="'+ymd+'"'+(ymd===selected?' aria-pressed="true"':'')+'>'+String(cellD)+'</button>';
   }
-  grid.innerHTML=html;
+  return html;
 }
 function tcEmpNoshowDateSetOpen(open){
   const panel=document.getElementById('tc-noshow-reschedule-date-panel');
