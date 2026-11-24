@@ -353,7 +353,7 @@ check(!/id="tc-(?:add|edit)-ws-day-\d"[^>]*aria-pressed="true"/.test(indexHtml),
 check(indexHtml.includes("workSchedule: tcWorkScheduleRead('add')") && indexHtml.includes("workSchedule: tcWorkScheduleRead('edit')"), 'alta y edición envían el contrato');
 const saveFn = extractFunction(indexHtml, 'tcSaveEmpEdit');
 const closeFn = extractFunction(indexHtml, 'tcCloseEmpEdit');
-check(saveFn.includes('tcCloseEmpEdit()') && saveFn.indexOf('catch(e)') > saveFn.indexOf('tcCloseEmpEdit()'), 'un error de edición no cierra ni borra el formulario');
+check(/catch\(e\)\{[^}]*tcEmpEditError[^}]*return;/.test(saveFn) && saveFn.indexOf('catch(e)') < saveFn.indexOf('tcCloseEmpEdit()'), 'un error de edición no cierra ni borra el formulario');
 check(!closeFn.includes('apiJson'), 'cancelar no guarda');
 check(!indexHtml.includes('workSchedule') || !/tc-ws-jornada-cta[\s\S]{0,200}workSchedule/.test(indexHtml), 'el resumen no se inserta junto al CTA del portal');
 check(fs.existsSync(publicHtmlPath) && fs.readFileSync(publicHtmlPath).equals(fs.readFileSync(path.join(repoDir, 'index.html'))), 'index.html y server/public/index.html son idénticos');

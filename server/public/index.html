@@ -1453,9 +1453,70 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-emp-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;object-fit:cover;background:var(--slate-100);border:1px solid var(--slate-200);}
 .tc-emp-avatar--initials{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--purple-dark);background:linear-gradient(145deg,rgba(237,233,254,.95),rgba(224,231,255,.85));letter-spacing:.02em;}
 .tc-emp-name-stack{min-width:0;}
-.tc-emp-edit-photo{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--slate-100);}
-.tc-emp-edit-photo .tc-emp-avatar{width:56px;height:56px;font-size:15px;}
-.tc-emp-edit-photo-actions{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+#tc-emp-edit-backdrop{padding:clamp(8px,2vw,20px);}
+.tc-emp-edit-dialog{display:flex;flex-direction:column;width:min(650px,100%);max-height:min(800px,calc(100dvh - clamp(16px,4vw,40px)));min-width:0;background:#fff;border:1px solid var(--slate-200);border-radius:20px;box-shadow:0 24px 60px rgba(15,23,42,.2);overflow:hidden;}
+.tc-emp-edit-header,.tc-emp-edit-footer{flex:0 0 auto;background:#fff;padding:14px 20px;}
+.tc-emp-edit-header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--slate-200);}
+.tc-emp-edit-header h3{font-size:20px;letter-spacing:-.025em;line-height:1.2;color:var(--primary);margin:0;}
+.tc-emp-edit-form{display:flex;flex-direction:column;min-height:0;}
+.tc-emp-edit-body{display:grid;align-content:start;gap:14px;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px;padding:16px 20px;background:#f8f9fc;}
+.tc-emp-edit-footer{border-top:1px solid var(--slate-200);}
+.tc-emp-edit-footer .tc-task-modal-actions{margin:0;}
+.tc-emp-edit-footer button{min-height:38px;}
+.tc-emp-edit-footer [aria-disabled="true"]{opacity:.65;cursor:wait;}
+.tc-emp-edit-profile,.tc-emp-edit-section{min-width:0;background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:12px;}
+.tc-emp-edit-photo{display:flex;align-items:center;gap:10px;min-width:0;}
+.tc-emp-edit-photo .tc-emp-avatar{width:42px;height:42px;font-size:13px;}
+.tc-emp-edit-photo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;}
+.tc-emp-edit-photo-actions label:focus-within{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-emp-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin-top:10px;}
+.tc-emp-edit-grid .form-label{display:block;font-size:12px;margin:0 0 4px;color:var(--slate-700);}
+.tc-emp-edit-grid .form-input,.tc-emp-edit-section .form-input{width:100%;min-width:0;margin:0;padding:8px 10px;font-size:13px;min-height:38px;}
+.tc-emp-edit-wide{grid-column:1/-1;}
+.tc-emp-edit-options{display:grid;gap:8px;}
+.tc-emp-edit-option{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
+.tc-emp-edit-option input{margin:2px 0 0;inline-size:17px;block-size:17px;flex:none;accent-color:var(--purple);}
+.tc-emp-edit-option strong{display:block;font-size:13px;color:var(--primary);}
+.tc-emp-edit-option small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:var(--slate-600);}
+.tc-emp-edit-section .tc-expected-work-duration,.tc-emp-edit-section .tc-work-schedule-fields{margin:10px 0 0;}
+.tc-emp-edit-section .tc-expected-work-duration select{width:auto;}
+.tc-emp-edit-section--duration{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tc-emp-edit-section--duration .tc-expected-work-duration{margin:0;}
+.tc-emp-edit-dialog .tc-work-schedule-day{min-height:32px;}
+.tc-emp-edit-dialog .tc-work-schedule-day[aria-pressed="true"]{background:var(--purple-mid);border-color:#ddd6fe;}
+.tc-emp-edit-hours{flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 100px;align-items:end;gap:8px;}
+.tc-emp-edit-hours-label{display:block;margin:0 0 4px;font-size:12px;font-weight:600;color:var(--slate-700);}
+.tc-emp-edit-time{display:flex;align-items:center;gap:5px;min-width:0;}
+.tc-emp-edit-time .form-input{flex:1 1 0;width:0;font-variant-numeric:tabular-nums;}
+.tc-emp-edit-period{flex:none;display:flex;gap:2px;padding:2px;border:1px solid var(--slate-200);border-radius:9px;background:#f7f5fc;}
+.tc-emp-edit-section .tc-emp-edit-period label{position:relative;display:block;margin:0;cursor:pointer;}
+.tc-emp-edit-period span{display:block;padding:7px 6px;border-radius:6px;color:var(--slate-600);font-size:11px;font-weight:750;}
+.tc-emp-edit-period input:checked+span{background:var(--purple-mid);color:var(--purple-dark);}
+.tc-emp-edit-period input:focus-visible+span,.tc-emp-edit-dialog :is(button,input,select):focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-emp-edit-dialog [aria-invalid="true"]{border-color:#dc2626;}
+.tc-emp-edit-dialog .tc-task-modal-err{overflow-wrap:anywhere;}
+@media(max-width:610px){
+  .tc-emp-edit-dialog{border-radius:15px;}
+  .tc-emp-edit-header,.tc-emp-edit-body,.tc-emp-edit-footer{padding:12px;}
+  .tc-emp-edit-header h3{font-size:18px;}
+  .tc-emp-edit-body{gap:10px;}
+  .tc-emp-edit-section--duration{display:block;}
+  .tc-emp-edit-section--duration .tc-expected-work-duration{margin-top:10px;}
+  .tc-emp-edit-dialog .tc-work-schedule-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+  .tc-emp-edit-dialog .tc-work-schedule-day{min-width:0;padding:4px;font-size:11px;}
+  .tc-emp-edit-grid{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .tc-emp-edit-grid > div:not(.tc-emp-edit-wide){grid-column:span 3;}
+  .tc-emp-edit-grid > .tc-emp-edit-code{grid-column:span 2;}
+  .tc-emp-edit-grid > .tc-emp-edit-zone{grid-column:span 4;}
+  .tc-emp-edit-hours{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .tc-emp-edit-hours .tc-emp-edit-tol-field{grid-column:1/-1;}
+  .tc-emp-edit-hours .tc-emp-edit-tol-field input{width:76px;}
+}
+@media(max-width:360px){
+  .tc-emp-edit-time{align-items:stretch;flex-direction:column;}
+  .tc-emp-edit-time .form-input{width:100%;flex:auto;}
+  .tc-emp-edit-period{align-self:start;}
+}
 .tc-emp-photo-btn{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:0;}
 .tc-emp-photo-btn:hover{text-decoration:underline;}
 .tc-emp-photo-btn--muted{color:var(--slate-500);}
@@ -4600,71 +4661,115 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
       </div>
       <div id="tc-emp-edit-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpEdit()">
-        <div class="tc-task-modal" style="width:min(460px,calc(100vw - 32px));" role="dialog" aria-labelledby="tc-emp-edit-title" aria-modal="true">
-          <h3 id="tc-emp-edit-title">Editar colaborador</h3>
-          <input type="hidden" id="tc-emp-edit-id">
-          <div class="tc-emp-edit-photo">
-            <div id="tc-emp-edit-avatar-wrap"></div>
-            <div class="tc-emp-edit-photo-actions">
-              <label class="tc-emp-photo-btn"><input type="file" id="tc-emp-edit-photo-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden onchange="tcEmpPhotoFileSelected(event)">Cambiar foto</label>
-              <button type="button" class="tc-emp-photo-btn tc-emp-photo-btn--muted hidden" id="tc-emp-edit-photo-remove" onclick="tcEmpRemovePhoto()">Quitar foto</button>
-            </div>
-          </div>
-          <label class="form-label">Nombre completo</label>
-          <input type="text" id="tc-emp-edit-name" class="form-input" maxlength="200">
-          <label class="form-label">Puesto</label>
-          <input type="text" id="tc-emp-edit-position" class="form-input" maxlength="200">
-          <label class="form-label">Departamento</label>
-          <input type="text" id="tc-emp-edit-dept" class="form-input" maxlength="200">
-          <label class="form-label">Código interno</label>
-          <input type="text" id="tc-emp-edit-code" class="form-input" maxlength="64">
-          <label class="form-label">Zona horaria</label>
-          <select id="tc-emp-edit-tz" class="form-input">
-            <option value="America/Mexico_City">America/Mexico_City</option>
-            <option value="America/Tijuana">America/Tijuana</option>
-            <option value="America/Hermosillo">America/Hermosillo</option>
-            <option value="America/Cancun">America/Cancun</option>
-            <option value="America/Monterrey">America/Monterrey</option>
-            <option value="America/Chihuahua">America/Chihuahua</option>
-            <option value="UTC">UTC</option>
-          </select>
-          <label class="form-label">Jornada esperada</label>
-          <label class="tc-expected-work-none"><input type="checkbox" id="tc-edit-ew-none" onchange="tcExpectedWorkToggle('edit')"> Sin jornada esperada</label>
-          <div id="tc-edit-ew-fields" class="tc-expected-work-duration">
-            <select id="tc-edit-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
-              <option value="4">4 h</option><option value="6">6 h</option><option value="8">8 h</option><option value="9">9 h</option><option value="10">10 h</option>
-            </select>
-            <select id="tc-edit-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
-              <option value="0">00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
-            </select>
-          </div>
-          <div class="tc-work-schedule-field">
-            <label class="form-label">Horario laboral</label>
-            <label class="tc-expected-work-none"><input type="checkbox" id="tc-edit-ws-on" onchange="tcWorkScheduleToggle('edit')"> Asignar horario fijo</label>
-            <div id="tc-edit-ws-fields" class="tc-work-schedule-fields hidden">
-              <div class="tc-work-schedule-days-wrap">
-                <span class="tc-work-schedule-days-label">Días laborales</span>
-                <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
-                  <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+        <div class="tc-emp-edit-dialog" role="dialog" aria-labelledby="tc-emp-edit-title" aria-modal="true">
+          <header class="tc-emp-edit-header">
+            <h3 id="tc-emp-edit-title">Editar colaborador</h3>
+            <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-emp-edit-close" aria-label="Cerrar edición" onclick="tcCloseEmpEdit()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+          </header>
+          <form class="tc-emp-edit-form" novalidate onsubmit="event.preventDefault();tcSaveEmpEdit()">
+            <input type="hidden" id="tc-emp-edit-id">
+            <div class="tc-emp-edit-body">
+              <div class="tc-emp-edit-profile">
+                <div class="tc-emp-edit-photo">
+                  <div id="tc-emp-edit-avatar-wrap"></div>
+                  <div class="tc-emp-edit-photo-actions">
+                    <label class="tc-emp-photo-btn"><input type="file" class="visually-hidden" id="tc-emp-edit-photo-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onchange="tcEmpPhotoFileSelected(event)">Cambiar foto</label>
+                    <button type="button" class="tc-emp-photo-btn tc-emp-photo-btn--muted hidden" id="tc-emp-edit-photo-remove" onclick="tcEmpRemovePhoto()">Quitar foto</button>
+                  </div>
+                </div>
+                <div class="tc-emp-edit-grid">
+                  <div class="tc-emp-edit-wide"><label class="form-label" for="tc-emp-edit-name">Nombre completo</label><input type="text" id="tc-emp-edit-name" class="form-input" maxlength="200" required></div>
+                  <div><label class="form-label" for="tc-emp-edit-position">Puesto</label><input type="text" id="tc-emp-edit-position" class="form-input" maxlength="200"></div>
+                  <div><label class="form-label" for="tc-emp-edit-dept">Departamento</label><input type="text" id="tc-emp-edit-dept" class="form-input" maxlength="200"></div>
+                  <div class="tc-emp-edit-code"><label class="form-label" for="tc-emp-edit-code">Código interno</label><input type="text" id="tc-emp-edit-code" class="form-input" maxlength="64"></div>
+                  <div class="tc-emp-edit-zone">
+                    <label class="form-label" for="tc-emp-edit-tz">Zona horaria</label>
+                    <select id="tc-emp-edit-tz" class="form-input">
+                      <option value="America/Mexico_City">America/Mexico_City</option>
+                      <option value="America/Tijuana">America/Tijuana</option>
+                      <option value="America/Hermosillo">America/Hermosillo</option>
+                      <option value="America/Cancun">America/Cancun</option>
+                      <option value="America/Monterrey">America/Monterrey</option>
+                      <option value="America/Chihuahua">America/Chihuahua</option>
+                      <option value="UTC">UTC</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <label>Entrada<input type="time" id="tc-edit-ws-start" class="form-input" value="08:00" step="60"></label>
-              <label>Salida<input type="time" id="tc-edit-ws-end" class="form-input" value="15:00" step="60"></label>
-              <label>Tolerancia<span class="tc-work-schedule-tol"><input type="number" id="tc-edit-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span></label>
-              <p class="tc-work-schedule-hint">Elige los días laborales. Los demás quedan como descanso, en la zona horaria del colaborador.</p>
+              <div class="tc-emp-edit-options">
+                <div class="tc-emp-edit-section tc-emp-edit-section--duration">
+                  <label class="tc-emp-edit-option">
+                    <input type="checkbox" id="tc-edit-ew-on" aria-controls="tc-edit-ew-fields" onchange="tcExpectedWorkToggle('edit')">
+                    <span><strong>Jornada esperada</strong><small>Duración diaria de referencia.</small></span>
+                  </label>
+                  <div id="tc-edit-ew-fields" class="tc-expected-work-duration hidden">
+                    <select id="tc-edit-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
+                      <option value="4">4 h</option><option value="6">6 h</option><option value="8">8 h</option><option value="9">9 h</option><option value="10">10 h</option>
+                    </select>
+                    <select id="tc-edit-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
+                      <option value="0">00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="tc-emp-edit-section">
+                  <label class="tc-emp-edit-option">
+                    <input type="checkbox" id="tc-edit-ws-on" aria-controls="tc-edit-ws-fields" onchange="tcWorkScheduleToggle('edit')">
+                    <span><strong>Horario laboral</strong><small>Días laborables, horas y tolerancia.</small></span>
+                  </label>
+                  <div id="tc-edit-ws-fields" class="tc-work-schedule-fields hidden">
+                    <div class="tc-work-schedule-days-wrap">
+                      <span class="tc-work-schedule-days-label">Días laborales</span>
+                      <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
+                        <button type="button" class="tc-work-schedule-day" id="tc-edit-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+                      </div>
+                    </div>
+                    <div class="tc-emp-edit-hours">
+                    <div>
+                      <label class="tc-emp-edit-hours-label" for="tc-edit-ws-start-typed">Entrada</label>
+                      <div class="tc-emp-edit-time">
+                        <input type="hidden" id="tc-edit-ws-start">
+                        <input type="text" id="tc-edit-ws-start-typed" class="form-input" inputmode="numeric" maxlength="5" placeholder="h:mm" autocomplete="off" aria-describedby="tc-edit-ws-time-hint" oninput="tcEmpEditTimeSync('start')" onblur="tcEmpEditTimeSync('start',true)">
+                        <div class="tc-emp-edit-period" role="group" aria-label="AM o PM de entrada">
+                          <label><input type="radio" class="visually-hidden" name="tc-edit-ws-start-period" value="am" onchange="tcEmpEditTimeSync('start')"><span>AM</span></label>
+                          <label><input type="radio" class="visually-hidden" name="tc-edit-ws-start-period" value="pm" onchange="tcEmpEditTimeSync('start')"><span>PM</span></label>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="tc-emp-edit-hours-label" for="tc-edit-ws-end-typed">Salida</label>
+                      <div class="tc-emp-edit-time">
+                        <input type="hidden" id="tc-edit-ws-end">
+                        <input type="text" id="tc-edit-ws-end-typed" class="form-input" inputmode="numeric" maxlength="5" placeholder="h:mm" autocomplete="off" aria-describedby="tc-edit-ws-time-hint" oninput="tcEmpEditTimeSync('end')" onblur="tcEmpEditTimeSync('end',true)">
+                        <div class="tc-emp-edit-period" role="group" aria-label="AM o PM de salida">
+                          <label><input type="radio" class="visually-hidden" name="tc-edit-ws-end-period" value="am" onchange="tcEmpEditTimeSync('end')"><span>AM</span></label>
+                          <label><input type="radio" class="visually-hidden" name="tc-edit-ws-end-period" value="pm" onchange="tcEmpEditTimeSync('end')"><span>PM</span></label>
+                        </div>
+                      </div>
+                    </div>
+                      <div class="tc-emp-edit-tol-field">
+                        <label class="tc-emp-edit-hours-label" for="tc-edit-ws-tol">Tolerancia</label>
+                        <span class="tc-work-schedule-tol"><input type="number" id="tc-edit-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span>
+                      </div>
+                    </div>
+                    <p class="tc-work-schedule-hint" id="tc-edit-ws-time-hint">Puedes escribir 830 para 8:30. Los días sin seleccionar quedan como descanso.</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <p id="tc-emp-edit-err" class="tc-task-modal-err hidden"></p>
-          <div class="tc-task-modal-actions">
-            <button type="button" class="card-action" onclick="tcCloseEmpEdit()">Cancelar</button>
-            <button type="button" class="tc-kanban-assign-btn" onclick="tcSaveEmpEdit()">Guardar</button>
-          </div>
+            <footer class="tc-emp-edit-footer">
+              <p id="tc-emp-edit-err" class="tc-task-modal-err hidden" role="alert"></p>
+              <div class="tc-task-modal-actions">
+                <button type="button" class="card-action" onclick="tcCloseEmpEdit()">Cancelar</button>
+                <button type="submit" class="tc-kanban-assign-btn" id="tc-emp-edit-save">Guardar cambios</button>
+              </div>
+            </footer>
+          </form>
         </div>
       </div>
       <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
@@ -9187,59 +9292,157 @@ function tcEmpEditAvatarRender(emp){
   if(rm) rm.classList.toggle('hidden',!(emp&&emp.profilePhotoPath));
 }
 let tcEditEmpCache=null;
-async function tcOpenEmpEdit(id){
+let tcEmpEditLauncher=null;
+let tcEmpEditLoadSeq=0;
+let tcEmpEditSaving=false;
+async function tcOpenEmpEdit(id,launcher){
   const bd=document.getElementById('tc-emp-edit-backdrop');
-  const err=document.getElementById('tc-emp-edit-err');
-  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  if(!bd||tcEmpEditSaving) return;
+  const seq=++tcEmpEditLoadSeq;
+  const trigger=launcher||document.activeElement;
+  tcEmpEditError('');
   try{
     const j=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id));
+    if(seq!==tcEmpEditLoadSeq) return;
     const emp=j.employee||{};
     tcEditEmpCache=emp;
-    const idEl=document.getElementById('tc-emp-edit-id');
-    if(idEl) idEl.value=emp.id||id;
-    const n=document.getElementById('tc-emp-edit-name'); if(n) n.value=emp.fullName||'';
-    const p=document.getElementById('tc-emp-edit-position'); if(p) p.value=emp.position||'';
-    const d=document.getElementById('tc-emp-edit-dept'); if(d) d.value=emp.department||'';
-    const c=document.getElementById('tc-emp-edit-code'); if(c) c.value=emp.employeeCode||'';
-    const tz=document.getElementById('tc-emp-edit-tz'); if(tz&&emp.timezone) tz.value=emp.timezone;
-    const fi=document.getElementById('tc-emp-edit-photo-input'); if(fi) fi.value='';
+    tcEmpEditLauncher=trigger;
+    document.getElementById('tc-emp-edit-id').value=emp.id||id;
+    const name=document.getElementById('tc-emp-edit-name');
+    name.value=emp.fullName||'';
+    name.removeAttribute('aria-invalid');
+    document.getElementById('tc-emp-edit-position').value=emp.position||'';
+    document.getElementById('tc-emp-edit-dept').value=emp.department||'';
+    document.getElementById('tc-emp-edit-code').value=emp.employeeCode||'';
+    const tz=document.getElementById('tc-emp-edit-tz');
+    const zone=emp.timezone||'America/Mexico_City';
+    if(!Array.from(tz.options).some(function(option){ return option.value===zone; })){
+      tz.add(new Option(zone,zone));
+    }
+    tz.value=zone;
+    document.getElementById('tc-emp-edit-photo-input').value='';
     tcEmpEditAvatarRender(emp);
-    tcExpectedWorkSet('edit', emp.expectedWorkMinutes!=null?emp.expectedWorkMinutes:null);
-    tcWorkScheduleSet('edit', emp.workSchedule||null);
-    if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+    tcExpectedWorkSet('edit',emp.expectedWorkMinutes);
+    tcWorkScheduleSet('edit',emp.workSchedule);
+    tcEmpEditTimeSet('start');
+    tcEmpEditTimeSet('end');
+    bd.classList.remove('hidden');
+    bd.setAttribute('aria-hidden','false');
+    bd.querySelector('.tc-emp-edit-body').scrollTop=0;
+    document.addEventListener('keydown',tcEmpEditOnKeydown,true);
+    document.getElementById('tc-emp-edit-close').focus();
   }catch(e){
-    alert(e.message||'No se pudo abrir el colaborador.');
+    if(seq===tcEmpEditLoadSeq) alert(e.message||'No se pudo abrir el colaborador.');
+  }
+}
+function tcEmpEditOnKeydown(e){
+  if(e.key==='Escape'){
+    e.preventDefault();
+    e.stopPropagation();
+    tcCloseEmpEdit();
+    return;
+  }
+  if(e.key!=='Tab') return;
+  const bd=document.getElementById('tc-emp-edit-backdrop');
+  const controls=Array.from(bd.querySelectorAll('button:not([disabled]),input:not([type="hidden"]),select')).filter(function(el){
+    return el.getClientRects().length&&(el.type!=='radio'||el.checked);
+  });
+  const first=controls[0];
+  const last=controls[controls.length-1];
+  if(first&&(document.activeElement===(e.shiftKey?first:last)||!bd.contains(document.activeElement))){
+    e.preventDefault();
+    (e.shiftKey?last:first).focus();
   }
 }
 function tcCloseEmpEdit(){
+  if(tcEmpEditSaving) return;
+  tcEmpEditLoadSeq+=1;
   tcEditEmpCache=null;
   const bd=document.getElementById('tc-emp-edit-backdrop');
-  if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+  if(bd){
+    bd.classList.add('hidden');
+    bd.setAttribute('aria-hidden','true');
+  }
+  document.removeEventListener('keydown',tcEmpEditOnKeydown,true);
+  if(tcEmpEditLauncher?.isConnected) tcEmpEditLauncher.focus({preventScroll:true});
+  tcEmpEditLauncher=null;
   tcEmpRefreshActiveWorkspaceTabAfterInteraction();
 }
-async function tcSaveEmpEdit(){
-  const id=(document.getElementById('tc-emp-edit-id')||{}).value;
+function tcEmpEditTimeSet(key){
+  const stored=document.getElementById('tc-edit-ws-'+key).value;
+  const [hour,minute]=stored.split(':').map(Number);
+  const typed=document.getElementById('tc-edit-ws-'+key+'-typed');
+  typed.value=(hour%12||12)+':'+String(minute).padStart(2,'0');
+  typed.removeAttribute('aria-invalid');
+  const period=hour<12?'am':'pm';
+  document.querySelector('input[name="tc-edit-ws-'+key+'-period"][value="'+period+'"]').checked=true;
+}
+function tcEmpEditTimeSync(key,format){
+  const typed=document.getElementById('tc-edit-ws-'+key+'-typed');
+  const period=document.querySelector('input[name="tc-edit-ws-'+key+'-period"]:checked')?.value;
+  const raw=typed.value.trim().replace(/^(\d{1,2})(\d{2})$/,'$1:$2');
+  const time=tcEmpNoshowParseTypedTime(raw);
+  const canonical=time.hour!=null&&period?tcEmpNoshowTimeToHHmm(time.hour,time.minute,period):'';
+  document.getElementById('tc-edit-ws-'+key).value=canonical;
+  if(canonical){
+    typed.removeAttribute('aria-invalid');
+    if(format) typed.value=time.hour+':'+String(time.minute).padStart(2,'0');
+  }
+}
+function tcEmpEditError(message,field){
   const err=document.getElementById('tc-emp-edit-err');
-  if(!id) return;
+  err.textContent=message;
+  err.classList.toggle('hidden',!message);
+  if(field){
+    field.setAttribute('aria-invalid','true');
+    field.focus();
+  }
+}
+async function tcSaveEmpEdit(){
+  const id=document.getElementById('tc-emp-edit-id').value;
+  if(!id||tcEmpEditSaving) return;
+  tcEmpEditError('');
+  const name=document.getElementById('tc-emp-edit-name');
+  const fullName=name.value.trim();
+  if(!fullName){ tcEmpEditError('El nombre es obligatorio.',name); return; }
+  name.removeAttribute('aria-invalid');
+  if(document.getElementById('tc-edit-ws-on').checked){
+    for(const key of ['start','end']){
+      tcEmpEditTimeSync(key,true);
+      if(!document.getElementById('tc-edit-ws-'+key).value){
+        const label=key==='start'?'entrada':'salida';
+        tcEmpEditError('Escribe una hora de '+label+' válida, por ejemplo 8:30.',document.getElementById('tc-edit-ws-'+key+'-typed'));
+        return;
+      }
+    }
+  }
   const body={
-    fullName:((document.getElementById('tc-emp-edit-name')||{}).value||'').trim(),
-    position:((document.getElementById('tc-emp-edit-position')||{}).value||'').trim()||null,
-    department:((document.getElementById('tc-emp-edit-dept')||{}).value||'').trim()||null,
-    employeeCode:((document.getElementById('tc-emp-edit-code')||{}).value||'').trim()||null,
-    timezone:((document.getElementById('tc-emp-edit-tz')||{}).value||'').trim(),
+    fullName,
+    position:document.getElementById('tc-emp-edit-position').value.trim()||null,
+    department:document.getElementById('tc-emp-edit-dept').value.trim()||null,
+    employeeCode:document.getElementById('tc-emp-edit-code').value.trim()||null,
+    timezone:document.getElementById('tc-emp-edit-tz').value,
     expectedWorkMinutes: tcExpectedWorkRead('edit'),
     workSchedule: tcWorkScheduleRead('edit'),
   };
-  if(!body.fullName){
-    if(err){ err.textContent='El nombre es obligatorio.'; err.classList.remove('hidden'); }
-    return;
-  }
+  const save=document.getElementById('tc-emp-edit-save');
+  tcEmpEditSaving=true;
+  save.setAttribute('aria-disabled','true');
   try{
     await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(id),{ method:'PATCH', body:JSON.stringify(body) });
-    tcCloseEmpEdit();
-    await tcLoadEmployees();
   }catch(e){
-    if(err){ err.textContent=e.message||'No se pudo guardar.'; err.classList.remove('hidden'); }
+    tcEmpEditError(e.message||'No se pudo guardar.');
+    return;
+  }finally{
+    tcEmpEditSaving=false;
+    save.removeAttribute('aria-disabled');
+  }
+  const trigger=tcEmpEditLauncher;
+  tcCloseEmpEdit();
+  await tcLoadEmployees();
+  if(trigger?.dataset.tcEditEmployee===id&&!trigger.isConnected&&document.activeElement===document.body){
+    const buttons=document.querySelectorAll('[data-tc-edit-employee]');
+    Array.from(buttons).find(function(btn){ return btn.dataset.tcEditEmployee===id; })?.focus({preventScroll:true});
   }
 }
 async function tcEmpPhotoFileSelected(ev){
@@ -9342,7 +9545,7 @@ function tcWorkScheduleToggle(prefix){
   const fields=document.getElementById('tc-'+prefix+'-ws-fields');
   if(!on||!fields) return;
   fields.classList.toggle('hidden', !on.checked);
-  if(!on.checked) return;
+  if(!on.checked||prefix==='edit') return;
   const start=document.getElementById('tc-'+prefix+'-ws-start');
   const end=document.getElementById('tc-'+prefix+'-ws-end');
   const tol=document.getElementById('tc-'+prefix+'-ws-tol');
@@ -9362,7 +9565,7 @@ function tcWorkScheduleSet(prefix, schedule){
   if(start) start.value=active?tcMinuteToHm(schedule.startMinute):'08:00';
   if(end) end.value=active?tcMinuteToHm(schedule.endMinute):'15:00';
   if(tol) tol.value=active?String(schedule.toleranceMinutes):'10';
-  tcWorkScheduleApplyDays(prefix, active?days:[]);
+  tcWorkScheduleApplyDays(prefix,active?days:prefix==='edit'?[1,2,3,4,5]:[]);
   tcWorkScheduleToggle(prefix);
 }
 function tcWorkScheduleRead(prefix){
@@ -20443,50 +20646,49 @@ window.mind24NotifMarkAllRead=mind24NotifMarkAllRead;
 window.mind24NotifClose=mind24NotifClose;
 window.mind24NotifOpenItem=mind24NotifOpenItem;
 window.mind24NotifLoadMore=mind24NotifLoadMore;
-function tcExpectedWorkEnsureHourOption(sel, h){
+function tcExpectedWorkEnsureOption(sel,value,unit){
   if(!sel) return;
-  const v=String(h);
+  const v=String(value);
   if(![].some.call(sel.options,function(o){ return o.value===v; })){
     const o=document.createElement('option');
     o.value=v;
-    o.textContent=h+' h';
+    o.textContent=value+' '+unit;
     sel.appendChild(o);
   }
   sel.value=v;
 }
 function tcExpectedWorkSet(prefix, minutes){
-  const none=document.getElementById('tc-'+prefix+'-ew-none');
-  const fields=document.getElementById('tc-'+prefix+'-ew-fields');
-  if(!none||!fields) return;
-  if(minutes==null||minutes===0){
-    none.checked=true;
-    fields.classList.add('hidden');
-    return;
-  }
-  none.checked=false;
-  fields.classList.remove('hidden');
-  const h=Math.floor(minutes/60);
-  const m=minutes%60;
-  tcExpectedWorkEnsureHourOption(document.getElementById('tc-'+prefix+'-ew-hours'), h);
+  const checkbox=document.getElementById('tc-'+prefix+(prefix==='edit'?'-ew-on':'-ew-none'));
+  if(!checkbox) return;
+  const editing=prefix==='edit';
+  const active=minutes>0;
+  checkbox.checked=editing?active:!active;
+  tcExpectedWorkToggle(prefix);
+  if(!active&&!editing) return;
+  const duration=active?minutes:480;
+  const h=Math.floor(duration/60);
+  const m=duration%60;
+  tcExpectedWorkEnsureOption(document.getElementById('tc-'+prefix+'-ew-hours'),h,'h');
   const ms=document.getElementById('tc-'+prefix+'-ew-minutes');
-  if(ms){
-    const mv=[0,15,30,45].reduce(function(best,x){ return Math.abs(x-m)<Math.abs(best-m)?x:best; },0);
-    ms.value=String(mv);
+  if(editing){
+    tcExpectedWorkEnsureOption(ms,m,'min');
+  }else if(ms){
+    ms.value=String([0,15,30,45].reduce(function(best,x){ return Math.abs(x-m)<Math.abs(best-m)?x:best; },0));
   }
 }
 function tcExpectedWorkRead(prefix){
-  const none=document.getElementById('tc-'+prefix+'-ew-none');
-  if(none&&none.checked) return null;
+  const checkbox=document.getElementById('tc-'+prefix+(prefix==='edit'?'-ew-on':'-ew-none'));
+  if(checkbox&&(prefix==='edit'?!checkbox.checked:checkbox.checked)) return null;
   const h=parseInt((document.getElementById('tc-'+prefix+'-ew-hours')||{}).value,10)||0;
   const m=parseInt((document.getElementById('tc-'+prefix+'-ew-minutes')||{}).value,10)||0;
   const total=h*60+m;
   return total>0?total:null;
 }
 function tcExpectedWorkToggle(prefix){
-  const none=document.getElementById('tc-'+prefix+'-ew-none');
+  const checkbox=document.getElementById('tc-'+prefix+(prefix==='edit'?'-ew-on':'-ew-none'));
   const fields=document.getElementById('tc-'+prefix+'-ew-fields');
-  if(!none||!fields) return;
-  fields.classList.toggle('hidden', !!none.checked);
+  if(!checkbox||!fields) return;
+  fields.classList.toggle('hidden',prefix==='edit'?!checkbox.checked:checkbox.checked);
 }
 function tcToggleAddForm(force){
   const card=document.getElementById('tc-add-card');
@@ -20555,7 +20757,7 @@ async function tcLoadEmployees(){
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('completed',done)+'</td>'+
         '<td class="tc-emp-td-status">'+tcDirJornadaStatusHtml(emp)+'</td>'+
         '<td class="tc-emp-td-actions"><div class="tc-emp-actions">'+
-          '<button type="button" class="tc-icon-btn" title="Editar colaborador" aria-label="Editar colaborador '+name+'" onclick="tcOpenEmpEdit(\''+emp.id+'\')">'+tcSvgPencil()+'</button>'+
+          '<button type="button" class="tc-icon-btn" title="Editar colaborador" aria-label="Editar colaborador '+name+'" data-tc-edit-employee="'+tcEsc(emp.id)+'" onclick="tcOpenEmpEdit(\''+emp.id+'\',this)">'+tcSvgPencil()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--folder" title="Documentos" aria-label="Documentos de '+name+'" onclick="tcOpenEmpDocs(\''+emp.id+'\')">'+tcSvgFolder()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--view" title="Ver jornada" aria-label="Ver jornada de '+name+'" onclick="tcViewJornada(\''+emp.id+'\')">'+tcSvgEye()+'</button>'+
           '<button type="button" class="tc-icon-btn tc-icon-btn--link" title="Regenerar enlace" aria-label="Regenerar enlace de acceso de '+name+'" onclick="tcRegenerate(\''+emp.id+'\')">'+tcSvgLink()+'</button>'+
@@ -21311,7 +21513,7 @@ async function tcDownloadSchedExportPdf(){
 function tcPunctualityEditEmployee(){
   if(!tcJornadaEmpId) return;
   tcCloseHistoryDialog(false);
-  tcOpenEmpEdit(tcJornadaEmpId);
+  tcOpenEmpEdit(tcJornadaEmpId,document.getElementById('tc-history-toggle'));
 }
 function tcPunctShiftWeek(delta){
   if(tcPunctLoading||!tcPunctPayload||!tcPunctPayload.weekStart) return;
