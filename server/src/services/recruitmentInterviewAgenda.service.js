@@ -2,6 +2,7 @@ import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { localDateKey, localMidnightUtc } from './remoteWorkSessionHistory.service.js';
 import { classifyRecruitmentApplication } from './recruitmentProcessClosure.service.js';
+import { APPROVED_STAGE_KEY, INTERVIEW_NO_SHOW_STAGE_KEY } from './recruitmentStage.service.js';
 import {
   buildApplicationInterviewRows,
   serializeRecruitmentApplicationInterviewEvent,
@@ -10,6 +11,7 @@ import {
 const MONTH_PATTERN = /^[1-9]\d{3}-(0[1-9]|1[0-2])$/;
 const PAGE_SIZE = 30;
 const calendarStatuses = ['SCHEDULED', 'ATTENDED', 'NO_SHOW', 'CANCELLED'];
+const outsideSchedulingQueue = [APPROVED_STAGE_KEY, 'HIRED', 'REJECTED', 'EMPLOYMENT_EXIT', INTERVIEW_NO_SHOW_STAGE_KEY];
 
 const stageSelect = { id: true, key: true, name: true };
 const applicationSelect = {
@@ -37,7 +39,6 @@ function agendaEntry(app) {
     clientName: app.vacancy.clientName,
     stageName: app.stage.name,
     appliedAt: app.appliedAt.toISOString(),
-    parked: app.stage.key === 'INTERVIEW_NO_SHOW',
   };
 }
 
@@ -130,7 +131,8 @@ export async function listRecruitmentInterviewAgendaPending({ organizationId, cu
     where: {
       ...scope,
       candidate: { ...scope.candidate, archivedAt: null },
-      stage: { key: { notIn: ['HIRED', 'REJECTED', 'EMPLOYMENT_EXIT'] } },
+      vacancy: { ...scope.vacancy, status: 'ACTIVE' },
+      stage: { key: { notIn: outsideSchedulingQueue } },
       closureOutcome: null,
       interviewScheduledAt: null,
       interviewEvents: { none: { organizationId, eventType: 'SCHEDULED' } },

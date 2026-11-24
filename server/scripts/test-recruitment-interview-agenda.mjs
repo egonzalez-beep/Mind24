@@ -20,6 +20,11 @@ const makeApp = (id, overrides = {}) => ({
 const regular = makeApp('regular', { interviewScheduledAt: appointed });
 const legacy = makeApp('legacy', { interviewScheduledAt: noHour, interviewTimeSpecified: false });
 const closed = makeApp('closed', { closureOutcome: 'DECLINED' });
+const parked = makeApp('parked', { stage: { id: 'park', key: 'INTERVIEW_NO_SHOW', name: 'No asistió' } });
+const approved = makeApp('approved', {
+  stage: { id: 'approved', key: 'APPROVED', name: 'Aprobado' },
+  scheduledEmploymentStartDate: new Date('2026-11-30T00:00:00Z'),
+});
 const makeEvent = (id, application, eventType, scheduledAt = appointed) => ({
   id, application, applicationId: application.id, eventType, scheduledAt, createdAt: now,
   stage: application.stage, stageId: application.stageId,
@@ -38,7 +43,8 @@ const calendarDb = {
         makeEvent('scheduled-1', regular, 'SCHEDULED'),
         makeEvent('scheduled-2', regular, 'SCHEDULED', new Date('2026-12-01T00:00:00Z')),
         makeEvent('attended', closed, 'ATTENDED'),
-        makeEvent('no-show', regular, 'NO_SHOW'),
+        makeEvent('no-show', parked, 'NO_SHOW'),
+        makeEvent('approved-history', approved, 'ATTENDED'),
         makeEvent('cancelled', closed, 'CANCELLED'),
         makeEvent('old-closed-schedule', closed, 'SCHEDULED'),
       ];
@@ -64,17 +70,23 @@ assert.equal(data.entries.filter((row) => row.interview.eventType === 'SCHEDULED
 assert.equal(data.entries.filter((row) => row.applicationId === 'legacy')[0].interview.scheduledTimeSpecified, false);
 assert.equal(data.entries.find((row) => row.interview.id === 'attended').readonly, true);
 assert(!data.entries.some((row) => row.interview.id === 'old-closed-schedule'));
-assert(data.entries.some((row) => row.interview.id === 'no-show'));
+assert(data.entries.some((row) => row.applicationId === parked.id && row.interview.id === 'no-show'));
+assert(data.entries.some((row) => row.applicationId === approved.id && row.interview.id === 'approved-history'));
 assert(data.entries.some((row) => row.interview.id === 'cancelled'));
 
 const pages = Array.from({ length: 31 }, (_, i) => makeApp(String(i + 1).padStart(2, '0')));
-pages[0].stage = { ...pages[0].stage, key: 'INTERVIEW_NO_SHOW', name: 'No asistió' };
+pages[0].stage = { ...pages[0].stage, key: 'EVALUATIONS', name: 'Evaluaciones' };
+pages[1].stage = { ...pages[1].stage, key: 'FINALIST', name: 'Finalista' };
 const pendingDb = {
   recruitmentApplication: {
     async findMany({ where, orderBy, take }) {
       assert.equal(where.organizationId, org);
       assert.equal(where.candidate.archivedAt, null);
+      assert.deepEqual(where.vacancy, { organizationId: org, status: 'ACTIVE' });
       assert.equal(where.closureOutcome, null);
+      assert.deepEqual(new Set(where.stage.key.notIn), new Set([
+        'APPROVED', 'HIRED', 'REJECTED', 'EMPLOYMENT_EXIT', 'INTERVIEW_NO_SHOW',
+      ]));
       assert.equal(where.interviewScheduledAt, null);
       assert.deepEqual(where.interviewEvents.none, { organizationId: org, eventType: 'SCHEDULED' });
       assert.deepEqual(orderBy, [{ appliedAt: 'asc' }, { id: 'asc' }]);
@@ -88,7 +100,7 @@ const pendingDb = {
 };
 const firstPage = await listRecruitmentInterviewAgendaPending({ organizationId: org, db: pendingDb });
 assert.equal(firstPage.entries.length, 30);
-assert.equal(firstPage.entries[0].parked, true);
+assert.deepEqual(firstPage.entries.slice(0, 2).map((row) => row.stageName), ['Evaluaciones', 'Finalista']);
 const nextPage = await listRecruitmentInterviewAgendaPending({
   organizationId: org, cursor: firstPage.nextCursor, db: pendingDb,
 });

@@ -275,17 +275,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-global-search{width:min(280px,42vw);min-width:160px;margin:0;font-size:13px;padding:7px 11px;border-radius:10px;}
 
 #view-dash-recruitment #rec-pane-agenda{flex:1;min-height:0;min-width:0;overflow:auto;padding:18px 2px 24px;}
-.rec-agenda{background:transparent;}
-.rec-agenda-head,.rec-agenda-layout{width:min(100%,1260px);margin-inline:auto;}
-.rec-agenda-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;}
-.rec-agenda-head h1{margin:0;color:var(--primary);font-size:clamp(22px,2.5vw,30px);letter-spacing:-.04em;line-height:1.15;}
-.rec-agenda-section-head p{margin:5px 0 0;font-size:13px;color:var(--slate-600);line-height:1.4;}
+.rec-agenda-layout{width:min(100%,1260px);margin-inline:auto;}
 .rec-agenda-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,1fr);gap:16px;align-items:start;}
 .rec-agenda-main{display:grid;align-content:start;gap:14px;min-width:0;}
-.rec-agenda-panel{min-width:0;border:1px solid var(--slate-200);border-radius:16px;background:#fff;padding:14px;}
+.rec-agenda-panel{min-width:0;border:1px solid #e5ddfa;border-radius:16px;background:linear-gradient(180deg,#f7f3ff 0,#fff 92px);padding:14px;}
+.rec-agenda-pending{border-color:#f0e5d2;background:linear-gradient(180deg,#fff8eb 0,#fff 86px);}
 .rec-agenda-month,.rec-agenda-section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
 .rec-agenda-panel h2{font-size:16px;font-weight:750;letter-spacing:-.02em;color:var(--primary);margin:0;}
-.rec-agenda-nav{display:flex;align-items:center;gap:5px;}
+.rec-agenda-pending h2{color:#783f12;}
+.rec-agenda-nav{display:flex;align-items:center;flex-wrap:wrap;gap:5px;max-width:100%;}
 .rec-agenda-nav button{border:1px solid var(--slate-200);border-radius:9px;background:#fff;color:var(--slate-700);font:inherit;font-size:13px;font-weight:700;min-height:34px;cursor:pointer;}
 .rec-agenda-today{padding:0 9px;}
 .rec-agenda-nav .rec-agenda-nav-btn{width:34px;font-size:19px;line-height:1;}
@@ -295,10 +293,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-week{margin-bottom:5px;}
 .rec-agenda-week span{text-align:center;color:var(--slate-500);font-size:11px;font-weight:700;}
 .rec-agenda-day{position:relative;min-height:49px;border:1px solid var(--slate-100);border-radius:9px;background:#fafbfe;color:var(--primary);font:inherit;font-weight:650;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;padding:3px;}
-.rec-agenda-day:hover{background:#f5f0ff;border-color:#c4b5fd;}
+.rec-agenda-day--booked{background:#f5f1ff;border-color:#e9e1ff;color:var(--purple-dark);}
+.rec-agenda-day:hover{background:#efe9ff;border-color:#c4b5fd;}
 .rec-agenda-day[aria-current=date]{border-color:var(--violet);color:var(--purple-dark);font-weight:800;}
-.rec-agenda-day[aria-pressed=true]{background:#ede9fe;border-color:#a78bfa;color:var(--purple-deep);}
-.rec-agenda-day[aria-current=date][aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--violet);}
+.rec-agenda-day[aria-pressed=true]{background:var(--purple-dark);border-color:var(--purple-dark);color:#fff;}
+.rec-agenda-day[aria-current=date][aria-pressed=true]{box-shadow:inset 0 0 0 1px #ddd6fe;}
 .rec-agenda-day-count,.rec-agenda-count{display:inline-flex;align-items:center;justify-content:center;background:var(--purple-light);color:var(--purple-dark);font-size:10px;font-weight:750;border-radius:999px;padding:2px 6px;}
 .rec-agenda-day[aria-pressed=true] .rec-agenda-day-count{background:#fff;}
 .rec-agenda-count:empty{display:none;}
@@ -306,7 +305,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-list{display:grid;gap:7px;align-content:start;}
 .rec-agenda-row{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px;transition:border-color .15s,background .15s;}
 .rec-agenda-row:hover,.rec-agenda-row:focus-within{border-color:#c4b5fd;background:#fcfaff;}
-.rec-agenda-row-main{display:flex;align-items:center;gap:9px;min-width:0;padding:3px;text-align:left;border:0;background:none;color:var(--primary);font:inherit;cursor:pointer;border-radius:7px;}
+.rec-agenda-row-main{display:flex;align-items:center;gap:9px;min-width:0;padding:3px;text-align:left;border:0;background:none;color:var(--primary);font:inherit;border-radius:7px;}
+button.rec-agenda-row-main{cursor:pointer;}
+.rec-agenda-pending .rec-agenda-row:hover:not(:focus-within){background:#fff;border-color:var(--slate-200);}
 .rec-agenda-row-copy{min-width:0;display:grid;gap:3px;}
 .rec-agenda-row-title{font-size:13px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;}
 .rec-agenda-row-sub{color:var(--slate-600);font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
@@ -314,6 +315,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-slot{min-width:66px;max-width:76px;flex:none;align-self:stretch;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);display:grid;place-content:center;text-align:center;line-height:1.2;padding:5px;font-weight:750;font-size:11px;}
 .rec-agenda-row-actions{display:grid;justify-items:end;gap:5px;}
 .rec-agenda-row-actions .rec-stages-ghost-btn{font-size:11px;padding:6px 8px;white-space:nowrap;}
+.rec-agenda-row-actions .rec-agenda-book{border:1px solid #ddd6fe;background:#ede9fe;color:var(--purple-dark);font-weight:700;}
+.rec-agenda-row-actions .rec-agenda-book:hover{background:#ddd6fe;}
 .rec-agenda-row-actions .rec-cand-interview-status{font-size:10px;white-space:normal;text-align:center;}
 .rec-agenda-message{font-size:13px;color:var(--slate-600);line-height:1.5;margin:8px 0 0;}
 .rec-agenda-message:empty{display:none;}
@@ -321,13 +324,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-empty{margin:0;padding:14px 10px;border-radius:10px;background:var(--slate-50);color:var(--slate-600);font-size:13px;}
 .rec-agenda-more{margin-top:10px;}
 .rec-agenda-jump{display:none;}
+.rec-agenda-nav .rec-agenda-jump{border-color:#ddd6fe;background:#f3eeff;color:var(--purple-dark);padding:0 7px;white-space:nowrap;}
 .rec-iv-agenda-context{margin:0 0 10px;color:var(--slate-600);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
 @media(max-width:1060px){
   .rec-topbar-cluster .rec-module-nav--inline{flex-wrap:wrap;}
 }
 @media(max-width:900px){
   .rec-agenda-layout{grid-template-columns:minmax(0,1fr);}
-  .rec-agenda-jump{display:inline-flex;flex:none;white-space:nowrap;}
+  .rec-agenda-jump{display:inline-flex;align-items:center;flex:none;}
 }
 @media(max-width:700px){
   #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-dash-topbar{height:auto;min-height:0;position:sticky;padding:10px 12px;}
@@ -346,6 +350,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   .rec-agenda-row{grid-template-columns:minmax(0,1fr);gap:3px;}
   .rec-agenda-row-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
   .rec-agenda-slot{min-width:52px;max-width:58px;}
+}
+@media(max-width:360px){
+  .rec-agenda-nav{gap:4px;}
+  .rec-agenda-nav .rec-agenda-nav-btn{width:29px;}
 }
 @media(prefers-reduced-motion:reduce){.rec-agenda-row{transition:none;}}
 
@@ -4637,11 +4645,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </div>
         </div>
       </div>
-      <section id="rec-pane-agenda" class="rec-agenda tc-workforce-scroll hidden" aria-labelledby="rec-agenda-title">
-        <header class="rec-agenda-head">
-          <div><h1 id="rec-agenda-title">Agenda de entrevistas</h1></div>
-          <button type="button" class="rec-stages-ghost-btn rec-agenda-jump" onclick="document.getElementById('rec-agenda-pending-title').focus()">Sin cita ↓</button>
-        </header>
+      <section id="rec-pane-agenda" class="rec-agenda tc-workforce-scroll hidden" aria-label="Agenda de entrevistas">
         <div class="rec-agenda-layout">
           <div class="rec-agenda-main">
             <section class="rec-agenda-panel" aria-label="Calendario de entrevistas">
@@ -4651,6 +4655,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
                   <button type="button" class="rec-agenda-today" onclick="recAgendaGoToday()">Hoy</button>
                   <button type="button" class="rec-agenda-nav-btn" aria-label="Mes anterior" onclick="recAgendaMoveMonth(-1)">‹</button>
                   <button type="button" class="rec-agenda-nav-btn" aria-label="Mes siguiente" onclick="recAgendaMoveMonth(1)">›</button>
+                  <button type="button" class="rec-agenda-jump" onclick="document.getElementById('rec-agenda-pending-title').focus()">Sin cita ↓</button>
                 </div>
               </div>
               <div class="rec-agenda-week" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
@@ -4663,7 +4668,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             </section>
           </div>
           <aside class="rec-agenda-panel rec-agenda-pending" aria-labelledby="rec-agenda-pending-title">
-            <div class="rec-agenda-section-head"><div><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2><p>Postulaciones activas, primero las más antiguas.</p></div></div>
+            <div class="rec-agenda-section-head"><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2></div>
             <div class="rec-agenda-list" id="rec-agenda-pending-list"></div>
             <p id="rec-agenda-pending-status" class="rec-agenda-message" aria-live="polite"></p>
             <button type="button" class="rec-stages-ghost-btn rec-agenda-more hidden" id="rec-agenda-more" onclick="recAgendaLoadPending(true)">Cargar más postulaciones</button>
@@ -13936,7 +13941,7 @@ function recAgendaPaintCalendar(){
     const total=byDate.get(date)||0;
     const label=recAgendaDateLabel(date,{weekday:'long',day:'numeric',month:'long'})+(total?', '+total+(total===1?' cita':' citas'):'');
     const active=date===a.selected;
-    html+='<button type="button" class="rec-agenda-day" data-date="'+date+'" aria-label="'+tcEsc(label)+'" aria-pressed="'+active+'"'+
+    html+='<button type="button" class="rec-agenda-day'+(total?' rec-agenda-day--booked':'')+'" data-date="'+date+'" aria-label="'+tcEsc(label)+'" aria-pressed="'+active+'"'+
       (date===a.today?' aria-current="date"':'')+(active?'':' tabindex="-1"')+' onclick="recAgendaSelectDay(this.dataset.date,event.detail>0)">'+n+
       (total?'<span class="rec-agenda-day-count" aria-hidden="true">'+total+'</span>':'')+'</button>';
   }
@@ -13981,17 +13986,17 @@ function recAgendaRowHtml(row,pending){
   const registered=pending?new Intl.DateTimeFormat('es-MX',{
     timeZone:recAgendaState().timeZone,day:'numeric',month:'short',year:'numeric'
   }).format(new Date(row.appliedAt)):'';
-  const meta=pending?[row.parked?'Cartera de inasistencia':row.stageName,'Registro '+registered].filter(Boolean).join(' · '):recCandInterviewTitle(iv);
-  const label=pending?(row.parked?'Ver ficha de ':'Agendar entrevista para '):'Ver entrevista de ';
-  return '<article class="rec-agenda-row" data-entry="'+tcEsc(recAgendaRowKey(row))+'">'+
-    '<button type="button" class="rec-agenda-row-main" aria-label="'+tcEsc(label+row.candidateName)+'" onclick="recAgendaOpenRow(this)">'+
+  const meta=pending?[row.stageName,'Registro '+registered].filter(Boolean).join(' · '):recCandInterviewTitle(iv);
+  const opener=pending?'<div class="rec-agenda-row-main">':
+    '<button type="button" class="rec-agenda-row-main" aria-label="'+tcEsc('Ver entrevista de '+row.candidateName)+'" onclick="recAgendaOpenRow(this)">';
+  return '<article class="rec-agenda-row" data-entry="'+tcEsc(recAgendaRowKey(row))+'">'+opener+
     (time?'<span class="rec-agenda-slot">'+tcEsc(time)+'</span>':'')+
     '<span class="rec-agenda-row-copy"><strong class="rec-agenda-row-title">'+tcEsc(row.candidateName)+'</strong>'+
-    '<span class="rec-agenda-row-sub">'+tcEsc(reference)+'</span><span class="rec-agenda-row-meta">'+tcEsc(meta)+'</span></span></button>'+
+    '<span class="rec-agenda-row-sub">'+tcEsc(reference)+'</span><span class="rec-agenda-row-meta">'+tcEsc(meta)+'</span></span>'+(pending?'</div>':'</button>')+
     '<div class="rec-agenda-row-actions">'+
     (iv?'<span class="rec-cand-interview-status rec-cand-interview-status--'+recCandInterviewStatusClass(iv.eventType)+'">'+tcEsc(recCandInterviewStatusLabel(iv.eventType))+'</span>':'')+
-    (pending&&!row.parked?'<button type="button" class="rec-stages-ghost-btn" onclick="recAgendaOpenRow(this)">Agendar</button>':'')+
-    '<button type="button" class="rec-stages-ghost-btn" onclick="recAgendaOpenFile(this)">Ver ficha</button></div></article>';
+    (pending?'<button type="button" class="rec-stages-ghost-btn rec-agenda-book" aria-label="'+tcEsc('Agendar entrevista para '+row.candidateName)+'" onclick="recAgendaOpenRow(this)">Agendar</button>':'')+
+    '<button type="button" class="rec-stages-ghost-btn" aria-label="'+tcEsc('Ver ficha de '+row.candidateName)+'" onclick="recAgendaOpenFile(this)">Ver ficha</button></div></article>';
 }
 function recAgendaPaintList(id,html,fallbackId){
   const list=document.getElementById(id);
@@ -14022,7 +14027,7 @@ function recAgendaPaintDay(){
 function recAgendaPaintPending(){
   const a=recAgendaState();
   const html=a.pending.map(function(row){return recAgendaRowHtml(row,true);}).join('')||
-    (a.pendingReady?'<p class="rec-agenda-empty">No hay postulaciones activas sin cita.</p>':'');
+    (a.pendingReady?'<p class="rec-agenda-empty">No hay postulaciones por agendar.</p>':'');
   recAgendaPaintList('rec-agenda-pending-list',html,'rec-agenda-pending-title');
   document.getElementById('rec-agenda-more').classList.toggle('hidden',!a.nextCursor);
 }
@@ -14138,7 +14143,6 @@ function recAgendaOpenFile(button){
 function recAgendaOpenRow(button){
   const row=recAgendaFindRow(button);
   if(!row) return;
-  if(!row.interview&&row.parked){ recAgendaOpenFile(button); return; }
   const eventId=row.interview?.id||(row.interview?.legacy?'legacy':null);
   recCandOpenInterviewDetail(button,row.applicationId,eventId,{agendaEntry:row});
 }
