@@ -10,10 +10,13 @@ import {
 import { rejectFuturePunctualityWeek } from './workforcePunctuality.service.js';
 import { renderHtmlToPdfBuffer } from './pdf.service.js';
 import {
+  buildPunctualityPdfFooterTemplate,
+  buildPunctualityPdfHeaderTemplate,
   buildWeeklyPunctualityReportDocument,
   formatReportGeneratedAt,
   punctualityExportContentDisposition,
   punctualityExportFilename,
+  PUNCTUALITY_PDF_MARGINS_MM,
   summarizePunctualityReports,
 } from '../utils/workforcePunctualityReport.util.js';
 
@@ -145,13 +148,21 @@ export async function assembleWeeklyPunctualityExport({
 
 export async function exportWeeklyPunctualityPdf(input) {
   const report = await assembleWeeklyPunctualityExport(input);
+  const mm = PUNCTUALITY_PDF_MARGINS_MM;
   const buffer = await renderHtmlToPdfBuffer(report.html, {
     format: 'A4',
     landscape: true,
+    // HTML autocontenido: evita colgar networkidle0 entre generaciones.
+    waitUntil: 'load',
     displayHeaderFooter: true,
-    headerTemplate: '<span></span>',
-    footerTemplate: '<div style="font-size:8px;width:100%;text-align:right;padding-right:12mm;color:#64748b;font-family:Arial,sans-serif;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',
-    margin: { top: '12mm', right: '12mm', bottom: '16mm', left: '12mm' },
+    headerTemplate: buildPunctualityPdfHeaderTemplate(report),
+    footerTemplate: buildPunctualityPdfFooterTemplate(),
+    margin: {
+      top: `${mm.top}mm`,
+      right: `${mm.right}mm`,
+      bottom: `${mm.bottom}mm`,
+      left: `${mm.left}mm`,
+    },
   });
   return {
     buffer,

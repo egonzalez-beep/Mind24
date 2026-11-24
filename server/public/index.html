@@ -1387,6 +1387,35 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-pulse-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.45);}
 .tc-pulse-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-pulse-btn[aria-expanded="true"]{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
+.tc-sched-export-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(124,58,237,.22);background:rgba(255,255,255,.92);color:var(--purple-dark);font-family:inherit;font-size:13px;font-weight:600;padding:9px 12px;border-radius:10px;cursor:pointer;transition:var(--tr-fast);line-height:1.2;max-width:100%;}
+.tc-sched-export-btn svg{flex:0 0 auto;}
+.tc-sched-export-btn span{min-width:0;white-space:normal;text-align:left;}
+.tc-sched-export-btn:hover{background:var(--purple-light);border-color:rgba(124,58,237,.45);}
+.tc-sched-export-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-sched-export-btn[aria-expanded="true"]{background:var(--purple-light);border-color:rgba(124,58,237,.5);}
+.tc-sched-export-backdrop{position:fixed;inset:0;z-index:1190;background:rgba(15,23,42,.28);}
+.tc-sched-export-backdrop.hidden{display:none!important;}
+.tc-sched-export-dialog{position:fixed;z-index:1191;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 28px));max-height:min(86vh,560px);display:flex;flex-direction:column;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border:1px solid var(--slate-200);border-radius:16px;box-shadow:0 24px 60px rgba(15,23,42,.18),0 4px 16px rgba(124,58,237,.08);overflow:hidden;}
+.tc-sched-export-dialog.hidden{display:none!important;}
+.tc-sched-export-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--slate-100);}
+.tc-sched-export-head h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
+.tc-sched-export-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;}
+.tc-sched-export-week{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
+.tc-sched-export-week-label{min-width:0;text-align:center;font-size:14px;font-weight:700;color:var(--slate-800);line-height:1.3;}
+.tc-sched-export-nav{width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(124,58,237,.28);border-radius:10px;background:#fff;color:var(--purple-dark);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;line-height:1;padding:0;}
+.tc-sched-export-nav:focus-visible,.tc-sched-export-btn:focus-visible,#tc-sched-export-download:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-sched-export-nav[disabled],#tc-sched-export-download[disabled]{opacity:.4;cursor:not-allowed;}
+.tc-sched-export-scope{margin:0;font-size:13px;color:var(--slate-500);text-align:center;line-height:1.4;}
+.tc-sched-export-err{margin:0;font-size:12px;color:#b91c1c;line-height:1.4;}
+.tc-sched-export-err.hidden{display:none!important;}
+#tc-sched-export-download{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:12px;background:var(--purple);color:#fff;font-family:inherit;font-size:14px;font-weight:700;padding:12px 16px;cursor:pointer;}
+#tc-sched-export-download:hover:not([disabled]){filter:brightness(1.05);}
+#tc-sched-export-download.tc-sched-export-download--busy svg{animation:m24SpinAnim .7s linear infinite;}
+@media(max-width:720px){
+  .tc-topbar-tools{width:100%;margin-right:0;justify-content:flex-start;}
+  .tc-sched-export-btn{flex:1 1 auto;}
+  .tc-sched-export-dialog{top:auto;bottom:16px;transform:translate(-50%,0);width:calc(100vw - 24px);border-radius:18px 18px 14px 14px;}
+}
 .tc-pulse-popover{position:fixed;z-index:1180;width:min(300px,calc(100vw - 24px));padding:0;border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
 .tc-pulse-popover.hidden{display:none!important;}
 .tc-pulse-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
@@ -1767,7 +1796,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-history-tabs{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap;}
 .tc-history-tab{appearance:none;border:0;background:transparent;color:var(--slate-500);font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:1.2;}
 .tc-history-tab--on{background:var(--purple-light);color:var(--purple-dark);}
-.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible,.tc-punct-pdf:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-history-dialog--punctuality{width:min(920px,calc(100vw - 32px));}
 .tc-punct-panel{display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;}
 .tc-punct-panel.hidden{display:none!important;}
@@ -1776,9 +1805,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-punct-sub{margin:3px 0 0;font-size:12px;line-height:1.4;color:var(--slate-500);overflow-wrap:anywhere;}
 .tc-punct-nav-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;max-width:100%;}
 .tc-punct-nav,.tc-punct-refresh{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;color:var(--slate-600);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
-.tc-punct-pdf{width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(124,58,237,.28);border-radius:10px;background:#fff;color:var(--purple-dark);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
-.tc-punct-nav[disabled],.tc-punct-refresh[disabled],.tc-punct-pdf[disabled]{opacity:.35;cursor:not-allowed;}
-.tc-punct-refresh--spin svg,.tc-punct-pdf--busy svg{animation:m24SpinAnim .7s linear infinite;}
+.tc-punct-nav[disabled],.tc-punct-refresh[disabled]{opacity:.35;cursor:not-allowed;}
+.tc-punct-refresh--spin svg{animation:m24SpinAnim .7s linear infinite;}
 .tc-punct-week{min-width:0;font-size:13px;font-weight:700;color:var(--primary);text-align:center;white-space:nowrap;}
 .tc-punct-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0;}
 .tc-punct-kpi{border-radius:14px;padding:10px 12px;min-width:0;}
@@ -1812,7 +1840,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .tc-punct-head{flex-wrap:wrap;}
 }
 @media(prefers-reduced-motion:reduce){
-  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg,.tc-punct-pdf--busy svg{transition:none;animation:none;}
+  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg,#tc-sched-export-download.tc-sched-export-download--busy svg{transition:none;animation:none;}
 }
 .tc-history-dialog-body{flex:1 1 auto;min-height:0;padding:12px 16px 16px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
 .tc-history-cal-wrap{position:relative;}
@@ -4395,6 +4423,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <div class="rec-topbar-cluster"><div class="topbar-title">Gestión de equipo</div></div>
       <div class="tc-topbar-tools">
         <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
+        <button type="button" class="tc-sched-export-btn" id="tc-sched-export-toggle" aria-expanded="false" aria-controls="tc-sched-export-dialog" aria-haspopup="dialog" onclick="tcOpenSchedExportDialog()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span>Descargar registro de horarios</span>
+        </button>
         <button type="button" class="rec-btn-new" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
       </div>
       <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
@@ -4406,6 +4438,26 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-pulse-close" aria-label="Cerrar pulso de hoy" onclick="tcCloseTeamPulse(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <div class="tc-pulse-popover-body" id="tc-pulse-body"></div>
+      </div>
+      <div id="tc-sched-export-backdrop" class="tc-sched-export-backdrop hidden" aria-hidden="true" onclick="tcCloseSchedExportDialog(true)"></div>
+      <div id="tc-sched-export-dialog" class="tc-sched-export-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="tc-sched-export-title" aria-hidden="true">
+        <div class="tc-sched-export-head">
+          <h3 id="tc-sched-export-title">Registro semanal de horarios</h3>
+          <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-sched-export-close" aria-label="Cerrar registro semanal de horarios" onclick="tcCloseSchedExportDialog(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </div>
+        <div class="tc-sched-export-body">
+          <div class="tc-sched-export-week">
+            <button type="button" class="tc-sched-export-nav" id="tc-sched-export-prev" aria-label="Semana anterior" title="Semana anterior" onclick="tcSchedExportShiftWeek(-1)">‹</button>
+            <div class="tc-sched-export-week-label" id="tc-sched-export-week-label">—</div>
+            <button type="button" class="tc-sched-export-nav" id="tc-sched-export-next" aria-label="Semana siguiente" title="Semana siguiente" onclick="tcSchedExportShiftWeek(1)">›</button>
+          </div>
+          <p class="tc-sched-export-scope">Todo el equipo con horario asignado</p>
+          <p class="tc-sched-export-err hidden" id="tc-sched-export-err" role="alert"></p>
+          <button type="button" id="tc-sched-export-download" onclick="tcDownloadSchedExportPdf()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span>Descargar PDF</span>
+          </button>
+        </div>
       </div>
       <div id="tc-add-card" class="card hidden" style="margin-bottom:18px;">
         <div class="card-header"><div><div class="card-title">Nuevo colaborador</div><div class="card-subtitle">Timezone IANA obligatorio</div></div></div>
@@ -9960,6 +10012,7 @@ function tcCloseTeamPulse(focusToggle){
   if(btn){ btn.setAttribute('aria-expanded','false'); if(focusToggle) btn.focus(); }
 }
 async function tcOpenTeamPulse(){
+  if(typeof tcCloseSchedExportDialog==='function'&&tcSchedExportOpen) tcCloseSchedExportDialog(false);
   tcEnsureTeamPulseListeners();
   const pop=document.getElementById('tc-pulse-popover');
   const btn=document.getElementById('tc-pulse-toggle');
@@ -20680,8 +20733,13 @@ let tcPunctPinnedKey=null;
 let tcPunctAnchor=null;
 let tcPunctDaysScroll=0;
 let tcPunctIgnoreHover=false;
-let tcPunctPdfBusy=false;
-let tcPunctPdfAbort=null;
+let tcSchedExportOpen=false;
+let tcSchedExportWeek='';
+let tcSchedExportOrgTz='America/Mexico_City';
+let tcSchedExportBusy=false;
+let tcSchedExportAbort=null;
+let tcSchedExportSeq=0;
+let tcSchedExportKeyHandler=null;
 let tcHistoryResizeBound=false;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -20867,7 +20925,6 @@ function tcCloseHistoryDialog(restoreFocus){
   }
   if(tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
   if(tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
-  if(tcPunctPdfAbort){ tcPunctPdfAbort.abort(); tcPunctPdfAbort=null; tcPunctPdfBusy=false; }
   tcHistoryRefreshInFlight=false;
   tcHistoryView='history';
   tcPunctWeek='';
@@ -20992,7 +21049,6 @@ function tcHistorySetView(view, silent){
   if(dlg) dlg.classList.toggle('tc-history-dialog--punctuality', onPunct);
   if(onPunct&&tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
   if(!onPunct&&tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
-  if(!onPunct&&tcPunctPdfAbort){ tcPunctPdfAbort.abort(); tcPunctPdfAbort=null; tcPunctPdfBusy=false; }
   tcPunctClosePopover(false);
   if(tcHistoryOpen) tcPositionHistoryDialog();
   if(!silent&&onPunct) tcLoadPunctuality(tcPunctWeek||'');
@@ -21082,50 +21138,148 @@ function tcPunctChrome(payload){
     +'<span class="tc-punct-week">'+tcEsc(payload&&payload.weekLabel||'')+'</span>'
     +'<button type="button" class="tc-punct-nav" aria-label="Semana siguiente" title="Semana siguiente" onclick="tcPunctShiftWeek(1)"'+nextDisabled+'>›</button>'
     +'<button type="button" class="tc-punct-refresh" aria-label="Actualizar puntualidad semanal" title="Actualizar" onclick="tcRefreshPunctuality()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>'
-    +tcPunctPdfButton()
     +'</div></div>';
 }
-function tcPunctPdfButton(){
-  const busy=tcPunctPdfBusy?' disabled aria-busy="true"':'';
-  const spin=tcPunctPdfBusy?' tc-punct-pdf--busy':'';
-  return '<button type="button" class="tc-punct-pdf'+spin+'" id="tc-punct-pdf-btn" aria-label="Descargar reporte semanal en PDF" title="Descargar reporte semanal en PDF"'+busy+' onclick="tcDownloadPunctualityPdf()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>';
+function tcSchedExportCivilWeekRangeLabel(weekStartYmd){
+  if(!weekStartYmd||!/^\d{4}-\d{2}-\d{2}$/.test(weekStartYmd)) return '';
+  const weekEnd=tcMetricsAddDaysYmd(weekStartYmd,6);
+  const fmt=function(k,opts){
+    return new Date(k+'T12:00:00.000Z').toLocaleDateString('es-MX',Object.assign({timeZone:'UTC'},opts));
+  };
+  const dMon=fmt(weekStartYmd,{day:'numeric'});
+  const dSun=fmt(weekEnd,{day:'numeric'});
+  const monMonth=fmt(weekStartYmd,{month:'short'});
+  const sunMonth=fmt(weekEnd,{month:'short'});
+  if(monMonth===sunMonth) return dMon+'–'+dSun+' '+monMonth;
+  return dMon+' '+monMonth+'–'+dSun+' '+sunMonth;
 }
-function tcPunctPdfSetErr(msg){
-  const root=document.getElementById('tc-punct-root');
-  if(!root) return;
-  let el=document.getElementById('tc-punct-pdf-err');
-  if(!msg){ if(el) el.remove(); return; }
-  if(!el){
-    el=document.createElement('p');
-    el.id='tc-punct-pdf-err';
-    el.className='tc-punct-err';
-    root.prepend(el);
+function tcCurrentWeekStart(tz){
+  // Hoy civil en zona de la organización → lunes civil (sin reinterpretar YYYY-MM-DD en la TZ del navegador).
+  return tcMetricsWeekStartYmd(tcMetricsTodayYmd(tz||'America/Mexico_City'));
+}
+function tcSchedExportSetErr(msg){
+  const el=document.getElementById('tc-sched-export-err');
+  if(!el) return;
+  if(!msg){
+    el.textContent='';
+    el.classList.add('hidden');
+    return;
   }
-  el.textContent=msg;
+  el.textContent=String(msg);
+  el.classList.remove('hidden');
 }
-async function tcDownloadPunctualityPdf(){
-  if(tcPunctPdfBusy) return;
-  const week=(tcPunctPayload&&tcPunctPayload.weekStart)||tcPunctWeek;
+function tcSchedExportSyncUi(){
+  const tz=tcSchedExportOrgTz||'America/Mexico_City';
+  const week=tcSchedExportWeek||tcCurrentWeekStart(tz);
+  tcSchedExportWeek=week;
+  const label=document.getElementById('tc-sched-export-week-label');
+  if(label){
+    const range=tcSchedExportCivilWeekRangeLabel(week);
+    label.textContent=range?(range+' · lun–dom'):week;
+  }
+  const current=tcCurrentWeekStart(tz);
+  const next=document.getElementById('tc-sched-export-next');
+  if(next) next.disabled=!(week<current) || tcSchedExportBusy;
+  const prev=document.getElementById('tc-sched-export-prev');
+  if(prev) prev.disabled=tcSchedExportBusy;
+  const btn=document.getElementById('tc-sched-export-download');
+  if(btn){
+    btn.disabled=tcSchedExportBusy||!week;
+    btn.classList.toggle('tc-sched-export-download--busy', tcSchedExportBusy);
+    if(tcSchedExportBusy) btn.setAttribute('aria-busy','true');
+    else btn.removeAttribute('aria-busy');
+  }
+}
+function tcSchedExportShiftWeek(delta){
+  if(tcSchedExportBusy) return;
+  const tz=tcSchedExportOrgTz||'America/Mexico_City';
+  if(!tcSchedExportWeek) tcSchedExportWeek=tcCurrentWeekStart(tz);
+  if(delta>0&&!(tcSchedExportWeek<tcCurrentWeekStart(tz))) return;
+  tcSchedExportSetErr('');
+  tcSchedExportWeek=tcMetricsAddDaysYmd(tcSchedExportWeek, delta*7);
+  tcSchedExportSyncUi();
+}
+function tcSchedExportOnKeydown(ev){
+  if(!tcSchedExportOpen) return;
+  if(ev.key==='Escape'){
+    ev.preventDefault();
+    tcCloseSchedExportDialog(true);
+  }
+}
+async function tcOpenSchedExportDialog(){
+  if(tcSchedExportOpen){ tcCloseSchedExportDialog(true); return; }
+  if(typeof tcCloseTeamPulse==='function') tcCloseTeamPulse(false);
+  const tz=await recEnsureRecruitmentOrgTimeZone();
+  tcSchedExportOrgTz=tz||'America/Mexico_City';
+  tcSchedExportWeek=tcCurrentWeekStart(tcSchedExportOrgTz);
+  tcSchedExportSetErr('');
+  tcSchedExportOpen=true;
+  const dlg=document.getElementById('tc-sched-export-dialog');
+  const backdrop=document.getElementById('tc-sched-export-backdrop');
+  const toggle=document.getElementById('tc-sched-export-toggle');
+  if(toggle) toggle.setAttribute('aria-expanded','true');
+  if(backdrop){ backdrop.classList.remove('hidden'); backdrop.setAttribute('aria-hidden','false'); }
+  if(dlg){ dlg.classList.remove('hidden'); dlg.setAttribute('aria-hidden','false'); }
+  tcSchedExportSyncUi();
+  if(!tcSchedExportKeyHandler){
+    tcSchedExportKeyHandler=function(ev){ tcSchedExportOnKeydown(ev); };
+    document.addEventListener('keydown', tcSchedExportKeyHandler);
+  }
+  const closeBtn=document.getElementById('tc-sched-export-close');
+  if(closeBtn) closeBtn.focus();
+}
+function tcCloseSchedExportDialog(restoreFocus){
+  const dlg=document.getElementById('tc-sched-export-dialog');
+  const backdrop=document.getElementById('tc-sched-export-backdrop');
+  const toggle=document.getElementById('tc-sched-export-toggle');
+  tcSchedExportOpen=false;
+  if(toggle) toggle.setAttribute('aria-expanded','false');
+  if(dlg){ dlg.classList.add('hidden'); dlg.setAttribute('aria-hidden','true'); }
+  if(backdrop){ backdrop.classList.add('hidden'); backdrop.setAttribute('aria-hidden','true'); }
+  if(tcSchedExportKeyHandler){
+    document.removeEventListener('keydown', tcSchedExportKeyHandler);
+    tcSchedExportKeyHandler=null;
+  }
+  if(tcSchedExportAbort){ tcSchedExportAbort.abort(); tcSchedExportAbort=null; }
+  tcSchedExportBusy=false;
+  tcSchedExportSeq+=1;
+  tcSchedExportSetErr('');
+  tcSchedExportSyncUi();
+  if(restoreFocus&&toggle) toggle.focus();
+}
+function tcSchedExportLooksLikePdf(bytes){
+  return bytes&&bytes.length>=5&&bytes[0]===0x25&&bytes[1]===0x50&&bytes[2]===0x44&&bytes[3]===0x46&&bytes[4]===0x2d;
+}
+async function tcDownloadSchedExportPdf(){
+  if(tcSchedExportBusy) return;
+  const week=tcSchedExportWeek||tcCurrentWeekStart(tcSchedExportOrgTz||'America/Mexico_City');
   if(!week) return;
-  tcPunctPdfBusy=true;
-  if(tcPunctPdfAbort) tcPunctPdfAbort.abort();
-  tcPunctPdfAbort=new AbortController();
-  const signal=tcPunctPdfAbort.signal;
-  const btn=document.getElementById('tc-punct-pdf-btn');
-  if(btn){ btn.disabled=true; btn.classList.add('tc-punct-pdf--busy'); btn.setAttribute('aria-busy','true'); }
-  tcPunctPdfSetErr('');
+  const seq=++tcSchedExportSeq;
+  tcSchedExportBusy=true;
+  if(tcSchedExportAbort) tcSchedExportAbort.abort();
+  tcSchedExportAbort=new AbortController();
+  const signal=tcSchedExportAbort.signal;
+  tcSchedExportSetErr('');
+  tcSchedExportSyncUi();
   try{
     const res=await fetch('/api/org/timeclock/punctuality/export?week='+encodeURIComponent(week),{credentials:'include',signal});
+    if(seq!==tcSchedExportSeq) return;
     if(!res.ok){
       let msg='No se pudo descargar el reporte.';
       try{ const j=await res.json(); if(j&&j.message) msg=String(j.message); }catch(_){}
       throw new Error(msg);
     }
-    const blob=await res.blob();
+    const buf=await res.arrayBuffer();
+    if(seq!==tcSchedExportSeq) return;
+    const bytes=new Uint8Array(buf);
+    if(!tcSchedExportLooksLikePdf(bytes)){
+      throw new Error('La respuesta no es un PDF válido.');
+    }
     let filename='mind24-puntualidad-semanal.pdf';
     const cd=res.headers.get('Content-Disposition')||'';
     const m=/filename="([^"]+)"/i.exec(cd);
     if(m&&m[1]) filename=m[1];
+    const blob=new Blob([buf],{type:'application/pdf'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
@@ -21137,12 +21291,13 @@ async function tcDownloadPunctualityPdf(){
     URL.revokeObjectURL(url);
   }catch(e){
     if(e&&e.name==='AbortError') return;
-    tcPunctPdfSetErr((e&&e.message)||'No se pudo descargar el reporte.');
+    if(seq!==tcSchedExportSeq) return;
+    tcSchedExportSetErr((e&&e.message)||'No se pudo descargar el reporte.');
   }finally{
+    if(seq!==tcSchedExportSeq) return;
     if(signal.aborted) return;
-    tcPunctPdfBusy=false;
-    const again=document.getElementById('tc-punct-pdf-btn');
-    if(again){ again.disabled=false; again.classList.remove('tc-punct-pdf--busy'); again.removeAttribute('aria-busy'); }
+    tcSchedExportBusy=false;
+    tcSchedExportSyncUi();
   }
 }
 function tcPunctualityEditEmployee(){
@@ -23473,6 +23628,10 @@ window.tcEmpRemovePhoto=tcEmpRemovePhoto;
 window.tcEmpPhotoFileSelected=tcEmpPhotoFileSelected;
 window.tcToggleTeamPulse=tcToggleTeamPulse;
 window.tcCloseTeamPulse=tcCloseTeamPulse;
+window.tcOpenSchedExportDialog=tcOpenSchedExportDialog;
+window.tcCloseSchedExportDialog=tcCloseSchedExportDialog;
+window.tcSchedExportShiftWeek=tcSchedExportShiftWeek;
+window.tcDownloadSchedExportPdf=tcDownloadSchedExportPdf;
 window.tcCopySecretLink=tcCopySecretLink;
 window.tcClearSecretLink=tcClearSecretLink;
 window.tcRegenerate=tcRegenerate;

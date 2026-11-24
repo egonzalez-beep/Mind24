@@ -27,12 +27,15 @@ const { encodeWeekdayMask } = await import('../src/utils/workforceWorkSchedule.u
 const { buildWeekPunctuality, formatTimeEs } = await import('../src/utils/workforcePunctuality.util.js');
 const { localMidnightUtc, utcRangeForLocalDateInclusive } = await import('../src/services/remoteWorkSessionHistory.service.js');
 const {
+  buildPunctualityPdfFooterTemplate,
+  buildPunctualityPdfHeaderTemplate,
   buildWeeklyPunctualityReportDocument,
   escapeReportHtml,
   paginatePunctualityPeople,
   punctualityExportContentDisposition,
   punctualityExportFilename,
   punctualityPdfDayCells,
+  PUNCTUALITY_PDF_MARGINS_MM,
   summarizePunctualityReports,
 } = await import('../src/utils/workforcePunctualityReport.util.js');
 const { assembleWeeklyPunctualityExport, exportWeeklyPunctualityPdf } = await import('../src/services/workforcePunctualityExport.service.js');
@@ -293,7 +296,12 @@ check(report.summary.collaborators === report.people.length, 'colaboradores es l
 check(report.summary.lateDays === report.people.reduce((sum, person) => sum + (person.summary?.lateDays || 0), 0) && report.summary.lateDays === 1, 'el total de retardos suma el motor');
 check(report.summary.punctualityPct === summarizePunctualityReports(report.people).punctualityPct && report.summary.punctualityPct !== 0, 'la puntualidad promedio sale de los porcentajes canónicos');
 check(report.summary.expectedCoveragePct === summarizePunctualityReports(report.people).expectedCoveragePct, 'la cobertura promedio sale de los porcentajes canónicos');
-check(paginatePunctualityPeople(report.people).length > 1, 'un equipo grande ocupa varias páginas');
+check(paginatePunctualityPeople(report.people).length === 1 && paginatePunctualityPeople(report.people)[0].length === report.people.length, 'sin presupuesto fijo: Chromium pagina el equipo completo');
+check(!report.html.includes('class="sheet"') && report.html.includes('@page{size:A4 landscape;}') && !/@page\{[^}]*margin:\s*0/.test(report.html), 'sin hojas fijas ni @page margin:0; Puppeteer controla márgenes');
+check(exportJs.includes('PUNCTUALITY_PDF_MARGINS_MM') && exportJs.includes('buildPunctualityPdfHeaderTemplate') && exportJs.includes('buildPunctualityPdfFooterTemplate'), 'export usa márgenes y plantillas de encabezado/pie');
+check(PUNCTUALITY_PDF_MARGINS_MM.top >= 12 && PUNCTUALITY_PDF_MARGINS_MM.bottom >= 12, 'márgenes dejan espacio para encabezado y numeración');
+check(buildPunctualityPdfHeaderTemplate(report).includes('Clínica Niño') && buildPunctualityPdfHeaderTemplate(report).includes(report.weekLabel), 'encabezado repetible identifica org y periodo');
+check(buildPunctualityPdfFooterTemplate().includes('pageNumber') && buildPunctualityPdfFooterTemplate().includes('totalPages'), 'pie con numeración');
 check(!/req\.query\.organizationId|req\.body/.test(routesJs.slice(routesJs.indexOf("'/punctuality/export'"), routesJs.indexOf("'/punctuality/export'") + 900)), 'el endpoint no toma organización ni cuerpo del cliente');
 check(routesJs.includes("'/punctuality/export'") && routesJs.includes('assertEmpresaAdmin(req.session.userId)') && routesJs.includes('exportWeeklyPunctualityPdf'), 'endpoint administrativo de exportación');
 check((individualJs.match(/findMany/g) || []).length === 1 && individualJs.includes('rejectFuturePunctualityWeek') && exportJs.includes('buildWeekPunctuality'), 'la consulta individual sigue siendo una y el PDF usa el mismo motor');
@@ -453,8 +461,9 @@ check(mxSunday.firstCheckInAt === '2026-11-09T05:30:00.000Z' && mxSunday.lastChe
 check(within(edgeSessions, { start: { getTime: () => unionEnd }, end: { getTime: () => unionEnd + 1 } }).length === 1 && !dayStamp(edgeMx.days).includes(mxNextMonday.toISOString()), 'el instante exacto del lunes siguiente queda fuera');
 check(!dayStamp(edgeAkl.days).includes(new Date(aklMonday.getTime() - 1).toISOString()), 'un milisegundo antes del lunes no entra');
 
-check(unifiedJs.includes('renderHtmlToPdfBuffer(html);') && !unifiedJs.includes('landscape: true'), 'el reporte de evaluaciones sigue llamando al PDF sin opciones nuevas');
-check(/format: options\.format \|\| 'A4'/.test(pdfJs) && /landscape: options\.landscape === true/.test(pdfJs) && /top: '10mm', right: '10mm', bottom: '10mm', left: '10mm'/.test(pdfJs), 'sin opciones, el PDF compartido conserva A4 vertical y márgenes de 10 mm');
+check(unifiedJs.includes('renderHtmlToPdfBuffer(html);') && !unifiedJs.includes('landscape: true') && !unifiedJs.includes('waitUntil'), 'el reporte de evaluaciones sigue llamando al PDF sin opciones nuevas');
+check(/format: options\.format \|\| 'A4'/.test(pdfJs) && /landscape: options\.landscape === true/.test(pdfJs) && /top: '10mm', right: '10mm', bottom: '10mm', left: '10mm'/.test(pdfJs) && pdfJs.includes("options.waitUntil || 'networkidle0'"), 'sin opciones, el PDF compartido conserva A4 vertical, márgenes de 10 mm y networkidle0');
+check(exportJs.includes("waitUntil: 'load'"), 'el PDF semanal usa waitUntil load sin cambiar evaluaciones');
 check(/finally \{\s*await page\.close\(\);/.test(pdfJs) && !exportJs.includes('writeFile') && !pdfJs.includes('writeFile'), 'la página se cierra en finally y no se guardan temporales');
 check(pdfJs.includes('export async function closePdfBrowser') && !pdfJs.slice(0, pdfJs.indexOf('export async function closePdfBrowser')).includes('closePdfBrowser'), 'el render de producción no cierra el navegador compartido');
 
@@ -483,11 +492,14 @@ const wrongRoleRes = await fetch(`http://127.0.0.1:${wrongRole.address().port}/a
 check(wrongRoleRes.status === 403, 'rol incorrecto responde 403');
 await closeServer(wrongRole);
 
-check(indexHtml.includes('aria-label="Descargar reporte semanal en PDF"') && indexHtml.includes('title="Descargar reporte semanal en PDF"'), 'botón con aria-label y title');
-check(indexHtml.includes('class="tc-punct-pdf') && indexHtml.includes('width:36px;height:36px') && indexHtml.includes('<path d="M12 3v12"/>'), 'botón compacto solo SVG');
-check(indexHtml.includes('if(tcPunctPdfBusy) return') && indexHtml.includes("e.name==='AbortError'") && indexHtml.includes('tcPunctPdfSetErr'), 'evita doble clic y no avisa un abort');
-check(indexHtml.includes('tcPunctPdfAbort.abort()') && indexHtml.includes('encodeURIComponent(week)'), 'cierra la descarga y usa la semana seleccionada');
-check(!indexHtml.includes('addEventListener(\'click\', tcDownloadPunctualityPdf)') && indexHtml.includes('tc-punct-pdf:focus-visible'), 'no duplica listeners y el foco es visible');
+check(indexHtml.includes('id="tc-sched-export-toggle"') && indexHtml.includes('Descargar registro de horarios') && indexHtml.includes('id="tc-pulse-toggle"'), 'acción de descarga en topbar junto a Pulso de hoy');
+check(indexHtml.includes('id="tc-sched-export-dialog"') && indexHtml.includes('Registro semanal de horarios') && indexHtml.includes('Todo el equipo con horario asignado') && indexHtml.includes('Descargar PDF'), 'diálogo compacto con alcance de equipo y CTA');
+check(!indexHtml.includes('tc-punct-pdf') && !indexHtml.includes('tcDownloadPunctualityPdf') && !indexHtml.includes('tcPunctPdfAbort'), 'sin icono de descarga ni estado en Puntualidad semanal');
+check(indexHtml.includes('if(tcSchedExportBusy) return') && indexHtml.includes("e.name==='AbortError'") && indexHtml.includes('tcSchedExportSetErr') && indexHtml.includes('tcSchedExportLooksLikePdf'), 'evita doble clic, valida PDF y no avisa un abort');
+check(indexHtml.includes('tcSchedExportAbort.abort()') && indexHtml.includes('encodeURIComponent(week)') && indexHtml.includes('tcSchedExportSeq') && indexHtml.includes('recEnsureRecruitmentOrgTimeZone'), 'AbortController del diálogo, semana elegida y zona de org');
+check(indexHtml.includes('tcMetricsWeekStartYmd(tcMetricsTodayYmd') && indexHtml.includes('tcSchedExportCivilWeekRangeLabel') && indexHtml.includes('tcMetricsAddDaysYmd(tcSchedExportWeek') && !indexHtml.includes('function tcWeekStartMonday'), 'semana civil con helpers de métricas, sin weekday del navegador');
+check(indexHtml.includes('if(!tcSchedExportLooksLikePdf(bytes))') && !/tcSchedExportLooksLikePdf\(bytes\)\s*&&\s*ctype/.test(indexHtml), 'exige firma %PDF- aunque el Content-Type diga pdf');
+check(indexHtml.includes('tc-sched-export-btn:focus-visible') && indexHtml.includes('#tc-sched-export-download:focus-visible') && indexHtml.includes("ev.key==='Escape'"), 'foco visible y Escape cierran el diálogo');
 check(indexHtml === publicHtml, 'index.html y server/public/index.html son idénticos');
 
 const {
@@ -641,6 +653,54 @@ if (!chromePath) {
   check(text.includes('7 min') && text.includes('En curso') && text.includes('Sin jornada') && text.includes('Jornada incompleta'), 'el PDF contiene retardo, jornada abierta, sin registro e incompleta');
   check(!text.includes(SECRET_EMAIL) && !text.includes(SECRET_CURP) && !text.includes(SECRET_NOTE) && !text.includes(SECRET_LOG), 'el PDF no contiene datos sensibles');
 
+  function countName(haystack, name) {
+    let count = 0;
+    let from = 0;
+    while (from < haystack.length) {
+      const at = haystack.indexOf(name, from);
+      if (at < 0) break;
+      count += 1;
+      from = at + name.length;
+    }
+    return count;
+  }
+  const sampleNames = report.people.slice(0, 8).map((person) => person.fullName);
+  check(sampleNames.every((name) => countName(text, name.split(' ')[0]) >= 1), 'cada persona aparece en el PDF');
+
+  async function exportSized(size) {
+    const sizedEmployees = employees
+      .filter((row) => row.organizationId === 'org-a' && row.isActive !== false && row.workScheduleAssignedAt)
+      .slice(0, size);
+    return exportWeeklyPunctualityPdf({
+      organizationId: 'org-a',
+      weekKey: WEEK,
+      now: NOW,
+      db: dbFrom(sizedEmployees, sessions),
+    });
+  }
+  const pdf1 = await exportSized(1);
+  const pdf8 = await exportSized(8);
+  const pdf30 = pdf;
+  check(pdf1.buffer.subarray(0, 5).toString() === '%PDF-' && pdf8.buffer.subarray(0, 5).toString() === '%PDF-', 'PDF válido con 1 y 8 colaboradores');
+  async function pageTexts(buffer) {
+    const local = new PDFParse({ data: buffer });
+    try {
+      const parsed = await local.getText();
+      const pages = parsed.pages || [];
+      if (pages.length) return pages.map((page) => page.text || '');
+      return String(parsed.text || '').split('\f').filter(Boolean);
+    } finally {
+      await Promise.resolve(local.destroy()).catch(() => {});
+    }
+  }
+  const pages30 = await pageTexts(pdf30.buffer);
+  check(pages30.length > 1, '30 colaboradores generan varias páginas reales');
+  const joined = pages30.join('\n');
+  const longName = report.people.find((person) => person.fullName.startsWith('María José'))?.fullName || '';
+  check(!longName || countName(joined, longName) === 1, 'nombre largo aparece una sola vez');
+  const fillName = report.people.find((person) => person.fullName.includes('apoyo 01') || person.fullName.includes('Apellido 01') || person.fullName.includes('apoyo'))?.fullName;
+  if (fillName) check(countName(joined, fillName) === 1, 'fila de colaborador de apoyo aparece una sola vez');
+
   const puppeteer = await import('puppeteer-core');
   const browser = await puppeteer.default.launch({
     executablePath: chromePath,
@@ -653,67 +713,228 @@ if (!chromePath) {
     await page.setContent(report.html, { waitUntil: 'networkidle0' });
     await page.emulateMediaType('print');
     const layout = await page.evaluate(() => {
-      const sheets = [...document.querySelectorAll('.sheet')];
+      const root = document.body;
+      const box = root.getBoundingClientRect();
       const issues = [];
-      sheets.forEach((sheet, index) => {
-        const sheetBox = sheet.getBoundingClientRect();
-        if (sheet.scrollWidth > sheet.clientWidth + 2) issues.push(`sheet ${index} overflow`);
-        const nodes = [...sheet.querySelectorAll('h1,h2,th,td,p,strong,span')];
-        const boxes = nodes.map((el) => {
-          const rect = el.getBoundingClientRect();
-          return { x: rect.x, y: rect.y, r: rect.right, b: rect.bottom, w: rect.width, h: rect.height };
-        }).filter((box) => box.w > 2 && box.h > 2);
-        const contains = (a, b) => a.x <= b.x + 1 && a.y <= b.y + 1 && a.r >= b.r - 1 && a.b >= b.b - 1;
-        for (let i = 0; i < boxes.length; i += 1) {
-          if (boxes[i].x < sheetBox.x - 1 || boxes[i].r > sheetBox.right + 1) issues.push(`sheet ${index} fuera`);
-          for (let j = i + 1; j < boxes.length; j += 1) {
-            const a = boxes[i];
-            const b = boxes[j];
-            if (contains(a, b) || contains(b, a)) continue;
-            const iw = Math.min(a.r, b.r) - Math.max(a.x, b.x);
-            const ih = Math.min(a.b, b.b) - Math.max(a.y, b.y);
-            if (iw > 3 && ih > 3) issues.push(`sheet ${index} overlap`);
-          }
-        }
-      });
-      return { sheets: sheets.length, issues: [...new Set(issues)] };
+      if (root.scrollWidth > root.clientWidth + 2) issues.push('body overflow');
+      const people = [...document.querySelectorAll('.person')];
+      const nodes = [...document.querySelectorAll('h1,h2,th,td,p,strong')];
+      for (const el of nodes) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 2 && (rect.left < box.left - 1 || rect.right > box.right + 1)) issues.push('fuera');
+      }
+      return {
+        people: people.length,
+        hasMast: Boolean(document.querySelector('.mast')),
+        theadGroup: getComputedStyle(document.querySelector('thead')).display === 'table-header-group',
+        issues: [...new Set(issues)],
+      };
     });
-    check(layout.sheets > 1 && layout.issues.length === 0, `sin desborde ni superposición (${layout.issues.join(', ') || 'limpio'})`);
+    check(layout.people === report.people.length && layout.hasMast && layout.theadGroup && layout.issues.length === 0, `layout continuo sin desborde (${layout.issues.join(', ') || 'limpio'})`);
+
     const previewDir = path.join(os.tmpdir(), 'mind24-punctuality-preview');
     fs.mkdirSync(previewDir, { recursive: true });
-    const sheets = await page.$$('.sheet');
-    for (let index = 0; index < sheets.length; index += 1) {
-      await sheets[index].screenshot({ path: path.join(previewDir, `page-${index + 1}.png`) });
-    }
+    fs.writeFileSync(path.join(previewDir, 'after.pdf'), pdf.buffer);
+    fs.writeFileSync(path.join(previewDir, 'after-1.pdf'), pdf1.buffer);
+    fs.writeFileSync(path.join(previewDir, 'after-8.pdf'), pdf8.buffer);
+    await page.screenshot({ path: path.join(previewDir, 'after-html-first.png'), fullPage: false });
     console.log('  PDF_PREVIEW', previewDir);
+
+    // Visual: render PDF pages via print-to-image using Chromium PDF viewer is flaky;
+    // screenshot first/middle/last by loading HTML with print media and clipping bands.
+    const fullH = await page.evaluate(() => document.body.scrollHeight);
+    const band = 794;
+    const shots = [
+      { name: 'after-first.png', y: 0 },
+      { name: 'after-mid.png', y: Math.max(0, Math.floor(fullH / 2) - band / 2) },
+      { name: 'after-last.png', y: Math.max(0, fullH - band) },
+    ];
+    for (const shot of shots) {
+      await page.evaluate((y) => window.scrollTo(0, y), shot.y);
+      await page.screenshot({ path: path.join(previewDir, shot.name) });
+    }
 
     await page.setViewport({ width: 390, height: 800 });
     await page.setContent(indexHtml, { waitUntil: 'domcontentloaded' });
-    const narrow = await page.evaluate(() => {
-      const host = document.createElement('div');
-      host.className = 'tc-history-dialog tc-history-dialog--punctuality';
-      host.style.position = 'relative';
-      host.style.left = '0';
-      host.style.top = '0';
-      host.innerHTML = `<div class="tc-history-dialog-body">${tcPunctChrome({
-        weekLabel: '2–8 nov 2026',
-        canGoNext: false,
-        schedule: { weekdays: [1, 2, 3, 4, 5, 6], startMinute: 480, endMinute: 900, toleranceMinutes: 10 },
-      })}</div>`;
-      document.body.appendChild(host);
-      const btn = host.querySelector('#tc-punct-pdf-btn');
-      const box = btn.getBoundingClientRect();
+    const narrow = await page.evaluate(async () => {
+      document.getElementById('view-dash-timeclock')?.classList.remove('hidden');
+      window.recEnsureState = window.recEnsureState || function () { return {}; };
+      const st = typeof recEnsureState === 'function' ? recEnsureState() : {};
+      st.recruitmentOrgTimeZone = 'America/Mexico_City';
+      if (typeof recEnsureRecruitmentOrgTimeZone === 'function') {
+        // keep cached zone
+      }
+      const toggle = document.getElementById('tc-sched-export-toggle');
+      const tools = document.querySelector('.tc-topbar-tools');
+      await tcOpenSchedExportDialog();
+      const dlg = document.getElementById('tc-sched-export-dialog');
+      const download = document.getElementById('tc-sched-export-download');
+      const weekLabel = document.getElementById('tc-sched-export-week-label')?.textContent || '';
+      const prev = document.getElementById('tc-sched-export-prev');
+      prev?.focus();
+      prev?.click();
+      const prevWeek = document.getElementById('tc-sched-export-week-label')?.textContent || '';
+      const busyGuard = tcSchedExportBusy;
+      tcSchedExportBusy = true;
+      const blocked = (() => { let called = 0; const orig = tcDownloadSchedExportPdf; /* sync guard */ return tcSchedExportBusy; })();
+      tcSchedExportBusy = busyGuard;
+      download?.focus();
+      const tabbable = [toggle, prev, document.getElementById('tc-sched-export-next'), download, document.getElementById('tc-sched-export-close')]
+        .filter(Boolean)
+        .every((el) => el.tabIndex >= 0 || el.tagName === 'BUTTON');
       return {
-        label: btn.getAttribute('aria-label'),
-        visibleText: btn.innerText.trim(),
-        width: Math.round(box.width),
-        height: Math.round(box.height),
+        toggleText: (toggle?.innerText || '').replace(/\s+/g, ' ').trim(),
+        dialogOpen: dlg && !dlg.classList.contains('hidden'),
+        downloadText: (download?.innerText || '').trim(),
+        weekLabel,
+        prevWeek,
+        weekChanged: prevWeek !== weekLabel,
+        scope: document.querySelector('.tc-sched-export-scope')?.textContent || '',
         docOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
-        hostOverflow: host.scrollWidth > host.clientWidth + 1,
+        toolsOverflow: tools ? tools.scrollWidth > tools.clientWidth + 8 : false,
+        tabbable,
+        blocked,
+        noPunctPdf: !document.querySelector('.tc-punct-pdf'),
       };
     });
-    check(narrow.label === 'Descargar reporte semanal en PDF' && narrow.visibleText === '' && narrow.width === 36 && narrow.height === 36, 'en 390 px el botón mide 36 y no muestra texto');
-    check(!narrow.docOverflow && !narrow.hostOverflow, 'en 390 px no hay scroll horizontal');
+    check(narrow.toggleText.includes('Descargar registro de horarios') && narrow.dialogOpen && narrow.downloadText.includes('Descargar PDF'), 'desde el dashboard abre el diálogo sin ficha');
+    check(narrow.weekLabel && narrow.weekChanged && narrow.scope.includes('Todo el equipo'), 'semana inicial y semana anterior en el diálogo');
+    check(narrow.tabbable && narrow.blocked === true && narrow.noPunctPdf, 'teclado usable, doble clic bloqueado y sin botón en puntualidad');
+    check(!narrow.docOverflow, 'en 390 px el encabezado no desborda el viewport');
+
+    const retry = await page.evaluate(async () => {
+      let calls = 0;
+      const originalFetch = window.fetch;
+      window.fetch = async () => {
+        calls += 1;
+        if (calls === 1) {
+          return new Response(JSON.stringify({ message: 'Semana de prueba inválida' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a]);
+        return new Response(bytes, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="mind24-puntualidad-semanal-test.pdf"',
+          },
+        });
+      };
+      try {
+        tcSchedExportSetErr('');
+        await tcDownloadSchedExportPdf();
+        const err1 = document.getElementById('tc-sched-export-err')?.textContent || '';
+        await tcDownloadSchedExportPdf();
+        const err2 = document.getElementById('tc-sched-export-err')?.textContent || '';
+        return { calls, err1, err2, busy: tcSchedExportBusy };
+      } finally {
+        window.fetch = originalFetch;
+      }
+    });
+    check(retry.calls === 2 && retry.err1.includes('Semana de prueba inválida') && retry.err2 === '' && retry.busy === false, 'error del servidor y reintento limpian el estado');
+
+    const fakePdf = await page.evaluate(async () => {
+      let calls = 0;
+      const originalFetch = window.fetch;
+      window.fetch = async () => {
+        calls += 1;
+        if (calls === 1) {
+          return new Response('<!doctype html><html><body>no es pdf</body></html>', {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': 'attachment; filename="mind24-puntualidad-semanal-fake.pdf"',
+            },
+          });
+        }
+        const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a]);
+        return new Response(bytes, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="mind24-puntualidad-semanal-ok.pdf"',
+          },
+        });
+      };
+      try {
+        tcSchedExportSetErr('');
+        await tcDownloadSchedExportPdf();
+        const err1 = document.getElementById('tc-sched-export-err')?.textContent || '';
+        const busyAfterError = tcSchedExportBusy;
+        await tcDownloadSchedExportPdf();
+        const err2 = document.getElementById('tc-sched-export-err')?.textContent || '';
+        return { calls, err1, busyAfterError, err2, busy: tcSchedExportBusy };
+      } finally {
+        window.fetch = originalFetch;
+      }
+    });
+    check(
+      fakePdf.calls === 2
+        && fakePdf.err1.includes('PDF válido')
+        && fakePdf.busyAfterError === false
+        && fakePdf.err2 === ''
+        && fakePdf.busy === false,
+      'HTTP 200 application/pdf con cuerpo HTML exige %PDF- y permite reintentar',
+    );
+
+    await page.emulateTimezone('America/Los_Angeles');
+    await page.setContent(indexHtml, { waitUntil: 'domcontentloaded' });
+    const civilWeek = await page.evaluate(async () => {
+      const fixedMs = Date.parse('2026-11-22T23:00:00.000Z');
+      const RealDate = Date;
+      function FakeDate(...args) {
+        if (args.length === 0) return new RealDate(fixedMs);
+        return new RealDate(...args);
+      }
+      FakeDate.now = () => fixedMs;
+      FakeDate.parse = (...args) => RealDate.parse(...args);
+      FakeDate.UTC = (...args) => RealDate.UTC(...args);
+      FakeDate.prototype = RealDate.prototype;
+      globalThis.Date = FakeDate;
+
+      document.getElementById('view-dash-timeclock')?.classList.remove('hidden');
+      const st = typeof recEnsureState === 'function' ? recEnsureState() : {};
+      st.recruitmentOrgTimeZone = 'Pacific/Auckland';
+      if (tcSchedExportOpen) tcCloseSchedExportDialog(false);
+      await tcOpenSchedExportDialog();
+      const label = document.getElementById('tc-sched-export-week-label')?.textContent || '';
+      const week = tcSchedExportWeek;
+      const orgToday = tcMetricsTodayYmd('Pacific/Auckland');
+      const browserToday = tcMetricsTodayYmd('America/Los_Angeles');
+      const monday = tcMetricsWeekStartYmd(orgToday);
+      let sentWeek = null;
+      const originalFetch = window.fetch;
+      window.fetch = async (url) => {
+        const match = /[?&]week=([^&]+)/.exec(String(url));
+        sentWeek = match ? decodeURIComponent(match[1]) : null;
+        const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a]);
+        return new Response(bytes, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="mind24-puntualidad-semanal-auckland.pdf"',
+          },
+        });
+      };
+      try {
+        await tcDownloadSchedExportPdf();
+      } finally {
+        window.fetch = originalFetch;
+      }
+      return { orgToday, browserToday, monday, week, label, sentWeek };
+    });
+    check(
+      civilWeek.orgToday === '2026-11-23'
+        && civilWeek.browserToday === '2026-11-22'
+        && civilWeek.monday === '2026-11-23'
+        && civilWeek.week === '2026-11-23'
+        && civilWeek.sentWeek === '2026-11-23'
+        && /23/.test(civilWeek.label)
+        && /29/.test(civilWeek.label),
+      'navegador LA + org Auckland: lunes civil 23–29 y week=2026-11-23',
+    );
   } finally {
     await browser.close();
   }

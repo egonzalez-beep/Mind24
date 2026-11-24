@@ -119,7 +119,9 @@ export async function renderHtmlToPdfBuffer(html, options = {}) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 45000 });
+    const waitUntil = options.waitUntil || 'networkidle0';
+    const timeout = Number.isFinite(options.timeout) ? options.timeout : 45000;
+    await page.setContent(html, { waitUntil, timeout });
     const pdfOptions = {
       format: options.format || 'A4',
       landscape: options.landscape === true,
