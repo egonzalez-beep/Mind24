@@ -11,6 +11,7 @@ import apiRoutes from './routes/index.js';
 import { apiSoftLimiter } from './middleware/rateLimit.middleware.js';
 import { createTimeclockSessionMiddleware } from './middleware/timeclockSession.middleware.js';
 import timeclockPublicRoutes from './routes/timeclock.public.routes.js';
+import { kioskClockPublicRoutes } from './routes/kioskClock.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { resolveIndexHtmlPath } from './resolveIndexHtml.js';
 import { getUploadStorageMeta, resolveUploadsRootAbs, checkVolumePersistence } from './utils/uploadPaths.js';
@@ -107,6 +108,7 @@ export function createApp() {
   const timeclockSession = createTimeclockSessionMiddleware();
 
   app.use('/api/timeclock/public', timeclockSession, timeclockPublicRoutes);
+  app.use('/api/reloj-checador', kioskClockPublicRoutes);
 
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/timeclock/public')) {
@@ -137,6 +139,15 @@ export function createApp() {
   // Checador remoto: SPA + token en fragmento (#TOKEN). Refresh directo debe servir el HTML.
   app.get('/checador', (_req, res) => {
     res.sendFile(indexHtmlAbs);
+  });
+
+  app.get('/reloj-checador', (_req, res) => {
+    res.set('Referrer-Policy', 'no-referrer');
+    res.set('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+    res.sendFile(path.join(__dirname, '../public/reloj-checador.html'));
+  });
+  app.get('/reloj-checador/kiosk.js', (_req, res) => {
+    res.sendFile(path.join(__dirname, '../public/reloj-checador.js'));
   });
 
   app.use(errorHandler);

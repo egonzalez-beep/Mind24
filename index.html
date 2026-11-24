@@ -260,6 +260,44 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item-cta-timeclock{border:1px solid rgba(37,99,235,.32)!important;background:linear-gradient(135deg,rgba(37,99,235,.09),rgba(14,165,233,.06))!important;color:#1e3a8a!important;font-weight:600!important;align-items:center;}
 .sidebar-item-cta-timeclock:hover{border-color:rgba(37,99,235,.55)!important;background:linear-gradient(135deg,rgba(37,99,235,.16),rgba(14,165,233,.1))!important;box-shadow:0 2px 12px rgba(37,99,235,.14);}
 .sidebar-item-cta-timeclock.active{border-color:rgba(37,99,235,.55)!important;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12);}
+.sidebar-item-cta-kiosk{border:1px solid #cfe5dc!important;background:#edf7f2!important;color:#155542!important;}
+.sidebar-item-cta-kiosk:hover,.sidebar-item-cta-kiosk.active{background:#daeee5!important;border-color:#91c6b2!important;}
+.kiosk-admin .main-content{min-width:0;}
+.kiosk-admin .sidebar-nav{overflow:auto;min-height:0;scrollbar-width:thin;}
+.kiosk-admin .page-content{max-width:1140px;width:100%;margin-inline:auto;}
+.kiosk-stack{display:grid;gap:16px;align-content:start;}
+.kiosk-card{padding:20px;border:1px solid var(--slate-200);border-radius:16px;background:#fff;}
+.kiosk-card h2{font-size:17px;color:var(--primary);margin:0 0 8px;}
+.kiosk-card p{margin:6px 0 12px;color:var(--slate-600);font-size:13px;line-height:1.5;}
+.kiosk-share{background:linear-gradient(135deg,#eff9f4,#fff 75%);border-color:#cfe5dc;}
+.kiosk-share-row,.kiosk-form,.kiosk-person-actions{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.kiosk-share-row input{flex:1 1 240px;min-width:0;}
+.kiosk-admin .create-input{min-width:0;min-height:38px;width:100%;}
+.kiosk-admin label{display:grid;gap:5px;font-size:13px;font-weight:700;color:var(--primary);}
+.kiosk-form label{flex:1 1 170px;}
+.kiosk-primary,.kiosk-open{border-radius:8px;padding:9px 13px;min-height:38px;font:inherit;font-size:13px;font-weight:700;}
+.kiosk-primary{border:1px solid #17604b;background:#17604b;color:white;cursor:pointer;}
+.kiosk-primary:disabled{opacity:.6;cursor:wait;}
+.kiosk-open{border:1px solid #aed0c3;color:#155542;text-decoration:none;background:white;}
+.kiosk-message{color:#952727;font-size:13px;}
+.kiosk-message:empty{display:none;}
+.kiosk-key{padding:12px;margin:0 0 12px;background:#edf7f2;border:1px solid #cfe5dc;border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:#155542;}
+#kiosk-people{list-style:none;margin:14px 0 0;padding:0;}
+.kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--slate-100);}
+.kiosk-person strong,.kiosk-person-meta{display:block;overflow-wrap:anywhere;}
+.kiosk-person-meta{font-size:12px;color:var(--slate-600);}
+.kiosk-person-actions{justify-content:flex-end;}
+.kiosk-admin .kiosk-mobile-back{display:none;}
+@media(max-width:760px){
+  .kiosk-admin .sidebar{display:none;}
+  .kiosk-admin .kiosk-mobile-back{display:inline-flex;}
+  .kiosk-admin .topbar,.kiosk-admin .page-content{padding-inline:14px;}
+  .kiosk-admin .topbar{height:auto;min-height:64px;padding-block:8px;gap:8px;flex-wrap:wrap;}
+  .kiosk-card{padding:14px;}
+  .kiosk-person{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .kiosk-person-actions{grid-column:1/-1;justify-content:flex-start;}
+}
 .si-cta-stack{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.15;}
 .si-cta-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
 .si-cta-sub{font-size:11px;font-weight:500;opacity:.82;text-transform:none;letter-spacing:0;}
@@ -4494,6 +4532,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" id="cev-sidebar-medida-cta" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
       <button type="button" id="cev-sidebar-timeclock-cta" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
       <button type="button" id="cev-sidebar-recruitment-cta" class="sidebar-item sidebar-item-cta-recruitment" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-kiosk" data-skip-sidebar-active="1" onclick="showView('dash-kiosk-clock')"><span class="si-icon" aria-hidden="true">◷</span><span>Reloj checador</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green">AM</div><div class="sidebar-user-info"><div class="sidebar-user-name">Ana Martínez</div><div class="sidebar-user-role">Admin HR</div></div></div>
@@ -4578,6 +4617,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-recruitment active" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-kiosk" data-skip-sidebar-active="1" onclick="showView('dash-kiosk-clock')"><span class="si-icon" aria-hidden="true">◷</span><span>Reloj checador</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green" id="rec-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="rec-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
@@ -4717,6 +4757,72 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   </main>
 </div>
 
+<!-- ════════════════════ RELOJ CHECADOR ════════════════════ -->
+<div id="view-dash-kiosk-clock" class="app-shell kiosk-admin hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Evaluaciones</div>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','nueva');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
+      <div class="sidebar-section-label">Cuenta</div>
+      <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-timeclock" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-recruitment" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-kiosk active" data-skip-sidebar-active="1" onclick="showView('dash-kiosk-clock')"><span class="si-icon" aria-hidden="true">◷</span><span>Reloj checador</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="s-avatar av-green" id="kiosk-admin-avatar">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="kiosk-admin-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
+      <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Reloj checador</div>
+      <div class="topbar-right">
+        <button type="button" class="card-action kiosk-mobile-back" onclick="showView('dash-crear-eval')">Menú principal</button>
+        <button type="button" class="card-action" onclick="kioskRefresh()">Actualizar</button>
+      </div>
+    </div>
+    <div class="page-content kiosk-stack">
+      <p id="kiosk-loading" class="hidden" role="status">Cargando reloj checador…</p>
+      <p id="kiosk-message" class="kiosk-message" role="alert"></p>
+      <section id="kiosk-setup" class="kiosk-card kiosk-share hidden">
+        <h2>Activa el reloj checador</h2>
+        <p>Genera la liga que usarán tus colaboradores para registrar sus checadas.</p>
+        <button type="button" class="kiosk-primary" onclick="kioskMutation(this,'/activate','POST',{})">Activar reloj checador</button>
+      </section>
+      <div id="kiosk-admin-content" class="kiosk-stack hidden">
+        <section class="kiosk-card kiosk-share">
+          <h2>Liga de checadas</h2>
+          <p>Abre esta liga en la tablet o compártela con tu equipo.</p>
+          <div class="kiosk-share-row">
+            <input id="kiosk-link" class="create-input" type="text" aria-label="Liga de checadas" readonly>
+            <button type="button" class="kiosk-primary" onclick="kioskCopyLink()">Copiar liga</button>
+            <a class="kiosk-open" id="kiosk-open" target="_blank" rel="noopener noreferrer">Abrir checador</a>
+          </div>
+          <span id="kiosk-copy-status" class="kiosk-person-meta" role="status"></span>
+        </section>
+        <section class="kiosk-card">
+          <h2>Personal</h2>
+          <div class="kiosk-key hidden" id="kiosk-key-box">
+            <span id="kiosk-key-label"></span><output id="kiosk-key-value"></output>
+            <button type="button" class="card-action" onclick="kioskHideKey()">Ocultar clave</button>
+          </div>
+          <form id="kiosk-employee-form" class="kiosk-form" onsubmit="kioskAddEmployee(event)">
+            <label>Nombre completo<input class="create-input" name="fullName" maxlength="160" minlength="2" autocomplete="off" required></label>
+            <label>Número de empleado<input class="create-input" name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9\-]{0,31}" autocomplete="off" required></label>
+            <button type="submit" class="kiosk-primary">Agregar colaborador</button>
+          </form>
+          <p id="kiosk-empty">Aún no hay colaboradores registrados.</p>
+          <ul id="kiosk-people"></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
 <!-- ════════════════════ DASH GESTIÓN DE EQUIPO ════════════════════ -->
 <div id="view-dash-timeclock" class="app-shell hidden">
   <aside class="sidebar">
@@ -4730,6 +4836,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-timeclock active" data-skip-sidebar-active="1" onclick="showView('dash-timeclock')"><span class="si-icon">🕘</span><span class="si-cta-stack"><span class="si-cta-title">Gestión de equipo</span><span class="si-cta-sub">Asistencia y seguimiento de tareas</span></span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-recruitment" data-skip-sidebar-active="1" onclick="showView('dash-recruitment')"><span class="si-icon">◈</span><span class="si-cta-stack"><span class="si-cta-title">Reclutamiento</span><span class="si-cta-sub">Vacantes y candidatos</span></span></button>
+      <button type="button" class="sidebar-item sidebar-item-cta-kiosk" data-skip-sidebar-active="1" onclick="showView('dash-kiosk-clock')"><span class="si-icon" aria-hidden="true">◷</span><span>Reloj checador</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user"><div class="s-avatar av-green" id="tc-sidebar-av">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="tc-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
@@ -5777,8 +5884,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── Views ──
-const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-recruitment':'view-dash-recruitment', 'dash-timeclock':'view-dash-timeclock', timeclock:'view-timeclock', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
-const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-recruitment','dash-timeclock','dash-psicologo','dash-empleado']);
+const VIEWS = { landing:'view-landing', 'dash-admin':'view-dash-admin', 'dash-psicologo':'view-dash-psicologo', 'dash-empleado':'view-dash-empleado', 'dash-crear-eval':'view-dash-crear-eval', 'dash-recruitment':'view-dash-recruitment', 'dash-kiosk-clock':'view-dash-kiosk-clock', 'dash-timeclock':'view-dash-timeclock', timeclock:'view-timeclock', 'dash-candidato':'view-dash-candidato', 'dash-superadmin':'view-dash-superadmin', 'access-denied':'view-access-denied', evaluacion:'view-evaluacion' };
+const VIEWS_NEED_EMPRESA_ADMIN = new Set(['dash-admin','dash-crear-eval','dash-recruitment','dash-kiosk-clock','dash-timeclock','dash-psicologo','dash-empleado']);
 const VIEWS_NEED_CANDIDATO = new Set(['dash-candidato']);
 const VIEWS_NEED_SUPERADMIN = new Set(['dash-superadmin']);
 const MIND24_ASPEN_PW_STORAGE='mind24_aspen_pw_v1';
@@ -6463,6 +6570,151 @@ async function aspenProvisionAdmin(e){
     await refreshAspenAdminsList();
   }catch(err){ alert(err.message||'Error'); }
 }
+const kioskApi='/api/org/reloj-checador';
+const kioskPunchLabels={CHECK_IN:'Entrada',MEAL_OUT:'Salida a comida',MEAL_IN:'Regreso de comida',CHECK_OUT:'Salida'};
+let kioskRefreshVersion=0;
+let kioskViewVersion=0;
+let kioskAdminBusy=false;
+
+function kioskHideKey(){
+  document.getElementById('kiosk-key-box').classList.add('hidden');
+  document.getElementById('kiosk-key-value').textContent='';
+  document.getElementById('kiosk-key-label').textContent='';
+}
+
+function kioskOnLeave(){
+  kioskRefreshVersion++;
+  kioskViewVersion++;
+  kioskHideKey();
+}
+
+function kioskOnShow(){
+  const name=window.__MIND24_USER?.fullName||window.__MIND24_USER?.email||'';
+  document.getElementById('kiosk-admin-name').textContent=name;
+  document.getElementById('kiosk-admin-avatar').textContent=initialsFromName(name);
+  document.getElementById('kiosk-admin-content').classList.add('hidden');
+  document.getElementById('kiosk-setup').classList.add('hidden');
+  document.getElementById('kiosk-copy-status').textContent='';
+  kioskRefresh();
+}
+
+async function kioskRefresh(){
+  const request=++kioskRefreshVersion;
+  const message=document.getElementById('kiosk-message');
+  const loading=document.getElementById('kiosk-loading');
+  message.textContent='';
+  loading.classList.remove('hidden');
+  try{
+    const { clock }=await apiJson(kioskApi);
+    if(request===kioskRefreshVersion) kioskRender(clock);
+  }catch(error){
+    if(request===kioskRefreshVersion) message.textContent=error.message||'No se pudo cargar el reloj checador.';
+  }finally{
+    if(request===kioskRefreshVersion) loading.classList.add('hidden');
+  }
+}
+
+function kioskRender(clock){
+  document.getElementById('kiosk-setup').classList.toggle('hidden',Boolean(clock));
+  document.getElementById('kiosk-admin-content').classList.toggle('hidden',!clock);
+  if(!clock) return;
+  const url=new URL('/reloj-checador',location.origin);
+  url.hash=clock.publicKey;
+  document.getElementById('kiosk-link').value=url.href;
+  document.getElementById('kiosk-open').href=url.href;
+  const format=new Intl.DateTimeFormat('es-MX',{timeZone:clock.timeZone,dateStyle:'short',timeStyle:'short'});
+  const rows=document.getElementById('kiosk-people');
+  rows.replaceChildren();
+  document.getElementById('kiosk-empty').classList.toggle('hidden',clock.employees.length>0);
+  for(const person of clock.employees){
+    const row=document.createElement('li');
+    row.className='kiosk-person';
+    const identification=document.createElement('div');
+    const name=document.createElement('strong');
+    name.textContent=person.fullName;
+    const detail=document.createElement('span');
+    detail.className='kiosk-person-meta';
+    detail.textContent=person.code+' · '+(person.isActive?'Activo':'Inactivo');
+    identification.append(name,detail);
+    const last=document.createElement('div');
+    last.className='kiosk-person-meta';
+    const punch=person.lastPunch;
+    last.textContent=punch?kioskPunchLabels[punch.type]+' · '+format.format(new Date(punch.recordedAt)):'Aún sin checadas';
+    const actions=document.createElement('div');
+    actions.className='kiosk-person-actions';
+    const path='/employees/'+encodeURIComponent(person.id);
+    const reset=document.createElement('button');
+    reset.type='button';
+    reset.className='card-action';
+    reset.textContent='Renovar clave';
+    reset.onclick=()=>{
+      if(confirm('¿Renovar la clave de '+person.fullName+'? La anterior dejará de funcionar.')){
+        kioskMutation(reset,path,'PATCH',{renewKey:true},person.fullName);
+      }
+    };
+    const toggle=document.createElement('button');
+    toggle.type='button';
+    toggle.className='card-action';
+    toggle.textContent=person.isActive?'Desactivar':'Activar';
+    toggle.onclick=()=>kioskMutation(toggle,path,'PATCH',{isActive:!person.isActive});
+    actions.append(reset,toggle);
+    row.append(identification,last,actions);
+    rows.append(row);
+  }
+}
+
+async function kioskMutation(button,path,method,body,employeeName){
+  if(kioskAdminBusy)return;
+  const currentView=kioskViewVersion;
+  const message=document.getElementById('kiosk-message');
+  kioskAdminBusy=true;
+  button.disabled=true;
+  message.textContent='';
+  kioskHideKey();
+  try{
+    const result=await apiJson(kioskApi+path,{method,body:JSON.stringify(body)});
+    if(currentView!==kioskViewVersion)return;
+    if(result.punchKey){
+      document.getElementById('kiosk-key-label').textContent=employeeName+' · Clave de checada';
+      document.getElementById('kiosk-key-value').textContent=result.punchKey;
+      document.getElementById('kiosk-key-box').classList.remove('hidden');
+    }
+    if(path==='/employees') document.getElementById('kiosk-employee-form').reset();
+    if(result.clock){
+      kioskRefreshVersion++;
+      document.getElementById('kiosk-loading').classList.add('hidden');
+      kioskRender(result.clock);
+    }else await kioskRefresh();
+  }catch(error){
+    if(currentView===kioskViewVersion) message.textContent=error.message||'No se pudo guardar el cambio.';
+  }finally{
+    button.disabled=false;
+    kioskAdminBusy=false;
+  }
+}
+
+function kioskAddEmployee(event){
+  event.preventDefault();
+  const fields=new FormData(event.currentTarget);
+  const fullName=fields.get('fullName').trim();
+  kioskMutation(event.submitter||event.currentTarget.querySelector('button'),'/employees','POST',{
+    code:fields.get('code').trim(),fullName,
+  },fullName);
+}
+
+async function kioskCopyLink(){
+  const field=document.getElementById('kiosk-link');
+  const status=document.getElementById('kiosk-copy-status');
+  try{
+    await navigator.clipboard.writeText(field.value);
+    status.textContent='Liga copiada.';
+  }catch(_){
+    field.focus();
+    field.select();
+    status.textContent='Liga seleccionada. Puedes copiarla desde el campo.';
+  }
+}
+
 function canAccessView(name){
   if(name==='landing'||name==='access-denied'||name==='evaluacion')return true;
   if(VIEWS_NEED_SUPERADMIN.has(name)){
@@ -6532,6 +6784,7 @@ function mind24ResetUiBlockers(){
 }
 function showView(name) {
   if(!canAccessView(name))return;
+  if(name!=='dash-kiosk-clock') kioskOnLeave();
   if(name!=='dash-crear-eval') crearEvalSetMenuOpen(false);
   if(name!=='dash-recruitment'&&window.__REC_STATE&&typeof recKanbanAutoScrollStop==='function'){
     window.__REC_STATE.kanbanDragging=false;
@@ -6582,6 +6835,7 @@ function showView(name) {
   if(name==='dash-timeclock'){
     setTimeout(function(){ tcOnShow(); },0);
   }
+  if(name==='dash-kiosk-clock') kioskOnShow();
   if(name==='dash-recruitment'){
     setTimeout(function(){ recOnShow(); },0);
   }
@@ -7058,6 +7312,7 @@ function mind24PersistLastView(name){
       'dash-admin',
       'dash-crear-eval',
       'dash-timeclock',
+      'dash-kiosk-clock',
       'dash-psicologo',
       'dash-empleado',
       'dash-candidato',

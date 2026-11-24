@@ -81,6 +81,54 @@ model Organization {
   workforceWorkplaceInboxItems WorkforceWorkplaceInbox[]
   workforceGoals              WorkforceGoal[]
   workforceGoalPeriods        WorkforceGoalPeriod[]
+  kioskClock                 KioskClock?
+}
+
+enum KioskPunchType {
+  CHECK_IN
+  MEAL_OUT
+  MEAL_IN
+  CHECK_OUT
+}
+
+model KioskClock {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  publicKey      String       @unique @db.VarChar(32)
+  timeZone       String       @db.VarChar(64)
+  createdAt      DateTime     @default(now())
+
+  employees KioskEmployee[]
+}
+
+model KioskEmployee {
+  id        String    @id @default(cuid())
+  clockId   String
+  clock     KioskClock @relation(fields: [clockId], references: [id], onDelete: Cascade)
+  code      String    @db.VarChar(32)
+  fullName  String    @db.VarChar(160)
+  punchKeyDigest String? @db.VarChar(64)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  punches KioskPunch[]
+
+  @@unique([clockId, code])
+  @@unique([clockId, punchKeyDigest])
+}
+
+model KioskPunch {
+  id         String        @id @default(cuid())
+  employeeId String
+  employee   KioskEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  ordinal    Int
+  type       KioskPunchType
+  recordedAt DateTime      @db.Timestamptz(6)
+  requestId  String        @db.Uuid
+
+  @@unique([employeeId, ordinal])
+  @@unique([employeeId, requestId])
 }
 
 enum WorkforceRecruitmentNovedadEventType {

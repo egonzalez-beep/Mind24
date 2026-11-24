@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reloj checador · Mind24</title>
+  <style>
+    :root{font-family:system-ui,sans-serif;color:#132923;background:#edf5f0;color-scheme:light;}
+    *{box-sizing:border-box;}
+    body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse at top right,#cde8dc,transparent 68%),#edf5f0;}
+    [hidden]{display:none!important;}
+    main{width:min(100%,470px);}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+    .mark{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:#113c31;color:#fff;font-size:21px;font-weight:800;}
+    header p{margin:0 0 2px;color:#41665a;font-size:12px;font-weight:750;letter-spacing:.08em;}
+    h1,h2{margin:0;line-height:1.15;letter-spacing:-.04em;}
+    h1{font-size:clamp(26px,6vw,36px);}
+    h2{font-size:25px;overflow-wrap:anywhere;}
+    .panel{padding:clamp(18px,5vw,30px);background:#fff;border:1px solid #d1e5dd;border-radius:24px;box-shadow:0 16px 55px #173c3020;}
+    form,#actions,#actions-panel{display:grid;gap:14px;}
+    label{display:grid;gap:6px;font-size:14px;font-weight:700;}
+    input,button{min-height:54px;border-radius:12px;font:inherit;}
+    input{width:100%;padding:10px 13px;background:#f6faf8;border:1px solid #afc9bf;color:#132923;font-size:17px;}
+    button{padding:10px 14px;background:#17604b;border:1px solid #17604b;color:#fff;cursor:pointer;font-weight:750;}
+    button:hover:enabled{background:#104d3b;}
+    button.secondary{background:#f4faf7;border-color:#b6d4c8;color:#174239;}
+    button.secondary:hover:enabled{background:#e6f4ed;}
+    button:disabled{opacity:.62;}
+    :focus-visible{outline:3px solid #1e7860;outline-offset:3px;}
+    #actions-label{margin:4px 0 0;color:#41665a;}
+    #success{padding:12px;margin:0 0 14px;background:#e6f6ee;border:1px solid #bfe4d2;border-radius:12px;color:#154d3b;font-weight:650;}
+    #error{margin:12px 0 0;color:#9a2929;font-size:14px;}
+    #error:empty{display:none;}
+    #invalid-link{margin:0;line-height:1.55;}
+  </style>
+  <script defer src="/reloj-checador/kiosk.js"></script>
+</head>
+<body>
+  <main>
+    <header><div class="mark" aria-hidden="true">24</div><div><p>MIND24</p><h1>Reloj checador</h1></div></header>
+    <section class="panel">
+      <p id="invalid-link" hidden>Abre la liga de checadas que te compartió tu administrador.</p>
+      <p id="success" role="status" hidden></p>
+      <form id="identify" autocomplete="off" hidden>
+        <label>Clave de checada
+          <input name="punchKey" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required>
+        </label>
+        <button type="submit">Continuar</button>
+      </form>
+      <div id="actions-panel" hidden>
+        <div><h2 id="employee-name" tabindex="-1"></h2><p id="actions-label">Elige qué quieres registrar.</p></div>
+        <div id="actions"></div>
+        <button class="secondary" id="cancel" type="button">Cancelar</button>
+      </div>
+      <p id="error" role="alert"></p>
+    </section>
+  </main>
+</body>
+</html>
