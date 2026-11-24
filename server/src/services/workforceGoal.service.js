@@ -6,6 +6,7 @@ import {
   anchorYmdFromPeriodStart,
   countPeriodAnchorsInclusive,
   currentAnchorYmdForGoal,
+  dailyGoalAppliesOnWorkDate,
   listPeriodAnchorsBetween,
   nextPeriodAnchorYmd,
   periodBoundsFromAnchor,
@@ -144,12 +145,15 @@ function isGoalPeriodUniqueViolation(e) {
 }
 
 async function materializeGoalPeriodAnchors(tx, goal, employee, anchorYmds) {
-  if (!anchorYmds.length) return;
   if (anchorYmds.length > MAX_GOAL_PERIOD_BACKFILL) {
     throw goalBackfillLimitError();
   }
+  const applicableAnchors = goal.periodicity === 'DAILY'
+    ? anchorYmds.filter((anchorYmd) => dailyGoalAppliesOnWorkDate(employee, anchorYmd))
+    : anchorYmds;
+  if (!applicableAnchors.length) return;
   const targetSnapshot = snapshotTargetForGoal(goal);
-  const rows = anchorYmds.map((anchorYmd) => {
+  const rows = applicableAnchors.map((anchorYmd) => {
     const { periodStart, periodEnd } = periodBoundsFromAnchor(
       anchorYmd,
       goal.periodicity,

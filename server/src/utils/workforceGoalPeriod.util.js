@@ -4,6 +4,7 @@ import {
   startOfCalendarDayInTimeZone,
 } from './workforceDueDate.js';
 import { isValidIanaTimezone } from './ianaTimezone.js';
+import { decodeWeekdayMask } from './workforceWorkSchedule.util.js';
 
 /** Máximo de periodos a materializar por meta en una sola sincronización (backfill acotado). */
 export const MAX_GOAL_PERIOD_BACKFILL = 400;
@@ -21,6 +22,17 @@ function dayOfWeekMondayZero(ymd) {
   const [y, m, d] = ymd.split('-').map(Number);
   const js = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   return js === 0 ? 6 : js - 1;
+}
+
+/** Antes del primer horario registrado y después de retirarlo, se conserva la recurrencia de calendario. */
+export function dailyGoalAppliesOnWorkDate(employee, ymd) {
+  const history = employee.dailyGoalWeekdayHistory || {};
+  const effectiveDate = Object.keys(history)
+    .filter((date) => date <= ymd)
+    .sort()
+    .at(-1);
+  const weekdays = decodeWeekdayMask(history[effectiveDate]);
+  return !weekdays || weekdays.includes(dayOfWeekMondayZero(ymd) + 1);
 }
 
 export function weekStartYmd(ymd) {

@@ -174,6 +174,8 @@ model WorkforceEmployee {
   workScheduleToleranceMinutes  Int?
   workScheduleWeekdayMask       Int?
   workScheduleAssignedAt        DateTime? @db.Timestamptz(6)
+  /// Vigencia por fecha civil local para metas diarias. Null en una fecha indica horario retirado.
+  dailyGoalWeekdayHistory Json @default("{}")
   accessTokenHash String   @unique
   tokenVersion    Int      @default(1)
   profilePhotoPath String?

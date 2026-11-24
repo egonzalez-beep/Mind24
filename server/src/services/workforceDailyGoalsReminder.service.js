@@ -1,7 +1,7 @@
 import { prisma } from '../db/client.js';
 import { isValidIanaTimezone } from '../utils/ianaTimezone.js';
 import { calendarYmdInTimeZone } from '../utils/workforceDueDate.js';
-import { ymdFromDateField } from '../utils/workforceGoalPeriod.util.js';
+import { dailyGoalAppliesOnWorkDate, ymdFromDateField } from '../utils/workforceGoalPeriod.util.js';
 import {
   derivePeriodDisplayStatus,
   ensureWorkforceGoalPeriodsUpToDate,
@@ -126,6 +126,7 @@ export function selectDailyReminderPlans({ now, goals, periodsByGoalId }) {
     }
     if (!isWithinDailyReminderWindow(clock.minutes)) continue;
     if (!goalAppliesOnLocalDate(goal, clock.ymd)) continue;
+    if (!dailyGoalAppliesOnWorkDate(employee, clock.ymd)) continue;
     const period = periodsByGoalId?.get?.(goal.id) || null;
     if (!dailyGoalNeedsReminder(goal, period, now)) continue;
     const bucketKey = `${goal.organizationId}:${goal.employeeId}:${clock.ymd}`;
@@ -203,6 +204,7 @@ const goalSelect = {
       isActive: true,
       timezone: true,
       organizationId: true,
+      dailyGoalWeekdayHistory: true,
       organization: { select: { blocked: true, empresaPortalEnabled: true } },
     },
   },
@@ -218,6 +220,7 @@ function employeeInReminderWindow(employee, now) {
     return null;
   }
   if (!isWithinDailyReminderWindow(clock.minutes)) return null;
+  if (!dailyGoalAppliesOnWorkDate(employee, clock.ymd)) return null;
   return { employee, timeZone, clock };
 }
 
@@ -248,6 +251,7 @@ export async function sweepDailyGoalReminders(now = new Date(), deps = {}) {
       timezone: true,
       isActive: true,
       organizationId: true,
+      dailyGoalWeekdayHistory: true,
       organization: { select: { blocked: true, empresaPortalEnabled: true } },
     },
   });
