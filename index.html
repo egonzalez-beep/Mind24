@@ -1788,63 +1788,104 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-history-toggle.hidden{display:none!important;}
 .tc-history-backdrop{position:fixed;inset:0;z-index:1190;background:rgba(15,23,42,.18);backdrop-filter:blur(2px);}
 .tc-history-backdrop.hidden{display:none!important;}
-.tc-history-dialog{position:fixed;z-index:1200;width:min(580px,calc(100vw - 32px));max-height:min(78vh,640px);display:flex;flex-direction:column;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border:1px solid var(--slate-200);border-radius:16px;box-shadow:0 24px 60px rgba(15,23,42,.16),0 4px 16px rgba(124,58,237,.08);overflow:hidden;}
+
+.tc-history-dialog{position:fixed;z-index:1200;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1000px,calc(100vw - 32px));max-height:min(90dvh,780px);display:flex;flex-direction:column;background:#f8f9fc;border:1px solid var(--slate-200);border-radius:22px;box-shadow:0 26px 80px rgba(15,23,42,.22);overflow:hidden;}
 .tc-history-dialog.hidden{display:none!important;}
-.tc-history-dialog--mobile{left:50%!important;top:auto!important;bottom:16px!important;transform:translateX(-50%);width:calc(100vw - 24px);max-height:85vh;border-radius:18px 18px 14px 14px;}
-.tc-history-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--slate-100);}
-.tc-history-dialog-head h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-dark);}
-.tc-history-tabs{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap;}
-.tc-history-tab{appearance:none;border:0;background:transparent;color:var(--slate-500);font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:1.2;}
-.tc-history-tab--on{background:var(--purple-light);color:var(--purple-dark);}
-.tc-history-tab:focus-visible,.tc-punct-nav:focus-visible,.tc-punct-card:focus-visible,.tc-punct-refresh:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-history-dialog--punctuality{width:min(920px,calc(100vw - 32px));}
-.tc-punct-panel{display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;}
+.tc-history-dialog-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:20px 24px 12px;background:#fff;border-bottom:1px solid var(--slate-200);}
+.tc-history-dialog-head h3{margin:0;font-size:22px;line-height:1.2;letter-spacing:-.035em;color:var(--primary);}
+.tc-history-identity p{margin:4px 0 0;color:var(--slate-600);font-size:13px;overflow-wrap:anywhere;}
+.tc-history-header-actions{display:flex;align-items:center;align-self:start;gap:8px;}
+.tc-history-tabs{grid-column:1/-1;display:flex;gap:4px;justify-self:start;padding:4px;background:#f2f3f7;border-radius:12px;min-width:0;}
+.tc-history-tab{appearance:none;border:0;background:transparent;color:var(--slate-600);line-height:1.2;font-family:inherit;font-size:13px;font-weight:700;min-height:36px;padding:6px 14px;border-radius:9px;cursor:pointer;}
+.tc-history-tab--on{background:#fff;color:var(--purple-dark);box-shadow:0 1px 3px rgba(15,23,42,.1);}
+.tc-history-dialog :is(button,summary):focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-history-dialog-body{min-height:0;padding:20px 24px 24px;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;}
+.tc-history-main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start;}
+.tc-history-cal-wrap,.tc-punct-panel{min-width:0;}
+.tc-history-cal-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 2px 0;font-size:12px;color:var(--slate-600);}
+.tc-history-cal-meta span{display:inline-flex;align-items:center;gap:5px;}
+.tc-history-cal-meta .tc-cal-dot{display:inline-block;}
+.tc-history-dialog .tc-cal{border-radius:16px;padding:12px 14px;}
+.tc-history-dialog .tc-cal-day{min-height:42px;justify-content:center;font-size:14px;}
+.tc-history-dialog .tc-cal-weekdays span{color:var(--slate-500);}
+.tc-history-dialog .tc-cal-day--today{box-shadow:inset 0 0 0 1px #7c3aed;color:var(--purple-dark);font-weight:800;}
+.tc-history-dialog .tc-cal-day--selected{background:#ede9fe!important;box-shadow:inset 0 0 0 1px #a78bfa;}
+.tc-history-dialog .tc-cal-day--selected.tc-cal-day--today{box-shadow:inset 0 0 0 2px #7c3aed;}
+.tc-history-dialog .tc-cal-day:not(button):not(.tc-cal-day--today){color:var(--slate-500);}
+.tc-history-dialog .tc-history-day-panel{padding:16px;border-radius:16px;min-width:0;}
+.tc-history-dialog .tc-history-day-head{margin-bottom:10px;}
+.tc-history-dialog .tc-history-day-head h4,.tc-punct-day-panel h4{font-size:15px;color:var(--primary);margin:0;}
+.tc-history-hint{font-size:13px;line-height:1.5;color:var(--slate-600);margin:0;}
+.tc-history-dialog .tc-history-refresh-btn{width:auto;min-height:36px;padding:0 10px;gap:6px;font:inherit;font-size:12px;font-weight:700;}
+.tc-history-dialog .tc-history-refresh-btn[aria-disabled=true]{opacity:.6;cursor:wait;}
+.tc-history-connection{margin-top:16px;border:1px solid var(--slate-200);border-radius:14px;background:#fff;}
+.tc-history-connection>summary{padding:14px 16px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;}
+.tc-history-connection-content{display:grid;gap:8px;padding:0 16px 16px;}
+.tc-history-connection-content h4{font-size:13px;margin:8px 0 0;color:var(--primary);}
+.tc-history-markers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0 0;}
+.tc-history-markers>div{border-radius:9px;padding:7px;background:#f5f6fa;min-width:0;}
+.tc-history-markers dt{font-size:11px;color:var(--slate-600);}
+.tc-history-markers dd{margin:2px 0 0;font-size:13px;font-weight:750;color:var(--primary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.tc-session-connection{margin-top:8px;}
+.tc-session-connection summary{font-size:12px;color:var(--slate-600);cursor:pointer;}
+.tc-session-connection .tc-history-session-dl{margin-top:8px;}
+.tc-history-dialog .tc-history-session-head{min-height:30px;}
+.tc-history-dialog .tc-work-log-history-btn.tc-history-log-action{width:auto;min-height:30px;padding:0 7px;gap:4px;color:var(--purple-dark);font:inherit;font-weight:700;}
 .tc-punct-panel.hidden{display:none!important;}
-.tc-punct-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
-.tc-punct-kicker{margin:0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-dark);}
-.tc-punct-sub{margin:3px 0 0;font-size:12px;line-height:1.4;color:var(--slate-500);overflow-wrap:anywhere;}
-.tc-punct-nav-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;max-width:100%;}
-.tc-punct-nav,.tc-punct-refresh{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;color:var(--slate-600);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
-.tc-punct-nav[disabled],.tc-punct-refresh[disabled]{opacity:.35;cursor:not-allowed;}
-.tc-punct-refresh--spin svg{animation:m24SpinAnim .7s linear infinite;}
-.tc-punct-week{min-width:0;font-size:13px;font-weight:700;color:var(--primary);text-align:center;white-space:nowrap;}
-.tc-punct-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0;}
-.tc-punct-kpi{border-radius:14px;padding:10px 12px;min-width:0;}
-.tc-punct-kpi strong{display:block;font-size:22px;line-height:1.1;letter-spacing:-.03em;}
-.tc-punct-kpi span{display:block;margin:0 0 4px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
-.tc-punct-kpi--punct{background:#ecfdf3;color:#15803d;}
-.tc-punct-kpi--cover{background:#eff6ff;color:#1d4ed8;}
-.tc-punct-kpi--late{background:#fffbeb;color:#b45309;}
-.tc-punct-kpi--extra{background:#f5f3ff;color:#6d28d9;}
-.tc-punct-days{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:100%;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding-bottom:2px;}
-.tc-punct-card{flex:1 1 0;min-width:108px;scroll-snap-align:start;border:1px solid var(--slate-200);background:#fff;border-radius:16px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;color:inherit;}
-.tc-punct-card--complete{background:#f0fdf4;border-color:#86efac;}
-.tc-punct-card--late,.tc-punct-card--incomplete{background:#fffbeb;border-color:#fcd34d;}
-.tc-punct-card--extra{background:#f5f3ff;border-color:#ddd6fe;}
-.tc-punct-card--progress{background:#eff6ff;border-color:#bfdbfe;}
-.tc-punct-card--none{background:#f8fafc;border-color:var(--slate-200);}
-.tc-punct-card-dow{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-400);}
-.tc-punct-card-date{font-size:18px;font-weight:800;color:var(--primary);margin:2px 0 8px;}
-.tc-punct-card-state{font-size:13px;font-weight:700;line-height:1.3;}
-.tc-punct-card-line{font-size:11px;color:var(--slate-500);line-height:1.35;overflow-wrap:anywhere;}
-.tc-punct-empty{margin:0;font-size:13px;line-height:1.45;color:var(--slate-600);}
-.tc-punct-link{margin-top:8px;border:0;background:transparent;color:var(--purple-dark);font-weight:700;font-size:13px;cursor:pointer;padding:0;font-family:inherit;}
-.tc-punct-pop{position:absolute;z-index:3;width:min(280px,calc(100% - 16px));background:#fff;border:1px solid var(--slate-200);border-radius:14px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:12px 14px;text-align:left;}
-.tc-punct-pop.hidden{display:none!important;}
-.tc-punct-pop h4{margin:0 0 6px;font-size:14px;color:var(--primary);}
-.tc-punct-pop p{margin:0 0 4px;font-size:12px;line-height:1.4;color:var(--slate-600);}
-.tc-punct-err{font-size:13px;color:#b91c1c;}
-@media(max-width:700px){
+.tc-punct-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--slate-200);border-radius:14px;background:#fff;}
+.tc-punct-sub,.tc-punct-empty{margin:0;font-size:13px;line-height:1.45;color:var(--slate-600);overflow-wrap:anywhere;}
+.tc-punct-nav-wrap{display:flex;align-items:center;gap:6px;}
+.tc-punct-nav{width:34px;height:34px;border:1px solid var(--slate-200);border-radius:9px;background:#fff;color:var(--slate-600);font:inherit;font-size:17px;cursor:pointer;}
+.tc-punct-nav:disabled,.tc-punct-nav[aria-disabled=true]{opacity:.45;cursor:default;}
+.tc-punct-week{font-size:13px;font-weight:750;color:var(--primary);text-align:center;white-space:nowrap;}
+.tc-punct-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;}
+.tc-punct-kpi{border:1px solid var(--slate-200);border-radius:12px;padding:11px 12px;background:#fff;min-width:0;}
+.tc-punct-kpi strong{display:block;font-size:23px;line-height:1.15;letter-spacing:-.03em;color:var(--primary);}
+.tc-punct-kpi span{display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--slate-600);}
+.tc-punct-kpi--late strong{color:#92400e;}
+.tc-punct-kpi--extra strong{color:#6d28d9;}
+.tc-punct-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:12px;}
+.tc-punct-card{display:grid;align-content:start;gap:8px;min-width:0;border:1px solid var(--slate-200);background:#fff;border-radius:12px;padding:9px;text-align:left;font:inherit;color:inherit;cursor:pointer;}
+.tc-punct-card:hover,.tc-punct-card[aria-pressed=true]{border-color:#a78bfa;}
+.tc-punct-card[aria-pressed=true]{background:#f7f3ff;box-shadow:inset 0 0 0 1px #a78bfa;}
+.tc-punct-card--rest{cursor:default;background:#f2f4f8;}
+.tc-punct-card--rest:hover{border-color:var(--slate-200);}
+.tc-punct-card-date{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;font-size:12px;color:var(--slate-600);}
+.tc-punct-card-date strong{font-size:16px;font-weight:800;color:var(--primary);}
+.tc-punct-card[aria-current=date] .tc-punct-card-date strong{color:var(--purple-dark);text-decoration:underline;text-underline-offset:3px;}
+.tc-punct-badges{display:flex;flex-wrap:wrap;gap:4px;align-self:start;}
+.tc-punct-badge{display:inline-block;width:fit-content;max-width:100%;padding:3px 6px;border-radius:6px;background:#eef1f6;color:#475569;font-size:11px;font-weight:700;line-height:1.25;overflow-wrap:anywhere;}
+.tc-punct-badge--complete{background:#e8f7ef;color:#166534;}
+.tc-punct-badge--late,.tc-punct-badge--incomplete{background:#fff0d5;color:#92400e;}
+.tc-punct-badge--extra{background:#eee7ff;color:#6d28d9;}
+.tc-punct-badge--progress{background:#e8f2ff;color:#1e40af;}
+.tc-punct-card-times{display:grid;gap:2px;color:var(--slate-600);font-size:11px;}
+.tc-punct-card-times strong{color:var(--primary);font-weight:700;font-variant-numeric:tabular-nums;}
+.tc-punct-day-panel{display:grid;gap:8px;margin-top:12px;border:1px solid var(--slate-200);border-radius:14px;background:#fff;padding:14px;}
+.tc-punct-day-panel .tc-history-markers{max-width:470px;margin:0;}
+.tc-punct-link{justify-self:start;border:0;background:#f2ecff;color:var(--purple-dark);font:inherit;font-size:13px;font-weight:750;cursor:pointer;padding:8px 10px;border-radius:8px;}
+.tc-punct-notice{margin-top:12px;}
+@media(max-width:860px){
+  .tc-punct-days{grid-template-columns:minmax(0,1fr);}
+  .tc-punct-card{grid-template-columns:minmax(52px,.65fr) minmax(115px,1.5fr) minmax(90px,1fr);align-items:center;padding:10px;gap:6px;}
+}
+@media(max-width:680px){
+  .tc-history-dialog{top:auto;bottom:8px;transform:translateX(-50%);width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:18px;}
+  .tc-history-dialog-head{padding:14px 12px 9px;gap:10px;}
+  .tc-history-dialog-head h3{font-size:18px;}
+  .tc-history-header-actions{gap:4px;}
+  .tc-history-dialog .tc-history-refresh-btn{padding:0 6px;}
+  .tc-history-dialog-body{padding:12px;scrollbar-gutter:auto;}
+  .tc-history-main{grid-template-columns:minmax(0,1fr);gap:12px;}
+  .tc-history-dialog .tc-cal{padding:10px;}
+  .tc-punct-head{flex-wrap:wrap;gap:8px;}
   .tc-punct-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
-  .tc-punct-card{flex:0 0 148px;}
-  .tc-punct-head{flex-wrap:wrap;}
 }
 @media(prefers-reduced-motion:reduce){
-  .tc-punct-card,.tc-punct-pop,.tc-history-tab,.tc-punct-refresh--spin svg,#tc-sched-export-download.tc-sched-export-download--busy svg{transition:none;animation:none;}
+  .tc-history-dialog .tc-cal-pane,.tc-history-dialog .tc-cal-loading{transition:none;}
+  .tc-history-refresh-btn--spin svg,#tc-sched-export-download.tc-sched-export-download--busy svg{animation:none;}
 }
-.tc-history-dialog-body{flex:1 1 auto;min-height:0;padding:12px 16px 16px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
-.tc-history-cal-wrap{position:relative;}
-.tc-cal-viewport{position:relative;overflow:hidden;min-height:268px;}
+.tc-cal-viewport{position:relative;overflow:hidden;}
 .tc-cal-stage{position:relative;display:grid;grid-template:1fr/1fr;}
 .tc-cal-pane{grid-area:1/1;transition:transform 190ms ease,opacity 190ms ease;will-change:transform,opacity;}
 .tc-cal-pane--from-right{transform:translateX(14px);opacity:.88;}
@@ -1861,22 +1902,21 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
 .tc-cal-title{font-size:14px;font-weight:700;color:var(--primary);text-transform:capitalize;flex:1;text-align:center;}
 .tc-cal-nav{width:32px;height:32px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:var(--tr-fast);}
-.tc-cal-nav:hover:not([disabled]){background:var(--purple-light);border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
+.tc-cal-nav:hover:not([aria-disabled=true]){background:var(--purple-light);border-color:rgba(124,58,237,.35);color:var(--purple-dark);}
 .tc-cal-nav:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
-.tc-cal-nav[disabled]{opacity:.35;cursor:not-allowed;}
+.tc-cal-nav[aria-disabled=true]{opacity:.45;cursor:default;}
 .tc-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
 .tc-cal-weekdays span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-400);text-align:center;}
 .tc-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .tc-cal-day{position:relative;min-height:36px;border:none;border-radius:8px;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-600);cursor:default;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;}
 .tc-cal-day--muted{color:var(--slate-300);}
-.tc-cal-day--has{cursor:pointer;}
-.tc-cal-day--has:hover{background:var(--slate-50);}
+.tc-cal-day--pickable{cursor:pointer;}
+.tc-cal-day--pickable:not(.tc-cal-day--marked):not(.tc-cal-day--today):not(.tc-cal-day--selected){color:var(--slate-500);}
+.tc-cal-day--pickable:hover{background:var(--slate-100);}
 .tc-cal-day--selected{background:var(--purple-light)!important;color:var(--purple-dark);}
 .tc-cal-day:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
 .tc-cal-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);}
 .tc-cal-dot--open{background:#f59e0b;}
-.tc-cal-popover{position:fixed;z-index:1200;max-width:240px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--slate-200);box-shadow:0 8px 24px rgba(15,23,42,.12);font-size:12px;color:var(--slate-600);line-height:1.45;pointer-events:none;}
-.tc-cal-popover strong{display:block;font-size:13px;color:var(--primary);margin-bottom:6px;font-weight:700;}
 .tc-history-kpi-strip{display:flex;flex-wrap:wrap;gap:6px 8px;padding:6px 8px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;font-size:11px;line-height:1.3;}
 .tc-history-kpi-strip.hidden{display:none!important;}
 .tc-history-kpi-item{flex:1 1 calc(50% - 8px);min-width:0;}
@@ -1888,9 +1928,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-history-day-panel.hidden{display:none!important;}
 .tc-history-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
 .tc-history-day-head h4{margin:0;font-size:13px;font-weight:700;color:var(--primary);flex:1;min-width:0;}
-.tc-history-day-actions{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;}
-.tc-history-day-log-slot{display:inline-flex;align-items:center;gap:8px;}
-.tc-history-day-log-slot:empty{display:none;}
 .tc-work-log-history-btn{width:32px;height:32px;}
 .tc-work-log-history-btn svg{width:16px;height:16px;}
 .tc-history-refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex-shrink:0;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:var(--tr-fast);}
@@ -1919,13 +1956,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-history-session-dl>div{display:grid;grid-template-columns:max-content minmax(0,max-content);gap:8px 20px;align-items:baseline;width:100%;max-width:360px;}
 .tc-history-session-dl dt{margin:0;font-size:11px;font-weight:600;color:var(--slate-500);text-align:left;white-space:nowrap;}
 .tc-history-session-dl dd{margin:0;font-size:12px;font-weight:600;color:var(--primary);text-align:left;}
-.tc-conn-summary{border:1px solid var(--slate-200);border-radius:10px;padding:0;background:var(--slate-50);}
-.tc-conn-summary>summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--purple-dark);padding:10px 12px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.tc-conn-summary>summary::-webkit-details-marker{display:none;}
-.tc-conn-summary-body{padding:0 12px 12px;font-size:12px;color:var(--slate-600);line-height:1.5;}
-.tc-conn-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 12px;margin-bottom:10px;}
-.tc-conn-summary-grid dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate-500);margin:0 0 2px;}
-.tc-conn-summary-grid dd{margin:0;font-size:13px;font-weight:600;color:var(--primary);}
 .tc-conn-chart-tabs{display:inline-flex;gap:4px;margin-bottom:8px;border:1px solid var(--slate-200);border-radius:8px;padding:2px;background:#fff;}
 .tc-conn-chart-tab{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;color:var(--slate-500);}
 .tc-conn-chart-tab--on{background:var(--purple-light);color:var(--purple-dark);}
@@ -4671,42 +4701,50 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <div id="tc-history-backdrop" class="tc-history-backdrop hidden" aria-hidden="true"></div>
       <div id="tc-history-dialog" class="tc-history-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="tc-history-dialog-title" aria-hidden="true">
         <div class="tc-history-dialog-head">
+          <div class="tc-history-identity">
+            <h3 id="tc-history-dialog-title">Historial de jornadas</h3>
+            <p id="tc-history-employee"></p>
+          </div>
+          <div class="tc-history-header-actions">
+            <button type="button" class="tc-history-refresh-btn" id="tc-history-refresh-btn" aria-label="Actualizar historial de jornadas" onclick="tcRefreshHistory()" title="Actualizar historial de jornadas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Actualizar</span></button>
+            <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-history-dialog-close" aria-label="Cerrar historial de jornadas" onclick="tcCloseHistoryDialog(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+          </div>
           <div class="tc-history-tabs" role="tablist" aria-label="Vistas del historial">
             <button type="button" class="tc-history-tab tc-history-tab--on" id="tc-history-tab-history" role="tab" aria-selected="true" aria-controls="tc-hist-view-history" onclick="tcHistorySetView('history')">Historial</button>
-            <button type="button" class="tc-history-tab" id="tc-history-tab-punct" role="tab" aria-selected="false" aria-controls="tc-hist-view-punct" onclick="tcHistorySetView('punctuality')">Puntualidad semanal</button>
+            <button type="button" class="tc-history-tab" id="tc-history-tab-punct" role="tab" aria-selected="false" aria-controls="tc-hist-view-punct" tabindex="-1" onclick="tcHistorySetView('punctuality')">Puntualidad semanal</button>
           </div>
-          <h3 id="tc-history-dialog-title" class="visually-hidden">Historial de jornadas</h3>
-          <button type="button" class="tc-icon-btn tc-icon-btn--close" id="tc-history-dialog-close" aria-label="Cerrar historial de jornadas" onclick="tcCloseHistoryDialog(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <div class="tc-history-dialog-body" id="tc-history-dialog-body">
+          <p class="tc-history-refresh-err hidden" id="tc-history-refresh-err" role="alert"></p>
           <div id="tc-hist-view-history" role="tabpanel" aria-labelledby="tc-history-tab-history">
-          <div class="tc-week-summary" id="tc-week-summary"></div>
-          <div class="tc-history-kpi-strip hidden" id="tc-history-kpi-strip" aria-live="polite"></div>
-          <details class="tc-conn-summary" id="tc-conn-trend">
-            <summary>Tendencia de conexión <span aria-hidden="true">▾</span></summary>
-            <div class="tc-conn-summary-body" id="tc-conn-trend-body"></div>
-          </details>
-          <div class="tc-history-cal-wrap">
-            <div id="tc-cal-root"></div>
-            <div id="tc-cal-popover" class="tc-cal-popover hidden" role="tooltip"></div>
-          </div>
-          <div id="tc-history-day-panel" class="tc-history-day-panel hidden" role="region" aria-live="polite">
-            <div class="tc-history-day-head">
-              <h4 id="tc-history-day-title"></h4>
-              <div class="tc-history-day-actions">
-                <span id="tc-history-day-log-slot" class="tc-history-day-log-slot"></span>
-                <button type="button" class="tc-history-refresh-btn" id="tc-history-refresh-btn" aria-label="Actualizar historial" onclick="tcRefreshHistory()" title="Actualizar historial"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+            <div class="tc-history-main">
+              <div class="tc-history-cal-wrap">
+                <div id="tc-cal-root"></div>
+                <div class="tc-history-cal-meta">
+                  <span><i class="tc-cal-dot" aria-hidden="true"></i>Con marcajes</span>
+                  <span><i class="tc-cal-dot tc-cal-dot--open" aria-hidden="true"></i>Jornada abierta</span>
+                </div>
               </div>
+              <section id="tc-history-day-panel" class="tc-history-day-panel" aria-labelledby="tc-history-day-title" tabindex="-1">
+                <div class="tc-history-day-head"><h4 id="tc-history-day-title">Marcajes del día</h4></div>
+                <p class="visually-hidden" id="tc-history-day-status" role="status"></p>
+                <div id="tc-history-day-body"></div>
+              </section>
             </div>
-            <p class="tc-history-refresh-err hidden" id="tc-history-refresh-err"></p>
-            <div id="tc-history-day-body"></div>
-          </div>
+            <details class="tc-history-connection" id="tc-conn-trend">
+              <summary>Conexión y tendencias</summary>
+              <div class="tc-history-connection-content">
+                <div class="tc-week-summary" id="tc-week-summary"></div>
+                <div class="tc-history-kpi-strip hidden" id="tc-history-kpi-strip"></div>
+                <h4 id="tc-conn-period"></h4>
+                <div id="tc-conn-trend-body"></div>
+              </div>
+            </details>
           </div>
           <div id="tc-hist-view-punct" class="tc-punct-panel hidden" role="tabpanel" aria-labelledby="tc-history-tab-punct">
             <div id="tc-punct-root"></div>
           </div>
         </div>
-        <div id="tc-punct-pop" class="tc-punct-pop hidden" role="dialog" aria-modal="false" aria-hidden="true"></div>
       </div>
       <div id="tc-task-assign-modal" class="tc-task-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="tc-task-assign-title" aria-hidden="true" onclick="tcKanbanCloseAssign()">
         <div class="tc-task-modal" onclick="event.stopPropagation()">
@@ -8892,26 +8930,20 @@ function tcJornadaLastSignalSubHtml(lastSignalAt,tz,hasOpen){
   return t?('<span class="tc-jornada-signal-time">Última señal: '+tcEsc(t)+'</span>'):'';
 }
 function tcHistorySessionMetricsHtml(s,tz){
-  let html='<dl class="tc-history-session-dl">';
-  if(s.isOpen){
-    html+='<div><dt>Estado</dt><dd style="color:#b45309;">Jornada abierta</dd></div>';
-  }
-  html+='<div><dt>Entrada</dt><dd>'+tcEsc(tcFmtTimeLocal(s.checkInAt,tz))+'</dd></div>';
-  html+='<div><dt>Salida</dt><dd>'+(s.isOpen?'—':tcEsc(tcFmtTimeLocal(s.checkOutAt,tz)))+'</dd></div>';
-  html+='<div><dt>Duración de jornada</dt><dd>'+tcEsc(tcFmtDurationHuman(s.durationSec))+'</dd></div>';
+  let html=tcHistoryMarkersHtml(s.checkInAt,s.checkOutAt,s.durationSec,s.isOpen);
+  html+='<details class="tc-session-connection"><summary>Datos de conexión</summary><dl class="tc-history-session-dl">';
   html+='<div><dt>Tiempo con señal</dt><dd>'+tcEsc(tcFmtSignalDurationOrNone(s.signalDurationSeconds))+'</dd></div>';
   if(s.signalTelemetryStatus==='full'&&s.signalDurationSeconds!=null){
     html+='<div><dt>Conexión efectiva</dt><dd>'+tcConnectionLevelDotHtml(s.connectionVisualLevel)+tcEsc(tcFmtConnectionPct(s.connectionEffectivePercent))+'</dd></div>';
   }else{
     html+='<div><dt>Conexión efectiva</dt><dd>—</dd></div>';
   }
-  html+='<div><dt>Última señal</dt><dd>'+(s.lastSignalAt?tcEsc(tcFmtSignalTimeLocal(s.lastSignalAt,tz)):'—')+'</dd></div>';
-  html+='</dl>';
+  html+='<div><dt>Última señal</dt><dd>'+(s.lastSignalAt?tcEsc(tcFmtTimeLocal(s.lastSignalAt,tz)):'—')+'</dd></div></dl>';
   if(s.signalTelemetryStatus==='partial'&&s.signalTrackingStartedAt){
     const from=tcFmtSignalTimeLocal(s.signalTrackingStartedAt,tz);
     if(from) html+='<div class="tc-history-signal-partial">Medición disponible desde las '+tcEsc(from)+'</div>';
   }
-  return html;
+  return html+'</details>';
 }
 function tcSvgEye(){
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -9040,25 +9072,12 @@ async function tcEmpSubmitWorkLog(){
     if(submit) submit.disabled=false;
   }
 }
+let tcAdminWorkLogReturnFocus=null;
 function tcHistorySessionWorkLogBtnHtml(s, jornadaN){
   if(!s||!s.hasWorkLog) return '';
-  const sid=String(s.id||'').replace(/'/g,'');
-  const day=String(tcHistoryPinnedDay||'').replace(/'/g,'');
-  const label=jornadaN?('Ver bitácora de la jornada '+jornadaN):'Ver bitácora de esta jornada';
-  return '<button type="button" class="tc-icon-btn tc-icon-btn--view tc-work-log-history-btn" title="'+tcEsc(label)+'" aria-label="'+tcEsc(label)+'" onclick="tcAdminOpenWorkLog(\''+sid+'\',\''+day+'\')">'+tcSvgClipboardLines()+'</button>';
-}
-function tcRenderHistoryDayLogSlot(dayKey){
-  const slot=document.getElementById('tc-history-day-log-slot');
-  if(!slot) return;
-  const bucket=dayKey&&tcHistoryPayload&&tcHistoryPayload.days?tcHistoryPayload.days[dayKey]:null;
-  if(!bucket||!bucket.sessions){
-    slot.innerHTML='';
-    return;
-  }
-  const multi=bucket.sessions.length>1;
-  slot.innerHTML=bucket.sessions.map(function(s,idx){
-    return tcHistorySessionWorkLogBtnHtml(s, multi?idx+1:0);
-  }).join('');
+  const id=tcEsc(String(s.id||''));
+  const label=jornadaN?'Ver bitácora de la jornada '+jornadaN:'Ver bitácora de esta jornada';
+  return '<button type="button" class="tc-icon-btn tc-icon-btn--view tc-work-log-history-btn tc-history-log-action" data-history-log="'+id+'" aria-label="'+label+'" onclick="tcAdminOpenWorkLog(this.dataset.historyLog,tcHistoryPinnedDay)">'+tcSvgClipboardLines()+'<span>Bitácora</span></button>';
 }
 function tcAdminCloseWorkLogModal(){
   if(tcAdminWorkLogAbort){ tcAdminWorkLogAbort.abort(); tcAdminWorkLogAbort=null; }
@@ -9067,6 +9086,9 @@ function tcAdminCloseWorkLogModal(){
   tcAdminWorkLogDayKey=null;
   const bd=document.getElementById('tc-admin-work-log-backdrop');
   if(bd){ bd.classList.add('hidden'); bd.setAttribute('aria-hidden','true'); }
+  const focus=tcAdminWorkLogReturnFocus;
+  tcAdminWorkLogReturnFocus=null;
+  if(focus&&tcHistoryOpen) (focus.isConnected?focus:document.getElementById('tc-history-day-panel')).focus({preventScroll:true});
 }
 function tcAdminRenderWorkLogLoading(){
   const body=document.getElementById('tc-admin-work-log-body');
@@ -9083,9 +9105,9 @@ function tcAdminRenderWorkLogRead(j){
   const sub=document.getElementById('tc-admin-work-log-sub');
   const tz=tcJornadaTz||'America/Mexico_City';
   const name=tcJornadaEmpName||'—';
-  let dayLabel=tcAdminWorkLogDayKey?tcFmtDayTitle(tcAdminWorkLogDayKey,tz):'';
+  let dayLabel=tcAdminWorkLogDayKey?tcFmtDayTitle(tcAdminWorkLogDayKey):'';
   if(!dayLabel&&j&&j.checkInAt){
-    try{ dayLabel=tcFmtDayTitle(tcYmdInTimeZone(j.checkInAt,tz),tz); }catch(_){}
+    try{ dayLabel=tcFmtDayTitle(tcYmdInTimeZone(j.checkInAt,tz)); }catch(_){}
   }
   if(sub) sub.textContent=name+(dayLabel?' · '+dayLabel:'');
   let sent='';
@@ -9129,12 +9151,17 @@ async function tcAdminFetchWorkLog(){
 }
 function tcAdminOpenWorkLog(sessionId,dayKey){
   if(!tcJornadaEmpId||!sessionId) return;
+  tcAdminWorkLogReturnFocus=document.activeElement;
   tcAdminWorkLogSessionId=sessionId;
   tcAdminWorkLogDayKey=dayKey||null;
   const bd=document.getElementById('tc-admin-work-log-backdrop');
   const sub=document.getElementById('tc-admin-work-log-sub');
   if(sub) sub.textContent=tcJornadaEmpName||'—';
-  if(bd){ bd.classList.remove('hidden'); bd.setAttribute('aria-hidden','false'); }
+  if(bd){
+    bd.classList.remove('hidden');
+    bd.setAttribute('aria-hidden','false');
+    bd.querySelector('button:not(.hidden)')?.focus();
+  }
   tcAdminFetchWorkLog();
 }
 function tcAdminRetryWorkLog(){
@@ -20587,7 +20614,6 @@ async function tcToggleActive(id, nextActive){
 async function tcViewJornada(id){
   const card=document.getElementById('tc-jornada-card');
   const body=document.getElementById('tc-jornada-body');
-  tcHideCalPopover();
   tcGoalsAdminList=[];
   tcJornadaOpTab='activities';
   tcJornadaResetMetricsState();
@@ -20713,6 +20739,7 @@ let tcHistoryOpen=false;
 let tcHistoryYear=null;
 let tcHistoryMonth=null;
 let tcHistoryPinnedDay=null;
+let tcCalFocusDay=null;
 let tcHistoryPayload=null;
 let tcHistoryLoading=false;
 let tcHistoryLoadSeq=0;
@@ -20725,14 +20752,12 @@ let tcCalLoadingTimer=null;
 let tcHistoryKeyHandler=null;
 let tcHistoryView='history';
 let tcPunctWeek='';
+let tcPunctRequestedWeek='';
 let tcPunctPayload=null;
 let tcPunctSeq=0;
 let tcPunctAbort=null;
 let tcPunctLoading=false;
 let tcPunctPinnedKey=null;
-let tcPunctAnchor=null;
-let tcPunctDaysScroll=0;
-let tcPunctIgnoreHover=false;
 let tcSchedExportOpen=false;
 let tcSchedExportWeek='';
 let tcSchedExportOrgTz='America/Mexico_City';
@@ -20740,7 +20765,6 @@ let tcSchedExportBusy=false;
 let tcSchedExportAbort=null;
 let tcSchedExportSeq=0;
 let tcSchedExportKeyHandler=null;
-let tcHistoryResizeBound=false;
 const TC_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const TC_WEEKDAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function tcFmtDurationHuman(sec){
@@ -20767,10 +20791,9 @@ function tcFmtTimeLocal(iso,tz){
     return new Date(iso).toLocaleTimeString('es-MX',{timeZone:tz,hour:'numeric',minute:'2-digit'});
   }catch(_){ return '—'; }
 }
-function tcFmtDayTitle(dayKey,tz){
+function tcFmtDayTitle(dayKey,withWeekday=false){
   try{
-    const noon=dayKey+'T12:00:00';
-    return new Date(noon).toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'long',year:'numeric'});
+    return new Date(dayKey+'T12:00:00Z').toLocaleDateString('es-MX',{timeZone:'UTC',weekday:withWeekday?'long':undefined,day:'numeric',month:'long',year:'numeric'});
   }catch(_){ return dayKey; }
 }
 function tcYmdAddDays(dayKey,delta){
@@ -20779,17 +20802,17 @@ function tcYmdAddDays(dayKey,delta){
   const dt=new Date(Date.UTC(p[0],p[1]-1,p[2]+delta,12,0,0));
   return dt.toISOString().slice(0,10);
 }
-function tcFmtChartDayLabel(dayKey,tz){
+function tcFmtChartDayLabel(dayKey){
   try{
-    return new Date(dayKey+'T12:00:00').toLocaleDateString('es-MX',{timeZone:tz,day:'numeric',month:'short'});
+    return new Date(dayKey+'T12:00:00Z').toLocaleDateString('es-MX',{timeZone:'UTC',day:'numeric',month:'short'});
   }catch(_){ return dayKey.slice(8)+'/'+dayKey.slice(5,7); }
 }
-function tcFmtWeekRangeLabel(weekStartYmd,tz){
+function tcFmtWeekRangeLabel(weekStartYmd){
   if(!weekStartYmd) return '';
   const weekEnd=tcYmdAddDays(weekStartYmd,6);
   try{
     const fmt=function(k,opts){
-      return new Date(k+'T12:00:00').toLocaleDateString('es-MX',Object.assign({timeZone:tz},opts));
+      return new Date(k+'T12:00:00Z').toLocaleDateString('es-MX',Object.assign({timeZone:'UTC'},opts));
     };
     const dMon=fmt(weekStartYmd,{day:'numeric'});
     const dSun=fmt(weekEnd,{day:'numeric'});
@@ -20822,58 +20845,34 @@ function tcResetHistoryState(emp){
   tcHistoryYear=t.y;
   tcHistoryMonth=t.m-1;
 }
-function tcPositionHistoryDialog(){
-  const dlg=document.getElementById('tc-history-dialog');
-  const btn=document.getElementById('tc-history-toggle');
-  if(!dlg||!btn) return;
-  if(window.matchMedia&&window.matchMedia('(max-width:900px)').matches){
-    dlg.classList.add('tc-history-dialog--mobile');
-    dlg.style.left='';
-    dlg.style.top='';
-    return;
-  }
-  dlg.classList.remove('tc-history-dialog--mobile');
-  const r=btn.getBoundingClientRect();
-  let left=Math.max(16, r.left);
-  let top=r.bottom+10;
-  const wide=dlg.classList.contains('tc-history-dialog--punctuality');
-  const w=Math.min(wide?920:580, window.innerWidth-32);
-  if(left+w>window.innerWidth-16) left=window.innerWidth-w-16;
-  const maxH=Math.min(window.innerHeight*0.78, 640);
-  if(top+maxH>window.innerHeight-12) top=Math.max(12, r.top-maxH-8);
-  dlg.style.width=w+'px';
-  dlg.style.left=left+'px';
-  dlg.style.top=top+'px';
-}
 function tcHistoryOnKeydown(e){
-  if(e.key!=='Escape') return;
-  if(tcPunctPinnedKey){
-    const back=tcPunctAnchor;
-    tcPunctIgnoreHover=true;
-    tcPunctClosePopover(false);
-    if(back&&back.focus) back.focus();
-    tcPunctIgnoreHover=false;
+  const dlg=document.getElementById('tc-history-dialog');
+  const log=document.getElementById('tc-admin-work-log-backdrop');
+  const nested=log&&!log.classList.contains('hidden');
+  if(e.key==='Escape'){
     e.preventDefault();
+    e.stopPropagation();
+    if(nested) tcAdminCloseWorkLogModal();
+    else tcCloseHistoryDialog(true);
     return;
   }
-  if(tcHistoryPinnedDay){
-    tcHistoryPinnedDay=null;
-    tcRenderHistoryDayPanel();
-    tcRenderCalendar();
-    e.preventDefault();
+  if(e.key==='Tab'){
+    const controls=Array.from((nested?log:dlg).querySelectorAll('button:not([disabled]),summary,[href],[tabindex]'))
+      .filter(function(el){ return el.tabIndex>=0&&el.getClientRects().length&&!el.closest('[inert]'); });
+    const edge=e.shiftKey?controls[0]:controls[controls.length-1];
+    if(edge&&(document.activeElement===edge||!(nested?log:dlg).contains(document.activeElement))){
+      e.preventDefault();
+      (e.shiftKey?controls[controls.length-1]:controls[0]).focus();
+    }
     return;
   }
-  if(tcHistoryOpen) tcCloseHistoryDialog(true);
-}
-function tcHistoryOnBackdropClick(e){
-  if(e.target!==e.currentTarget) return;
-  if(tcHistoryPinnedDay){
-    tcHistoryPinnedDay=null;
-    tcRenderHistoryDayPanel();
-    tcRenderCalendar();
-    return;
-  }
-  tcCloseHistoryDialog(true);
+  if(e.target.matches?.('.tc-cal-day[data-day]')&&tcHistoryMoveCalendarFocus(e)) return;
+  const tab=e.target.closest?.('.tc-history-tab');
+  if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+  e.preventDefault();
+  const onPunct=e.key==='End'||(e.key!=='Home'&&tcHistoryView==='history');
+  tcHistorySetView(onPunct?'punctuality':'history');
+  document.getElementById(onPunct?'tc-history-tab-punct':'tc-history-tab-history').focus();
 }
 async function tcOpenHistoryDialog(){
   const dlg=document.getElementById('tc-history-dialog');
@@ -20881,26 +20880,22 @@ async function tcOpenHistoryDialog(){
   const toggle=document.getElementById('tc-history-toggle');
   if(!dlg||!backdrop) return;
   tcHistoryOpen=true;
+  tcHistoryPayload=null;
   tcHistoryPinnedDay=null;
+  tcCalFocusDay=null;
   if(toggle) toggle.setAttribute('aria-expanded','true');
+  document.getElementById('tc-history-employee').textContent=tcJornadaEmpName||'';
   backdrop.classList.remove('hidden');
-  backdrop.setAttribute('aria-hidden','false');
-  backdrop.onclick=tcHistoryOnBackdropClick;
+  backdrop.onclick=function(){ tcCloseHistoryDialog(true); };
   dlg.classList.remove('hidden');
   dlg.setAttribute('aria-hidden','false');
-  tcPositionHistoryDialog();
-  if(!tcHistoryResizeBound){
-    window.addEventListener('resize', tcHistoryOnResize);
-    tcHistoryResizeBound=true;
-  }
-  tcPunctBind();
-  if(!tcHistoryKeyHandler){
-    tcHistoryKeyHandler=function(ev){ tcHistoryOnKeydown(ev); };
-    document.addEventListener('keydown', tcHistoryKeyHandler);
-  }
+  tcHistoryKeyHandler=tcHistoryOnKeydown;
+  document.addEventListener('keydown', tcHistoryKeyHandler, true);
+  document.getElementById('tc-conn-trend').open=false;
+  tcHistorySetView('history', true);
+  tcResetHistoryMonthContent();
+  document.getElementById('tc-history-dialog-close').focus();
   await tcLoadHistoryMonth();
-  const closeBtn=document.getElementById('tc-history-dialog-close');
-  if(closeBtn) closeBtn.focus();
 }
 function tcCloseHistoryDialog(restoreFocus){
   const dlg=document.getElementById('tc-history-dialog');
@@ -20908,7 +20903,14 @@ function tcCloseHistoryDialog(restoreFocus){
   const toggle=document.getElementById('tc-history-toggle');
   tcHistoryOpen=false;
   tcHistoryPinnedDay=null;
-  tcHideCalPopover();
+  tcHistorySlideDir=0;
+  tcPunctWeek='';
+  tcPunctRequestedWeek='';
+  tcPunctPayload=null;
+  tcPunctPinnedKey=null;
+  tcCancelHistoryRequest();
+  tcCancelPunctRequest();
+  tcHideHistoryRefreshErr();
   if(toggle) toggle.setAttribute('aria-expanded','false');
   if(dlg){
     dlg.classList.add('hidden');
@@ -20916,201 +20918,208 @@ function tcCloseHistoryDialog(restoreFocus){
   }
   if(backdrop){
     backdrop.classList.add('hidden');
-    backdrop.setAttribute('aria-hidden','true');
     backdrop.onclick=null;
   }
   if(tcHistoryKeyHandler){
-    document.removeEventListener('keydown', tcHistoryKeyHandler);
+    document.removeEventListener('keydown', tcHistoryKeyHandler, true);
     tcHistoryKeyHandler=null;
   }
-  if(tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
-  if(tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
-  tcHistoryRefreshInFlight=false;
-  tcHistoryView='history';
-  tcPunctWeek='';
-  tcPunctPayload=null;
-  tcPunctDaysScroll=0;
-  tcPunctPinnedKey=null;
-  tcPunctAnchor=null;
-  tcPunctClosePopover(false);
-  tcHistorySetView('history', true);
-  if(tcHistoryResizeBound){
-    window.removeEventListener('resize', tcHistoryOnResize);
-    tcHistoryResizeBound=false;
-  }
-  tcPunctUnbind();
-  const panel=document.getElementById('tc-history-day-panel');
-  if(panel) panel.classList.add('hidden');
   const tip=document.getElementById('tc-conn-chart-tip');
   if(tip) tip.classList.add('hidden');
+  tcHistorySetView('history', true);
   if(restoreFocus&&toggle) toggle.focus();
 }
-function tcHistoryOnResize(){
-  if(!tcHistoryOpen) return;
-  tcPositionHistoryDialog();
-  if(tcPunctPinnedKey&&tcPunctAnchor) tcPunctPositionPopover(tcPunctAnchor);
+function tcCancelHistoryRequest(){
+  tcHistoryLoadSeq+=1;
+  if(tcHistoryFetchAbort) tcHistoryFetchAbort.abort();
+  tcHistoryFetchAbort=null;
+  tcHistoryLoading=false;
+  tcHistoryRefreshInFlight=false;
+  tcHideCalLoading();
 }
-let tcPunctDocBound=false;
-function tcPunctBind(){
-  if(tcPunctDocBound) return;
-  document.addEventListener('click', tcPunctOnDocumentClick);
-  const body=document.getElementById('tc-history-dialog-body');
-  if(body) body.addEventListener('scroll', tcPunctOnScroll, {passive:true});
-  tcPunctDocBound=true;
+function tcCancelPunctRequest(){
+  tcPunctSeq+=1;
+  if(tcPunctAbort) tcPunctAbort.abort();
+  tcPunctAbort=null;
+  tcPunctLoading=false;
+  document.getElementById('tc-punct-root')?.removeAttribute('aria-busy');
 }
-function tcPunctUnbind(){
-  if(!tcPunctDocBound) return;
-  document.removeEventListener('click', tcPunctOnDocumentClick);
-  const body=document.getElementById('tc-history-dialog-body');
-  if(body) body.removeEventListener('scroll', tcPunctOnScroll);
-  tcPunctDocBound=false;
+function tcHistorySyncRefresh(){
+  const btn=document.getElementById('tc-history-refresh-btn');
+  if(!btn) return;
+  const busy=tcHistoryView==='punctuality'?tcPunctLoading:tcHistoryLoading||tcHistoryRefreshInFlight;
+  btn.setAttribute('aria-disabled',String(busy));
+  btn.setAttribute('aria-label',tcHistoryView==='punctuality'?'Actualizar puntualidad semanal':'Actualizar historial de jornadas');
+  btn.removeAttribute('title');
+  btn.classList.toggle('tc-history-refresh-btn--spin',busy);
 }
-function tcPunctOnScroll(){
-  if(!tcPunctAnchor) return;
-  tcPunctPositionPopover(tcPunctAnchor);
-}
-function tcPunctOnDocumentClick(e){
-  if(!tcPunctPinnedKey) return;
-  const pop=document.getElementById('tc-punct-pop');
-  if(pop&&pop.contains(e.target)) return;
-  if(e.target&&e.target.closest&&e.target.closest('.tc-punct-card')) return;
-  tcPunctClosePopover(false);
-}
-function tcPunctClosePopover(restore){
-  const pop=document.getElementById('tc-punct-pop');
-  const back=tcPunctAnchor;
-  tcPunctPinnedKey=null;
-  tcPunctAnchor=null;
-  if(pop){ pop.classList.add('hidden'); pop.setAttribute('aria-hidden','true'); pop.innerHTML=''; }
-  if(restore&&back&&back.focus) back.focus();
-}
-function tcPunctPositionPopover(anchor){
-  const dlg=document.getElementById('tc-history-dialog');
-  const pop=document.getElementById('tc-punct-pop');
-  const body=document.getElementById('tc-history-dialog-body');
-  if(!dlg||!pop||!anchor) return;
-  const dr=dlg.getBoundingClientRect();
-  const ar=anchor.getBoundingClientRect();
-  if(body){
-    const br=body.getBoundingClientRect();
-    if(ar.bottom<br.top+4||ar.top>br.bottom-4){
-      pop.classList.add('hidden');
-      return;
-    }
-  }
-  pop.classList.remove('hidden');
-  const pw=pop.offsetWidth||260;
-  const ph=pop.offsetHeight||120;
-  let left=ar.left-dr.left+(ar.width/2)-(pw/2);
-  left=Math.max(8, Math.min(left, dr.width-pw-8));
-  let top=ar.bottom-dr.top+8;
-  if(top+ph>dr.height-8) top=Math.max(8, ar.top-dr.top-ph-8);
-  pop.style.left=left+'px';
-  pop.style.top=top+'px';
-}
-function tcPunctOpenPopover(anchor, day, pin){
-  const pop=document.getElementById('tc-punct-pop');
-  if(!pop||!day) return;
-  if(pin&&tcPunctPinnedKey===day.dateKey){ tcPunctClosePopover(false); return; }
-  const title=tcFmtDayTitle(day.dateKey, tcJornadaTz);
-  const lines=(day.details||[]).map(function(line){ return '<p>'+tcEsc(line)+'</p>'; }).join('');
-  pop.innerHTML='<h4>'+tcEsc(title)+'</h4>'+lines;
-  pop.setAttribute('aria-hidden','false');
-  tcPunctAnchor=anchor;
-  tcPunctPinnedKey=pin?day.dateKey:tcPunctPinnedKey;
-  if(!pin) tcPunctPinnedKey=null;
-  tcPunctPositionPopover(anchor);
-}
-function tcPunctCardClick(btn){
-  const key=btn&&btn.getAttribute('data-punct-date');
-  const day=(tcPunctPayload&&tcPunctPayload.days||[]).filter(function(item){ return item.dateKey===key; })[0];
-  if(!day) return;
-  tcPunctOpenPopover(btn, day, true);
-}
-function tcPunctCardHover(btn, on){
-  if(tcPunctIgnoreHover||tcPunctPinnedKey) return;
-  if(!on){ tcPunctClosePopover(false); return; }
-  const key=btn.getAttribute('data-punct-date');
-  const day=(tcPunctPayload&&tcPunctPayload.days||[]).filter(function(item){ return item.dateKey===key; })[0];
-  if(day) tcPunctOpenPopover(btn, day, false);
-}
-function tcHistorySetView(view, silent){
-  tcHistoryView=view==='punctuality'?'punctuality':'history';
+function tcHistorySetView(view,silent){
+  const onPunct=view==='punctuality';
+  const nextView=onPunct?'punctuality':'history';
+  if(nextView===tcHistoryView&&!silent) return;
+  tcHistoryView=nextView;
   const hist=document.getElementById('tc-hist-view-history');
   const punct=document.getElementById('tc-hist-view-punct');
   const tabH=document.getElementById('tc-history-tab-history');
   const tabP=document.getElementById('tc-history-tab-punct');
-  const dlg=document.getElementById('tc-history-dialog');
-  const onPunct=tcHistoryView==='punctuality';
   if(hist) hist.classList.toggle('hidden', onPunct);
   if(punct) punct.classList.toggle('hidden', !onPunct);
-  if(tabH){ tabH.classList.toggle('tc-history-tab--on', !onPunct); tabH.setAttribute('aria-selected', onPunct?'false':'true'); }
-  if(tabP){ tabP.classList.toggle('tc-history-tab--on', onPunct); tabP.setAttribute('aria-selected', onPunct?'true':'false'); }
-  if(dlg) dlg.classList.toggle('tc-history-dialog--punctuality', onPunct);
-  if(onPunct&&tcHistoryFetchAbort){ tcHistoryFetchAbort.abort(); tcHistoryFetchAbort=null; }
-  if(!onPunct&&tcPunctAbort){ tcPunctAbort.abort(); tcPunctAbort=null; }
-  tcPunctClosePopover(false);
-  if(tcHistoryOpen) tcPositionHistoryDialog();
-  if(!silent&&onPunct) tcLoadPunctuality(tcPunctWeek||'');
-  if(!silent&&!onPunct&&tcHistoryOpen&&!tcHistoryPayload) tcLoadHistoryMonth();
+  [[tabH,!onPunct],[tabP,onPunct]].forEach(function(pair){
+    const [tab,selected]=pair;
+    if(!tab) return;
+    tab.classList.toggle('tc-history-tab--on',selected);
+    tab.setAttribute('aria-selected',String(selected));
+    tab.tabIndex=selected?0:-1;
+  });
+  if(onPunct) tcCancelHistoryRequest();
+  else tcCancelPunctRequest();
+  tcHideHistoryRefreshErr();
+  tcHistorySyncRefresh();
+  if(silent||!tcHistoryOpen) return;
+  document.getElementById('tc-history-dialog-body').scrollTop=0;
+  if(onPunct) tcLoadPunctuality(tcPunctWeek);
+  else if(!tcHistoryPayload) tcLoadHistoryMonth();
 }
 function tcPunctPct(value){
   return value==null?'—':String(value)+'%';
 }
-function tcPunctCardClass(status){
-  if(status==='COMPLETE') return 'tc-punct-card--complete';
-  if(status==='LATE'||status==='INCOMPLETE') return 'tc-punct-card--late';
-  if(status==='EXTRA') return 'tc-punct-card--extra';
-  if(status==='IN_PROGRESS') return 'tc-punct-card--progress';
-  return 'tc-punct-card--none';
+const TC_PUNCT_BADGES={
+  COMPLETE:['Jornada completa','complete'], LATE:['Retardo','late'],
+  INCOMPLETE:['Jornada incompleta','incomplete'], EXTRA:['Tiempo adicional','extra'],
+  IN_PROGRESS:['Jornada abierta','progress'], NO_SHIFT:['Sin registro',''],
+  AWAITING:['Sin entrada',''], PENDING:['Aún no inicia',''],
+  NOT_EVALUABLE:['Aún no inicia',''], REST:['Descanso','']
+};
+function tcPunctDays(payload){
+  const byDate=new Map((payload.days||[]).map(function(day){ return [day.dateKey,day]; }));
+  const schedule=payload.schedule;
+  if(!schedule||!Array.isArray(schedule.restDays)) return Array.from(byDate.values());
+  const assigned=tcYmdInTimeZone(schedule.assignedAt,payload.timezone||tcJornadaTz);
+  for(let i=0;i<7;i++){
+    const dateKey=tcYmdAddDays(payload.weekStart,i);
+    const weekday=i+1;
+    if(assigned&&dateKey>=assigned&&schedule.restDays.includes(weekday)&&!byDate.has(dateKey)){
+      byDate.set(dateKey,{dateKey,weekday,status:'REST'});
+    }
+  }
+  return Array.from(byDate.values()).sort(function(a,b){ return a.dateKey.localeCompare(b.dateKey); });
 }
-function tcPunctRender(payload, err){
+function tcPunctBadges(day){
+  const flags=Array.from(new Set([day.status].concat(day.flags||[])));
+  return flags.map(function(flag){
+    const badge=TC_PUNCT_BADGES[flag];
+    return badge?'<span class="tc-punct-badge'+(badge[1]?' tc-punct-badge--'+badge[1]:'')+'">'+badge[0]+'</span>':'';
+  }).join('');
+}
+function tcHistoryMarkersHtml(entry,exit,seconds,open){
+  if(!entry) return '';
+  return '<dl class="tc-history-markers"><div><dt>Entrada</dt><dd>'+tcEsc(tcFmtTimeLocal(entry,tcJornadaTz))+'</dd></div>'
+    +'<div><dt>Salida</dt><dd>'+tcEsc(exit?tcFmtTimeLocal(exit,tcJornadaTz):(open?'Pendiente':'—'))+'</dd></div>'
+    +'<div><dt>Duración'+(open?' actual':'')+'</dt><dd>'+tcEsc(tcFmtDurationHuman(seconds))+'</dd></div></dl>';
+}
+function tcPunctRender(payload){
   const root=document.getElementById('tc-punct-root');
   if(!root||tcHistoryView!=='punctuality') return;
-  const daysEl=root.querySelector('.tc-punct-days');
-  if(daysEl) tcPunctDaysScroll=daysEl.scrollLeft;
-  if(err){
-    root.innerHTML='<p class="tc-punct-err">'+tcEsc(err)+' <button type="button" class="tc-punct-link" onclick="tcRefreshPunctuality()">Reintentar</button></p>';
-    return;
-  }
   if(!payload){
-    root.innerHTML='<p class="tc-punct-empty">Cargando…</p>';
+    root.innerHTML='<p class="tc-punct-empty" role="status">Cargando puntualidad…</p>';
     return;
   }
+  const focused=document.activeElement;
+  const focusKey=root.contains(focused)?focused.dataset.punctFocus:'';
+  const focusDay=root.contains(focused)?focused.dataset.punctDate:'';
+  const chrome=tcPunctChrome(payload);
   if(payload.emptyReason==='NO_SCHEDULE'){
-    root.innerHTML=tcPunctChrome(payload)+'<p class="tc-punct-empty">Este colaborador todavía no tiene un horario laboral asignado.</p><button type="button" class="tc-punct-link" onclick="tcPunctualityEditEmployee()">Editar colaborador</button>';
+    root.innerHTML=chrome+'<p class="tc-punct-empty tc-punct-notice">Este colaborador todavía no tiene un horario laboral asignado.</p><button type="button" class="tc-punct-link" data-punct-focus="edit" onclick="tcPunctualityEditEmployee()">Editar colaborador</button>';
+  }else if(payload.emptyReason==='NOT_IN_FORCE'){
+    root.innerHTML=chrome+'<p class="tc-punct-empty tc-punct-notice">El horario actual todavía no aplicaba en esta semana.</p>';
+  }else{
+    const summary=payload.summary||{};
+    const days=tcPunctDays(payload);
+    const today=tcMetricsTodayYmd(payload.timezone||tcJornadaTz);
+    if(!days.some(function(day){ return day.dateKey===tcPunctPinnedKey&&day.status!=='REST'; })){
+      tcPunctPinnedKey=null;
+    }
+    const cards=days.map(function(day){
+      const active=day.dateKey===tcPunctPinnedKey;
+      const open=day.status==='IN_PROGRESS';
+      const title=tcFmtDayTitle(day.dateKey,true);
+      const date='<span class="tc-punct-card-date"><strong>'+Number(day.dateKey.slice(8))+'</strong><span>'+TC_WEEKDAYS[day.weekday-1]+'</span></span>';
+      const badges='<span class="tc-punct-badges">'+tcPunctBadges(day)+'</span>';
+      const notes=day.firstCheckInAt?'<span class="tc-punct-card-times">'
+        +'<span>Entrada <strong>'+tcEsc(tcFmtTimeLocal(day.firstCheckInAt,tcJornadaTz))+'</strong></span>'
+        +'<span>Salida <strong>'+tcEsc(day.lastCheckOutAt?tcFmtTimeLocal(day.lastCheckOutAt,tcJornadaTz):(open?'Pendiente':'—'))+'</strong></span>'
+        +'<span>Duración <strong>'+tcEsc(tcFmtDurationHuman(day.workedSec))+'</strong></span></span>':'';
+      const current=day.dateKey===today?' aria-current="date"':'';
+      if(day.status==='REST') return '<div class="tc-punct-card tc-punct-card--rest"'+current+' title="'+tcEsc(title)+'">'+date+badges+'</div>';
+      return '<button type="button" class="tc-punct-card" data-punct-date="'+day.dateKey+'" title="'+tcEsc(title)+'" aria-pressed="'+active+'"'+current+' aria-controls="tc-punct-day-panel" onclick="tcPunctCardClick(this)">'+date+badges+notes+'</button>';
+    }).join('');
+    const notice=payload.emptyReason==='NO_EVALUABLE'?'<p class="tc-punct-empty">Aún no hay días evaluables en esta semana.</p>':'';
+    root.innerHTML=chrome+'<div class="tc-punct-kpis">'
+      +tcPunctKpi('punct','Puntualidad',tcPunctPct(summary.punctualityPct))
+      +tcPunctKpi('cover','Cumplimiento de jornada',tcPunctPct(summary.expectedCoveragePct))
+      +tcPunctKpi('late','Retardos',summary.evaluableDays?String(summary.lateDays||0):'—')
+      +tcPunctKpi('extra','Días con tiempo adicional',summary.evaluableDays?String(summary.extraTimeDays||0):'—')
+      +'</div>'+notice+'<div class="tc-punct-days">'+cards+'</div>'
+      +'<section id="tc-punct-day-panel" class="tc-punct-day-panel" aria-labelledby="tc-punct-day-title" aria-live="polite"></section>';
+    tcPunctRenderDayPanel();
+  }
+  const replacement=focusKey?root.querySelector('[data-punct-focus="'+focusKey+'"]')
+    :focusDay?root.querySelector('[data-punct-date="'+focusDay+'"]'):null;
+  if(replacement) replacement.focus({preventScroll:true});
+  else if(focusDay||focusKey) document.getElementById('tc-history-tab-punct').focus({preventScroll:true});
+}
+function tcPunctRenderDayPanel(){
+  const panel=document.getElementById('tc-punct-day-panel');
+  if(!panel) return;
+  const day=tcPunctPayload&&(tcPunctPayload.days||[]).find(function(row){ return row.dateKey===tcPunctPinnedKey; });
+  if(!day){
+    panel.innerHTML='<h4 id="tc-punct-day-title">Detalle del día</h4><p class="tc-history-hint">Selecciona un día laborable para ver su detalle.</p>';
     return;
   }
-  if(payload.emptyReason==='NOT_IN_FORCE'){
-    root.innerHTML=tcPunctChrome(payload)+'<p class="tc-punct-empty">El horario actual todavía no aplicaba en esta semana.</p>';
-    return;
+  const notes=[];
+  if(day.lateSec>0) notes.push('Fuera de tolerancia por '+tcFmtDurationHuman(day.lateSec)+'.');
+  if(day.extraSec>0) notes.push(tcFmtDurationHuman(day.extraSec)+' de tiempo adicional.');
+  if(day.coveragePct!=null) notes.push(day.coveragePct+'% de cumplimiento de jornada.');
+  const pending={NO_SHIFT:'No hay marcajes registrados para este día.',AWAITING:'Aún no se registra la entrada.',PENDING:'La jornada programada todavía no comienza.',NOT_EVALUABLE:'La jornada programada todavía no comienza.',IN_PROGRESS:'La jornada sigue abierta.'};
+  if(!notes.length&&pending[day.status]) notes.push(pending[day.status]);
+  panel.innerHTML='<h4 id="tc-punct-day-title">'+tcEsc(tcFmtDayTitle(day.dateKey,true))+'</h4>'
+    +(notes.length?'<p class="tc-history-hint">'+tcEsc(notes.join(' '))+'</p>':'')
+    +(day.firstCheckInAt?'<button type="button" class="tc-punct-link" data-punct-focus="history" onclick="tcPunctOpenHistoryDay()">Ver marcajes del día</button>':'');
+}
+function tcPunctCardClick(btn){
+  tcPunctPinnedKey=btn.dataset.punctDate;
+  document.querySelectorAll('#tc-punct-root [data-punct-date]').forEach(function(card){
+    card.setAttribute('aria-pressed',String(card===btn));
+  });
+  tcPunctRenderDayPanel();
+  if(window.matchMedia('(max-width:860px)').matches){
+    document.getElementById('tc-punct-day-panel')?.scrollIntoView({block:'nearest'});
   }
-  const summary=payload.summary||{};
-  const notice=payload.emptyReason==='NO_EVALUABLE'?'<p class="tc-punct-empty">Aún no hay días evaluables en esta semana.</p>':'';
-  const cards=(payload.days||[]).map(function(day){
-    const lines=(day.lines||[]).map(function(line){ return '<div class="tc-punct-card-line">'+tcEsc(line)+'</div>'; }).join('');
-    const dow=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][day.weekday]||'';
-    return '<button type="button" class="tc-punct-card '+tcPunctCardClass(day.status)+'" data-punct-date="'+tcEsc(day.dateKey)+'" aria-haspopup="dialog" onclick="tcPunctCardClick(this)" onmouseenter="tcPunctCardHover(this,true)" onmouseleave="tcPunctCardHover(this,false)" onfocus="tcPunctCardHover(this,true)" onblur="tcPunctCardHover(this,false)">'
-      +'<div class="tc-punct-card-dow">'+tcEsc(dow)+'</div>'
-      +'<div class="tc-punct-card-date">'+tcEsc(tcFmtChartDayLabel(day.dateKey, tcJornadaTz))+'</div>'
-      +'<div class="tc-punct-card-state">'+tcEsc(day.headline||day.statusLabel||'')+'</div>'
-      +lines+'</button>';
-  }).join('');
-  root.innerHTML=tcPunctChrome(payload)
-    +'<div class="tc-punct-kpis">'
-    +tcPunctKpi('punct','Puntualidad', tcPunctPct(summary.punctualityPct))
-    +tcPunctKpi('cover','Jornada esperada', tcPunctPct(summary.expectedCoveragePct))
-    +tcPunctKpi('late','Retardos', summary.evaluableDays?String(summary.lateDays||0):'—')
-    +tcPunctKpi('extra','Tiempo adicional', summary.evaluableDays?String(summary.extraTimeDays||0):'—')
-    +'</div>'+notice+'<div class="tc-punct-days">'+cards+'</div>';
-  const scroller=root.querySelector('.tc-punct-days');
-  if(scroller) scroller.scrollLeft=tcPunctDaysScroll;
+}
+async function tcPunctOpenHistoryDay(){
+  const day=tcPunctPinnedKey;
+  if(!day) return;
+  const [year,month]=day.split('-').map(Number);
+  const change=year!==tcHistoryYear||month-1!==tcHistoryMonth;
+  tcHistoryYear=year;
+  tcHistoryMonth=month-1;
+  tcHistoryPinnedDay=day;
+  tcCalFocusDay=day;
+  if(change) tcResetHistoryMonthContent();
+  tcHistorySetView('history',true);
+  document.getElementById('tc-history-day-panel').focus();
+  if(!tcHistoryPayload) await tcLoadHistoryMonth();
+  else tcRenderCalendar();
+  if(tcHistoryView==='history'&&tcHistoryPinnedDay===day){
+    tcRenderHistoryDayPanel();
+    document.getElementById('tc-history-day-panel').scrollIntoView({block:'nearest'});
+  }
 }
 function tcPunctKpi(kind, label, value){
   return '<div class="tc-punct-kpi tc-punct-kpi--'+kind+'"><span>'+tcEsc(label)+'</span><strong>'+tcEsc(value)+'</strong></div>';
 }
 function tcPunctScheduleLine(schedule){
-  if(!schedule||!Array.isArray(schedule.weekdays)) return '';
+  if(!schedule||!Array.isArray(schedule.weekdays)||!schedule.weekdays.length) return '';
   const labels=['','Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const days=schedule.weekdays.slice().sort(function(a,b){ return a-b; });
   const groups=[];
@@ -21130,14 +21139,13 @@ function tcPunctScheduleLine(schedule){
   return groups.join(', ')+' · '+hm(schedule.startMinute)+'–'+hm(schedule.endMinute)+' · Tolerancia '+schedule.toleranceMinutes+' min';
 }
 function tcPunctChrome(payload){
-  const nextDisabled=payload&&payload.canGoNext===false?' disabled':'';
+  const nextDisabled=payload&&payload.canGoNext===false?' aria-disabled="true"':'';
   const summary=tcPunctScheduleLine(payload&&payload.schedule);
-  return '<div class="tc-punct-head"><div><p class="tc-punct-kicker">Puntualidad semanal</p><p class="tc-punct-sub">'+tcEsc(summary)+'</p></div>'
+  return '<div class="tc-punct-head"><p class="tc-punct-sub">'+(summary?'<strong>Horario</strong> · '+tcEsc(summary):'Sin horario aplicable')+'</p>'
     +'<div class="tc-punct-nav-wrap">'
-    +'<button type="button" class="tc-punct-nav" aria-label="Semana anterior" title="Semana anterior" onclick="tcPunctShiftWeek(-1)">‹</button>'
-    +'<span class="tc-punct-week">'+tcEsc(payload&&payload.weekLabel||'')+'</span>'
-    +'<button type="button" class="tc-punct-nav" aria-label="Semana siguiente" title="Semana siguiente" onclick="tcPunctShiftWeek(1)"'+nextDisabled+'>›</button>'
-    +'<button type="button" class="tc-punct-refresh" aria-label="Actualizar puntualidad semanal" title="Actualizar" onclick="tcRefreshPunctuality()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>'
+    +'<button type="button" class="tc-punct-nav" data-punct-focus="prev" aria-label="Semana anterior" onclick="tcPunctShiftWeek(-1)">‹</button>'
+    +'<span class="tc-punct-week" aria-live="polite">'+tcEsc(payload&&payload.weekLabel||'')+'</span>'
+    +'<button type="button" class="tc-punct-nav" data-punct-focus="next" aria-label="Semana siguiente" onclick="tcPunctShiftWeek(1)"'+nextDisabled+'>›</button>'
     +'</div></div>';
 }
 function tcSchedExportCivilWeekRangeLabel(weekStartYmd){
@@ -21301,49 +21309,49 @@ async function tcDownloadSchedExportPdf(){
   }
 }
 function tcPunctualityEditEmployee(){
-  if(tcJornadaEmpId) tcOpenEmpEdit(tcJornadaEmpId);
+  if(!tcJornadaEmpId) return;
+  tcCloseHistoryDialog(false);
+  tcOpenEmpEdit(tcJornadaEmpId);
 }
 function tcPunctShiftWeek(delta){
-  if(!tcPunctPayload||!tcPunctPayload.weekStart) return;
+  if(tcPunctLoading||!tcPunctPayload||!tcPunctPayload.weekStart) return;
   if(delta>0&&tcPunctPayload.canGoNext===false) return;
-  tcPunctClosePopover(false);
-  tcLoadPunctuality(tcYmdAddDays(tcPunctPayload.weekStart, delta*7));
+  tcLoadPunctuality(tcYmdAddDays(tcPunctPayload.weekStart,delta*7));
 }
 async function tcLoadPunctuality(week){
-  if(!tcJornadaEmpId||tcHistoryView!=='punctuality') return;
+  if(!tcJornadaEmpId||tcHistoryView!=='punctuality'||tcPunctLoading) return;
   const seq=++tcPunctSeq;
-  if(tcPunctAbort) tcPunctAbort.abort();
+  tcPunctRequestedWeek=week;
   tcPunctAbort=new AbortController();
   tcPunctLoading=true;
+  tcHideHistoryRefreshErr();
+  tcHistorySyncRefresh();
   const root=document.getElementById('tc-punct-root');
   if(root) root.setAttribute('aria-busy','true');
-  const refreshBtn=root&&root.querySelector('.tc-punct-refresh');
-  if(refreshBtn){ refreshBtn.disabled=true; refreshBtn.classList.add('tc-punct-refresh--spin'); }
-  if(!tcPunctPayload) tcPunctRender(null, '');
+  if(!tcPunctPayload) tcPunctRender(null);
   const q=week?('?week='+encodeURIComponent(week)):'';
   try{
     const payload=await apiJson('/api/org/timeclock/employees/'+encodeURIComponent(tcJornadaEmpId)+'/punctuality'+q,{signal:tcPunctAbort.signal});
     if(seq!==tcPunctSeq||tcHistoryView!=='punctuality') return;
+    if(tcPunctWeek!==payload.weekStart) tcPunctPinnedKey=null;
     tcPunctPayload=payload;
-    tcPunctWeek=payload&&payload.weekStart||week||'';
-    tcPunctRender(payload, '');
+    tcPunctWeek=payload.weekStart;
+    tcPunctRender(payload);
   }catch(e){
-    if(e&&e.name==='AbortError') return;
-    if(seq!==tcPunctSeq||tcHistoryView!=='punctuality') return;
-    tcPunctRender(null, e&&e.message||'No se pudo consultar la puntualidad.');
+    if(seq!==tcPunctSeq||e.name==='AbortError') return;
+    if(!tcPunctPayload&&root) root.innerHTML='';
+    tcShowHistoryRefreshErr(e.message||'No se pudo consultar la puntualidad.');
   }finally{
     if(seq===tcPunctSeq){
       tcPunctLoading=false;
-      const busy=document.getElementById('tc-punct-root');
-      if(busy) busy.setAttribute('aria-busy','false');
+      tcPunctAbort=null;
+      if(root) root.removeAttribute('aria-busy');
+      tcHistorySyncRefresh();
     }
   }
 }
 async function tcRefreshPunctuality(){
-  tcPunctClosePopover(false);
-  const days=document.querySelector('#tc-punct-root .tc-punct-days');
-  if(days) tcPunctDaysScroll=days.scrollLeft;
-  await tcLoadPunctuality(tcPunctWeek||'');
+  await tcLoadPunctuality(tcPunctRequestedWeek||tcPunctWeek);
 }
 async function tcToggleHistoryPanel(){
   if(tcHistoryOpen){ tcCloseHistoryDialog(true); return; }
@@ -21356,15 +21364,25 @@ function tcCanGoNextMonth(){
   return true;
 }
 async function tcHistoryChangeMonth(delta){
-  if(tcHistoryLoading||tcCalAnimating) return;
-  tcHistoryMonth+=delta;
-  if(tcHistoryMonth<0){ tcHistoryMonth=11; tcHistoryYear-=1; }
-  if(tcHistoryMonth>11){ tcHistoryMonth=0; tcHistoryYear+=1; }
-  tcHistorySlideDir=delta>0?1:delta<0?-1:0;
+  if(tcHistoryLoading||tcCalAnimating||(delta>0&&!tcCanGoNextMonth())) return;
+  const month=new Date(Date.UTC(tcHistoryYear,tcHistoryMonth+delta,1));
+  tcHistoryYear=month.getUTCFullYear();
+  tcHistoryMonth=month.getUTCMonth();
+  tcHistorySlideDir=delta>0?1:-1;
   tcHistoryPinnedDay=null;
+  tcCalFocusDay=null;
+  tcHistoryPayload=null;
   tcRenderHistoryDayPanel();
-  tcHideCalPopover();
   await tcLoadHistoryMonth();
+}
+function tcResetHistoryMonthContent(){
+  tcHistoryPayload=null;
+  tcHistorySlideDir=0;
+  tcRenderCalendar();
+  tcRenderHistoryDayPanel();
+  tcRenderWeekSummary();
+  tcRenderHistoryKpiStrip();
+  tcRenderConnectionTrend();
 }
 function tcEnsureCalViewport(root){
   if(!root) return null;
@@ -21401,15 +21419,6 @@ function tcShowCalLoadingDelayed(){
 function tcHideCalLoading(){
   if(tcCalLoadingTimer){ clearTimeout(tcCalLoadingTimer); tcCalLoadingTimer=null; }
   tcSetCalLoading(false);
-}
-function tcSyncCalViewportHeight(stage){
-  const vp=stage&&stage.closest('.tc-cal-viewport');
-  if(!vp||!stage) return;
-  let maxH=0;
-  stage.querySelectorAll('.tc-cal-pane').forEach(function(p){
-    maxH=Math.max(maxH, p.offsetHeight||0);
-  });
-  if(maxH>0) vp.style.minHeight=maxH+'px';
 }
 async function tcFetchHistoryPayload(){
   const r=tcMonthRangeKeys(tcHistoryYear, tcHistoryMonth);
@@ -21450,61 +21459,71 @@ function tcShowHistoryRefreshErr(msg){
   el.classList.remove('hidden');
 }
 async function tcRefreshHistory(){
+  if(document.activeElement?.classList.contains('tc-history-refresh-retry')){
+    document.getElementById('tc-history-refresh-btn')?.focus({preventScroll:true});
+  }
   if(tcHistoryView==='punctuality'){ await tcRefreshPunctuality(); return; }
-  if(!tcJornadaEmpId||tcHistoryRefreshInFlight) return;
+  if(!tcJornadaEmpId||tcHistoryRefreshInFlight||tcHistoryLoading) return;
+  if(!tcHistoryPayload){ await tcLoadHistoryMonth(); return; }
   tcHistoryRefreshInFlight=true;
   tcHideHistoryRefreshErr();
-  const btn=document.getElementById('tc-history-refresh-btn');
-  if(btn) btn.disabled=true;
-  if(btn) btn.classList.add('tc-history-refresh-btn--spin');
+  tcHistorySyncRefresh();
   const bodyEl=document.getElementById('tc-history-dialog-body');
   const scrollTop=bodyEl?bodyEl.scrollTop:0;
   const trend=document.getElementById('tc-conn-trend');
   const trendOpen=trend?trend.open:false;
+  const request=tcFetchHistoryPayload();
+  const seq=tcHistoryLoadSeq;
   try{
-    const payload=await tcFetchHistoryPayload();
+    const payload=await request;
     if(payload===null) return;
     tcApplyHistoryPayload(payload,{scrollTop:scrollTop,trendOpen:trendOpen});
   }catch(e){
-    if(e&&e.name==='AbortError') return;
-    tcShowHistoryRefreshErr(e&&e.message);
+    if(seq!==tcHistoryLoadSeq||e.name==='AbortError') return;
+    tcShowHistoryRefreshErr(e.message);
   }finally{
-    tcHistoryRefreshInFlight=false;
-    if(btn){
-      btn.disabled=false;
-      btn.classList.remove('tc-history-refresh-btn--spin');
+    if(seq===tcHistoryLoadSeq){
+      tcHistoryRefreshInFlight=false;
+      tcHistoryFetchAbort=null;
+      tcHistorySyncRefresh();
     }
   }
 }
 async function tcLoadHistoryMonth(){
   if(!tcJornadaEmpId||tcHistoryLoading) return;
   tcHistoryLoading=true;
-  const root=document.getElementById('tc-cal-root');
-  tcEnsureCalViewport(root);
+  tcHistorySyncRefresh();
+  tcHideHistoryRefreshErr();
   tcShowCalLoadingDelayed();
+  const request=tcFetchHistoryPayload();
+  const seq=tcHistoryLoadSeq;
   try{
-    const payload=await tcFetchHistoryPayload();
+    const payload=await request;
     if(payload===null) return;
     tcApplyHistoryPayload(payload);
-    tcHideHistoryRefreshErr();
   }catch(e){
-    if(e&&e.name==='AbortError') return;
+    if(seq!==tcHistoryLoadSeq||e.name==='AbortError') return;
     tcHistorySlideDir=0;
-    if(root){
-      tcEnsureCalViewport(root);
-      const stage=root.querySelector('.tc-cal-stage');
-      if(stage) stage.innerHTML='<div class="tc-cal-pane tc-cal-pane--active"><p style="font-size:12px;color:#b91c1c;padding:12px;">'+tcEsc(e.message||'No se pudo cargar el historial.')+'</p></div>';
-    }
+    tcRenderCalendar();
+    tcRenderHistoryDayPanel();
+    tcShowHistoryRefreshErr(e.message||'No se pudo cargar el historial.');
   }finally{
-    tcHideCalLoading();
-    tcHistoryLoading=false;
+    if(seq===tcHistoryLoadSeq){
+      tcHideCalLoading();
+      tcHistoryLoading=false;
+      tcHistoryRefreshInFlight=false;
+      tcHistoryFetchAbort=null;
+      tcRenderHistoryDayPanel();
+      tcHistorySyncRefresh();
+    }
   }
 }
 function tcRenderWeekSummary(){
   const el=document.getElementById('tc-week-summary');
   const w=tcHistoryPayload&&tcHistoryPayload.weekSummary;
-  if(!el||!w) return;
-  el.innerHTML='<strong>Esta semana</strong>'+w.sessionCount+' jornada'+(w.sessionCount===1?'':'s')+' · '+tcEsc(tcFmtDurationHuman(w.totalDurationSec));
+  if(!el) return;
+  if(!w){ el.innerHTML=''; return; }
+  el.innerHTML='<strong>Semana actual</strong>'+w.sessionCount+' jornada'+(w.sessionCount===1?'':'s')+' · '+tcEsc(tcFmtDurationHuman(w.totalDurationSec));
 }
 let tcConnChartMode='daily';
 function tcRenderHistoryKpiStrip(){
@@ -21534,6 +21553,7 @@ function tcRenderConnectionTrend(){
   const body=document.getElementById('tc-conn-trend-body');
   const trend=tcHistoryPayload&&tcHistoryPayload.connectionTrend;
   if(!body) return;
+  document.getElementById('tc-conn-period').textContent='Tendencia de '+TC_MONTH_NAMES[tcHistoryMonth]+' '+tcHistoryYear;
   const hasDaily=trend&&trend.chartDaily&&trend.chartDaily.some(function(r){ return (r.durationSec||0)>0; });
   const hasWeekly=trend&&trend.chartWeekly&&trend.chartWeekly.some(function(r){ return (r.durationSec||0)>0; });
   if(!hasDaily&&!hasWeekly){
@@ -21627,7 +21647,7 @@ function tcConnChartRender(){
   });
   if(maxSec<=0) maxSec=1;
   tcConnChartRows=slice.map(function(r){
-    const title=tcConnChartMode==='weekly'?tcFmtWeekRangeLabel(r.weekStart,tcJornadaTz):tcFmtChartDayLabel(r.date,tcJornadaTz);
+    const title=tcConnChartMode==='weekly'?tcFmtWeekRangeLabel(r.weekStart):tcFmtChartDayLabel(r.date);
     return {title:title,durationSec:r.durationSec||0,signalSec:r.signalSec,partialOnly:!!r.partialOnly,noSignalData:!!r.noSignalData};
   });
   let html='<div class="tc-conn-chart" role="group" aria-label="Comparativa duración de jornada y tiempo con señal">';
@@ -21657,12 +21677,12 @@ function tcBuildCalendarHtml(){
   const y=tcHistoryYear;
   const m0=tcHistoryMonth;
   const days=tcHistoryPayload&&tcHistoryPayload.days||{};
+  const today=tcMetricsTodayYmd(tcJornadaTz);
   const title=TC_MONTH_NAMES[m0]+' '+y;
-  const firstDow=(function(){
-    const dow=new Date(Date.UTC(y,m0,1)).getUTCDay();
-    return dow===0?6:dow-1;
-  })();
+  const firstDow=(new Date(Date.UTC(y,m0,1)).getUTCDay()+6)%7;
   const daysInMonth=new Date(Date.UTC(y,m0+1,0)).getUTCDate();
+  const first=tcMonthRangeKeys(y,m0).from;
+  const focusDay=tcCalFocusDay||tcHistoryPinnedDay||(today.startsWith(first.slice(0,7))?today:first);
   let cells='';
   for(let i=0;i<firstDow;i++) cells+='<div class="tc-cal-day tc-cal-day--muted" aria-hidden="true"></div>';
   for(let d=1;d<=daysInMonth;d++){
@@ -21670,21 +21690,24 @@ function tcBuildCalendarHtml(){
     const bucket=days[key];
     const has=bucket&&bucket.sessionCount>0;
     const open=has&&bucket.hasOpen;
-    const sel=tcHistoryPinnedDay===key;
-    const dot=has?('<span class="tc-cal-dot'+(open?' tc-cal-dot--open':'')+'" aria-hidden="true"></span>'):'';
-    if(has){
-      cells+='<button type="button" class="tc-cal-day tc-cal-day--has'+(sel?' tc-cal-day--selected':'')+'" data-day="'+key+'" onclick="tcSelectHistoryDay(\''+key+'\')" onmouseenter="tcShowCalPopover(event,\''+key+'\')" onmouseleave="tcHideCalPopover()" onfocus="tcShowCalPopover(event,\''+key+'\')" onblur="tcHideCalPopover()">'+
-        '<span>'+d+'</span>'+dot+'</button>';
+    const selected=tcHistoryPinnedDay===key;
+    const classes='tc-cal-day'+(key===today?' tc-cal-day--today':'');
+    const current=key===today?' aria-current="date"':'';
+    const dot=has?'<span class="tc-cal-dot'+(open?' tc-cal-dot--open':'')+'" aria-hidden="true"></span>':'';
+    const label=tcFmtDayTitle(key,true)+(open?', jornada abierta':has?', con marcajes':'');
+    if(tcHistoryPayload&&(key<=today||has)){
+      cells+='<button type="button" class="'+classes+' tc-cal-day--pickable'+(has?' tc-cal-day--marked':'')+(selected?' tc-cal-day--selected':'')+'" data-day="'+key+'" aria-label="'+tcEsc(label)+'" aria-pressed="'+selected+'"'+current
+        +(key===focusDay?'':' tabindex="-1"')+' aria-controls="tc-history-day-panel" onclick="tcSelectHistoryDay(this.dataset.day)"><span>'+d+'</span>'+dot+'</button>';
     }else{
-      cells+='<div class="tc-cal-day tc-cal-day--muted"><span>'+d+'</span></div>';
+      cells+='<div class="'+classes+' tc-cal-day--muted"'+current+'><span>'+d+'</span></div>';
     }
   }
   const wd=TC_WEEKDAYS.map(function(l){ return '<span>'+l+'</span>'; }).join('');
   return '<div class="tc-cal">'+
     '<div class="tc-cal-head">'+
     '<button type="button" class="tc-cal-nav tc-cal-prev" aria-label="Mes anterior" onclick="tcHistoryChangeMonth(-1)">‹</button>'+
-    '<div class="tc-cal-title">'+tcEsc(title)+'</div>'+
-    '<button type="button" class="tc-cal-nav tc-cal-next" aria-label="Mes siguiente" onclick="tcHistoryChangeMonth(1)"'+(tcCanGoNextMonth()?'':' disabled')+'>›</button>'+
+    '<div class="tc-cal-title" aria-live="polite">'+tcEsc(title)+'</div>'+
+    '<button type="button" class="tc-cal-nav tc-cal-next" aria-label="Mes siguiente" onclick="tcHistoryChangeMonth(1)"'+(tcCanGoNextMonth()?'':' aria-disabled="true"')+'>›</button>'+
     '</div>'+
     '<div class="tc-cal-weekdays">'+wd+'</div>'+
     '<div class="tc-cal-grid">'+cells+'</div>'+
@@ -21692,17 +21715,21 @@ function tcBuildCalendarHtml(){
 }
 function tcRenderCalendar(){
   const root=document.getElementById('tc-cal-root');
-  if(!root) return;
+  if(!root||tcHistoryYear==null||tcHistoryMonth==null) return;
   const html=tcBuildCalendarHtml();
   const dir=tcHistorySlideDir;
   tcHistorySlideDir=0;
   const vp=tcEnsureCalViewport(root);
   const stage=vp&&vp.querySelector('.tc-cal-stage');
   if(!stage) return;
-  const existing=stage.querySelector('.tc-cal-pane');
-  if(!existing||!dir){
+  const active=document.activeElement;
+  const focusSelector=stage.contains(active)
+    ?(active.dataset.day?'[data-day="'+active.dataset.day+'"]':active.classList.contains('tc-cal-next')?'.tc-cal-next':'.tc-cal-prev')
+    :'';
+  const existing=stage.querySelector('.tc-cal-pane--active');
+  if(!existing||!dir||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     stage.innerHTML='<div class="tc-cal-pane tc-cal-pane--active">'+html+'</div>';
-    tcSyncCalViewportHeight(stage);
+    if(focusSelector) (stage.querySelector(focusSelector)||stage.querySelector('.tc-cal-prev')).focus({preventScroll:true});
     return;
   }
   const exitClass=dir>0?'tc-cal-pane--to-left':'tc-cal-pane--to-right';
@@ -21711,7 +21738,8 @@ function tcRenderCalendar(){
   newPane.className='tc-cal-pane '+enterClass;
   newPane.innerHTML=html;
   stage.appendChild(newPane);
-  tcSyncCalViewportHeight(stage);
+  existing.inert=true;
+  if(focusSelector) (newPane.querySelector(focusSelector)||newPane.querySelector('.tc-cal-prev')).focus({preventScroll:true});
   tcCalAnimating=true;
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
@@ -21722,108 +21750,81 @@ function tcRenderCalendar(){
     });
   });
   window.setTimeout(function(){
-    if(existing.parentNode) existing.remove();
+    existing.remove();
     tcCalAnimating=false;
-    tcSyncCalViewportHeight(stage);
   }, 200);
 }
-function tcDayPopoverHtml(dayKey){
-  const bucket=tcHistoryPayload&&tcHistoryPayload.days&&tcHistoryPayload.days[dayKey];
-  if(!bucket) return '';
-  const title=tcFmtDayTitle(dayKey, tcJornadaTz);
-  if(bucket.sessionCount>1){
-    return '<strong>'+tcEsc(title)+'</strong>'+
-      bucket.sessionCount+' jornadas<br>Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec));
+function tcHistoryMoveCalendarFocus(e){
+  const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[e.key];
+  if(!delta) return false;
+  e.preventDefault();
+  const key=tcYmdAddDays(e.target.dataset.day,delta);
+  const next=e.target.closest('.tc-cal-pane').querySelector('[data-day="'+key+'"]');
+  if(next){
+    tcCalFocusDay=key;
+    e.target.closest('.tc-cal-grid').querySelectorAll('[data-day]').forEach(function(btn){
+      btn.tabIndex=btn===next?0:-1;
+    });
+    next.focus();
   }
-  const s=bucket.sessions[0];
-  if(!s) return '';
-  if(s.isOpen){
-    return '<strong>'+tcEsc(title)+'</strong>'+
-      'Jornada abierta<br>Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
-      'Salida: —<br>Duración actual: '+tcEsc(tcFmtDurationHuman(s.durationSec));
-  }
-  return '<strong>'+tcEsc(title)+'</strong>'+
-    'Entrada: '+tcEsc(tcFmtTimeLocal(s.checkInAt, tcJornadaTz))+'<br>'+
-    'Salida: '+tcEsc(tcFmtTimeLocal(s.checkOutAt, tcJornadaTz))+'<br>'+
-    'Duración de jornada: '+tcEsc(tcFmtDurationHuman(s.durationSec));
-}
-function tcShowCalPopover(ev,dayKey){
-  if(window.matchMedia&&window.matchMedia('(max-width:900px)').matches) return;
-  if(tcHistoryPinnedDay) return;
-  const pop=document.getElementById('tc-cal-popover');
-  const wrap=pop&&pop.closest('.tc-history-cal-wrap');
-  if(!pop||!wrap) return;
-  const html=tcDayPopoverHtml(dayKey);
-  if(!html){ pop.classList.add('hidden'); return; }
-  pop.innerHTML=html;
-  pop.classList.remove('hidden');
-  pop.style.position='absolute';
-  const rect=wrap.getBoundingClientRect();
-  const bx=(ev&&ev.currentTarget&&ev.currentTarget.getBoundingClientRect)?ev.currentTarget.getBoundingClientRect():null;
-  let x=bx?(bx.left-rect.left):40;
-  let y=bx?(bx.bottom-rect.top+6):40;
-  if(x+220>wrap.clientWidth) x=Math.max(4, wrap.clientWidth-224);
-  if(y+100>wrap.clientHeight) y=Math.max(4, (bx?bx.top-rect.top-96:4));
-  pop.style.left=x+'px';
-  pop.style.top=y+'px';
-}
-function tcHideCalPopover(){
-  const pop=document.getElementById('tc-cal-popover');
-  if(pop) pop.classList.add('hidden');
+  return true;
 }
 function tcSelectHistoryDay(dayKey){
-  tcHistoryPinnedDay=tcHistoryPinnedDay===dayKey?null:dayKey;
-  tcRenderCalendar();
+  if(tcHistoryLoading||tcCalAnimating) return;
+  tcHistoryPinnedDay=dayKey;
+  tcCalFocusDay=dayKey;
+  document.querySelectorAll('#tc-cal-root button[data-day]').forEach(function(btn){
+    const selected=btn.dataset.day===dayKey;
+    btn.classList.toggle('tc-cal-day--selected',selected);
+    btn.setAttribute('aria-pressed',String(selected));
+    btn.tabIndex=selected?0:-1;
+  });
   tcRenderHistoryDayPanel();
-  tcHideCalPopover();
-  if(tcHistoryPinnedDay){
-    requestAnimationFrame(function(){
-      const p=document.getElementById('tc-history-day-panel');
-      if(p) p.scrollIntoView({block:'nearest',behavior:'smooth'});
-    });
+  if(window.matchMedia('(max-width:680px)').matches){
+    document.getElementById('tc-history-day-panel')?.scrollIntoView({block:'nearest'});
   }
 }
 function tcDayDetailBodyHtml(dayKey){
-  if(!dayKey||!tcHistoryPayload||!tcHistoryPayload.days) return '';
-  const bucket=tcHistoryPayload.days[dayKey];
-  if(!bucket) return '';
-  let html='';
-  if(bucket.sessionCount>1){
-    html+='<p class="tc-history-day-summary">'+bucket.sessionCount+' jornadas · Duración total: '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+'</p>';
-  }
+  const bucket=tcHistoryPayload&&tcHistoryPayload.days&&tcHistoryPayload.days[dayKey];
+  if(!bucket||!bucket.sessions||!bucket.sessions.length) return '';
+  const multi=bucket.sessions.length>1;
+  let html=multi?'<p class="tc-history-day-summary">'+bucket.sessions.length+' jornadas · '+tcEsc(tcFmtDurationHuman(bucket.totalDurationSec))+' en total</p>':'';
   bucket.sessions.forEach(function(s,idx){
-    html+='<div class="tc-history-session">';
-    if(bucket.sessionCount>1){
-      html+='<div class="tc-history-session-head"><div class="tc-history-session-label">Jornada '+(idx+1)+'</div></div>';
-    }
-    html+=tcHistorySessionMetricsHtml(s, tcJornadaTz);
-    html+='</div>';
+    const title=multi?'Jornada '+(idx+1):s.isOpen?'Jornada abierta':'Jornada registrada';
+    html+='<div class="tc-history-session"><div class="tc-history-session-head"><div class="tc-history-session-label">'+title+'</div>'
+      +tcHistorySessionWorkLogBtnHtml(s,multi?idx+1:0)+'</div>'
+      +(multi&&s.isOpen?'<span class="tc-punct-badge tc-punct-badge--progress">Jornada abierta</span>':'')
+      +tcHistorySessionMetricsHtml(s,tcJornadaTz)+'</div>';
   });
   return html;
 }
 function tcRenderHistoryDayPanel(){
-  const panel=document.getElementById('tc-history-day-panel');
   const titleEl=document.getElementById('tc-history-day-title');
   const bodyEl=document.getElementById('tc-history-day-body');
-  if(!panel||!bodyEl) return;
-  if(!tcHistoryPinnedDay){
-    panel.classList.add('hidden');
-    if(titleEl) titleEl.textContent='';
-    bodyEl.innerHTML='';
-    tcRenderHistoryDayLogSlot(null);
-    return;
+  const statusEl=document.getElementById('tc-history-day-status');
+  if(!titleEl||!bodyEl||!statusEl) return;
+  const day=tcHistoryPinnedDay;
+  const title=day?tcFmtDayTitle(day,true):'Marcajes del día';
+  const body=day?tcDayDetailBodyHtml(day):'';
+  const hint=day?(tcHistoryLoading&&!tcHistoryPayload?'Cargando marcajes…':tcHistoryPayload?'No hay marcajes registrados para este día.':'No se pudieron consultar los marcajes.'):'Selecciona una fecha del calendario para ver sus marcajes.';
+  titleEl.textContent=title;
+  statusEl.textContent=day?(body?title+'. Marcajes disponibles.':title+'. '+hint):'';
+  const next=body||'<p class="tc-history-hint">'+tcEsc(hint)+'</p>';
+  const active=document.activeElement;
+  const logId=bodyEl.contains(active)?active.dataset.historyLog:'';
+  const previous=bodyEl.dataset.day===day?Array.from(bodyEl.querySelectorAll('.tc-session-connection')):[];
+  const focusedDetails=previous.findIndex(function(item){ return item.contains(active); });
+  bodyEl.dataset.day=day||'';
+  if(bodyEl.innerHTML===next) return;
+  bodyEl.innerHTML=next;
+  bodyEl.querySelectorAll('.tc-session-connection').forEach(function(item,index){
+    item.open=Boolean(previous[index]?.open);
+    if(index===focusedDetails) item.querySelector('summary').focus({preventScroll:true});
+  });
+  if(logId){
+    const replacement=Array.from(bodyEl.querySelectorAll('[data-history-log]')).find(function(item){return item.dataset.historyLog===logId;});
+    (replacement||document.getElementById('tc-history-day-panel')).focus({preventScroll:true});
   }
-  const title=tcFmtDayTitle(tcHistoryPinnedDay, tcJornadaTz);
-  const body=tcDayDetailBodyHtml(tcHistoryPinnedDay);
-  if(!body){
-    panel.classList.add('hidden');
-    tcRenderHistoryDayLogSlot(null);
-    return;
-  }
-  if(titleEl) titleEl.textContent=title;
-  bodyEl.innerHTML=body;
-  tcRenderHistoryDayLogSlot(tcHistoryPinnedDay);
-  panel.classList.remove('hidden');
 }
 let tcKanbanTasks=[];
 let tcKanbanEmpId=null;
