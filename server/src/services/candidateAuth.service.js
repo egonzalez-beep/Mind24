@@ -184,6 +184,14 @@ export async function authenticateCandidateByAccess({ email, accessCode }) {
     throw invalidAccessError();
   }
 
+  if (assignment.status === 'pending') {
+    const { count } = await prisma.assignment.updateMany({
+      where: { id: assignment.id, candidateId: user.candidateProfile.id, status: 'pending' },
+      data: { status: 'in_progress' },
+    });
+    if (count) assignment.status = 'in_progress';
+  }
+
   const pending = assignments.filter(isLobbyRelevantAssignment);
   const modules = lobbyModulesForAssignment(assignment);
 

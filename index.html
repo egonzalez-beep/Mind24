@@ -2645,10 +2645,49 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .m24-fitness-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;z-index:2;transition:background .15s;}
 .m24-fitness-close:hover{background:rgba(255,255,255,.16);}
 .cev-panel.hidden{display:none!important;}
-.cev-panel-table-card{margin-top:8px;}
-.cev-status-pill{display:inline-block;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:800;letter-spacing:.02em;}
-.cev-st-aplicada{background:linear-gradient(135deg,#d1fae5,#6ee7b7);color:#065f46;}
-.cev-st-pendiente{background:linear-gradient(135deg,#fef3c7,#fcd34d);color:#92400e;}
+.cev-shell .main-content{min-width:0;}
+.cev-shell .sidebar-nav{min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--slate-300) transparent;}
+#cev-mobile-menu{display:none;}
+.cev-panel-table-card{margin:0;}
+.cev-table-scroll{container-type:inline-size;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--slate-300) transparent;}
+.cev-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
+.cev-table th{padding:10px 8px;background:var(--slate-50);color:var(--slate-600);font-size:11px;font-weight:750;white-space:nowrap;}
+.cev-table td{padding:11px 8px;vertical-align:middle;border-bottom:1px solid var(--slate-100);overflow-wrap:anywhere;}
+.cev-table tr:last-child td{border-bottom:0;}
+.cev-table tbody tr:hover,.cev-table tbody tr:focus-within{background:#faf8ff;}
+.cev-table .cev-td-empty{text-align:center;padding:28px 12px;color:var(--slate-500);}
+.cev-cell-actions{display:inline-flex;gap:6px;align-items:center;vertical-align:middle;}
+.cev-table-message{margin:0 0 12px;color:#b91c1c;font-size:13px;}
+.cev-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:100px;font-size:11px;font-weight:750;white-space:nowrap;}
+.cev-status-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+.cev-st-aplicada{background:#dcfce7;color:#166534;}
+.cev-st-en-curso{background:#ede9fe;color:#5b21b6;}
+.cev-st-pendiente{background:#fef3c7;color:#92400e;}
+.cev-st-archivada{background:var(--slate-100);color:var(--slate-600);}
+@container (max-width:790px){
+  .cev-table,.cev-table tbody{display:block;}
+  .cev-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+  .cev-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px;padding:14px;border:1px solid var(--slate-200);border-radius:12px;}
+  .cev-table tbody tr+tr{margin-top:10px;}
+  .cev-table tbody td{display:block;padding:0;min-width:0;border-bottom:0;}
+  .cev-table td:nth-child(2){justify-self:end;}
+  .cev-table td[data-label]::before{content:attr(data-label);display:block;color:var(--slate-500);font-family:Inter,sans-serif;font-size:11px;font-weight:650;margin-bottom:3px;}
+  .cev-table .cev-td-mods{max-width:none;grid-column:1/-1;}
+  .cev-table .cev-td-empty{grid-column:1/-1;padding:12px;}
+  .cev-cell-actions button{min-width:40px;min-height:40px;}
+}
+@media(max-width:720px){
+  .cev-shell .sidebar{display:none;position:absolute;inset:64px auto 0 0;width:min(290px,calc(100% - 32px));padding:14px 0;box-shadow:0 18px 36px rgba(15,23,42,.2);}
+  .cev-shell.cev-menu-open .sidebar{display:flex;}
+  .cev-shell .topbar{padding-inline:14px;gap:8px;}
+  .cev-shell .topbar-title{font-size:16px;}
+  .cev-shell .topbar-right{gap:6px;}
+  .cev-shell .page-content{padding:14px;}
+  .cev-shell #crear-eval-topbar-av{display:none!important;}
+  .cev-shell .card-header{padding-inline:14px;}
+  .cev-shell .card-body{padding-inline:14px;}
+  #cev-mobile-menu{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+}
 @media (max-width:720px){
   .mind24-credits-chip{min-width:96px;padding:7px 12px;}
   .mind24-credits-chip .m24-cc-val{font-size:16px;}
@@ -2812,14 +2851,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .mod-toggle.mod-fitness-hook .mod-check{border-color:#059669;background:#059669;color:#fff;}
 .mod-toggle.mod-fitness-hook .mod-name{color:#065f46;}
 .mod-badge-soon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);background:rgba(124,58,237,.12);padding:4px 8px;border-radius:100px;flex-shrink:0;margin-left:8px;}
-#cev-mis-assign-tbody tr:nth-child(odd),#cev-res-assign-tbody tr:nth-child(odd){background:#ffffff;}
-#cev-mis-assign-tbody tr:nth-child(even),#cev-res-assign-tbody tr:nth-child(even){background:#e8edf3;}
-#cev-mis-assign-tbody tr:hover,#cev-res-assign-tbody tr:hover{background:#dbeafe;}
 .cev-main-grid{display:grid;grid-template-columns:1fr;gap:clamp(16px,3.5vw,22px);margin-bottom:0;align-items:start;}
-@media(min-width:721px){
-  .cev-main-grid{grid-template-columns:1fr 1fr;}
+@media(min-width:960px){
+  .cev-main-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);}
 }
 .cev-col-form,.cev-col-mods{min-width:0;display:flex;flex-direction:column;gap:20px;}
+.cev-form-footer{display:flex;justify-content:flex-end;padding:12px 0;}
+.cev-form-footer .cev-btn-primary{width:auto;min-width:210px;}
+.cev-shell .topbar-title{margin:0;line-height:1.2;}
+@media(max-width:720px){.cev-form-footer .cev-btn-primary{width:100%;}}
 .cev-api-banner{margin:0 0 14px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;display:none;}
 .cev-api-banner:not(.hidden){display:block;}
 .cev-api-banner.err{color:#991B1B;background:linear-gradient(135deg,#FEF2F2,#FECACA);border:1px solid rgba(220,38,38,.25);}
@@ -4441,15 +4481,13 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 </div>
 
 <!-- ════════════════════ DASH CREAR EVALUACIÓN ════════════════════ -->
-<div id="view-dash-crear-eval" class="app-shell hidden">
-  <aside class="sidebar">
+<div id="view-dash-crear-eval" class="app-shell cev-shell hidden" onkeydown="if(event.key==='Escape'&&this.classList.contains('cev-menu-open')){crearEvalSetMenuOpen(false);document.getElementById('cev-mobile-menu').focus();}">
+  <aside class="sidebar" id="cev-sidebar">
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Evaluaciones</div>
       <button type="button" class="sidebar-item active" data-cev-nav="nueva" onclick="crearEvalSidebarNav('nueva')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
       <button type="button" class="sidebar-item" data-cev-nav="mis" onclick="crearEvalSidebarNav('mis')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span><span class="si-badge" id="cev-nav-mis-count" style="display:none;">0</span></button>
-      <div class="sidebar-section-label">Reportes</div>
-      <button type="button" class="sidebar-item" data-cev-nav="resultados" onclick="crearEvalSidebarNav('resultados')"><span class="si-icon">📊</span><span>Resultados</span><span class="si-badge" id="cev-nav-res-count" style="display:none;">0</span></button>
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item hidden" id="cev-nav-aspen-admin" data-skip-sidebar-active="1" onclick="showView('dash-admin')"><span class="si-icon">👥</span><span>Administradores Aspen</span></button>
       <button type="button" id="cev-sidebar-fitness-cta" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
@@ -4463,7 +4501,11 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar"><div><div class="topbar-title" id="cev-topbar-title">Crear Evaluación</div><div class="topbar-subtitle" id="cev-topbar-sub" style="display:none;"></div></div><div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div></div>
+    <div class="topbar">
+      <button type="button" id="cev-mobile-menu" class="tb-btn cev-mobile-menu" aria-label="Menú" aria-expanded="false" aria-controls="cev-sidebar" onclick="crearEvalSetMenuOpen(this.getAttribute('aria-expanded')==='false')">☰</button>
+      <h1 class="topbar-title" id="cev-topbar-title" tabindex="-1">Nueva evaluación</h1>
+      <div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
+    </div>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
       <div id="cev-api-banner" class="cev-api-banner hidden" role="status"></div>
@@ -4472,11 +4514,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <div class="card" id="cev-card-candidato">
             <div class="card-header"><div><div class="card-title">Datos del candidato</div><div class="card-subtitle">Todos los campos son obligatorios</div></div><div style="width:36px;height:36px;background:var(--purple-light);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div></div>
             <div class="card-body">
-              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Nombre completo <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="name" placeholder="Ej. Juan Carlos Pérez López" id="inp-nombre" aria-describedby="cev-err-nombre"><p id="cev-err-nombre" class="cev-field-hint" aria-live="polite"></p></div>
-              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">CURP <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="off" placeholder="Ej. PELJ850101HDFRZN09" id="inp-curp" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;" maxlength="18" aria-describedby="cev-err-curp"><p id="cev-err-curp" class="cev-field-hint" aria-live="polite"></p></div>
-              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Correo electrónico <span style="color:var(--purple);">*</span></label><input type="email" class="create-input" autocomplete="email" placeholder="candidato@correo.com" id="inp-email" aria-describedby="cev-err-email"><p id="cev-err-email" class="cev-field-hint" aria-live="polite"></p></div>
-              <div style="margin-bottom:18px;"><label style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Puesto al que aplica <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="organization-title" placeholder="Ej. Analista de Ventas Sr." id="inp-puesto" aria-describedby="cev-err-puesto"><p id="cev-err-puesto" class="cev-field-hint" aria-live="polite"></p></div>
-              <button type="button" onclick="registrarEval()" class="cev-btn-primary" id="btn-registrar">Crear Evaluación</button>
+              <div style="margin-bottom:14px;"><label for="inp-nombre" style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Nombre completo <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="name" placeholder="Ej. Juan Carlos Pérez López" id="inp-nombre" aria-describedby="cev-err-nombre"><p id="cev-err-nombre" class="cev-field-hint" aria-live="polite"></p></div>
+              <div style="margin-bottom:14px;"><label for="inp-curp" style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">CURP <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="off" placeholder="Ej. PELJ850101HDFRZN09" id="inp-curp" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;" maxlength="18" aria-describedby="cev-err-curp"><p id="cev-err-curp" class="cev-field-hint" aria-live="polite"></p></div>
+              <div style="margin-bottom:14px;"><label for="inp-email" style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Correo electrónico <span style="color:var(--purple);">*</span></label><input type="email" class="create-input" autocomplete="email" placeholder="candidato@correo.com" id="inp-email" aria-describedby="cev-err-email"><p id="cev-err-email" class="cev-field-hint" aria-live="polite"></p></div>
+              <div><label for="inp-puesto" style="display:block;font-size:13px;font-weight:600;color:var(--primary);margin-bottom:7px;">Puesto al que aplica <span style="color:var(--purple);">*</span></label><input type="text" class="create-input" autocomplete="organization-title" placeholder="Ej. Analista de Ventas Sr." id="inp-puesto" aria-describedby="cev-err-puesto"><p id="cev-err-puesto" class="cev-field-hint" aria-live="polite"></p></div>
             </div>
           </div>
         </div>
@@ -4487,33 +4528,26 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
               <div id="cev-mod-list"></div>
               
               
-              <p id="cev-mod-inline-warn" class="cev-inline-warn hidden" role="alert">⚠️ Debes seleccionar al menos un módulo para continuar.</p>
+              <p id="cev-mod-inline-warn" class="cev-inline-warn hidden" role="alert" tabindex="-1">Debes seleccionar al menos un módulo para continuar.</p>
             </div>
           </div>
         </div>
       </div>
+      <div class="cev-form-footer">
+        <button type="button" onclick="registrarEval()" class="cev-btn-primary" id="btn-registrar">Crear evaluación</button>
+      </div>
       </div>
       <div id="cev-panel-mis" class="cev-panel hidden">
         <div class="card cev-panel-table-card">
-          <div class="card-header"><div><div class="card-title">Registros</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
-          <div class="card-body" style="overflow-x:auto;">
-            <p id="cev-mis-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Creada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Correo</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Estado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
-              <tbody id="cev-mis-assign-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div id="cev-panel-resultados" class="cev-panel hidden">
-        <div class="card cev-panel-table-card">
-          <div class="card-header"><div><div class="card-title">Completadas</div></div><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
-          <div class="card-body" style="overflow-x:auto;">
-            <p id="cev-res-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="text-align:left;border-bottom:1px solid var(--slate-200);"><th style="padding:8px;">Finalizada</th><th style="padding:8px;">Candidato</th><th style="padding:8px;">Correo</th><th style="padding:8px;">CURP</th><th style="padding:8px;">Módulos</th><th style="padding:8px;">Clave</th><th style="padding:8px;">Resultado</th><th style="padding:8px;">Reportes</th><th style="padding:8px;">Acciones</th></tr></thead>
-              <tbody id="cev-res-assign-tbody"></tbody>
-            </table>
+          <div class="card-header"><h2 class="card-title">Registros</h2><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-body">
+            <p id="cev-mis-err" class="cev-table-message hidden" role="status"></p>
+            <div class="cev-table-scroll">
+              <table class="cev-table" role="table" aria-label="Evaluaciones asignadas">
+                <thead role="rowgroup"><tr role="row"><th scope="col">Candidato</th><th scope="col">Estado</th><th scope="col">Creada</th><th scope="col">Correo</th><th scope="col">CURP</th><th scope="col">Módulos</th><th scope="col">Clave</th><th scope="col">Reportes</th><th scope="col">Acciones</th></tr></thead>
+                <tbody id="cev-mis-assign-tbody" role="rowgroup"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4537,9 +4571,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Evaluaciones</div>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','nueva');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
       <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','resultados');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📊</span><span>Resultados</span></button>
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
@@ -4690,9 +4723,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Evaluaciones</div>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
+      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','nueva');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
       <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
-      <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','resultados');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📊</span><span>Resultados</span></button>
       <div class="sidebar-section-label">Cuenta</div>
       <button type="button" class="sidebar-item sidebar-item-cta-fitness" data-skip-sidebar-active="1" data-mind24-action="open-fitness-modal" onclick="mind24OpenFitnessModal(event)"><span class="si-icon">❤️</span><span>Mind Fitness — Bienestar Organizacional</span></button>
       <button type="button" class="sidebar-item sidebar-item-cta-medida" data-skip-sidebar-active="1" onclick="mind24OpenMedidaModal(event)"><span class="si-icon">🛠️</span><span>Módulo a la Medida</span></button>
@@ -5796,31 +5828,12 @@ function mind24SyncCrearEvalShell(){
 }
 window.__mind24FitnessModalOpen = false;
 window.__cevLastNav = 'nueva';
-const MIND24_RESULTS_LAST_VIEWED_KEY='last_viewed_results';
-function crearEvalReadLastViewedResultsAt(){
-  try{
-    const raw=localStorage.getItem(MIND24_RESULTS_LAST_VIEWED_KEY)||'';
-    if(!raw) return 0;
-    const ts=Date.parse(raw);
-    return Number.isFinite(ts)?ts:0;
-  }catch(_){ return 0; }
-}
-function crearEvalMarkResultsViewed(){
-  try{ localStorage.setItem(MIND24_RESULTS_LAST_VIEWED_KEY,new Date().toISOString()); }catch(_){}
-}
-function crearEvalRefreshResultadosBadge(rows){
-  const badge=document.getElementById('cev-nav-res-count');
-  if(!badge)return;
-  const viewedAt=crearEvalReadLastViewedResultsAt();
-  const completed=(rows||[]).filter(function(a){ return String(a&&a.status||'')==='completed'; });
-  const unseen=completed.filter(function(a){
-    const att=(a.attempts&&a.attempts[0])||null;
-    const fin=(att&&att.submittedAt)||a.updatedAt||a.createdAt;
-    const ts=Date.parse(fin||'');
-    return !viewedAt || !Number.isFinite(ts) || ts>viewedAt;
-  }).length;
-  badge.textContent=String(unseen);
-  badge.style.display=unseen>0?'inline-flex':'none';
+function crearEvalSetMenuOpen(open){
+  const root=document.getElementById('view-dash-crear-eval');
+  const toggle=document.getElementById('cev-mobile-menu');
+  root.classList.toggle('cev-menu-open',open);
+  toggle.setAttribute('aria-expanded',String(open));
+  if(open) root.querySelector('[data-cev-nav].active')?.focus();
 }
 function crearEvalSyncSidebarActive(){
   const root=document.getElementById('view-dash-crear-eval');
@@ -5928,7 +5941,8 @@ window.mind24OpenMedidaModal=mind24OpenMedidaModal;
 window.mind24CloseMedidaModal=mind24CloseMedidaModal;
 function crearEvalMapStatusPill(status){
   if(String(status)==='completed') return { label:'Aplicada', cls:'cev-status-pill cev-st-aplicada' };
-  if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-pendiente' };
+  if(String(status)==='in_progress') return { label:'En curso', cls:'cev-status-pill cev-st-en-curso' };
+  if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-archivada' };
   return { label:'Pendiente', cls:'cev-status-pill cev-st-pendiente' };
 }
 function crearEvalFmtDate(iso){
@@ -6009,9 +6023,8 @@ function crearEvalAssignmentReportReady(a){
   return String(a&&a.status||'')==='completed'&&!!(a&&a.id);
 }
 const M24_DL_SPINNER_HTML='<svg class="m24-dl-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
-async function downloadAssignmentReportPdf(assignmentId, label){
+async function downloadAssignmentReportPdf(assignmentId, btn){
   if(!assignmentId){ alert('Asignación no identificada.'); return; }
-  const btn=event&&event.target?event.target:null;
   const originalHtml=btn?btn.innerHTML:'';
   if(btn){ btn.disabled=true; btn.innerHTML=M24_DL_SPINNER_HTML; }
   try{
@@ -6042,46 +6055,30 @@ async function downloadAssignmentReportPdf(assignmentId, label){
   }
 }
 function crearEvalReportesCell(tr, a){
-  const tdx=document.createElement('td');
-  tdx.style.padding='8px';
-  tdx.style.whiteSpace='nowrap';
-  tdx.style.display='flex';
-  tdx.style.gap='10px';
-  tdx.style.alignItems='center';
-  const aid=a&&a.id?String(a.id):'';
-  const di = crearEvalFindDigitalInterviewAttempt(a);
-  if(crearEvalAssignmentReportReady(a)&&aid){
-    const btn=crearEvalIconBtn(
-      'Descargar Reporte',
+  const tdx=tr.insertCell();
+  tdx.setAttribute('role','cell');
+  tdx.dataset.label='Reportes';
+  const actions=document.createElement('div');
+  actions.className='cev-cell-actions';
+  const di=crearEvalFindDigitalInterviewAttempt(a);
+  if(crearEvalAssignmentReportReady(a)){
+    actions.appendChild(crearEvalIconBtn(
+      'Descargar reporte',
       '#334155',
       'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',
-      function(){ downloadAssignmentReportPdf(aid,'Descargar Reporte'); },
-    );
-    tdx.appendChild(btn);
-    if(di && di.audios){
-      const b2=crearEvalIconBtn(
-        'Escuchar Entrevista',
-        '#7C3AED',
-        'M14.5 2A8.5 8.5 0 0 1 23 10.5V12a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1.5a2 2 0 0 1 2-2h1 A6.5 6.5 0 0 0 8 8.5 M9 18a3 3 0 1 0 6 0 M4 12v-1.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2V12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2',
-        function(){ digitalInterviewHrOpen(di.audios); },
-      );
-      tdx.appendChild(b2);
-    }
-  }else{
-    tdx.textContent='—';
-    tdx.style.color='var(--slate-400)';
-    if(di && di.audios){
-      const b2=crearEvalIconBtn(
-        'Escuchar Entrevista',
-        '#7C3AED',
-        'M14.5 2A8.5 8.5 0 0 1 23 10.5V12a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1.5a2 2 0 0 1 2-2h1 A6.5 6.5 0 0 0 8 8.5 M9 18a3 3 0 1 0 6 0 M4 12v-1.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2V12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2',
-        function(){ digitalInterviewHrOpen(di.audios); },
-      );
-      tdx.innerHTML='';
-      tdx.appendChild(b2);
-    }
+      function(e){ downloadAssignmentReportPdf(String(a.id),e.currentTarget); },
+    ));
   }
-  tr.appendChild(tdx);
+  if(di?.audios){
+    actions.appendChild(crearEvalIconBtn(
+      'Escuchar entrevista',
+      '#7C3AED',
+      'M3 14v-3a9 9 0 0 1 18 0v3 M3 13h4v6H3zm14 0h4v6h-4z',
+      function(){ digitalInterviewHrOpen(di.audios); },
+    ));
+  }
+  if(actions.childElementCount) tdx.appendChild(actions);
+  else tdx.textContent='—';
 }
 
 function crearEvalFindDigitalInterviewAttempt(a){
@@ -6096,12 +6093,11 @@ function crearEvalFindDigitalInterviewAttempt(a){
   }
   return null;
 }
-async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel){
+async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel, btn){
   if(!assignmentId) return;
   const who=candidateLabel?String(candidateLabel):'esta evaluación';
   if(!confirm('¿Eliminar la evaluación de '+who+'?\n\nSe borrarán la asignación y todos los intentos. Esta acción no se puede deshacer.')) return;
-  const btn=event&&event.target?event.target:null;
-  if(btn){ btn.disabled=true; btn.textContent='Eliminando…'; }
+  btn.disabled=true;
   try{
     await apiJson('/api/org/assignments/'+encodeURIComponent(assignmentId),{ method:'DELETE' });
     await refreshCrearEvalAssignmentsTables();
@@ -6109,30 +6105,32 @@ async function eliminarEvaluacionAsignacion(assignmentId, candidateLabel){
   }catch(e){
     alert((e&&e.message)?String(e.message):'No se pudo eliminar la evaluación.');
   }finally{
-    if(btn){ btn.disabled=false; btn.textContent='Eliminar'; }
+    btn.disabled=false;
   }
 }
 function crearEvalAccionesCell(tr, a){
-  const tdx=document.createElement('td');
-  tdx.style.padding='8px';
-  tdx.style.whiteSpace='nowrap';
+  const tdx=tr.insertCell();
+  tdx.setAttribute('role','cell');
+  tdx.dataset.label='Acciones';
   const aid=a&&a.id?String(a.id):'';
   if(aid){
     const btn=crearEvalIconBtn(
       'Eliminar',
       '#E11D48',
       'M3 6h18 M8 6V4h8v2 M19 6l-1 14H6L5 6 M10 11v6 M14 11v6',
-      function(){ eliminarEvaluacionAsignacion(aid, crearEvalCandidateLabel(a)); },
+      function(e){ eliminarEvaluacionAsignacion(aid, crearEvalCandidateLabel(a), e.currentTarget); },
     );
     btn.style.borderColor='#FECACA';
     btn.onmouseenter=function(){ btn.style.background='#FFF1F2'; btn.style.borderColor='#FDA4AF'; };
     btn.onmouseleave=function(){ btn.style.background='#fff'; btn.style.borderColor='#FECACA'; };
-    tdx.appendChild(btn);
+    const actions=document.createElement('div');
+    actions.className='cev-cell-actions';
+    actions.appendChild(btn);
+    tdx.appendChild(actions);
   }else{
     tdx.textContent='—';
     tdx.style.color='var(--slate-400)';
   }
-  tr.appendChild(tdx);
 }
 function crearEvalAssessmentName(_a){
   return 'Evaluación Mind24';
@@ -6242,97 +6240,69 @@ function crearEvalModulesDisplayList(a){
   const text=labels.join(', ');
   return { text, full:text };
 }
+let crearEvalAssignmentsRequest=0;
 async function refreshCrearEvalAssignmentsTables(){
-  const errMis=document.getElementById('cev-mis-err');
-  const errRes=document.getElementById('cev-res-err');
-  const tbMis=document.getElementById('cev-mis-assign-tbody');
-  const tbRes=document.getElementById('cev-res-assign-tbody');
-  const cnt=document.getElementById('cev-nav-mis-count');
-  if(errMis){ errMis.classList.add('hidden'); errMis.textContent=''; }
-  if(errRes){ errRes.classList.add('hidden'); errRes.textContent=''; }
+  const request=++crearEvalAssignmentsRequest;
+  const error=document.getElementById('cev-mis-err');
+  const tableBody=document.getElementById('cev-mis-assign-tbody');
+  const count=document.getElementById('cev-nav-mis-count');
+  error.classList.add('hidden');
+  error.textContent='';
   try{
     const j=await apiJson('/api/org/assignments');
+    if(request!==crearEvalAssignmentsRequest)return;
     const rows=Array.isArray(j.assignments)?j.assignments:[];
-    crearEvalRefreshResultadosBadge(rows);
-    if(cnt){
-      cnt.textContent=String(rows.length);
-      cnt.style.display=rows.length?'inline-flex':'none';
+    count.textContent=String(rows.length);
+    count.style.display=rows.length?'inline-flex':'none';
+    tableBody.innerHTML='';
+    if(!rows.length){
+      const row=tableBody.insertRow();
+      row.setAttribute('role','row');
+      const cell=row.insertCell();
+      cell.setAttribute('role','cell');
+      cell.colSpan=9;
+      cell.className='cev-td-empty';
+      cell.textContent='Aún no hay evaluaciones asignadas.';
+      return;
     }
-    if(tbMis){
-      tbMis.innerHTML='';
-      rows.forEach(a=>{
-        const pill=crearEvalMapStatusPill(a.status);
-        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
-        function tdText(txt, opts){
-          const x=document.createElement('td'); x.style.padding='8px';
-          if(opts&&opts.mono) x.className='cev-td-mono';
-          if(opts&&opts.mods){
-            x.className='cev-td-mods';
-            const mod=crearEvalModulesDisplayList(a);
-            x.textContent=mod.text;
-            x.title=mod.full;
-          }else x.textContent=txt==null||txt===''?'—':String(txt);
-          tr.appendChild(x);
-        }
-        tdText(crearEvalFmtDate(a.createdAt));
-        const tdCand=document.createElement('td'); tdCand.style.padding='8px';
-        crearEvalCandidateCell(tdCand,a); tr.appendChild(tdCand);
-        tdText(crearEvalCandidateEmail(a));
-        tdText(crearEvalCandidateCurp(a), { mono:true });
-        tdText('', { mods:true });
-        tdText(mind24ShortAssignmentCode(a.id), { mono:true });
-        const tdx=document.createElement('td'); tdx.style.padding='8px';
-        const span=document.createElement('span'); span.className=pill.cls; span.textContent=pill.label;
-        tdx.appendChild(span); tr.appendChild(tdx);
-        crearEvalReportesCell(tr,a);
-        crearEvalAccionesCell(tr,a);
-        tbMis.appendChild(tr);
-      });
-    }
-    if(tbRes){
-      tbRes.innerHTML='';
-      rows.filter(a=>String(a.status)==='completed').forEach(a=>{
-        const att=(a.attempts&&a.attempts[0])||null;
-        const fin=(att&&att.submittedAt)||a.updatedAt||a.createdAt;
-        const scores=att&&att.scores;
-        let globalTxt='—';
-        if(scores&&typeof scores==='object'&&scores.global!=null) globalTxt=String(scores.global)+'%';
-        const tr=document.createElement('tr'); tr.style.borderBottom='1px solid var(--slate-100)';
-        function tdText(txt, opts){
-          const x=document.createElement('td'); x.style.padding='8px';
-          if(opts&&opts.mono) x.className='cev-td-mono';
-          if(opts&&opts.mods){
-            x.className='cev-td-mods';
-            const mod=crearEvalModulesDisplayList(a);
-            x.textContent=mod.text;
-            x.title=mod.full;
-          }else x.textContent=txt==null||txt===''?'—':String(txt);
-          tr.appendChild(x);
-        }
-        tdText(crearEvalFmtDate(fin));
-        const tdCand=document.createElement('td'); tdCand.style.padding='8px';
-        crearEvalCandidateCell(tdCand,a); tr.appendChild(tdCand);
-        tdText(crearEvalCandidateEmail(a));
-        tdText(crearEvalCandidateCurp(a), { mono:true });
-        tdText('', { mods:true });
-        tdText(mind24ShortAssignmentCode(a.id), { mono:true });
-        tdText(globalTxt);
-        crearEvalReportesCell(tr,a);
-        crearEvalAccionesCell(tr,a);
-        tbRes.appendChild(tr);
-      });
-    }
+    rows.forEach(a=>{
+      const row=tableBody.insertRow();
+      row.setAttribute('role','row');
+      function addCell(text='',label='',className=''){
+        const cell=row.insertCell();
+        cell.setAttribute('role','cell');
+        cell.textContent=text||'—';
+        if(label) cell.dataset.label=label;
+        if(className) cell.className=className;
+        return cell;
+      }
+      crearEvalCandidateCell(addCell(),a);
+      const pill=crearEvalMapStatusPill(a.status);
+      const badge=document.createElement('span');
+      badge.className=pill.cls;
+      badge.textContent=pill.label;
+      addCell().replaceChildren(badge);
+      addCell(crearEvalFmtDate(a.createdAt),'Creada');
+      addCell(crearEvalCandidateEmail(a),'Correo');
+      addCell(crearEvalCandidateCurp(a),'CURP','cev-td-mono');
+      const mods=crearEvalModulesDisplayList(a);
+      addCell(mods.text,'Módulos','cev-td-mods').title=mods.full;
+      addCell(mind24ShortAssignmentCode(a.id),'Clave','cev-td-mono');
+      crearEvalReportesCell(row,a);
+      crearEvalAccionesCell(row,a);
+    });
   }catch(e){
-    const msg=(e&&e.message)?String(e.message):'No se pudieron cargar las asignaciones.';
-    if(errMis){ errMis.textContent=msg; errMis.classList.remove('hidden'); }
-    if(errRes){ errRes.textContent=msg; errRes.classList.remove('hidden'); }
+    if(request!==crearEvalAssignmentsRequest)return;
+    error.textContent=e?.message||'No se pudieron cargar las asignaciones.';
+    error.classList.remove('hidden');
   }
 }
 function crearEvalSidebarNav(which){
-  const allowed=new Set(['nueva','mis','resultados']);
-  if(!allowed.has(which))return;
-  if(which==='resultados') crearEvalMarkResultsViewed();
-  try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY, String(which)); }catch(_){}
+  if(which==='resultados') which='mis';
+  if(which!=='mis') which='nueva';
+  const mobileMenuWasOpen=document.getElementById('view-dash-crear-eval').classList.contains('cev-menu-open');
+  crearEvalSetMenuOpen(false);
+  try{ localStorage.setItem(MIND24_ACTIVE_ADMIN_TAB_KEY, which); }catch(_){}
   if(which==='nueva') crearEvalResetNuevaFlow();
   else{
     const sm=document.getElementById('cev-success-modal');
@@ -6340,25 +6310,11 @@ function crearEvalSidebarNav(which){
     if(window.__CEV_FORM_LOCKED) crearEvalResetNuevaFlow();
   }
   window.__cevLastNav=which;
-  const panels={nueva:'cev-panel-nueva',mis:'cev-panel-mis',resultados:'cev-panel-resultados'};
-  Object.keys(panels).forEach(k=>{
-    const el=document.getElementById(panels[k]);
-    if(el) el.classList.toggle('hidden', k!==which);
-  });
-  const titles={
-    nueva:['Crear Evaluación',''],
-    mis:['Mis evaluaciones','Seguimiento de asignaciones: pendiente o aplicada'],
-    resultados:['Resultados','Evaluaciones finalizadas por los evaluados']
-  };
-  const pair=titles[which]||titles.nueva;
-  const t=document.getElementById('cev-topbar-title');
-  const s=document.getElementById('cev-topbar-sub');
-  if(t) t.textContent=pair[0];
-  if(s){
-    const sub=pair[1]||'';
-    s.textContent=sub;
-    s.style.display=sub?'block':'none';
-  }
+  document.getElementById('cev-panel-nueva').classList.toggle('hidden',which!=='nueva');
+  document.getElementById('cev-panel-mis').classList.toggle('hidden',which!=='mis');
+  const title=document.getElementById('cev-topbar-title');
+  title.textContent=which==='mis'?'Mis evaluaciones':'Nueva evaluación';
+  if(mobileMenuWasOpen) title.focus();
   crearEvalSyncSidebarActive();
   refreshCrearEvalAssignmentsTables();
 }
@@ -6576,6 +6532,7 @@ function mind24ResetUiBlockers(){
 }
 function showView(name) {
   if(!canAccessView(name))return;
+  if(name!=='dash-crear-eval') crearEvalSetMenuOpen(false);
   if(name!=='dash-recruitment'&&window.__REC_STATE&&typeof recKanbanAutoScrollStop==='function'){
     window.__REC_STATE.kanbanDragging=false;
     recKanbanAutoScrollStop();
@@ -6981,7 +6938,7 @@ function crearEvalResetNuevaFlow(){
   }
   crearEvalSyncModSummary();
   const btn=document.getElementById('btn-registrar');
-  if(btn){ btn.disabled=false; btn.textContent='Crear Evaluación'; }
+  if(btn){ btn.disabled=false; btn.textContent='Crear evaluación'; }
 }
 function mind24RandomCandidatePassword(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
@@ -7003,7 +6960,12 @@ async function mind24DefaultAssessmentDefinitionId(){
 async function registrarEval(){
   if(window.__CEV_FORM_LOCKED) return;
   crearEvalHideApiBanner();
-  if(!crearEvalValidateBeforeSubmit()) return;
+  if(!crearEvalValidateBeforeSubmit()){
+    const invalid=Array.from(document.querySelectorAll('#cev-panel-nueva .create-input'))
+      .find(input=>document.getElementById(input.getAttribute('aria-describedby'))?.textContent);
+    (invalid||document.getElementById('cev-mod-inline-warn'))?.focus();
+    return;
+  }
   const nombre=(document.getElementById('inp-nombre')||{}).value.trim();
   const curp=(document.getElementById('inp-curp')||{}).value.trim().toUpperCase();
   const email=(document.getElementById('inp-email')||{}).value.trim();
@@ -7045,7 +7007,7 @@ async function registrarEval(){
     crearEvalOpenSuccessModal(shortCode);
     if(btn){ btn.disabled=true; btn.textContent='Evaluación creada'; }
   }catch(err){
-    if(btn){ btn.disabled=false; btn.textContent='Crear Evaluación'; }
+    if(btn){ btn.disabled=false; btn.textContent='Crear evaluación'; }
     if(err.code==='NO_CREDITS'){
       crearEvalShowApiBannerHtml('err','No tienes créditos en este momento. <a href="https://wa.me/524428339128" target="_blank" rel="noopener noreferrer" style="color:inherit;font-weight:800;text-decoration:underline;">Contacta a un ejecutivo de ventas</a> para solicitar nuevos créditos y seguir evaluando a tu talento.');
     } else {
