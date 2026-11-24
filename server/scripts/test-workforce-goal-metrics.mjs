@@ -138,7 +138,7 @@ check(/TC_METRICS_EVAL_HELP/.test(indexHtml) && /tcMetricsEvaluationsKpiInfoHtml
 check(!/Primer periodo registrado del mes/.test(indexHtml), 'sin microcopy primer periodo');
 check(/tc-metrics-panel--chart/.test(indexHtml) && /tc-metrics-panel--goals/.test(indexHtml), 'paneles homologados');
 check(/tc-metrics-trend-seg/.test(indexHtml) && /tcMetricsSetTrendView/.test(indexHtml), 'selector Semanal|Mensual');
-check(/Cumplimiento general/.test(indexHtml) && /value="general"/.test(indexHtml), 'selector cumplimiento general');
+check(/goalId:'general',title:'Cumplimiento general'/.test(indexHtml) && /tcMetricsRenderGoalOptions/.test(indexHtml), 'Cumplimiento general disponible en el selector');
 check(/tcAdminFetchEmployeeGoalMetricsTrend/.test(indexHtml), 'fetch tendencia frontend');
 check(/tcJornadaMetricsTrendLoadGen/.test(indexHtml) && /tcJornadaMetricsTrendAbort/.test(indexHtml), 'abort y gen tendencia');
 check(/tcMetricsTrendChartSvg/.test(indexHtml) && !/tcMetricsChartSvg\(/.test(indexHtml), 'gráfica usa tendencia');
@@ -152,7 +152,7 @@ check(
   'ruta GET goals/metrics/trend',
 );
 check(/tc-metrics-stat-chip/.test(indexHtml) && /tcMetricsGoalStatsHtml/.test(indexHtml), 'microchips desempeño por meta');
-check(/tc-metrics-goal-select-wrap/.test(indexHtml) && /tc-metrics-goal-select:focus-visible/.test(indexHtml), 'selector de meta refinado');
+check(/tc-metrics-goal-picker/.test(indexHtml) && /tc-metrics-goal-select:focus-visible/.test(indexHtml), 'selector de meta con menú y foco visible');
 check(/tcSvgChevronLeft/.test(indexHtml) && /aria-label="Mes anterior"/.test(indexHtml), 'selector mensual SVG');
 check(!/tcMetricsCompareHtml\(data\.comparison/.test(indexHtml), 'sin comparación flotante entre KPIs y gráfica');
 check(/tcEsc\(g\.title\)/.test(indexHtml) && /tcEsc\(tip\)/.test(indexHtml), 'escape título y tooltips');
@@ -191,32 +191,24 @@ check(/tc-metrics-retry/.test(indexHtml), 'estado error con Reintentar');
 check(/overflow-x:hidden|max-width:100%/.test(indexHtml), 'responsive sin scroll horizontal (métricas/chart)');
 check(/tcJornadaSetOpTab/.test(indexHtml) && /tc-jornada-tab-goals/.test(indexHtml), 'regresión tabs Metas');
 check(!/tcAdminFetchEmployeeGoalMetrics/.test(publicIndex) || /tcAdminFetchEmployeeGoalMetrics/.test(indexHtml), 'fetch métricas solo en bundle admin');
-check(/id="tc-jornada-op-center"/.test(indexHtml) && /tcJornadaSyncOpChrome/.test(indexHtml), 'navegador mensual integrado en encabezado jornada');
-check(/tcMetricsMonthNavHtml\(true\)/.test(indexHtml) && /tc-jornada-op-center/.test(indexHtml), 'mes en op-center en Indicadores');
-check(
-  /function tcMetricsShellHtml\(\)\s*\{\s*return '<div class="tc-metrics-wrap"><div class="tc-metrics-body" id="tc-metrics-body"/.test(
-    indexHtml,
-  ),
-  'shell métricas sin fila mensual redundante',
-);
+check(/function tcMetricsShellHtml\(\)[\s\S]*?Resumen del mes[\s\S]*?tcMetricsMonthNavHtml\(\)/.test(indexHtml), 'navegación junto al resumen del mes');
 check(/Semana anterior/.test(indexHtml) && /Semana siguiente/.test(indexHtml), 'aria semana anterior/siguiente');
 check(/range\.navLabel/.test(indexHtml) && /tc-metrics-trend-range-label/.test(indexHtml), 'etiqueta semanal compacta navLabel');
-check(/tc-metrics-trend-range--monthly/.test(indexHtml) && /visually-hidden/.test(indexHtml), 'vista mensual sin rango visible duplicado');
+check(/tc-metrics-trend-range--monthly[\s\S]*?tc-metrics-trend-range-label[^\n]*tcEsc\(rangeLabel/.test(indexHtml), 'la gráfica mensual muestra su rango propio');
 check(/Cumplida ≥100 %/.test(indexHtml) && /Parcial 1–99\.9 %/.test(indexHtml) && /No cumplida \/ vencida/.test(indexHtml), 'leyenda compacta (3 estados)');
 check(
   !indexHtml.includes('tc-metrics-legend-dot--pending" aria-hidden="true"></span>Pendiente'),
   'leyenda sin Pendiente en evolución',
 );
 check(/tc-metrics-chart-legend/.test(indexHtml) && /grid-template-columns:repeat\(3/.test(indexHtml), 'leyenda en fila (grid 3) en escritorio');
-check(/tc-metrics-panel--goals[\s\S]*max-height:min\(400px/.test(indexHtml), 'panel metas altura acotada en laptop');
-check(/\.tc-metrics-goal-list\{[^}]*overflow-y:auto/.test(indexHtml) && /height:min\(400px,52vh\)/.test(indexHtml), 'listado metas con scroll interno en desktop');
+check(/\.tc-metrics-panel--goals\{[^}]*max-height:440px/.test(indexHtml), 'panel metas altura acotada en escritorio');
+check(/\.tc-metrics-goal-list\{[^}]*overflow-y:auto/.test(indexHtml) && /\.tc-metrics-goal-list\{overflow:visible/.test(indexHtml), 'listado metas con scroll interno solo en escritorio');
 check(/tcMetricsQuantAccumHtml/.test(indexHtml) && /quantitativeAccumulated/.test(indexHtml) && /tc-metrics-goal-row-accum/.test(indexHtml), 'acumulado cuantitativo en desempeño');
 check(/tcMetricsBindChartResize/.test(indexHtml) && /ResizeObserver/.test(indexHtml) && /viewBox="0 0/.test(indexHtml), 'gráfica responsive viewBox + ResizeObserver');
 check(/tcMetricsChartSvgHeight/.test(indexHtml) && /Math\.min\(220,\s*Math\.max\(168/.test(indexHtml), 'altura SVG acotada 168–220');
-check(/tcCloseJornada[\s\S]*tcMetricsDisconnectChartResize/.test(indexHtml), 'ResizeObserver desconectado al cerrar jornada');
-check(/tcJornadaResetMetricsState[\s\S]*tcMetricsDisconnectChartResize/.test(indexHtml), 'ResizeObserver desconectado al resetear métricas');
+check(/function tcCloseJornada\(\)\{[\s\S]*?tcJornadaResetMetricsState\(\)/.test(indexHtml) && /function tcMetricsCancelRequests\(\)\{[\s\S]*?tcMetricsDisconnectChartResize\(\)/.test(indexHtml), 'el cierre desconecta el observer y cancela las consultas');
 check(/width="100%"/.test(indexHtml) && /tcMetricsDisconnectChartResize/.test(indexHtml), 'SVG ancho 100% y desconexión observer');
-check(/tc-metrics-main-grid/.test(indexHtml) && /1\.16fr/.test(indexHtml), 'grid paneles ~58/42');
+check(/\.tc-metrics-main-grid\{[^}]*1\.55fr/.test(indexHtml), 'la evolución recibe más espacio que la lista de metas');
 check(/tc-metrics-kpi-label-row/.test(indexHtml), 'KPI título e icono alineados');
 check(/computeQuantitativeAccumulated/.test(metricsSrc) && /weekTrendNavLabelEs/.test(metricsSrc), 'servicio acumulado y navLabel semanal');
 check(/quantitativeAccumulated/.test(metricsSrc) && /buildGoalBuckets/.test(metricsSrc), 'buckets incluyen quantitativeAccumulated');
