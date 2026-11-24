@@ -273,6 +273,82 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-topbar-cluster .topbar-title{margin:0;line-height:1.2;}
 .rec-topbar-vac-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;flex-wrap:wrap;}
 .rec-global-search{width:min(280px,42vw);min-width:160px;margin:0;font-size:13px;padding:7px 11px;border-radius:10px;}
+
+#view-dash-recruitment #rec-pane-agenda{flex:1;min-height:0;min-width:0;overflow:auto;padding:18px 2px 24px;}
+.rec-agenda{background:transparent;}
+.rec-agenda-head,.rec-agenda-layout{width:min(100%,1260px);margin-inline:auto;}
+.rec-agenda-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;}
+.rec-agenda-head h1{margin:0;color:var(--primary);font-size:clamp(22px,2.5vw,30px);letter-spacing:-.04em;line-height:1.15;}
+.rec-agenda-section-head p{margin:5px 0 0;font-size:13px;color:var(--slate-600);line-height:1.4;}
+.rec-agenda-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,1fr);gap:16px;align-items:start;}
+.rec-agenda-main{display:grid;align-content:start;gap:14px;min-width:0;}
+.rec-agenda-panel{min-width:0;border:1px solid var(--slate-200);border-radius:16px;background:#fff;padding:14px;}
+.rec-agenda-month,.rec-agenda-section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.rec-agenda-panel h2{font-size:16px;font-weight:750;letter-spacing:-.02em;color:var(--primary);margin:0;}
+.rec-agenda-nav{display:flex;align-items:center;gap:5px;}
+.rec-agenda-nav button{border:1px solid var(--slate-200);border-radius:9px;background:#fff;color:var(--slate-700);font:inherit;font-size:13px;font-weight:700;min-height:34px;cursor:pointer;}
+.rec-agenda-today{padding:0 9px;}
+.rec-agenda-nav .rec-agenda-nav-btn{width:34px;font-size:19px;line-height:1;}
+.rec-agenda-nav button:hover,.rec-agenda-nav button:focus-visible{border-color:#c4b5fd;color:var(--purple-dark);}
+.rec-agenda :is(button,h2):focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.rec-agenda-week,.rec-agenda-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+.rec-agenda-week{margin-bottom:5px;}
+.rec-agenda-week span{text-align:center;color:var(--slate-500);font-size:11px;font-weight:700;}
+.rec-agenda-day{position:relative;min-height:49px;border:1px solid var(--slate-100);border-radius:9px;background:#fafbfe;color:var(--primary);font:inherit;font-weight:650;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;padding:3px;}
+.rec-agenda-day:hover{background:#f5f0ff;border-color:#c4b5fd;}
+.rec-agenda-day[aria-current=date]{border-color:var(--violet);color:var(--purple-dark);font-weight:800;}
+.rec-agenda-day[aria-pressed=true]{background:#ede9fe;border-color:#a78bfa;color:var(--purple-deep);}
+.rec-agenda-day[aria-current=date][aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--violet);}
+.rec-agenda-day-count,.rec-agenda-count{display:inline-flex;align-items:center;justify-content:center;background:var(--purple-light);color:var(--purple-dark);font-size:10px;font-weight:750;border-radius:999px;padding:2px 6px;}
+.rec-agenda-day[aria-pressed=true] .rec-agenda-day-count{background:#fff;}
+.rec-agenda-count:empty{display:none;}
+.rec-agenda-count{font-size:11px;padding:3px 7px;}
+.rec-agenda-list{display:grid;gap:7px;align-content:start;}
+.rec-agenda-row{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px;transition:border-color .15s,background .15s;}
+.rec-agenda-row:hover,.rec-agenda-row:focus-within{border-color:#c4b5fd;background:#fcfaff;}
+.rec-agenda-row-main{display:flex;align-items:center;gap:9px;min-width:0;padding:3px;text-align:left;border:0;background:none;color:var(--primary);font:inherit;cursor:pointer;border-radius:7px;}
+.rec-agenda-row-copy{min-width:0;display:grid;gap:3px;}
+.rec-agenda-row-title{font-size:13px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;}
+.rec-agenda-row-sub{color:var(--slate-600);font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
+.rec-agenda-row-meta{color:var(--slate-500);font-size:11px;line-height:1.3;overflow-wrap:anywhere;}
+.rec-agenda-slot{min-width:66px;max-width:76px;flex:none;align-self:stretch;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);display:grid;place-content:center;text-align:center;line-height:1.2;padding:5px;font-weight:750;font-size:11px;}
+.rec-agenda-row-actions{display:grid;justify-items:end;gap:5px;}
+.rec-agenda-row-actions .rec-stages-ghost-btn{font-size:11px;padding:6px 8px;white-space:nowrap;}
+.rec-agenda-row-actions .rec-cand-interview-status{font-size:10px;white-space:normal;text-align:center;}
+.rec-agenda-message{font-size:13px;color:var(--slate-600);line-height:1.5;margin:8px 0 0;}
+.rec-agenda-message:empty{display:none;}
+.rec-agenda-message button{margin-left:6px;}
+.rec-agenda-empty{margin:0;padding:14px 10px;border-radius:10px;background:var(--slate-50);color:var(--slate-600);font-size:13px;}
+.rec-agenda-more{margin-top:10px;}
+.rec-agenda-jump{display:none;}
+.rec-iv-agenda-context{margin:0 0 10px;color:var(--slate-600);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+@media(max-width:1060px){
+  .rec-topbar-cluster .rec-module-nav--inline{flex-wrap:wrap;}
+}
+@media(max-width:900px){
+  .rec-agenda-layout{grid-template-columns:minmax(0,1fr);}
+  .rec-agenda-jump{display:inline-flex;flex:none;white-space:nowrap;}
+}
+@media(max-width:700px){
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-dash-topbar{height:auto;min-height:0;position:sticky;padding:10px 12px;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-topbar-cluster{display:grid;gap:8px;width:100%;min-width:0;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-topbar-cluster .topbar-title{padding-right:78px;min-height:30px;display:flex;align-items:center;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-dash-topbar .topbar-right{position:absolute;top:7px;right:12px;gap:6px;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-module-nav--inline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-module-nav--inline .rec-module-tab{padding:7px 2px;font-size:11px;white-space:nowrap;}
+}
+@media(max-width:580px){
+  #view-dash-recruitment #rec-pane-agenda{padding-top:12px;}
+  .rec-agenda-panel{padding:9px;}
+  .rec-agenda-day{min-height:42px;gap:1px;padding:2px;flex-direction:column;}
+  .rec-agenda-week,.rec-agenda-grid{gap:3px;}
+  .rec-agenda-day-count{padding:0 4px;font-size:9px;}
+  .rec-agenda-row{grid-template-columns:minmax(0,1fr);gap:3px;}
+  .rec-agenda-row-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+  .rec-agenda-slot{min-width:52px;max-width:58px;}
+}
+@media(prefers-reduced-motion:reduce){.rec-agenda-row{transition:none;}}
+
 .rec-module-nav--inline{border:none;background:transparent;padding:0;margin:0;gap:0;width:auto;max-width:none;}
 .rec-module-nav--inline .rec-module-tab{padding:6px 12px;font-size:13px;border-radius:0;background:transparent;box-shadow:none;}
 .rec-module-nav--inline .rec-module-tab--active{background:transparent;box-shadow:none;color:var(--purple-dark);}
@@ -4474,6 +4550,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <nav class="rec-module-nav rec-module-nav--inline" aria-label="Sección de reclutamiento">
           <button type="button" class="rec-module-tab rec-module-tab--active" id="rec-tab-vacancies" onclick="recSwitchModuleTab('vacancies')">Vacantes</button>
           <button type="button" class="rec-module-tab" id="rec-tab-candidates" onclick="recSwitchModuleTab('candidates')">Candidatos</button>
+          <button type="button" class="rec-module-tab" id="rec-tab-agenda" onclick="recSwitchModuleTab('agenda')">Agenda</button>
           <button type="button" class="rec-module-tab" id="rec-tab-metrics" onclick="recSwitchModuleTab('metrics')">Métricas</button>
         </nav>
       </div>
@@ -4560,6 +4637,39 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </div>
         </div>
       </div>
+      <section id="rec-pane-agenda" class="rec-agenda tc-workforce-scroll hidden" aria-labelledby="rec-agenda-title">
+        <header class="rec-agenda-head">
+          <div><h1 id="rec-agenda-title">Agenda de entrevistas</h1></div>
+          <button type="button" class="rec-stages-ghost-btn rec-agenda-jump" onclick="document.getElementById('rec-agenda-pending-title').focus()">Sin cita ↓</button>
+        </header>
+        <div class="rec-agenda-layout">
+          <div class="rec-agenda-main">
+            <section class="rec-agenda-panel" aria-label="Calendario de entrevistas">
+              <div class="rec-agenda-month">
+                <h2 id="rec-agenda-month" aria-live="polite">Calendario</h2>
+                <div class="rec-agenda-nav">
+                  <button type="button" class="rec-agenda-today" onclick="recAgendaGoToday()">Hoy</button>
+                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes anterior" onclick="recAgendaMoveMonth(-1)">‹</button>
+                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes siguiente" onclick="recAgendaMoveMonth(1)">›</button>
+                </div>
+              </div>
+              <div class="rec-agenda-week" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
+              <div class="rec-agenda-grid" id="rec-agenda-days" role="group" aria-label="Días del mes" onkeydown="recAgendaDayKey(event)"></div>
+              <p class="rec-agenda-message" id="rec-agenda-calendar-status" aria-live="polite"></p>
+            </section>
+            <section class="rec-agenda-panel" aria-labelledby="rec-agenda-day-title">
+              <div class="rec-agenda-section-head"><h2 id="rec-agenda-day-title" tabindex="-1">Citas del día</h2><span id="rec-agenda-day-total" class="rec-agenda-count"></span></div>
+              <div class="rec-agenda-list" id="rec-agenda-day-list"></div>
+            </section>
+          </div>
+          <aside class="rec-agenda-panel rec-agenda-pending" aria-labelledby="rec-agenda-pending-title">
+            <div class="rec-agenda-section-head"><div><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2><p>Postulaciones activas, primero las más antiguas.</p></div></div>
+            <div class="rec-agenda-list" id="rec-agenda-pending-list"></div>
+            <p id="rec-agenda-pending-status" class="rec-agenda-message" aria-live="polite"></p>
+            <button type="button" class="rec-stages-ghost-btn rec-agenda-more hidden" id="rec-agenda-more" onclick="recAgendaLoadPending(true)">Cargar más postulaciones</button>
+          </aside>
+        </div>
+      </section>
       <div id="rec-pane-metrics" class="hidden rec-metrics-page">
         <div id="rec-metrics-host">
           <p class="rec-metrics-loading">Cargando métricas…</p>
@@ -6465,6 +6575,7 @@ function showView(name) {
     window.__REC_STATE.kanbanDragging=false;
     recKanbanAutoScrollStop();
   }
+  if(name!=='dash-recruitment'&&window.__REC_STATE?.moduleTab==='agenda') recAgendaAbort();
   if(name!=='evaluacion') mind24ResetUiBlockers();
   mind24PersistLastView(name);
   const t=mind24ViewEl(name);
@@ -13729,19 +13840,27 @@ function recSwitchModuleTab(tab){
   }
   if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const st=recEnsureState();
-  st.moduleTab=tab==='candidates'?'candidates':tab==='metrics'?'metrics':'vacancies';
+  if(st.moduleTab==='agenda'&&tab!=='agenda') recAgendaAbort();
+  st.moduleTab=['candidates','metrics','agenda'].includes(tab)?tab:'vacancies';
   const vacPane=document.getElementById('rec-pane-vacancies');
   const candPane=document.getElementById('rec-pane-candidates');
   const metricsPane=document.getElementById('rec-pane-metrics');
+  const agendaPane=document.getElementById('rec-pane-agenda');
   const tabVac=document.getElementById('rec-tab-vacancies');
   const tabCand=document.getElementById('rec-tab-candidates');
   const tabMet=document.getElementById('rec-tab-metrics');
+  const tabAgenda=document.getElementById('rec-tab-agenda');
   if(vacPane) vacPane.classList.toggle('hidden',st.moduleTab!=='vacancies');
   if(candPane) candPane.classList.toggle('hidden',st.moduleTab!=='candidates');
   if(metricsPane) metricsPane.classList.toggle('hidden',st.moduleTab!=='metrics');
+  if(agendaPane) agendaPane.classList.toggle('hidden',st.moduleTab!=='agenda');
   if(tabVac) tabVac.classList.toggle('rec-module-tab--active',st.moduleTab==='vacancies');
   if(tabCand) tabCand.classList.toggle('rec-module-tab--active',st.moduleTab==='candidates');
   if(tabMet) tabMet.classList.toggle('rec-module-tab--active',st.moduleTab==='metrics');
+  if(tabAgenda) tabAgenda.classList.toggle('rec-module-tab--active',st.moduleTab==='agenda');
+  [tabVac,tabCand,tabMet,tabAgenda].forEach(function(btn){
+    if(btn) btn.setAttribute('aria-current',btn.classList.contains('rec-module-tab--active')?'page':'false');
+  });
   const vacTools=document.getElementById('rec-topbar-vac-tools');
   const candTools=document.getElementById('rec-topbar-cand-tools');
   const metTools=document.getElementById('rec-topbar-metrics-tools');
@@ -13750,11 +13869,278 @@ function recSwitchModuleTab(tab){
   if(metTools) metTools.classList.toggle('hidden',st.moduleTab!=='metrics');
   if(st.moduleTab==='candidates'){
     recCandBindFilters();
-    if(!st.candidates.length&&!st.candidatesLoading) recCandLoadList(false);
-    else recCandRenderList();
+    if(st.agendaCandidatesDirty||(!st.candidates.length&&!st.candidatesLoading)){
+      st.agendaCandidatesDirty=false;
+      recCandLoadList(false);
+    }else recCandRenderList();
   }else if(st.moduleTab==='metrics'){
     recMetricsLoad();
+  }else if(st.moduleTab==='agenda'){
+    recAgendaRefresh();
+  }else if(st.agendaVacanciesDirty){
+    st.agendaVacanciesDirty=false;
+    recLoadVacancies(st.selectedId||null);
   }
+}
+function recAgendaState(){
+  const st=recEnsureState();
+  if(!st.agenda) st.agenda={
+    month:'', selected:'', today:'', timeZone:'America/Mexico_City',
+    entries:[], pending:[], nextCursor:null, monthRequest:null, pendingRequest:null,
+    calendarReady:false, pendingReady:false
+  };
+  return st.agenda;
+}
+function recAgendaMarkRecruitmentDirty(){
+  const st=recEnsureState();
+  st.agendaCandidatesDirty=true;
+  st.agendaVacanciesDirty=true;
+}
+function recAgendaAbort(){
+  const a=recAgendaState();
+  a.monthRequest?.abort();
+  a.pendingRequest?.abort();
+}
+function recAgendaDateLabel(date,options){
+  const label=new Intl.DateTimeFormat('es-MX',Object.assign({timeZone:'UTC'},options))
+    .format(new Date(date+'T12:00:00Z'));
+  return label.charAt(0).toUpperCase()+label.slice(1);
+}
+function recAgendaSetStatus(id,message,retry){
+  const el=document.getElementById(id);
+  el.textContent=message;
+  if(retry){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='rec-stages-ghost-btn';
+    button.textContent='Reintentar';
+    button.onclick=retry;
+    el.append(' ',button);
+  }
+}
+function recAgendaPaintCalendar(){
+  const a=recAgendaState();
+  if(!a.month) return;
+  const grid=document.getElementById('rec-agenda-days');
+  const focused=grid.contains(document.activeElement)?document.activeElement.dataset.date:null;
+  const first=a.month+'-01';
+  document.getElementById('rec-agenda-month').textContent=recAgendaDateLabel(first,{month:'long',year:'numeric'});
+  const [year,month]=a.month.split('-').map(Number);
+  const offset=(new Date(first+'T12:00:00Z').getUTCDay()+6)%7;
+  const count=new Date(Date.UTC(year,month,0)).getUTCDate();
+  const byDate=new Map();
+  for(const row of a.entries) byDate.set(row.date,(byDate.get(row.date)||0)+1);
+  let html='<span aria-hidden="true"></span>'.repeat(offset);
+  for(let n=1;n<=count;n++){
+    const date=a.month+'-'+String(n).padStart(2,'0');
+    const total=byDate.get(date)||0;
+    const label=recAgendaDateLabel(date,{weekday:'long',day:'numeric',month:'long'})+(total?', '+total+(total===1?' cita':' citas'):'');
+    const active=date===a.selected;
+    html+='<button type="button" class="rec-agenda-day" data-date="'+date+'" aria-label="'+tcEsc(label)+'" aria-pressed="'+active+'"'+
+      (date===a.today?' aria-current="date"':'')+(active?'':' tabindex="-1"')+' onclick="recAgendaSelectDay(this.dataset.date,event.detail>0)">'+n+
+      (total?'<span class="rec-agenda-day-count" aria-hidden="true">'+total+'</span>':'')+'</button>';
+  }
+  grid.innerHTML=html;
+  if(focused){
+    const btn=Array.from(grid.querySelectorAll('[data-date]')).find(function(el){return el.dataset.date===focused;});
+    (btn||grid.querySelector('[aria-pressed="true"]'))?.focus({preventScroll:true});
+  }
+}
+function recAgendaSelectDay(date,reveal){
+  const a=recAgendaState();
+  a.selected=date;
+  document.querySelectorAll('#rec-agenda-days [data-date]').forEach(function(btn){
+    const chosen=btn.dataset.date===date;
+    btn.setAttribute('aria-pressed',String(chosen));
+    btn.tabIndex=chosen?0:-1;
+  });
+  recAgendaPaintDay();
+  if(reveal&&window.matchMedia('(max-width:900px)').matches){
+    document.getElementById('rec-agenda-day-title').closest('section').scrollIntoView({block:'nearest'});
+  }
+}
+function recAgendaDayKey(e){
+  const offset={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[e.key];
+  if(!offset||!e.target.dataset.date) return;
+  e.preventDefault();
+  const date=new Date(e.target.dataset.date+'T12:00:00Z');
+  date.setUTCDate(date.getUTCDate()+offset);
+  const key=date.toISOString().slice(0,10);
+  if(!key.startsWith(recAgendaState().month)) return;
+  recAgendaSelectDay(key);
+  document.querySelector('#rec-agenda-days [data-date="'+key+'"]')?.focus();
+}
+function recAgendaRowKey(row){
+  return row.interview?row.applicationId+':'+(row.interview.id||'legacy'):row.applicationId;
+}
+function recAgendaRowHtml(row,pending){
+  const iv=row.interview;
+  const when=iv?recCandFormatInterviewScheduledAt(iv.scheduledAt,iv.scheduledTimeSpecified):'';
+  const time=iv?(when.split(' · ')[1]||'Sin hora'):'';
+  const reference=[row.vacancyTitle,row.clientName].filter(Boolean).join(' · ');
+  const registered=pending?new Intl.DateTimeFormat('es-MX',{
+    timeZone:recAgendaState().timeZone,day:'numeric',month:'short',year:'numeric'
+  }).format(new Date(row.appliedAt)):'';
+  const meta=pending?[row.parked?'Cartera de inasistencia':row.stageName,'Registro '+registered].filter(Boolean).join(' · '):recCandInterviewTitle(iv);
+  const label=pending?(row.parked?'Ver ficha de ':'Agendar entrevista para '):'Ver entrevista de ';
+  return '<article class="rec-agenda-row" data-entry="'+tcEsc(recAgendaRowKey(row))+'">'+
+    '<button type="button" class="rec-agenda-row-main" aria-label="'+tcEsc(label+row.candidateName)+'" onclick="recAgendaOpenRow(this)">'+
+    (time?'<span class="rec-agenda-slot">'+tcEsc(time)+'</span>':'')+
+    '<span class="rec-agenda-row-copy"><strong class="rec-agenda-row-title">'+tcEsc(row.candidateName)+'</strong>'+
+    '<span class="rec-agenda-row-sub">'+tcEsc(reference)+'</span><span class="rec-agenda-row-meta">'+tcEsc(meta)+'</span></span></button>'+
+    '<div class="rec-agenda-row-actions">'+
+    (iv?'<span class="rec-cand-interview-status rec-cand-interview-status--'+recCandInterviewStatusClass(iv.eventType)+'">'+tcEsc(recCandInterviewStatusLabel(iv.eventType))+'</span>':'')+
+    (pending&&!row.parked?'<button type="button" class="rec-stages-ghost-btn" onclick="recAgendaOpenRow(this)">Agendar</button>':'')+
+    '<button type="button" class="rec-stages-ghost-btn" onclick="recAgendaOpenFile(this)">Ver ficha</button></div></article>';
+}
+function recAgendaPaintList(id,html,fallbackId){
+  const list=document.getElementById(id);
+  const active=document.activeElement;
+  const previous=list.contains(active)?active.closest('[data-entry]'):null;
+  const index=previous?Array.from(previous.querySelectorAll('button')).indexOf(active):-1;
+  if(list.innerHTML===html) return;
+  list.innerHTML=html;
+  if(previous){
+    const replacement=Array.from(list.children).find(function(row){return row.dataset.entry===previous.dataset.entry;});
+    const focus=replacement?.querySelectorAll('button')[index]||document.getElementById(fallbackId);
+    focus?.focus({preventScroll:true});
+  }
+}
+function recAgendaPaintDay(){
+  const a=recAgendaState();
+  if(a.selected){
+    document.getElementById('rec-agenda-day-title').textContent=recAgendaDateLabel(a.selected,{weekday:'long',day:'numeric',month:'long'});
+  }
+  const selected=a.entries.filter(function(row){return row.date===a.selected;});
+  document.getElementById('rec-agenda-day-total').textContent=selected.length+
+    (selected.length===1?' cita':' citas');
+  const html=selected.map(function(row){return recAgendaRowHtml(row,false);}).join('')||
+    (a.calendarReady?'<p class="rec-agenda-empty">No hay entrevistas para este día.</p>':'');
+  recAgendaPaintList('rec-agenda-day-list',html,'rec-agenda-day-title');
+  if(!a.calendarReady) document.getElementById('rec-agenda-day-total').textContent='';
+}
+function recAgendaPaintPending(){
+  const a=recAgendaState();
+  const html=a.pending.map(function(row){return recAgendaRowHtml(row,true);}).join('')||
+    (a.pendingReady?'<p class="rec-agenda-empty">No hay postulaciones activas sin cita.</p>':'');
+  recAgendaPaintList('rec-agenda-pending-list',html,'rec-agenda-pending-title');
+  document.getElementById('rec-agenda-more').classList.toggle('hidden',!a.nextCursor);
+}
+async function recAgendaLoadMonth(month,date){
+  const a=recAgendaState();
+  a.monthRequest?.abort();
+  const controller=new AbortController();
+  a.monthRequest=controller;
+  if(month&&month!==a.month){
+    a.month=month;
+    a.selected=date||month+'-01';
+    a.entries=[];
+    a.calendarReady=false;
+    recAgendaPaintCalendar();
+    recAgendaPaintDay();
+  }else if(date){
+    recAgendaSelectDay(date);
+  }
+  const status='rec-agenda-calendar-status';
+  recAgendaSetStatus(status,'Cargando calendario…');
+  try{
+    const query=month?'?month='+encodeURIComponent(month):'';
+    const data=await apiJson('/api/org/recruitment/interview-agenda'+query,{signal:controller.signal});
+    if(controller.signal.aborted) return false;
+    a.today=data.today;
+    a.timeZone=data.timeZone;
+    recEnsureState().recruitmentOrgTimeZone=data.timeZone;
+    a.month=data.month;
+    a.selected=(a.selected.startsWith(a.month)?a.selected:'')||
+      (a.today.startsWith(a.month)?a.today:a.month+'-01');
+    a.entries=data.entries;
+    a.calendarReady=true;
+    recAgendaSetStatus(status,'');
+    recAgendaPaintCalendar();
+    recAgendaPaintDay();
+    recAgendaPaintPending();
+    return true;
+  }catch(e){
+    if(controller.signal.aborted||e?.name==='AbortError') return false;
+    recAgendaSetStatus(status,e.message||'No se pudo cargar el calendario.',function(){recAgendaLoadMonth(month,date);});
+    return false;
+  }finally{
+    if(a.monthRequest===controller) a.monthRequest=null;
+  }
+}
+async function recAgendaLoadPending(append){
+  const a=recAgendaState();
+  if(append&&(a.pendingRequest||!a.nextCursor)) return;
+  a.pendingRequest?.abort();
+  const controller=new AbortController();
+  a.pendingRequest=controller;
+  const button=document.getElementById('rec-agenda-more');
+  button.disabled=true;
+  const status='rec-agenda-pending-status';
+  recAgendaSetStatus(status,'Cargando postulaciones…');
+  try{
+    const query=append?'?cursor='+encodeURIComponent(a.nextCursor):'';
+    const data=await apiJson('/api/org/recruitment/interview-agenda/pending'+query,{signal:controller.signal});
+    if(controller.signal.aborted) return;
+    const seen=new Set(append?a.pending.map(recAgendaRowKey):[]);
+    a.pending=(append?a.pending:[]).concat(data.entries.filter(function(row){return !seen.has(recAgendaRowKey(row));}));
+    a.nextCursor=data.nextCursor;
+    a.pendingReady=true;
+    recAgendaSetStatus(status,'');
+    recAgendaPaintPending();
+    if(append&&!a.nextCursor&&document.activeElement===button) document.getElementById('rec-agenda-pending-title').focus({preventScroll:true});
+  }catch(e){
+    if(controller.signal.aborted||e?.name==='AbortError') return;
+    recAgendaSetStatus(status,e.message||'No se pudieron cargar las postulaciones.',function(){recAgendaLoadPending(append);});
+  }finally{
+    if(a.pendingRequest===controller){
+      a.pendingRequest=null;
+      button.disabled=false;
+    }
+  }
+}
+async function recAgendaRefresh(date){
+  const a=recAgendaState();
+  await Promise.all([recAgendaLoadMonth(date?date.slice(0,7):a.month,date),recAgendaLoadPending(false)]);
+}
+function recAgendaMoveMonth(delta){
+  const a=recAgendaState();
+  if(!a.month) return;
+  const [year,month]=a.month.split('-').map(Number);
+  const next=new Date(Date.UTC(year,month-1+delta,1)).toISOString().slice(0,7);
+  if(!/^[1-9]\d{3}-\d{2}$/.test(next)) return;
+  const date=a.today.startsWith(next)?a.today:next+'-01';
+  void recAgendaLoadMonth(next,date);
+}
+function recAgendaGoToday(){
+  const a=recAgendaState();
+  if(!a.today){
+    void recAgendaRefresh();
+  }else if(a.today.startsWith(a.month)){
+    recAgendaSelectDay(a.today);
+  }else{
+    void recAgendaLoadMonth(a.today.slice(0,7),a.today);
+  }
+}
+function recAgendaFindRow(button){
+  const a=recAgendaState();
+  const key=button.closest('[data-entry]')?.dataset.entry;
+  return a.entries.concat(a.pending).find(function(row){return recAgendaRowKey(row)===key;});
+}
+function recAgendaOpenFile(button){
+  const row=recAgendaFindRow(button);
+  if(!row) return;
+  const st=recEnsureState();
+  st.agendaFileReturn=button;
+  st.notifApplicationFocusId=row.applicationId;
+  void recCandOpenDetail(row.candidateId,{notifyMissing:true});
+}
+function recAgendaOpenRow(button){
+  const row=recAgendaFindRow(button);
+  if(!row) return;
+  if(!row.interview&&row.parked){ recAgendaOpenFile(button); return; }
+  const eventId=row.interview?.id||(row.interview?.legacy?'legacy':null);
+  recCandOpenInterviewDetail(button,row.applicationId,eventId,{agendaEntry:row});
 }
 function recMetricsShiftMonth(delta){
   const st=recEnsureState();
@@ -14502,7 +14888,7 @@ function recCandPickPrimaryApplication(st,activeApps){
     const byApp=activeApps.find(function(a){ return recCandGetAppId(a)===st.notifApplicationFocusId; });
     if(byApp) return byApp;
   }
-  if(st&&st.selectedId&&st.moduleTab!=='candidates'){
+  if(st&&st.selectedId&&st.moduleTab!=='candidates'&&st.moduleTab!=='agenda'){
     const ctx=activeApps.find(function(a){ return a.vacancy&&a.vacancy.id===st.selectedId; });
     if(ctx) return ctx;
   }
@@ -14815,7 +15201,13 @@ function recCandToggleInterviewForm(appId){
   recCandOpenInterviewDetail(add, appId, null);
 }
 function recCandFindInterview(appId, eventId){
-  const c=recEnsureState().detailCandidate;
+  const st=recEnsureState();
+  const entry=st.interviewAgendaEntry;
+  if(entry?.applicationId===appId){
+    const row=entry.interview;
+    return (row?.id||(row?.legacy?'legacy':null))===eventId?row:null;
+  }
+  const c=st.detailCandidate;
   const apps=(c&&c.applications)||[];
   const app=apps.find(function(row){ return recCandGetAppId(row)===appId; });
   if(!app) return null;
@@ -14855,6 +15247,7 @@ function recCandCloseInterviewDetail(){
   st.interviewDetailAppId=null;
   st.interviewDetailEventId=null;
   st.interviewDialogMode=null;
+  st.interviewAgendaEntry=null;
   if(back&&document.contains(back)&&typeof back.focus==='function') back.focus();
   const overlay=document.getElementById('rec-iv-overlay');
   if(overlay){
@@ -14881,8 +15274,8 @@ function recCandInterviewMode(mode){
   recCandPaintInterviewDialog();
   recCandFocusInterviewDialog();
 }
-function recCandInterviewFormFields(row, focusDate){
-  const parts=row?recCandInterviewLocalPartsFromIso(row.scheduledAt,row.scheduledTimeSpecified!==false):{date:'',time:''};
+function recCandInterviewFormFields(row, focusDate, defaultDate){
+  const parts=row?recCandInterviewLocalPartsFromIso(row.scheduledAt,row.scheduledTimeSpecified!==false):{date:defaultDate||'',time:''};
   const label=row&&row.label?String(row.label):'';
   const comment=row&&row.comment?String(row.comment):'';
   return '<label class="rec-iv-label" for="rec-iv-label">Nombre</label>'+
@@ -14907,10 +15300,14 @@ function recCandPaintInterviewDialog(){
   const title=mode==='schedule'?'Programar entrevista':(mode==='edit'?'Editar entrevista':(mode==='reschedule'?'Reprogramar entrevista':'Detalle de entrevista'));
   let body='<div class="rec-iv-head"><h2 class="rec-iv-title" id="rec-iv-title">'+tcEsc(title)+'</h2>'+
     '<button type="button" class="rec-iv-close" aria-label="Cerrar"'+(mode==='detail'?' data-iv-focus="1"':'')+' onclick="recCandCloseInterviewDetail()">×</button></div>';
+  const agendaEntry=st.interviewAgendaEntry;
+  if(agendaEntry){
+    body+='<p class="rec-iv-agenda-context">'+tcEsc([agendaEntry.candidateName,agendaEntry.vacancyTitle,agendaEntry.clientName].filter(Boolean).join(' · '))+'</p>';
+  }
   if(mode==='schedule'||mode==='edit'||mode==='reschedule'){
     const submit=mode==='schedule'?'recCandScheduleInterview(event,\''+tcEsc(appId)+'\')':'recCandSubmitInterviewEdit(event,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')';
     if(mode==='reschedule') body+='<p class="rec-iv-note">Vas a cambiar el horario. La cita actual se conserva como antecedente y se programa la nueva.</p>';
-    body+='<form id="rec-iv-form" onsubmit="return '+submit+'">'+recCandInterviewFormFields(mode==='schedule'?null:row, mode==='reschedule')+
+    body+='<form id="rec-iv-form" onsubmit="return '+submit+'">'+recCandInterviewFormFields(mode==='schedule'?null:row, mode==='reschedule'||(mode==='schedule'&&!!agendaEntry),agendaEntry?recAgendaState().selected:'')+
       '<p id="rec-iv-error" class="rec-iv-error" role="alert" tabindex="-1"></p>'+
       '<div class="rec-iv-form-actions">'+
       '<button type="button" class="rec-iv-btn" onclick="recCandCloseInterviewDetail()">Cancelar</button>'+
@@ -14961,8 +15358,9 @@ function recCandOpenInterviewDetail(btn, appId, eventId, opts){
   st.interviewDetailReturn=btn||null;
   st.interviewDetailAppId=appId;
   st.interviewDetailEventId=eventId||null;
+  st.interviewAgendaEntry=opts.agendaEntry||null;
   st.interviewDialogMode=opts.mode||(eventId?'detail':'schedule');
-  st.interviewDialogReadonly=!!(btn&&btn.closest&&btn.closest('[data-readonly="1"]'));
+  st.interviewDialogReadonly=!!(opts.agendaEntry?.readonly||(btn&&btn.closest&&btn.closest('[data-readonly="1"]')));
   st.interviewPendingAction=opts.pendingAction||null;
   if(eventId&&!recCandFindInterview(appId,eventId)) return;
   if(st.interviewDialogReadonly&&(st.interviewDialogMode==='reschedule'||st.interviewDialogMode==='confirm')){
@@ -15048,8 +15446,13 @@ async function recCandScheduleInterview(ev, appId){
       })
     });
     if(req.epoch!==recCandInterviewEpoch) return false;
+    const st=recEnsureState();
+    const fromAgenda=!!st.interviewAgendaEntry;
+    if(fromAgenda||st.agendaFileReturn) recAgendaMarkRecruitmentDirty();
+    const date=form.date.value;
     recCandCloseInterviewDetail();
-    await recCandRefreshInterviewDetail(appId);
+    if(fromAgenda) await recAgendaRefresh(date);
+    else await recCandRefreshInterviewDetail(appId);
   }catch(e){
     if(e&&e.name==='AbortError') return false;
     if(req.epoch!==recCandInterviewEpoch) return false;
@@ -15067,8 +15470,12 @@ async function recCandInterviewAction(appId, eventId, action, extra){
       body:JSON.stringify(Object.assign({ action:action }, extra||{}))
     });
     if(req.epoch!==recCandInterviewEpoch) return;
+    const st=recEnsureState();
+    const fromAgenda=!!st.interviewAgendaEntry;
+    if(fromAgenda||st.agendaFileReturn) recAgendaMarkRecruitmentDirty();
     recCandCloseInterviewDetail();
-    await recCandRefreshInterviewDetail(appId);
+    if(fromAgenda) await recAgendaRefresh(extra?.interviewDate);
+    else await recCandRefreshInterviewDetail(appId);
   }catch(e){
     if(e&&e.name==='AbortError') return;
     if(req.epoch!==recCandInterviewEpoch) return;
@@ -16938,11 +17345,16 @@ function recCandNavIsObsComposerDirty(composerOpen,textareaValue){
 function recCandBuildNavSnapshot(openId){
   const st=recEnsureState();
   if(st.moduleTab==='candidates') return recCandNavBuildPortfolioSnapshot(st.candidates,openId);
+  if(st.moduleTab==='agenda') return openId?[openId]:[];
   return recCandNavBuildKanbanSnapshot(st.kanbanStages,st.kanbanApplications,openId);
 }
 function recCandNavSaveScroll(){
   const st=recEnsureState();
   const candPane=document.getElementById('rec-pane-candidates');
+  if(st.moduleTab==='agenda'){
+    st.candNavScrollTarget=null;
+    return;
+  }
   if(st.moduleTab==='candidates'&&candPane){
     st.candNavScrollTarget='candidates';
     st.candNavScrollTop=candPane.scrollTop;
@@ -16995,9 +17407,17 @@ function recCandTryCloseDetailModal(){
 }
 function recCandOnDetailModalClosed(){
   recCandDetailAbortPending();
-  recCandNavRestoreScroll();
-  void recCandNavRefreshPipelineIfDirty();
   const st=recEnsureState();
+  if(st.agendaFileReturn){
+    if(st.agendaFileReturn.isConnected) st.agendaFileReturn.focus({preventScroll:true});
+    st.agendaFileReturn=null;
+    st.notifApplicationFocusId=null;
+    if(st.candNavPipelineDirty) recAgendaMarkRecruitmentDirty();
+    if(st.moduleTab==='agenda') void recAgendaRefresh();
+  }else{
+    recCandNavRestoreScroll();
+  }
+  void recCandNavRefreshPipelineIfDirty();
   st.candNavIds=null;
   st.detailNavLoading=false;
   ['rec-cand-nav-prev','rec-cand-nav-next','rec-cand-nav-pos'].forEach(function(id){
@@ -20468,7 +20888,7 @@ function recOnShow(){
   const st=recEnsureState();
   st.filter=st.filter||'ACTIVE';
   recSwitchModuleTab(st.moduleTab||'vacancies');
-  if(st.moduleTab!=='candidates') recLoadVacancies(st.selectedId||null);
+  if(st.moduleTab!=='candidates'&&st.moduleTab!=='agenda') recLoadVacancies(st.selectedId||null);
 }
 function tcOnShow(){
   tcCloseTeamPulse(false);

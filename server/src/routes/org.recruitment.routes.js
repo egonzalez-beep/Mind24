@@ -102,6 +102,8 @@ import {
   removeRecruitmentCandidateTagAssignment,
 } from '../services/recruitmentCandidateTag.service.js';
 
+import { getRecruitmentInterviewAgenda, listRecruitmentInterviewAgendaPending } from '../services/recruitmentInterviewAgenda.service.js';
+
 const router = Router();
 
 const dateOnlySchema = z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.null()]);
@@ -1012,6 +1014,26 @@ router.get('/vacancies/:vacancyId/applications', async (req, res, next) => {
     const u = await assertEmpresaAdmin(req.session.userId);
     const applications = await listRecruitmentApplicationsForVacancy(u.organizationId, req.params.vacancyId);
     res.json({ applications });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/interview-agenda', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { month } = z.object({ month: z.string().max(7).optional() }).parse(req.query);
+    res.json(await getRecruitmentInterviewAgenda({ organizationId: u.organizationId, month }));
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/interview-agenda/pending', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    const { cursor } = z.object({ cursor: z.string().max(160).optional() }).parse(req.query);
+    res.json(await listRecruitmentInterviewAgendaPending({ organizationId: u.organizationId, cursor }));
   } catch (e) {
     next(e);
   }
