@@ -2045,9 +2045,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-task-card-title{padding-left:12px;}
 .tc-kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;transition:background 160ms ease,border-color 160ms ease;}
 .tc-kanban-col-body.tc-kanban-col--over{background:rgba(237,233,254,.45);outline:2px dashed rgba(124,58,237,.35);outline-offset:-2px;border-radius:0 0 10px 10px;}
-.tc-kanban-col-body::-webkit-scrollbar{width:5px;}
-.tc-kanban-col-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px;}
-.tc-kanban-col-body:hover::-webkit-scrollbar-thumb{background:rgba(124,58,237,.35);}
 .tc-kanban-empty{font-size:12px;color:var(--slate-400);text-align:center;padding:16px 8px;line-height:1.45;}
 .tc-kanban-more{margin-top:4px;font-size:11px;font-weight:600;color:var(--purple-dark);background:transparent;border:none;cursor:pointer;padding:4px 0;text-align:center;width:100%;font-family:inherit;}
 .tc-kanban-more:hover{text-decoration:underline;}
@@ -2095,6 +2092,25 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-directory-toggle svg{width:14px;height:14px;transform:rotate(90deg);}
 .tc-directory-toggle[aria-expanded=true] svg{transform:rotate(-90deg);}
 .tc-directory-body{overflow-x:auto;}
+.tc-emp-table .tc-directory-compliance{text-align:center;white-space:nowrap;}
+.tc-directory-compliance small{display:block;margin-top:2px;font-size:10px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--slate-500);}
+.tc-directory-compliance-chip{display:inline-flex;justify-content:center;min-width:54px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums;}
+.tc-directory-compliance-chip--good{background:#e8f7ee;color:#166534;}
+.tc-directory-compliance-chip--warn{background:#fff3d7;color:#92400e;}
+.tc-directory-compliance-chip--bad{background:#feecef;color:#b91c1c;}
+.tc-directory-compliance-empty{color:var(--slate-500);}
+.tc-kanban-board.tc-workforce-scroll{overscroll-behavior-y:auto;}
+@media(min-width:901px){
+  #view-dash-timeclock .page-content:has(.tc-directory-body.hidden):has(> #tc-jornada-card:not(.hidden) :is(.tc-kanban-board,.tc-goals-kanban)){
+    display:flex;flex-direction:column;min-height:0;
+    & > .tc-directory-card{flex-shrink:0;}
+    & > #tc-jornada-card{display:flex;flex-direction:column;flex:1 0 330px;}
+    & #tc-jornada-body{flex:1;min-height:0;grid-template-rows:minmax(0,1fr);}
+    & .tc-jornada-right-col{min-height:0;}
+    & :is(.tc-jornada-aside,.tc-kanban-wrap,.tc-goals-board-wrap){flex:1;min-height:0;}
+    & :is(.tc-kanban-board,.tc-goals-kanban){flex:1;height:auto;max-height:none;}
+  }
+}
 .tc-directory-card:has(.tc-directory-body.hidden) .tc-directory-head{padding-block:12px;}
 #tc-emp-tbody [data-tc-view-employee][aria-pressed=true]{background:var(--purple-mid);border-color:#a78bfa;}
 #tc-jornada-card{scroll-margin-top:90px;}
@@ -4845,7 +4861,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
         <div class="card-body tc-directory-body tc-workforce-scroll" id="tc-directory-body">
           <table class="tc-emp-table">
-            <thead><tr><th>Colaborador</th><th>Puesto</th><th class="tc-emp-th-num" aria-label="Pendientes"><span class="tc-dir-th-ico" title="Pendientes" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h6"/><path d="M9 3h6v4H9z"/><rect x="5" y="5" width="14" height="16" rx="2"/></svg></span></th><th class="tc-emp-th-num" aria-label="En progreso"><span class="tc-dir-th-ico" title="En progreso" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg></span></th><th class="tc-emp-th-num" aria-label="Completadas"><span class="tc-dir-th-ico" title="Completadas" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span></th><th class="tc-emp-th-status">Jornada</th><th class="tc-emp-th-actions">Acciones</th></tr></thead>
+            <thead><tr><th>Colaborador</th><th class="tc-directory-compliance" scope="col" aria-label="Cumplimiento promedio del mes actual">Cumplimiento<small>Promedio del mes</small></th><th>Puesto</th><th class="tc-emp-th-num" aria-label="Pendientes"><span class="tc-dir-th-ico" title="Pendientes" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h6"/><path d="M9 3h6v4H9z"/><rect x="5" y="5" width="14" height="16" rx="2"/></svg></span></th><th class="tc-emp-th-num" aria-label="En progreso"><span class="tc-dir-th-ico" title="En progreso" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg></span></th><th class="tc-emp-th-num" aria-label="Completadas"><span class="tc-dir-th-ico" title="Completadas" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span></th><th class="tc-emp-th-status">Jornada</th><th class="tc-emp-th-actions">Acciones</th></tr></thead>
             <tbody id="tc-emp-tbody"></tbody>
           </table>
         </div>
@@ -20792,19 +20808,26 @@ async function tcCopySecretLink(){
     prompt('Copia el enlace:', tcSecretLinkTemp);
   }
 }
+function tcDirectoryGoalComplianceHtml(compliance){
+  if(compliance?.averageCompliance==null){
+    return '<span class="tc-directory-compliance-empty" aria-label="Sin evaluaciones de metas este mes">—</span>';
+  }
+  const avg=compliance.averageCompliance;
+  return '<span class="tc-directory-compliance-chip tc-directory-compliance-chip--'+tcMetricsComplianceTone(avg)+'">'+tcEsc(tcGoalFmtPct(avg))+'</span>';
+}
 async function tcLoadEmployees(){
   const err=document.getElementById('tc-list-err');
   const tbody=document.getElementById('tc-emp-tbody');
   const count=document.getElementById('tc-list-count');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
   try{
-    const j=await apiJson('/api/org/timeclock/employees');
+    const j=await apiJson('/api/org/timeclock/employees?includeGoalCompliance=1');
     const rows=j.employees||[];
     window.__TC_EMP_CACHE=rows;
     if(count) count.textContent=rows.length+' colaborador'+(rows.length===1?'':'es');
     if(!tbody) return;
     if(!rows.length){
-      tbody.innerHTML='<tr><td colspan="7" style="color:var(--slate-400);padding:18px 10px;">Aún no hay colaboradores. Usa «+ Agregar colaborador».</td></tr>';
+      tbody.innerHTML='<tr><td colspan="8" style="color:var(--slate-400);padding:18px 10px;">Aún no hay colaboradores. Usa «+ Agregar colaborador».</td></tr>';
       return;
     }
     tbody.innerHTML=rows.map(function(emp){
@@ -20818,6 +20841,7 @@ async function tcLoadEmployees(){
       const done=sum.completed!=null?sum.completed:0;
       return '<tr>'+
         '<td>'+tcEmpAvatarCellHtml(emp)+'</td>'+
+        '<td class="tc-directory-compliance">'+tcDirectoryGoalComplianceHtml(emp.goalCompliance)+'</td>'+
         '<td>'+tcEsc(emp.position||'—')+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('pending',pending)+'</td>'+
         '<td class="tc-emp-td-num">'+tcDirTaskChipHtml('progress',inProg)+'</td>'+
@@ -22135,7 +22159,7 @@ const TC_KANBAN_COMPLETED_CAP=8;
 function tcKanbanShellHtml(){
   return '<div class="tc-kanban-wrap">'+
     '<p class="tc-kanban-msg hidden" id="tc-kanban-msg" role="status"></p>'+
-    '<div class="tc-kanban-board" id="tc-kanban-board"></div></div>';
+    '<div class="tc-kanban-board tc-workforce-scroll" id="tc-kanban-board"></div></div>';
 }
 function tcJornadaOpToolbarHtml(){
   if(tcJornadaOpTab==='indicators') return '';
@@ -22226,7 +22250,7 @@ function tcKanbanRender(){
     const dot=TC_KANBAN_DOT_CLASS[status]||'';
     html+='<div class="tc-kanban-col" data-status="'+status+'">'+
       '<div class="tc-kanban-col-head"><span class="tc-kanban-col-label"><span class="tc-kanban-status-dot '+dot+'" aria-hidden="true"></span>'+tcEsc(TC_KANBAN_LABELS[status])+'</span><span class="tc-kanban-col-chip">'+total+'</span></div>'+
-      '<div class="tc-kanban-col-body" data-drop-status="'+status+'" ondragover="tcKanbanDragOver(event)" ondragleave="tcKanbanDragLeave(event)" ondrop="tcKanbanDrop(event,\''+status+'\')">'+
+      '<div class="tc-kanban-col-body tc-workforce-scroll" data-drop-status="'+status+'" ondragover="tcKanbanDragOver(event)" ondragleave="tcKanbanDragLeave(event)" ondrop="tcKanbanDrop(event,\''+status+'\')">'+
       cards+moreBtn+'</div></div>';
   });
   board.innerHTML=html;
@@ -22634,13 +22658,28 @@ function tcMetricsSelectedGoalMeta(){
   if(!tcJornadaMetricsChartGoalId||tcJornadaMetricsChartGoalId==='general') return null;
   return goals.find(function(g){ return g.goalId===tcJornadaMetricsChartGoalId; })||null;
 }
+function tcMetricsTrendRangeLabel(range,view){
+  if(!range?.start||!range?.end) return '';
+  const [fromYear,fromMonth,fromDay]=range.start.split('-').map(Number);
+  const [toYear,toMonth,toDay]=range.end.split('-').map(Number);
+  const fromName=TC_MONTH_NAMES[fromMonth-1];
+  const toName=TC_MONTH_NAMES[toMonth-1];
+  if(view==='monthly'){
+    const first=fromYear===toYear?fromName:fromName+' '+fromYear;
+    return first+'–'+toName+' '+toYear;
+  }
+  const last=toDay+' de '+toName+' de '+toYear;
+  if(fromYear===toYear&&fromMonth===toMonth) return fromDay+' al '+last;
+  const first=fromDay+' de '+fromName+(fromYear===toYear?'':' de '+fromYear);
+  return first+' al '+last;
+}
 function tcMetricsTrendToolbarHtml(){
   const tz=tcJornadaTz||'America/Mexico_City';
   const view=tcJornadaMetricsTrendView;
   const wOn=view==='weekly'?' tc-metrics-trend-seg-btn--on':'';
   const mOn=view==='monthly'?' tc-metrics-trend-seg-btn--on':'';
   const range=tcJornadaMetricsTrendData?.view===view?tcJornadaMetricsTrendData.range:null;
-  const rangeLabel=(range&&(range.label||range.navLabel))||'';
+  const rangeLabel=tcMetricsTrendRangeLabel(range,view);
   let canNext=false;
   let prevAria='Periodo anterior';
   let nextAria='Periodo siguiente';
@@ -23226,6 +23265,7 @@ async function tcGoalDelete(goalId){
   try{
     await tcAdminArchiveGoal(goalId);
     tcJornadaMarkMetricsStale();
+    void tcLoadEmployees();
     if(wasChartGoal){
       tcJornadaMetricsChartGoalId='general';
       tcJornadaMetricsTrendAnchor=null;
@@ -23339,6 +23379,7 @@ async function tcGoalSubmitAssign(){
   try{
     await tcAdminCreateEmployeeGoal(tcJornadaEmpId, body);
     tcJornadaMarkMetricsStale();
+    void tcLoadEmployees();
     tcGoalCloseAssign();
     tcGoalShowAdminToast('Meta asignada.');
     if(tcJornadaOpTab==='goals') await tcGoalsLoad();

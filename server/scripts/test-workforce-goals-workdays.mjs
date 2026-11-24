@@ -84,3 +84,43 @@ try {
 }
 
 console.log('Metas por jornada: altas, calendario local, historial y recordatorios OK.');
+
+const { getWorkforceDirectoryGoalCompliance } = await import('../src/services/workforceGoalMetrics.service.js');
+const snapshotNow = new Date('2026-11-30T12:00:00Z');
+const reportTime = new Date('2026-11-20T15:00:00Z');
+const settled = { ...periods.find((p) => p.goalId === goal.id), binaryResult: 'MET', submittedAt: reportTime };
+const zeroGoal = { ...goal, id: 'zero', employeeId: 'employee-zero', startDate: new Date('2026-11-29') };
+const pendingGoal = { ...goal, id: 'pending', employeeId: 'employee-pending', startDate: new Date('2026-11-30') };
+const otherZoneGoal = {
+  ...goal, id: 'another-zone', employeeId: 'employee-nz',
+  employee: { timezone: 'Pacific/Auckland' }, startDate: new Date('2026-12-01'),
+};
+const goalsForDirectory = [goal, zeroGoal, pendingGoal, otherZoneGoal];
+let reads = 0;
+const insertsBefore = periods.length;
+db.workforceGoal.findMany = async ({ where }) => {
+  reads += 1;
+  assert.deepEqual(where, { organizationId: 'org-1', archivedAt: null });
+  return goalsForDirectory;
+};
+db.workforceGoalPeriod.groupBy = async ({ where, by }) => {
+  reads += 1;
+  assert.deepEqual(by, ['goalId']);
+  assert.deepEqual(where, { organizationId: 'org-1', goal: { organizationId: 'org-1', archivedAt: null } });
+  return [{ goalId: goal.id, _max: { periodStart: settled.periodStart } }];
+};
+db.workforceGoalPeriod.findMany = async ({ where }) => {
+  reads += 1;
+  assert.equal(where.organizationId, 'org-1');
+  assert.equal(where.periodStart.gte.toISOString(), '2026-11-01T06:00:00.000Z');
+  assert.equal(where.periodStart.lt.toISOString(), '2026-12-31T11:00:00.000Z');
+  return [settled];
+};
+const directory = await getWorkforceDirectoryGoalCompliance({ organizationId: 'org-1', now: snapshotNow });
+assert.equal(reads, 3);
+assert.equal(periods.length, insertsBefore);
+assert.deepEqual(directory.get(employee.id), { month: '2026-11', averageCompliance: 50 });
+assert.deepEqual(directory.get(zeroGoal.employeeId), { month: '2026-11', averageCompliance: 0 });
+assert.equal(directory.has(pendingGoal.employeeId), false);
+assert.equal(directory.has(otherZoneGoal.employeeId), false);
+console.log('Directorio: promedio con las reglas de Indicadores, descanso, mes civil, cero real y consultas por lote OK.');

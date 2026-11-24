@@ -193,7 +193,7 @@ check(/tcJornadaSetOpTab/.test(indexHtml) && /tc-jornada-tab-goals/.test(indexHt
 check(!/tcAdminFetchEmployeeGoalMetrics/.test(publicIndex) || /tcAdminFetchEmployeeGoalMetrics/.test(indexHtml), 'fetch métricas solo en bundle admin');
 check(/function tcMetricsShellHtml\(\)[\s\S]*?Resumen del mes[\s\S]*?tcMetricsMonthNavHtml\(\)/.test(indexHtml), 'navegación junto al resumen del mes');
 check(/Semana anterior/.test(indexHtml) && /Semana siguiente/.test(indexHtml), 'aria semana anterior/siguiente');
-check(/range\.navLabel/.test(indexHtml) && /tc-metrics-trend-range-label/.test(indexHtml), 'etiqueta semanal compacta navLabel');
+check(/tcMetricsTrendRangeLabel\(range,view\)/.test(indexHtml) && /tc-metrics-trend-range-label/.test(indexHtml), 'etiquetas civiles semanales y mensuales compactas');
 check(/tc-metrics-trend-range--monthly[\s\S]*?tc-metrics-trend-range-label[^\n]*tcEsc\(rangeLabel/.test(indexHtml), 'la gráfica mensual muestra su rango propio');
 check(/Cumplida ≥100 %/.test(indexHtml) && /Parcial 1–99\.9 %/.test(indexHtml) && /No cumplida \/ vencida/.test(indexHtml), 'leyenda compacta (3 estados)');
 check(

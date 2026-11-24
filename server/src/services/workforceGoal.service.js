@@ -144,16 +144,15 @@ function isGoalPeriodUniqueViolation(e) {
   return String(target || '').includes('goalId_periodStart');
 }
 
-async function materializeGoalPeriodAnchors(tx, goal, employee, anchorYmds) {
+function workforceGoalPeriodRows(goal, employee, anchorYmds) {
   if (anchorYmds.length > MAX_GOAL_PERIOD_BACKFILL) {
     throw goalBackfillLimitError();
   }
   const applicableAnchors = goal.periodicity === 'DAILY'
     ? anchorYmds.filter((anchorYmd) => dailyGoalAppliesOnWorkDate(employee, anchorYmd))
     : anchorYmds;
-  if (!applicableAnchors.length) return;
   const targetSnapshot = snapshotTargetForGoal(goal);
-  const rows = applicableAnchors.map((anchorYmd) => {
+  return applicableAnchors.map((anchorYmd) => {
     const { periodStart, periodEnd } = periodBoundsFromAnchor(
       anchorYmd,
       goal.periodicity,
@@ -168,6 +167,10 @@ async function materializeGoalPeriodAnchors(tx, goal, employee, anchorYmds) {
       targetSnapshot,
     };
   });
+}
+
+async function saveWorkforceGoalPeriodRows(tx, rows) {
+  if (!rows.length) return;
   try {
     await tx.workforceGoalPeriod.createMany({ data: rows, skipDuplicates: true });
   } catch (e) {
@@ -175,44 +178,56 @@ async function materializeGoalPeriodAnchors(tx, goal, employee, anchorYmds) {
   }
 }
 
-/**
- * Zona horaria: IANA del colaborador (WorkforceEmployee.timezone).
- * Máximo MAX_GOAL_PERIOD_BACKFILL inserts por solicitud; sin rondas ni periodos futuros.
- */
-export async function ensureWorkforceGoalPeriodsUpToDate(goal, employee, now = new Date()) {
-  if (goal.archivedAt) return;
-  const startYmd = ymdFromDateField(goal.startDate);
-  const endYmd = goal.endDate ? ymdFromDateField(goal.endDate) : null;
-  const limitAnchor = computeLimitAnchorYmd(goal.periodicity, endYmd, now, employee.timezone);
-  if (startYmd > limitAnchor) return;
+async function materializeGoalPeriodAnchors(tx, goal, employee, anchorYmds) {
+  await saveWorkforceGoalPeriodRows(tx, workforceGoalPeriodRows(goal, employee, anchorYmds));
+}
 
-  const goalStartAnchor = periodAnchorYmd(goal.periodicity, startYmd);
+function goalPeriodLimitAnchor(goal, employee, now) {
+  return computeLimitAnchorYmd(
+    goal.periodicity,
+    goal.endDate ? ymdFromDateField(goal.endDate) : null,
+    now,
+    employee.timezone,
+  );
+}
+
+/** Planifica los mismos periodos que se materializan al consultar una meta. */
+export function pendingWorkforceGoalPeriods(goal, employee, latestPeriodStart, now, fromYmd) {
+  if (goal.archivedAt) return [];
+  const startYmd = ymdFromDateField(goal.startDate);
+  const limitAnchor = goalPeriodLimitAnchor(goal, employee, now);
+  if (startYmd > limitAnchor) return [];
+
+  const { periodicity } = goal;
+  let fromAnchor = periodAnchorYmd(periodicity, startYmd);
+  if (latestPeriodStart) {
+    const lastAnchor = anchorYmdFromPeriodStart(latestPeriodStart, periodicity, employee.timezone);
+    fromAnchor = nextPeriodAnchorYmd(periodicity, lastAnchor);
+  }
+  if (fromAnchor > limitAnchor) return [];
+  if (countPeriodAnchorsInclusive(fromAnchor, limitAnchor, periodicity) > MAX_GOAL_PERIOD_BACKFILL) {
+    throw goalBackfillLimitError();
+  }
+
+  if (fromYmd && fromAnchor < fromYmd) {
+    fromAnchor = periodAnchorYmd(periodicity, fromYmd);
+    if (fromAnchor < fromYmd) fromAnchor = nextPeriodAnchorYmd(periodicity, fromAnchor);
+  }
+  if (fromAnchor > limitAnchor) return [];
+  const anchors = listPeriodAnchorsBetween(fromAnchor, limitAnchor, periodicity);
+  return workforceGoalPeriodRows(goal, employee, anchors);
+}
+
+export async function ensureWorkforceGoalPeriodsUpToDate(goal, employee, now = new Date()) {
+  if (goal.archivedAt || ymdFromDateField(goal.startDate) > goalPeriodLimitAnchor(goal, employee, now)) return;
   const latest = await prisma.workforceGoalPeriod.findFirst({
     where: { goalId: goal.id },
     orderBy: { periodStart: 'desc' },
     select: { periodStart: true },
   });
-  let fromAnchor = goalStartAnchor;
-  if (latest) {
-    const lastAnchor = anchorYmdFromPeriodStart(
-      latest.periodStart,
-      goal.periodicity,
-      employee.timezone,
-    );
-    fromAnchor = nextPeriodAnchorYmd(goal.periodicity, lastAnchor);
-  }
-  if (fromAnchor > limitAnchor) return;
-
-  const missingCount = countPeriodAnchorsInclusive(fromAnchor, limitAnchor, goal.periodicity);
-  if (missingCount === 0) return;
-  if (missingCount > MAX_GOAL_PERIOD_BACKFILL) {
-    throw goalBackfillLimitError();
-  }
-
-  const anchors = listPeriodAnchorsBetween(fromAnchor, limitAnchor, goal.periodicity);
-  await prisma.$transaction(async (tx) => {
-    await materializeGoalPeriodAnchors(tx, goal, employee, anchors);
-  });
+  const rows = pendingWorkforceGoalPeriods(goal, employee, latest?.periodStart, now);
+  if (!rows.length) return;
+  await prisma.$transaction((tx) => saveWorkforceGoalPeriodRows(tx, rows));
 }
 
 export async function createWorkforceGoalForEmployee({

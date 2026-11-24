@@ -37,7 +37,7 @@ check(/tcEmpTaskAction/.test(indexHtml) && /IN_PROGRESS/.test(indexHtml), 'colab
 check(/✓ Completar/.test(indexHtml) && /COMPLETED/.test(indexHtml), 'colaborador completa');
 check(/tc-emp-task-card--out/.test(indexHtml), 'retiro suave completada');
 check(/archive:true/.test(indexHtml) && !/hard-delete|deleteTask/.test(indexHtml), 'archivar sin hard-delete');
-check(/tc-kanban-col-body::-webkit-scrollbar/.test(indexHtml), 'scroll interno columnas');
+check(/\.tc-kanban-col-body\{[^}]*overflow-y:auto/.test(indexHtml) && /tc-kanban-col-body tc-workforce-scroll/.test(indexHtml) && /tc-kanban-board tc-workforce-scroll/.test(indexHtml), 'scroll de Actividades comparte el estilo de Gestión de equipo');
 check(/No hay actividades asignadas/.test(indexHtml), 'empty state admin');
 check(/No tienes actividades pendientes/.test(indexHtml), 'empty state colaborador');
 check(/tcKanbanMoveTask/.test(indexHtml) && /Mover a/.test(indexHtml), 'fallback accesible mover estado');

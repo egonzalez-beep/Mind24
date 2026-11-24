@@ -3,6 +3,7 @@ import { assertWorkforceEmployeeInOrg } from './workforceEmployee.service.js';
 import {
   computeCompletionPercent,
   ensureWorkforceGoalPeriodsUpToDate,
+  pendingWorkforceGoalPeriods,
 } from './workforceGoal.service.js';
 import {
   calendarYmdInTimeZone,
@@ -249,6 +250,127 @@ export function summarizeClassifiedPeriodRows(rows) {
   return summary;
 }
 
+function classifyMetricsRow(goal, period, now) {
+  const reported = periodHasReport(period);
+  return {
+    status: classifyPeriodForMetrics(goal, period, now),
+    reported,
+    completionRaw: reported ? completionPercentRaw(goal, period) : null,
+  };
+}
+
+/** Promedio del mes actual por colaborador, con las reglas de Indicadores y sin escrituras. */
+export async function getWorkforceDirectoryGoalCompliance({ organizationId, now = new Date() }) {
+  const snapshot = await prisma.$transaction(async (tx) => {
+    const goals = await tx.workforceGoal.findMany({
+      where: { organizationId, archivedAt: null },
+      select: {
+        id: true,
+        organizationId: true,
+        employeeId: true,
+        goalType: true,
+        periodicity: true,
+        targetValue: true,
+        startDate: true,
+        endDate: true,
+        employee: { select: { timezone: true, dailyGoalWeekdayHistory: true } },
+      },
+    });
+    if (!goals.length) return null;
+
+    const employees = new Map();
+    const monthByZone = new Map();
+    let first = null;
+    let last = null;
+    for (const goal of goals) {
+      if (!employees.has(goal.employeeId)) {
+        const { timezone } = goal.employee;
+        if (!monthByZone.has(timezone)) {
+          const month = currentMonthYmInTimeZone(now, timezone);
+          monthByZone.set(timezone, { month, ...monthBoundsInTimeZone(month, timezone) });
+        }
+        const bounds = monthByZone.get(timezone);
+        if (!first || bounds.start < first) first = bounds.start;
+        if (!last || bounds.endExclusive > last) last = bounds.endExclusive;
+        employees.set(goal.employeeId, { bounds, goalCount: 0, periodCount: 0, rows: [], unavailable: false });
+      }
+      employees.get(goal.employeeId).goalCount += 1;
+    }
+
+    const where = { organizationId, goal: { organizationId, archivedAt: null } };
+    const latest = await tx.workforceGoalPeriod.groupBy({
+      by: ['goalId'],
+      where,
+      _max: { periodStart: true },
+    });
+    const periods = await tx.workforceGoalPeriod.findMany({
+      where: { ...where, periodStart: { gte: first, lt: last } },
+      select: {
+        goalId: true,
+        periodStart: true,
+        periodEnd: true,
+        targetSnapshot: true,
+        achievedValue: true,
+        binaryResult: true,
+        completionPercent: true,
+        submittedAt: true,
+      },
+      orderBy: { periodStart: 'asc' },
+    });
+
+    return { goals, employees, latest, periods };
+  }, { isolationLevel: 'RepeatableRead' });
+
+  const result = new Map();
+  if (!snapshot) return result;
+  const { goals, employees, latest, periods } = snapshot;
+  const byGoalId = new Map(goals.map((goal) => [goal.id, goal]));
+
+  function appendPeriod(goal, period) {
+    const employee = employees.get(goal.employeeId);
+    if (employee.unavailable || employee.goalCount > MAX_METRICS_ACTIVE_GOALS) return;
+    const { bounds } = employee;
+    if (period.periodStart < bounds.start || period.periodStart >= bounds.endExclusive) return;
+    employee.periodCount += 1;
+    if (employee.periodCount > MAX_METRICS_PERIODS_PER_MONTH) {
+      employee.unavailable = true;
+      return;
+    }
+    try {
+      employee.rows.push(classifyMetricsRow(goal, period, now));
+    } catch {
+      /* omite anómalo, como Indicadores */
+    }
+  }
+
+  for (const period of periods) {
+    const goal = byGoalId.get(period.goalId);
+    if (goal) appendPeriod(goal, period);
+  }
+  const latestByGoal = new Map(latest.map((row) => [row.goalId, row._max.periodStart]));
+  for (const goal of goals) {
+    const employee = employees.get(goal.employeeId);
+    if (employee.unavailable || employee.goalCount > MAX_METRICS_ACTIVE_GOALS) continue;
+    try {
+      const pending = pendingWorkforceGoalPeriods(
+        goal, goal.employee, latestByGoal.get(goal.id), now, employee.bounds.startYmd,
+      );
+      for (const period of pending) appendPeriod(goal, period);
+    } catch (err) {
+      if (err.code !== 'GOAL_PERIOD_BACKFILL_LIMIT') throw err;
+      employee.unavailable = true;
+    }
+  }
+  for (const [employeeId, employee] of employees) {
+    if (employee.unavailable || employee.goalCount > MAX_METRICS_ACTIVE_GOALS) continue;
+    const { averageCompliance } = summarizeClassifiedPeriodRows(employee.rows);
+    if (averageCompliance != null) {
+      result.set(employeeId, { month: employee.bounds.month, averageCompliance });
+    }
+  }
+  return result;
+}
+
 export function averageAchievementRawForRows(rows) {
   let rawSum = 0;
   let rawEval = 0;
@@ -394,9 +516,6 @@ async function loadClassifiedPeriodsForRange({
     const goal = period.goal;
     if (!goal || goal.archivedAt != null) continue;
     try {
-      const status = classifyPeriodForMetrics(goal, period, now);
-      const reported = periodHasReport(period);
-      const completionRaw = reported ? completionPercentRaw(goal, period) : null;
       classified.push({
         goalId: goal.id,
         title: goal.title,
@@ -407,9 +526,7 @@ async function loadClassifiedPeriodsForRange({
         periodId: period.id,
         periodStart: period.periodStart,
         periodEnd: period.periodEnd,
-        status,
-        reported,
-        completionRaw,
+        ...classifyMetricsRow(goal, period, now),
         targetSnapshot: period.targetSnapshot,
         achievedValue: period.achievedValue,
       });

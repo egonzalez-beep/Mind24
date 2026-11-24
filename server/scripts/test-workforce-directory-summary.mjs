@@ -255,6 +255,43 @@ if (dbOk) {
     const httpRow = (listHttp.data.employees || []).find((e) => e.id === empA.id);
     check(httpRow?.taskSummary?.inProgress === 1, 'API expone inProgress');
     check(!listHttp.data.employees?.some((e) => e.id === empB.id), 'API solo org A');
+
+    check(httpRow && !('goalCompliance' in httpRow), 'el listado base conserva su contrato');
+
+    const { currentMonthYmInTimeZone, monthBoundsInTimeZone } = await import('../src/services/workforceGoalMetrics.service.js');
+    const month = currentMonthYmInTimeZone(now, empA.timezone);
+    const { start, endExclusive } = monthBoundsInTimeZone(month, empA.timezone);
+    const goal = await prisma.workforceGoal.create({
+      data: {
+        organizationId: orgA.id,
+        employeeId: empA.id,
+        createdByUserId: adminA.id,
+        title: 'Meta mensual del directorio',
+        goalType: 'QUANTITATIVE',
+        periodicity: 'MONTHLY',
+        targetValue: 100,
+        startDate: new Date(month + '-01T00:00:00Z'),
+      },
+    });
+    await prisma.workforceGoalPeriod.create({
+      data: {
+        organizationId: orgA.id,
+        employeeId: empA.id,
+        goalId: goal.id,
+        periodStart: start,
+        periodEnd: new Date(endExclusive.getTime() - 1),
+        targetSnapshot: 100,
+        achievedValue: 90.4,
+        completionPercent: 90.4,
+        submittedAt: now,
+      },
+    });
+    const enriched = await jsonFetch(base, '/api/org/timeclock/employees?includeGoalCompliance=1', { cookie });
+    const details = await jsonFetch(base, '/api/org/timeclock/employees/' + empA.id + '/goals/metrics?month=' + month, { cookie });
+    const score = enriched.data?.employees?.find((item) => item.id === empA.id)?.goalCompliance;
+    check(enriched.res.status === 200 && score?.month === month && score.averageCompliance === 90.4, 'directorio expone 90.4% del mes actual');
+    check(details.res.status === 200 && score?.averageCompliance === details.data?.summary?.averageCompliance, 'directorio coincide con el KPI de Indicadores');
+    check(!enriched.data?.employees?.some((item) => item.id === empB.id), 'directorio enriquecido conserva aislamiento por organización');
   } finally {
     server.close();
     await prisma.workforceTask.deleteMany({ where: { organizationId: { in: [orgA.id, orgB.id] } } });

@@ -41,6 +41,7 @@ import {
   WORKFORCE_GOAL_TYPES,
 } from '../services/workforceGoal.service.js';
 import {
+  getWorkforceDirectoryGoalCompliance,
   getWorkforceGoalMetricsForAdmin,
   getWorkforceGoalMetricsTrendForAdmin,
 } from '../services/workforceGoalMetrics.service.js';
@@ -110,8 +111,21 @@ router.post('/employees', async (req, res, next) => {
 router.get('/employees', async (req, res, next) => {
   try {
     const u = await assertEmpresaAdmin(req.session.userId);
-    const employees = await listWorkforceEmployees(u.organizationId);
-    res.json({ employees });
+    const includeGoalCompliance = req.query.includeGoalCompliance === '1';
+    if (!includeGoalCompliance) {
+      res.json({ employees: await listWorkforceEmployees(u.organizationId) });
+      return;
+    }
+    const [employees, compliance] = await Promise.all([
+      listWorkforceEmployees(u.organizationId),
+      getWorkforceDirectoryGoalCompliance({ organizationId: u.organizationId }),
+    ]);
+    res.json({
+      employees: employees.map((employee) => ({
+        ...employee,
+        goalCompliance: compliance.get(employee.id) ?? null,
+      })),
+    });
   } catch (e) {
     next(e);
   }
