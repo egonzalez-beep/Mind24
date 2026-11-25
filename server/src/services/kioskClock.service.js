@@ -50,6 +50,7 @@ export async function getKioskClock(organizationId) {
         orderBy: [{ fullName: 'asc' }, { code: 'asc' }],
         select: {
           ...employeeFields,
+          createdAt: true,
           punches: { select: punchFields, orderBy: { ordinal: 'desc' }, take: 1 },
         },
       },

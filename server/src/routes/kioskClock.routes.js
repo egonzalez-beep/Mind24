@@ -12,6 +12,7 @@ import {
   recordKioskPunch,
   updateKioskEmployee,
 } from '../services/kioskClock.service.js';
+import { exportKioskWeekPdf } from '../services/kioskClockReport.service.js';
 
 const employeeCode = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/).transform((code) => code.toUpperCase());
 const credentials = z.object({
@@ -54,6 +55,16 @@ kioskClockOrgRoutes.get('/daily', async (req, res, next) => {
   try {
     const { date } = z.object({ date: z.string().length(10).optional() }).parse(req.query);
     res.json(await getKioskDailyAttendance(req.kioskOrganizationId, date));
+  } catch (error) {
+    next(error);
+  }
+});
+
+kioskClockOrgRoutes.get('/weekly/export', async (req, res, next) => {
+  try {
+    const { week } = z.object({ week: z.string().length(10) }).parse(req.query);
+    const { buffer, filename } = await exportKioskWeekPdf(req.kioskOrganizationId, week);
+    res.type('pdf').attachment(filename).send(buffer);
   } catch (error) {
     next(error);
   }

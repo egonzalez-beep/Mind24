@@ -319,7 +319,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-key{padding:10px;margin:10px 0 0;background:var(--kiosk-lavender);border:1px solid var(--kiosk-line);border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;}
 .kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:var(--kiosk-accent);}
 .kiosk-day-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;margin-bottom:10px;}
-.kiosk-day-tools .create-input{min-height:35px;}
+.kiosk-day-tools{align-items:flex-end;}
+.kiosk-day-control{display:grid;gap:4px;}
+.kiosk-day-control-label{font-size:11px;font-weight:700;color:var(--kiosk-muted);}
+.kiosk-date-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:7px;min-width:133px;text-align:left;}
+.kiosk-date-trigger[aria-expanded="true"]{border-color:#b586db;background:var(--kiosk-lavender);}
+.kiosk-date-trigger .kiosk-icon,.kiosk-export-btn .kiosk-icon{width:15px;height:15px;}
+.kiosk-export-btn{min-height:34px;white-space:nowrap;}
+.kiosk-export-week{font-size:10px;font-variant-numeric:tabular-nums;font-weight:600;color:#fff;}
+.kiosk-ghost:disabled{opacity:.55;cursor:default;}
+.kiosk-date-picker{gap:7px;padding:10px;border-color:#e2d3ef;}
+.kiosk-date-picker .tc-noshow-date-day{min-height:31px;}
+.kiosk-date-picker button:disabled{opacity:.4;cursor:default;background:none;}
 .kiosk-day-totals{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
 .kiosk-day-totals:empty,.kiosk-day-message:empty{display:none;}
 .kiosk-day-message{margin:0 0 10px;color:var(--kiosk-muted);font-size:13px;}
@@ -356,12 +367,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 #kiosk-people{list-style:none;margin:12px 0 0;padding:0;}
 .kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,.75fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f0e7f7;}
 .kiosk-person .kiosk-avatar{width:32px;height:32px;font-size:11px;}
+.kiosk-person-registered{display:grid;gap:2px;line-height:1.3;}
+.kiosk-person-registered span{color:var(--kiosk-muted);font-size:11px;}
+.kiosk-person-registered time{color:var(--kiosk-ink);font-size:12px;font-weight:700;}
 .kiosk-person-actions{justify-content:flex-end;}
 .kiosk-person-actions .kiosk-ghost{min-height:30px;padding:4px 6px;font-size:11px;}
 .kiosk-admin .kiosk-mobile-back{display:none;}
 @media(max-width:1100px){
   .kiosk-person{grid-template-columns:minmax(0,1fr) auto;}
-  .kiosk-person-last{order:3;grid-column:1/-1;padding-left:41px;}
+  .kiosk-person-registered{order:3;grid-column:1/-1;padding-left:41px;}
 }
 @media(max-width:930px){
   #kiosk-admin-content{grid-template-columns:minmax(0,1fr);}
@@ -4867,6 +4881,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <div id="view-dash-kiosk-clock" class="app-shell kiosk-admin hidden">
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
     <symbol id="kiosk-icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h2m4 0h2"/></symbol>
+    <symbol id="kiosk-icon-download" viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
     <symbol id="kiosk-icon-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m1-15a3 3 0 0 1 0 6m2 3a4 4 0 0 1 3 4v2"/></symbol>
     <symbol id="kiosk-icon-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-1 1a3 3 0 0 0 4 4l4-4a3 3 0 0 0 0-4m1-3 1-1a3 3 0 0 0-4-4L9 8a3 3 0 0 0 0 4"/></symbol>
     <symbol id="kiosk-icon-external" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9m7-1v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
@@ -4901,7 +4916,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
     </div>
   </aside>
-  <main class="main-content">
+  <main class="main-content" onscroll="kioskTrackCalendar()">
     <header class="kiosk-hero">
       <h1>Reloj checador</h1>
       <svg class="kiosk-hero-art" viewBox="0 0 760 165" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
@@ -4947,10 +4962,31 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <div class="kiosk-day-head">
             <h2 id="kiosk-day-title">Asistencia diaria</h2>
             <div class="kiosk-day-tools">
-              <label for="kiosk-day-date">Fecha<input id="kiosk-day-date" class="create-input" type="date" onchange="kioskLoadDay(this.value)"></label>
-              <button type="button" class="card-action" onclick="kioskLoadDay()">Hoy</button>
+              <div class="kiosk-day-control">
+                <span class="kiosk-day-control-label" id="kiosk-day-date-label">Fecha</span>
+                <input type="hidden" id="kiosk-day-date">
+                <button type="button" id="kiosk-day-date-trigger" class="kiosk-ghost kiosk-date-trigger" aria-labelledby="kiosk-day-date-label kiosk-day-date-value" aria-haspopup="dialog" aria-controls="kiosk-day-date-picker" aria-expanded="false" onclick="kioskToggleCalendar()" disabled>
+                  <span id="kiosk-day-date-value">Elegir fecha</span><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-calendar"/></svg>
+                </button>
+              </div>
+              <button type="button" class="kiosk-ghost" onclick="kioskLoadDay()">Hoy</button>
+              <button type="button" id="kiosk-week-download" class="kiosk-primary kiosk-export-btn" onclick="kioskDownloadWeek()" disabled>
+                <svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-download"/></svg><span>Descargar semana</span><span class="kiosk-export-week" id="kiosk-week-range"></span>
+              </button>
             </div>
           </div>
+          <div id="kiosk-day-date-picker" class="rec-cand-ms-menu rec-cand-form-picker kiosk-date-picker" popover="auto" role="dialog" aria-label="Fecha de asistencia" onbeforetoggle="kioskCalendarState(event)" onclick="kioskCalendarClick(event)" onkeydown="kioskCalendarKey(event)">
+            <div class="tc-noshow-date-nav">
+              <button type="button" class="tc-noshow-date-nav-btn" data-month="-1" aria-label="Mes anterior">‹</button>
+              <span class="tc-noshow-date-nav-label" id="kiosk-calendar-month" aria-live="polite"></span>
+              <button type="button" class="tc-noshow-date-nav-btn" data-month="1" aria-label="Mes siguiente">›</button>
+            </div>
+            <div class="tc-noshow-date-weekdays" aria-hidden="true">
+              <span class="tc-noshow-date-weekday">D</span><span class="tc-noshow-date-weekday">L</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">M</span><span class="tc-noshow-date-weekday">J</span><span class="tc-noshow-date-weekday">V</span><span class="tc-noshow-date-weekday">S</span>
+            </div>
+            <div class="tc-noshow-date-grid" id="kiosk-calendar-grid"></div>
+          </div>
+          <p id="kiosk-week-error" class="kiosk-message" role="alert"></p>
           <p id="kiosk-day-message" class="kiosk-day-message" role="status"></p>
           <div id="kiosk-day-totals" class="kiosk-day-totals"></div>
           <div id="kiosk-day-table" class="kiosk-day-table hidden">
@@ -6760,6 +6796,153 @@ let kioskViewVersion=0;
 let kioskAdminBusy=false;
 let kioskDayVersion=0;
 let kioskDayToday='';
+let kioskCalendarMonth='';
+let kioskExportRequest=null;
+
+function kioskSyncDayControls(){
+  const date=document.getElementById('kiosk-day-date').value;
+  const trigger=document.getElementById('kiosk-day-date-trigger');
+  trigger.disabled=!date;
+  document.getElementById('kiosk-day-date-value').textContent=date
+    ? new Intl.DateTimeFormat('es-MX',{timeZone:'UTC',dateStyle:'medium'}).format(new Date(date+'T12:00:00Z'))
+    : 'Elegir fecha';
+  const week=date?tcMetricsWeekStartYmd(date):'';
+  document.getElementById('kiosk-week-range').textContent=tcSchedExportCivilWeekRangeLabel(week);
+  const button=document.getElementById('kiosk-week-download');
+  button.disabled=!week||Boolean(kioskExportRequest)||document.getElementById('kiosk-day').getAttribute('aria-busy')==='true';
+  button.setAttribute('aria-busy',String(Boolean(kioskExportRequest)));
+}
+
+function kioskCalendarState(event){
+  const open=event.newState==='open';
+  document.getElementById('kiosk-day-date-trigger').setAttribute('aria-expanded',String(open));
+  if(open) window.addEventListener('resize',kioskTrackCalendar);
+  else window.removeEventListener('resize',kioskTrackCalendar);
+}
+
+function kioskTrackCalendar(){
+  const picker=document.getElementById('kiosk-day-date-picker');
+  if(typeof picker.hidePopover!=='function'||!picker.matches(':popover-open')) return;
+  const trigger=document.getElementById('kiosk-day-date-trigger');
+  const rect=trigger.getBoundingClientRect();
+  const panel=trigger.closest('main').getBoundingClientRect();
+  if(rect.bottom<=panel.top||rect.top>=panel.bottom){ kioskCloseCalendar(false); return; }
+  m24PositionAnchoredPicker(picker,trigger);
+}
+
+function kioskRenderCalendar(){
+  const selected=document.getElementById('kiosk-day-date').value;
+  const grid=document.getElementById('kiosk-calendar-grid');
+  const [year,month]=kioskCalendarMonth.split('-').map(Number);
+  document.getElementById('kiosk-calendar-month').textContent=recAgendaDateLabel(kioskCalendarMonth+'-01',{month:'long',year:'numeric'});
+  grid.innerHTML=recInterviewCalendarDaysHtml(year,month-1,selected,kioskDayToday);
+  for(const day of grid.querySelectorAll('button')){
+    day.disabled=day.dataset.ymd>kioskDayToday||day.dataset.ymd<'1900-01-01';
+    day.tabIndex=-1;
+    if(day.dataset.ymd===kioskDayToday) day.setAttribute('aria-current','date');
+  }
+  const focusDay=grid.querySelector('.is-selected:not(:disabled),.is-today:not(:disabled)')||
+    grid.querySelector('button:not(.is-muted):not(:disabled)');
+  if(focusDay) focusDay.tabIndex=0;
+  const picker=grid.closest('[popover]');
+  picker.querySelector('[data-month="1"]').disabled=kioskCalendarMonth>=kioskDayToday.slice(0,7);
+  picker.querySelector('[data-month="-1"]').disabled=kioskCalendarMonth<='1900-01';
+}
+
+function kioskCloseCalendar(restoreFocus){
+  const picker=document.getElementById('kiosk-day-date-picker');
+  if(typeof picker.hidePopover!=='function'||!picker.matches(':popover-open')) return;
+  picker.hidePopover();
+  if(restoreFocus) document.getElementById('kiosk-day-date-trigger').focus({preventScroll:true});
+}
+
+function kioskToggleCalendar(){
+  const picker=document.getElementById('kiosk-day-date-picker');
+  const trigger=document.getElementById('kiosk-day-date-trigger');
+  const selected=document.getElementById('kiosk-day-date').value;
+  if(!selected||typeof picker.showPopover!=='function') return;
+  if(picker.matches(':popover-open')){ kioskCloseCalendar(true); return; }
+  kioskCalendarMonth=selected.slice(0,7);
+  kioskRenderCalendar();
+  m24PositionAnchoredPicker(picker,trigger);
+  picker.showPopover({source:trigger});
+  picker.querySelector('[data-ymd][tabindex="0"]')?.focus({preventScroll:true});
+}
+
+function kioskCalendarClick(event){
+  const button=event.target.closest('button');
+  if(!button||button.disabled) return;
+  if(button.dataset.month){
+    const [year,month]=kioskCalendarMonth.split('-').map(Number);
+    kioskCalendarMonth=new Date(Date.UTC(year,month-1+Number(button.dataset.month),1)).toISOString().slice(0,7);
+    kioskRenderCalendar();
+    if(button.disabled) event.currentTarget.querySelector('[data-ymd][tabindex="0"]')?.focus({preventScroll:true});
+  }else if(button.dataset.ymd){
+    kioskCloseCalendar(true);
+    kioskLoadDay(button.dataset.ymd);
+  }
+}
+
+function kioskCalendarKey(event){
+  if(event.key==='Escape'){
+    event.preventDefault();
+    event.stopPropagation();
+    kioskCloseCalendar(true);
+    return;
+  }
+  const step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[event.key];
+  if(!step||!event.target.dataset.ymd) return;
+  event.preventDefault();
+  const target=tcMetricsAddDaysYmd(event.target.dataset.ymd,step);
+  if(target>kioskDayToday||target<'1900-01-01') return;
+  if(target.slice(0,7)!==kioskCalendarMonth){
+    kioskCalendarMonth=target.slice(0,7);
+    kioskRenderCalendar();
+  }
+  const picker=event.currentTarget;
+  const next=picker.querySelector('[data-ymd="'+target+'"]');
+  if(!next) return;
+  picker.querySelector('[data-ymd][tabindex="0"]')?.setAttribute('tabindex','-1');
+  next.tabIndex=0;
+  next.focus({preventScroll:true});
+}
+
+async function kioskDownloadWeek(){
+  const date=document.getElementById('kiosk-day-date').value;
+  if(!date||kioskExportRequest) return;
+  kioskCloseCalendar(false);
+  const week=tcMetricsWeekStartYmd(date);
+  const errorBox=document.getElementById('kiosk-week-error');
+  const controller=new AbortController();
+  kioskExportRequest=controller;
+  errorBox.textContent='';
+  kioskSyncDayControls();
+  try{
+    const res=await fetch(kioskApi+'/weekly/export?week='+encodeURIComponent(week),{credentials:'include',signal:controller.signal});
+    if(!res.ok){
+      const body=await res.json().catch(()=>null);
+      throw new Error(body?.message||'No se pudo descargar el registro semanal.');
+    }
+    const bytes=new Uint8Array(await res.arrayBuffer());
+    if(controller.signal.aborted) return;
+    if(!tcSchedExportLooksLikePdf(bytes)) throw new Error('La respuesta no es un PDF válido.');
+    const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='mind24-checadas-'+week+'.pdf';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){
+    if(!controller.signal.aborted) errorBox.textContent=error.message||'No se pudo descargar el registro semanal.';
+  }finally{
+    if(kioskExportRequest===controller){
+      kioskExportRequest=null;
+      kioskSyncDayControls();
+    }
+  }
+}
 
 function kioskIcon(name){
   const ns='http://www.w3.org/2000/svg';
@@ -6807,6 +6990,9 @@ function kioskOnLeave(){
   kioskRefreshVersion++;
   kioskViewVersion++;
   kioskDayVersion++;
+  kioskCloseCalendar(false);
+  kioskExportRequest?.abort();
+  kioskExportRequest=null;
   kioskHideKey();
 }
 
@@ -6819,7 +7005,10 @@ function kioskOnShow(){
   document.getElementById('kiosk-setup').classList.add('hidden');
   document.getElementById('kiosk-copy-status').textContent='';
   document.getElementById('kiosk-day-date').value='';
+  document.getElementById('kiosk-day').removeAttribute('aria-busy');
+  document.getElementById('kiosk-week-error').textContent='';
   kioskDayToday='';
+  kioskSyncDayControls();
   kioskRefresh();
 }
 
@@ -6848,7 +7037,7 @@ function kioskRender(clock){
   url.hash=clock.publicKey;
   document.getElementById('kiosk-link').value=url.href;
   document.getElementById('kiosk-open').href=url.href;
-  const format=new Intl.DateTimeFormat('es-MX',{timeZone:clock.timeZone,dateStyle:'short',timeStyle:'short'});
+  const format=new Intl.DateTimeFormat('es-MX',{timeZone:clock.timeZone,dateStyle:'medium'});
   const rows=document.getElementById('kiosk-people');
   rows.replaceChildren();
   document.getElementById('kiosk-empty').classList.toggle('hidden',clock.employees.length>0);
@@ -6862,10 +7051,17 @@ function kioskRender(clock){
     const row=document.createElement('li');
     row.className='kiosk-person';
     const identification=kioskPersonIdentity(person,person.code+' · '+(person.isActive?'Activo':'Inactivo'));
-    const last=document.createElement('div');
-    last.className='kiosk-person-meta kiosk-person-last';
-    const punch=person.lastPunch;
-    last.textContent=punch?kioskPunchLabels[punch.type]+' · '+format.format(new Date(punch.recordedAt)):'Aún sin checadas';
+    const registered=document.createElement('div');
+    registered.className='kiosk-person-registered';
+    const registeredLabel=document.createElement('span');
+    registeredLabel.textContent='Fecha de alta';
+    const registeredDate=document.createElement('time');
+    const createdAt=person.createdAt?new Date(person.createdAt):null;
+    if(createdAt&&!Number.isNaN(createdAt.getTime())){
+      registeredDate.dateTime=createdAt.toISOString();
+      registeredDate.textContent=format.format(createdAt);
+    }else registeredDate.textContent='—';
+    registered.append(registeredLabel,registeredDate);
     const actions=document.createElement('div');
     actions.className='kiosk-person-actions';
     const path='/employees/'+encodeURIComponent(person.id);
@@ -6884,7 +7080,7 @@ function kioskRender(clock){
     toggle.textContent=person.isActive?'Desactivar':'Activar';
     toggle.onclick=()=>kioskMutation(toggle,path,'PATCH',{isActive:!person.isActive});
     actions.append(reset,toggle);
-    row.append(identification,last,actions);
+    row.append(identification,registered,actions);
     rows.append(row);
   }
 }
@@ -6920,12 +7116,17 @@ async function kioskMutation(button,path,method,body,employeeName){
 }
 
 async function kioskLoadDay(date=''){
+  kioskCloseCalendar(false);
   const request=++kioskDayVersion;
+  const section=document.getElementById('kiosk-day');
   const message=document.getElementById('kiosk-day-message');
   const totals=document.getElementById('kiosk-day-totals');
   const table=document.getElementById('kiosk-day-table');
   const field=document.getElementById('kiosk-day-date');
   const rows=document.getElementById('kiosk-day-people');
+  section.setAttribute('aria-busy','true');
+  document.getElementById('kiosk-week-error').textContent='';
+  kioskSyncDayControls();
   message.textContent='Cargando checadas…';
   totals.replaceChildren();
   table.classList.add('hidden');
@@ -6934,7 +7135,6 @@ async function kioskLoadDay(date=''){
     const result=await apiJson(kioskApi+'/daily'+(date?'?date='+encodeURIComponent(date):''));
     if(request!==kioskDayVersion)return;
     kioskDayToday=result.today;
-    field.max=result.today;
     field.value=result.date;
     const historical=result.date!==result.today;
     const statuses={
@@ -7014,6 +7214,11 @@ async function kioskLoadDay(date=''){
     table.classList.remove('hidden');
   }catch(error){
     if(request===kioskDayVersion) message.textContent=error.message||'No se pudo cargar la asistencia.';
+  }finally{
+    if(request===kioskDayVersion){
+      section.removeAttribute('aria-busy');
+      kioskSyncDayControls();
+    }
   }
 }
 

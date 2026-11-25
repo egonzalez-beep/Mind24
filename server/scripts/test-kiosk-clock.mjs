@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { prepareKioskWeekReport } from '../src/services/kioskClockReport.service.js';
 import {
   createKioskEmployee, getKioskDailyAttendance, identifyKioskEmployee, recordKioskPunch, updateKioskEmployee,
 } from '../src/services/kioskClock.service.js';
@@ -218,3 +219,43 @@ await assert.rejects(getKioskDailyAttendance('org-a', '2026-11-26', dailyDb, mor
 await assert.rejects(getKioskDailyAttendance('org-a', '2026-02-31', dailyDb, morning), { code: 'VALIDATION_ERROR' });
 await assert.rejects(getKioskDailyAttendance('unknown', undefined, dailyDb, morning), { code: 'NOT_FOUND' });
 console.log('Asistencia diaria: cambio de día local, turno abierto al cierre, histórico de inactivos y fechas inválidas OK (base simulada).');
+
+const reportNow = new Date('2026-03-10T12:00:00Z');
+let reportRows = [
+  { type: 'CHECK_IN', recordedAt: new Date('2026-03-08T06:50:00Z'), employee: { code: '0001', fullName: 'Ana <Prueba>' } },
+  { type: 'CHECK_OUT', recordedAt: new Date('2026-03-08T07:10:00Z'), employee: { code: '0001', fullName: 'Ana <Prueba>' } },
+];
+const reportDb = {
+  kioskClock: {
+    async findUnique({ where }) {
+      return where.organizationId === 'org-report'
+        ? { id: 'clock-report', timeZone: 'America/New_York', organization: { name: 'Empresa & equipo' } }
+        : null;
+    },
+  },
+  kioskPunch: {
+    async findMany({ where, select }) {
+      assert.equal(where.employee.clockId, 'clock-report');
+      assert.equal(where.recordedAt.gte.toISOString(), '2026-03-02T05:00:00.000Z');
+      assert.equal(where.recordedAt.lt.toISOString(), '2026-03-09T04:00:00.000Z');
+      assert.deepEqual(Object.keys(select.employee.select), ['code', 'fullName']);
+      return reportRows;
+    },
+  },
+};
+const report = await prepareKioskWeekReport('org-report', '2026-03-08', reportDb, reportNow);
+assert.equal(report.filename, 'mind24-checadas-2026-03-02.pdf');
+assert.match(report.html, /Empresa &amp; equipo/);
+assert.match(report.html, /Ana &lt;Prueba&gt;/);
+assert.match(report.html, /01:50:00 GMT-5/);
+assert.match(report.html, /03:10:00 GMT-4/);
+assert.match(report.html, /<td>Entrada<\/td>/);
+assert.match(report.html, /<td>Salida<\/td>/);
+assert.doesNotMatch(report.html, /punchKey|publicKey/);
+reportRows = [];
+const emptyReport = await prepareKioskWeekReport('org-report', '2026-03-02', reportDb, reportNow);
+assert.match(emptyReport.html, /No hay checadas registradas/);
+await assert.rejects(prepareKioskWeekReport('org-report', '2026-02-31', reportDb, reportNow), { code: 'VALIDATION_ERROR' });
+await assert.rejects(prepareKioskWeekReport('org-report', '2026-03-16', reportDb, reportNow), { code: 'VALIDATION_ERROR' });
+await assert.rejects(prepareKioskWeekReport('other-org', '2026-03-02', reportDb, reportNow), { code: 'NOT_FOUND' });
+console.log('Exportación semanal: alcance por organización, semana civil con cambio de horario, datos escapados y semana vacía OK (base simulada).');
