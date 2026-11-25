@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { prepareKioskWeekReport } from '../src/services/kioskClockReport.service.js';
 import {
-  createKioskEmployee, getKioskDailyAttendance, identifyKioskEmployee, recordKioskPunch, updateKioskEmployee,
+  createKioskEmployee, getKioskClock, getKioskDailyAttendance, identifyKioskEmployee, recordKioskPunch,
+  updateKioskEmployee, updateKioskEmployeeSchedule,
 } from '../src/services/kioskClock.service.js';
 
 process.env.SESSION_SECRET = 'kiosk-test-secret';
@@ -12,6 +13,7 @@ const clocks = [
 ];
 const employees = [];
 const records = [];
+const schedules = [];
 
 function uniqueEmployeeFields(data, ignoreId) {
   for (const field of ['code', 'punchKeyDigest']) {
@@ -33,10 +35,26 @@ function matchingPunch({ where }) {
 }
 
 const tx = {
-  async $queryRaw(sql, id) {
+  async $queryRaw(sql, id, organizationId) {
     assert.match(sql.join(''), /FOR UPDATE/);
     const employee = employees.find((item) => item.id === id);
+    if (organizationId) {
+      assert.match(sql.join(''), /clock\."organizationId"\s*=/);
+      const clock = clocks.find((item) => item.id === employee?.clockId && item.organizationId === organizationId);
+      return clock ? [{ timeZone: clock.timeZone }] : [];
+    }
     return employee ? [{ punchKeyDigest: employee.punchKeyDigest, isActive: employee.isActive }] : [];
+  },
+  kioskEmployeeSchedule: {
+    async findFirst({ where: { employeeId } }) {
+      return schedules.filter((item) => item.employeeId === employeeId).sort((a, b) => b.effectiveOn - a.effectiveOn)[0];
+    },
+    async upsert({ where: { employeeId_effectiveOn: { employeeId, effectiveOn } }, create, update }) {
+      const existing = schedules.find((item) => item.employeeId === employeeId && +item.effectiveOn === +effectiveOn);
+      if (existing) return Object.assign(existing, update);
+      schedules.push(create);
+      return create;
+    },
   },
   kioskPunch: {
     findFirst: matchingPunch,
@@ -53,16 +71,28 @@ const tx = {
 let transactions = Promise.resolve();
 const db = {
   kioskClock: {
-    async findUnique({ where }) {
-      return clocks.find((clock) => clock.organizationId === where.organizationId);
+    async findUnique({ where, select }) {
+      const clock = clocks.find((item) => item.organizationId === where.organizationId);
+      if (!clock || !select?.employees) return clock;
+      const fields = select.employees.select;
+      return {
+        ...clock,
+        employees: employees.filter((item) => item.clockId === clock.id).map((item) => ({
+          ...Object.fromEntries(Object.keys(fields).map((key) => [key, item[key]])),
+          punches: [],
+          schedules: schedules.filter((row) => row.employeeId === item.id)
+            .sort((a, b) => b.effectiveOn - a.effectiveOn).slice(0, fields.schedules.take),
+        })),
+      };
     },
   },
   kioskEmployee: {
-    async create({ data, select }) {
+    async create({ data: { schedules: scheduleWrite, ...data }, select }) {
       uniqueEmployeeFields(data);
       assert.match(data.punchKeyDigest, /^[a-f0-9]{64}$/);
       const employee = { ...data, id: randomUUID(), isActive: true };
       employees.push(employee);
+      schedules.push({ employeeId: employee.id, ...scheduleWrite.create });
       return Object.fromEntries(Object.keys(select).map((field) => [field, employee[field]]));
     },
     async findFirst({ where }) {
@@ -102,8 +132,10 @@ const keySequence = (...values) => (max) => {
   assert(values.length > 0);
   return values.shift();
 };
-const person = { code: '0007', fullName: 'Persona de prueba' };
-const created = await createKioskEmployee('org-a', person, db, keySequence(1234));
+const workSchedule = { start: '22:00', end: '06:00', weekdays: [1, 2, 3, 4, 7], toleranceMinutes: 5 };
+const person = { code: '0007', fullName: 'Persona de prueba', workSchedule };
+const nov24 = () => new Date('2026-11-25T02:00:00Z');
+const created = await createKioskEmployee('org-a', person, db, keySequence(1234), nov24);
 assert.equal(created.punchKey, '001234');
 assert.equal(created.employee.code, '0007');
 assert(!('punchKeyDigest' in created.employee));
@@ -175,6 +207,51 @@ assert.deepEqual((await identifyKioskEmployee(currentCredentials, db)).actions, 
 await updateKioskEmployee('org-a', created.employee.id, { isActive: false }, db);
 await assert.rejects(identifyKioskEmployee(currentCredentials, db), { code: 'INVALID_CREDENTIALS' });
 console.log('Reloj checador: alta, colisiones, renovación, acceso, aislamiento, reintentos y jornada nocturna OK (base simulada).');
+
+const currentSchedule = async (personId, now) => (
+  await getKioskClock('org-a', db, now)
+).employees.find((employee) => employee.id === personId);
+const employeeId = created.employee.id;
+const original = await currentSchedule(employeeId, nov24());
+assert.deepEqual(original.workSchedule, {
+  effectiveOn: '2026-11-24', startMinute: 1320, endMinute: 360,
+  toleranceMinutes: 5, weekdays: [1, 2, 3, 4, 7], endsNextDay: true,
+});
+assert.equal(original.upcomingWorkSchedule, null);
+await assert.rejects(createKioskEmployee('org-a', { ...person, workSchedule: null }, db), { code: 'VALIDATION_ERROR' });
+for (const invalid of [
+  { ...workSchedule, end: workSchedule.start },
+  { ...workSchedule, end: '19:00' },
+  { ...workSchedule, start: '24:00' },
+  { ...workSchedule, toleranceMinutes: -1 },
+  { ...workSchedule, weekdays: [1, 1] },
+  { ...workSchedule, weekdays: [] },
+]) {
+  await assert.rejects(updateKioskEmployeeSchedule('org-a', employeeId, invalid, db, nov24), { code: 'VALIDATION_ERROR' });
+}
+await assert.rejects(updateKioskEmployeeSchedule('org-b', employeeId, workSchedule, db, nov24), { code: 'NOT_FOUND' });
+await updateKioskEmployeeSchedule('org-a', employeeId, workSchedule, db, nov24);
+assert.equal(schedules.filter((row) => row.employeeId === employeeId).length, 1);
+await Promise.all([
+  updateKioskEmployeeSchedule('org-a', employeeId, { ...workSchedule, start: '21:00' }, db, nov24),
+  updateKioskEmployeeSchedule('org-a', employeeId, { ...workSchedule, start: '20:00' }, db, nov24),
+]);
+const pending = await currentSchedule(employeeId, new Date('2026-11-25T05:59:59Z'));
+assert.deepEqual(pending.workSchedule, original.workSchedule);
+assert.equal(pending.upcomingWorkSchedule.effectiveOn, '2026-11-25');
+assert.equal(pending.upcomingWorkSchedule.startMinute, 1200);
+assert.equal(schedules.filter((row) => row.employeeId === employeeId).length, 2);
+const applied = await currentSchedule(employeeId, new Date('2026-11-25T06:00:00Z'));
+assert.deepEqual(applied.workSchedule, pending.upcomingWorkSchedule);
+assert.equal(applied.upcomingWorkSchedule, null);
+
+employees.push({ id: 'legacy', clockId: 'clock-a' });
+assert.equal((await currentSchedule('legacy', nov24())).workSchedule, null);
+await updateKioskEmployeeSchedule('org-a', 'legacy', workSchedule, db, nov24);
+const legacy = await currentSchedule('legacy', nov24());
+assert.equal(legacy.workSchedule, null);
+assert.equal(legacy.upcomingWorkSchedule.effectiveOn, '2026-11-25');
+console.log('Horario esperado: alta, vigencia local, turnos nocturnos, personal existente y edición concurrente OK (base simulada).');
 
 const dailyRoster = [
   { id: created.employee.id, code: created.employee.code, fullName: 'Turno nocturno', isActive: false },

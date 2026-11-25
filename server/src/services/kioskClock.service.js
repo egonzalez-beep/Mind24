@@ -1,7 +1,11 @@
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
-import { localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
+import { addDaysToDateKey, localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
+import {
+  decodeWeekdayMask, encodeWeekdayMask, parseHmToMinute, parseWorkScheduleWeekdays,
+  WORK_SCHEDULE_MAX_DURATION_MINUTES, WORK_SCHEDULE_TOLERANCE_MESSAGE,
+} from '../utils/workforceWorkSchedule.util.js';
 
 export const KIOSK_PUNCH_TYPES = ['CHECK_IN', 'MEAL_OUT', 'MEAL_IN', 'CHECK_OUT'];
 const NEXT_PUNCH = {
@@ -40,8 +44,37 @@ async function issuePunchKey(publicKey, save, nextKey = randomInt) {
   throw kioskError('CONFLICT', 'No se pudo asignar una clave. Intenta de nuevo.');
 }
 
-export async function getKioskClock(organizationId) {
-  const clock = await prisma.kioskClock.findUnique({
+function kioskScheduleData(input) {
+  const startMinute = parseHmToMinute(input?.start);
+  const endMinute = parseHmToMinute(input?.end);
+  if (startMinute == null || endMinute == null) {
+    throw kioskError('VALIDATION_ERROR', 'Indica una hora válida de entrada y salida.');
+  }
+  const duration = (endMinute - startMinute + 1440) % 1440;
+  if (duration === 0 || duration > WORK_SCHEDULE_MAX_DURATION_MINUTES) {
+    throw kioskError('VALIDATION_ERROR', 'El turno debe durar entre 1 minuto y 16 horas.');
+  }
+  const toleranceMinutes = input.toleranceMinutes;
+  if (!Number.isInteger(toleranceMinutes) || toleranceMinutes < 0 || toleranceMinutes > 120) {
+    throw kioskError('VALIDATION_ERROR', WORK_SCHEDULE_TOLERANCE_MESSAGE);
+  }
+  const weekdayMask = encodeWeekdayMask(parseWorkScheduleWeekdays(input.weekdays));
+  return { startMinute, endMinute, toleranceMinutes, weekdayMask };
+}
+
+function kioskScheduleDto({ effectiveOn, weekdayMask, startMinute, endMinute, toleranceMinutes }) {
+  return {
+    effectiveOn: effectiveOn.toISOString().slice(0, 10),
+    startMinute,
+    endMinute,
+    toleranceMinutes,
+    weekdays: decodeWeekdayMask(weekdayMask),
+    endsNextDay: endMinute < startMinute,
+  };
+}
+
+export async function getKioskClock(organizationId, db = prisma, now = new Date()) {
+  const clock = await db.kioskClock.findUnique({
     where: { organizationId },
     select: {
       publicKey: true,
@@ -52,17 +85,24 @@ export async function getKioskClock(organizationId) {
           ...employeeFields,
           createdAt: true,
           punches: { select: punchFields, orderBy: { ordinal: 'desc' }, take: 1 },
+          schedules: { orderBy: { effectiveOn: 'desc' }, take: 2 },
         },
       },
     },
   });
   if (!clock) return null;
+  const today = localDateKey(now, clock.timeZone);
   return {
     ...clock,
-    employees: clock.employees.map(({ punches, ...employee }) => ({
-      ...employee,
-      lastPunch: punches[0] ?? null,
-    })),
+    employees: clock.employees.map(({ punches, schedules, ...employee }) => {
+      const versions = schedules.map(kioskScheduleDto);
+      return {
+        ...employee,
+        lastPunch: punches[0] ?? null,
+        workSchedule: versions.find((version) => version.effectiveOn <= today) ?? null,
+        upcomingWorkSchedule: versions.find((version) => version.effectiveOn > today) ?? null,
+      };
+    }),
   };
 }
 
@@ -126,13 +166,22 @@ export async function activateKioskClock(organizationId) {
   return getKioskClock(organizationId);
 }
 
-export async function createKioskEmployee(organizationId, { code, fullName }, db = prisma, nextKey = randomInt) {
-  const clock = await db.kioskClock.findUnique({ where: { organizationId }, select: { id: true, publicKey: true } });
+export async function createKioskEmployee(organizationId, { code, fullName, workSchedule }, db = prisma, nextKey = randomInt, now = () => new Date()) {
+  const schedule = kioskScheduleData(workSchedule);
+  const clock = await db.kioskClock.findUnique({
+    where: { organizationId },
+    select: { id: true, publicKey: true, timeZone: true },
+  });
   if (!clock) throw kioskError('NOT_FOUND', 'Activa primero el reloj checador.');
   try {
     return await issuePunchKey(clock.publicKey, async (digest) => {
+      const createdAt = now();
+      const effectiveOn = new Date(localDateKey(createdAt, clock.timeZone));
       const employee = await db.kioskEmployee.create({
-        data: { clockId: clock.id, code, fullName, punchKeyDigest: digest },
+        data: {
+          clockId: clock.id, code, fullName, punchKeyDigest: digest, createdAt,
+          schedules: { create: { ...schedule, effectiveOn } },
+        },
         select: employeeFields,
       });
       return { employee };
@@ -143,6 +192,34 @@ export async function createKioskEmployee(organizationId, { code, fullName }, db
     }
     throw error;
   }
+}
+
+export async function updateKioskEmployeeSchedule(organizationId, employeeId, workSchedule, db = prisma, now = () => new Date()) {
+  const data = kioskScheduleData(workSchedule);
+  return db.$transaction(async (tx) => {
+    const [clock] = await tx.$queryRaw`
+      SELECT clock."timeZone" FROM "KioskEmployee" employee
+      JOIN "KioskClock" clock ON clock."id" = employee."clockId"
+      WHERE employee."id" = ${employeeId} AND clock."organizationId" = ${organizationId}
+      FOR UPDATE OF employee
+    `;
+    if (!clock) throw kioskError('NOT_FOUND', 'No se encontró al colaborador.');
+    const today = localDateKey(now(), clock.timeZone);
+    const effectiveOn = new Date(addDaysToDateKey(today, 1));
+    const latest = await tx.kioskEmployeeSchedule.findFirst({
+      where: { employeeId },
+      orderBy: { effectiveOn: 'desc' },
+    });
+    if (latest && Object.keys(data).every((key) => latest[key] === data[key])) {
+      return { workSchedule: kioskScheduleDto(latest) };
+    }
+    const schedule = await tx.kioskEmployeeSchedule.upsert({
+      where: { employeeId_effectiveOn: { employeeId, effectiveOn } },
+      create: { employeeId, effectiveOn, ...data },
+      update: data,
+    });
+    return { workSchedule: kioskScheduleDto(schedule) };
+  }, { isolationLevel: 'ReadCommitted' });
 }
 
 export async function updateKioskEmployee(organizationId, employeeId, change, db = prisma, nextKey = randomInt) {

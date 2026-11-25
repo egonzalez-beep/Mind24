@@ -113,9 +113,23 @@ model KioskEmployee {
   createdAt DateTime  @default(now())
 
   punches KioskPunch[]
+  schedules KioskEmployeeSchedule[]
 
   @@unique([clockId, code])
   @@unique([clockId, punchKeyDigest])
+}
+
+model KioskEmployeeSchedule {
+  employeeId       String
+  employee         KioskEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  /// Fecha civil en la zona del reloj. Los días laborables corresponden al inicio del turno.
+  effectiveOn      DateTime      @db.Date
+  startMinute      Int
+  endMinute        Int
+  toleranceMinutes Int
+  weekdayMask      Int
+
+  @@id([employeeId, effectiveOn])
 }
 
 model KioskPunch {

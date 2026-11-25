@@ -298,14 +298,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-share{background:linear-gradient(145deg,#fff 38%,#fbf4ff);}
 .kiosk-share-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .kiosk-share-art{width:clamp(94px,11vw,150px);height:auto;flex:none;}
-.kiosk-share-choices,.kiosk-form,.kiosk-person-actions,.kiosk-day-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.kiosk-share-choices,.kiosk-person-actions,.kiosk-day-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .kiosk-share-choices{margin-top:12px;}
 .kiosk-address{margin-top:10px;font-size:12px;color:var(--kiosk-accent);}
 .kiosk-address summary{width:fit-content;cursor:pointer;margin-bottom:6px;font-weight:700;}
 .kiosk-admin .create-input{min-width:0;min-height:38px;width:100%;background:#fcf9ff;border-color:#e2d5ed;color:var(--kiosk-ink);}
 .kiosk-admin label{display:grid;gap:5px;font-size:12px;font-weight:700;color:var(--kiosk-ink);}
-.kiosk-form{align-items:flex-end;margin-top:12px;}
-.kiosk-form label{flex:1 1 115px;min-width:0;}
+.kiosk-staff-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
 .kiosk-primary,.kiosk-open{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:8px 12px;min-height:38px;font:inherit;font-size:13px;font-weight:750;}
 .kiosk-primary{border:1px solid #6525ae;background:linear-gradient(135deg,#7934bf,#5b20a5);color:#fff;cursor:pointer;}
 .kiosk-primary:hover:enabled{background:#51218a;}
@@ -372,6 +371,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-person-registered time{color:var(--kiosk-ink);font-size:12px;font-weight:700;}
 .kiosk-person-actions{justify-content:flex-end;}
 .kiosk-person-actions .kiosk-ghost{min-height:30px;padding:4px 6px;font-size:11px;}
+.kiosk-person-schedule{grid-column:1/-1;order:4;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;background:#faf5fd;color:var(--kiosk-muted);font-size:11px;line-height:1.4;}
+.kiosk-person-schedule span{display:block;}
+.kiosk-person-schedule span+span{margin-top:2px;color:var(--kiosk-accent);font-weight:700;}
+.kiosk-person-schedule .kiosk-ghost{flex:none;min-height:28px;font-size:11px;}
+.kiosk-employee-dialog{width:min(510px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--kiosk-line);border-radius:18px;background:#fff;color:var(--kiosk-ink);box-shadow:0 24px 70px rgb(45 23 67 / .24);overflow:hidden;}
+.kiosk-employee-dialog::backdrop{background:rgb(45 23 67 / .44);}
+.kiosk-employee-dialog form{display:flex;flex-direction:column;max-height:calc(100dvh - 26px);}
+.kiosk-employee-head,.kiosk-employee-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px clamp(12px,3vw,20px);}
+.kiosk-employee-head{border-bottom:1px solid var(--kiosk-line);background:#faf5fd;}
+.kiosk-employee-head h3{margin:0;font-size:20px;letter-spacing:-.03em;}
+.kiosk-employee-head p{margin:4px 0 0;color:var(--kiosk-muted);font-size:12px;overflow-wrap:anywhere;}
+.kiosk-employee-head button{align-self:flex-start;}
+.kiosk-employee-body{overflow:auto;overscroll-behavior:contain;padding:14px clamp(12px,3vw,20px);scrollbar-color:#c8addd #f8f1fd;scrollbar-width:thin;}
+.kiosk-employee-body fieldset{min-width:0;margin:0;padding:0;border:0;}
+.kiosk-employee-body legend{margin-bottom:7px;padding:0;font-size:12px;font-weight:750;}
+.kiosk-employee-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.kiosk-employee-identity{margin-bottom:14px;}
+.kiosk-hours-section{padding:12px;border:1px solid var(--kiosk-line);border-radius:12px;background:#fcf8fe;}
+.kiosk-hours-section h4{margin:0 0 8px;font-size:14px;}
+.kiosk-schedule-time>label{margin-bottom:4px;}
+.kiosk-schedule-time .form-input{min-width:0;padding:7px 8px;background:#fff;}
+.kiosk-schedule-time .tc-emp-edit-period label{position:relative;display:block;cursor:pointer;}
+.kiosk-employee-body [aria-invalid="true"]{border-color:#b34343;}
+.kiosk-schedule-note{margin:7px 0 0;color:var(--kiosk-muted);font-size:12px;}
+.kiosk-schedule-note:empty{display:none;}
+.kiosk-hours-section fieldset{margin-top:12px;}
+.kiosk-schedule-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+.kiosk-schedule-days .kiosk-ghost{padding-inline:0;}
+.kiosk-schedule-days [aria-pressed="true"]{border-color:#c6a3e4;background:#ebdbf8;color:#50217c;}
+.kiosk-schedule-tolerance{margin-top:11px;max-width:150px;}
+.kiosk-employee-footer{justify-content:flex-end;border-top:1px solid var(--kiosk-line);}
+@media(max-width:440px){
+  .kiosk-employee-inputs{grid-template-columns:1fr;}
+  .kiosk-schedule-time .tc-emp-edit-time{max-width:220px;}
+}
 .kiosk-admin .kiosk-mobile-back{display:none;}
 @media(max-width:1100px){
   .kiosk-person{grid-template-columns:minmax(0,1fr) auto;}
@@ -4997,19 +5031,83 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </div>
         </section>
         <section class="kiosk-card" id="kiosk-staff" aria-labelledby="kiosk-staff-title" tabindex="-1">
-          <h2 id="kiosk-staff-title">Personal</h2>
+          <div class="kiosk-staff-head">
+            <h2 id="kiosk-staff-title">Personal</h2>
+            <button id="kiosk-add-employee" type="button" class="kiosk-primary" onclick="kioskOpenEmployee()"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-add"/></svg>Agregar colaborador</button>
+          </div>
           <div class="kiosk-key hidden" id="kiosk-key-box">
             <span id="kiosk-key-label"></span><output id="kiosk-key-value"></output>
             <button type="button" class="card-action" onclick="kioskHideKey()">Ocultar clave</button>
           </div>
-          <form id="kiosk-employee-form" class="kiosk-form" onsubmit="kioskAddEmployee(event)">
-            <label>Nombre completo<input class="create-input" name="fullName" maxlength="160" minlength="2" autocomplete="off" required></label>
-            <label>Número de empleado<input class="create-input" name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9\-]{0,31}" autocomplete="off" required></label>
-            <button type="submit" class="kiosk-primary"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-add"/></svg>Agregar colaborador</button>
-          </form>
           <p id="kiosk-empty">Agrega al primer colaborador para generar su clave de checada.</p>
           <ul id="kiosk-people"></ul>
         </section>
+        <dialog id="kiosk-employee-dialog" class="kiosk-employee-dialog" aria-labelledby="kiosk-employee-title" oncancel="if(kioskAdminBusy)event.preventDefault()">
+          <form id="kiosk-employee-form" onsubmit="kioskSaveEmployee(event)">
+            <header class="kiosk-employee-head">
+              <div><h3 id="kiosk-employee-title">Agregar colaborador</h3><p id="kiosk-employee-context" hidden></p></div>
+              <button type="button" class="kiosk-ghost" aria-label="Cerrar" onclick="this.closest('dialog').close()">✕</button>
+            </header>
+            <div class="kiosk-employee-body">
+              <fieldset id="kiosk-employee-fields">
+                <fieldset class="kiosk-employee-identity" id="kiosk-employee-identity">
+                  <div class="kiosk-employee-inputs">
+                    <label>Nombre completo<input class="create-input" name="fullName" maxlength="160" minlength="2" autocomplete="off" required></label>
+                    <label>Número de empleado<input class="create-input" name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9\-]{0,31}" autocomplete="off" required></label>
+                  </div>
+                </fieldset>
+                <div class="kiosk-hours-section">
+                  <h4>Horario esperado</h4>
+                  <div class="kiosk-employee-inputs" oninput="kioskSyncScheduleTimes(this.closest('form'))">
+              <div class="kiosk-schedule-time">
+                <label for="kiosk-hours-start">Entrada</label>
+                <div class="tc-emp-edit-time">
+                  <input id="kiosk-hours-start" class="form-input" name="start" inputmode="numeric" maxlength="5" placeholder="h:mm" autocomplete="off" required>
+                  <div class="tc-emp-edit-period" role="group" aria-label="AM o PM de entrada">
+                    <label><input type="radio" class="visually-hidden" name="startPeriod" value="am" required><span>AM</span></label>
+                    <label><input type="radio" class="visually-hidden" name="startPeriod" value="pm"><span>PM</span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="kiosk-schedule-time">
+                <label for="kiosk-hours-end">Salida</label>
+                <div class="tc-emp-edit-time">
+                  <input id="kiosk-hours-end" class="form-input" name="end" inputmode="numeric" maxlength="5" placeholder="h:mm" autocomplete="off" required>
+                  <div class="tc-emp-edit-period" role="group" aria-label="AM o PM de salida">
+                    <label><input type="radio" class="visually-hidden" name="endPeriod" value="am" required><span>AM</span></label>
+                    <label><input type="radio" class="visually-hidden" name="endPeriod" value="pm"><span>PM</span></label>
+                  </div>
+                </div>
+              </div>
+                  </div>
+                  <p id="kiosk-next-day" class="kiosk-schedule-note" aria-live="polite"></p>
+                  <fieldset aria-describedby="kiosk-schedule-days-hint">
+                    <legend>Días laborables</legend>
+                    <div class="kiosk-schedule-days">
+                      <button type="button" class="kiosk-ghost" data-day="1" aria-label="Lunes" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
+                      <button type="button" class="kiosk-ghost" data-day="2" aria-label="Martes" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
+                      <button type="button" class="kiosk-ghost" data-day="3" aria-label="Miércoles" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
+                      <button type="button" class="kiosk-ghost" data-day="4" aria-label="Jueves" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
+                      <button type="button" class="kiosk-ghost" data-day="5" aria-label="Viernes" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
+                      <button type="button" class="kiosk-ghost" data-day="6" aria-label="Sábado" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
+                      <button type="button" class="kiosk-ghost" data-day="7" aria-label="Domingo" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+                    </div>
+                    <p id="kiosk-schedule-days-hint" class="kiosk-schedule-note">Selecciona los días en que inicia el turno.</p>
+                  </fieldset>
+                  <label class="kiosk-schedule-tolerance">Tolerancia de entrada (min)
+                    <input type="number" class="create-input" name="toleranceMinutes" value="0" min="0" max="120" step="1" required>
+                  </label>
+                </div>
+                <p id="kiosk-schedule-effective" class="kiosk-schedule-note"></p>
+              </fieldset>
+              <p id="kiosk-employee-error" class="kiosk-message" role="alert"></p>
+            </div>
+            <footer class="kiosk-employee-footer">
+              <button type="button" class="kiosk-ghost" onclick="this.closest('dialog').close()">Cancelar</button>
+              <button type="submit" class="kiosk-primary" id="kiosk-save-employee">Agregar colaborador</button>
+            </footer>
+          </form>
+        </dialog>
         <section class="kiosk-card kiosk-share" id="kiosk-share" aria-labelledby="kiosk-share-title" tabindex="-1">
           <div class="kiosk-share-intro">
             <div><h2 id="kiosk-share-title">Liga de checadas</h2><p>Abre la liga desde la tablet donde checa tu equipo.</p></div>
@@ -6993,6 +7091,7 @@ function kioskOnLeave(){
   kioskCloseCalendar(false);
   kioskExportRequest?.abort();
   kioskExportRequest=null;
+  document.getElementById('kiosk-employee-dialog').close();
   kioskHideKey();
 }
 
@@ -7080,17 +7179,45 @@ function kioskRender(clock){
     toggle.textContent=person.isActive?'Desactivar':'Activar';
     toggle.onclick=()=>kioskMutation(toggle,path,'PATCH',{isActive:!person.isActive});
     actions.append(reset,toggle);
-    row.append(identification,registered,actions);
+    const scheduleLine=document.createElement('div');
+    scheduleLine.className='kiosk-person-schedule';
+    const hours=document.createElement('div');
+    const current=document.createElement('span');
+    const schedule=person.workSchedule;
+    current.textContent=schedule
+      ? tcFormatWorkScheduleSummary(schedule)+(schedule.endsNextDay?' · Sale al día siguiente':'')
+      : 'Sin horario asignado';
+    hours.append(current);
+    if(person.upcomingWorkSchedule){
+      const upcoming=person.upcomingWorkSchedule;
+      const next=document.createElement('span');
+      next.textContent='Desde el '+recAgendaDateLabel(upcoming.effectiveOn,{day:'numeric',month:'short'})+' · '+
+        tcFormatWorkScheduleSummary(upcoming)+(upcoming.endsNextDay?' · Sale al día siguiente':'');
+      hours.append(next);
+    }
+    const edit=document.createElement('button');
+    edit.type='button';
+    edit.className='kiosk-ghost';
+    edit.dataset.scheduleEmployee=person.id;
+    edit.textContent=schedule||person.upcomingWorkSchedule?'Editar horario':'Asignar horario';
+    edit.setAttribute('aria-label',edit.textContent+' de '+person.fullName);
+    edit.onclick=()=>kioskOpenEmployee(person);
+    scheduleLine.append(hours,edit);
+    row.append(identification,registered,actions,scheduleLine);
     rows.append(row);
   }
 }
 
-async function kioskMutation(button,path,method,body,employeeName){
+async function kioskMutation(button,path,method,body,employeeName,form){
   if(kioskAdminBusy)return;
   const currentView=kioskViewVersion;
-  const message=document.getElementById('kiosk-message');
+  const message=document.getElementById(form?'kiosk-employee-error':'kiosk-message');
   kioskAdminBusy=true;
   button.disabled=true;
+  if(form){
+    document.getElementById('kiosk-employee-fields').disabled=true;
+    for(const control of form.querySelectorAll('.kiosk-employee-head button,.kiosk-employee-footer button')) control.disabled=true;
+  }
   message.textContent='';
   kioskHideKey();
   try{
@@ -7101,16 +7228,27 @@ async function kioskMutation(button,path,method,body,employeeName){
       document.getElementById('kiosk-key-value').textContent=result.punchKey;
       document.getElementById('kiosk-key-box').classList.remove('hidden');
     }
-    if(path==='/employees') document.getElementById('kiosk-employee-form').reset();
+    const editId=form?.dataset.employeeId;
+    if(form) form.closest('dialog').close();
     if(result.clock){
       kioskRefreshVersion++;
       document.getElementById('kiosk-loading').classList.add('hidden');
       kioskRender(result.clock);
     }else await kioskRefresh();
+    if(form&&currentView===kioskViewVersion&&document.activeElement===document.body){
+      const next=editId
+        ? document.querySelector('[data-schedule-employee="'+CSS.escape(editId)+'"]')
+        : document.getElementById('kiosk-add-employee');
+      next?.focus({preventScroll:true});
+    }
   }catch(error){
     if(currentView===kioskViewVersion) message.textContent=error.message||'No se pudo guardar el cambio.';
   }finally{
     button.disabled=false;
+    if(form){
+      document.getElementById('kiosk-employee-fields').disabled=false;
+      for(const control of form.querySelectorAll('.kiosk-employee-head button,.kiosk-employee-footer button')) control.disabled=false;
+    }
     kioskAdminBusy=false;
   }
 }
@@ -7222,13 +7360,91 @@ async function kioskLoadDay(date=''){
   }
 }
 
-function kioskAddEmployee(event){
+function kioskOpenEmployee(person){
+  if(kioskAdminBusy) return;
+  const dialog=document.getElementById('kiosk-employee-dialog');
+  const form=document.getElementById('kiosk-employee-form');
+  const edit=Boolean(person);
+  const schedule=person?.upcomingWorkSchedule||person?.workSchedule;
+  form.reset();
+  form.dataset.employeeId=person?.id||'';
+  const identity=document.getElementById('kiosk-employee-identity');
+  identity.hidden=edit;
+  identity.disabled=edit;
+  const action=edit?(schedule?'Editar horario':'Asignar horario'):'Agregar colaborador';
+  document.getElementById('kiosk-employee-title').textContent=action;
+  document.getElementById('kiosk-save-employee').textContent=edit?'Guardar horario':action;
+  const context=document.getElementById('kiosk-employee-context');
+  context.hidden=!edit;
+  context.textContent=edit?person.fullName+' · '+person.code:'';
+  document.getElementById('kiosk-schedule-effective').textContent=edit
+    ? 'El horario se aplicará a partir de mañana, en la zona horaria del reloj.'
+    : 'El horario se aplicará desde la fecha de alta.';
+  document.getElementById('kiosk-employee-error').textContent='';
+  for(const key of ['start','end']){
+    const input=form.elements.namedItem(key);
+    input.removeAttribute('aria-invalid');
+    if(!schedule) continue;
+    const minute=schedule[key+'Minute'];
+    const hour=Math.floor(minute/60);
+    input.value=(hour%12||12)+':'+String(minute%60).padStart(2,'0');
+    form.elements.namedItem(key+'Period').value=hour<12?'am':'pm';
+  }
+  form.elements.namedItem('toleranceMinutes').value=schedule?.toleranceMinutes??0;
+  for(const day of form.querySelectorAll('[data-day]')){
+    day.setAttribute('aria-pressed',String(Boolean(schedule?.weekdays.includes(Number(day.dataset.day)))));
+  }
+  kioskSyncScheduleTimes(form);
+  dialog.showModal();
+  form.elements.namedItem(edit?'start':'fullName').focus({preventScroll:true});
+}
+
+function kioskSyncScheduleTimes(form){
+  const times={};
+  for(const key of ['start','end']){
+    const input=form.elements.namedItem(key);
+    const raw=input.value.trim().replace(/^(\d{1,2})(\d{2})$/,'$1:$2');
+    const {hour,minute}=tcEmpNoshowParseTypedTime(raw);
+    const period=form.elements.namedItem(key+'Period').value;
+    times[key]=hour!=null&&period?tcEmpNoshowTimeToHHmm(hour,minute,period):'';
+    if(times[key]) input.removeAttribute('aria-invalid');
+  }
+  document.getElementById('kiosk-next-day').textContent=times.start&&times.end&&times.end<times.start
+    ? 'La salida es al día siguiente.'
+    : '';
+  return times;
+}
+
+function kioskSaveEmployee(event){
   event.preventDefault();
-  const fields=new FormData(event.currentTarget);
-  const fullName=fields.get('fullName').trim();
-  kioskMutation(event.submitter||event.currentTarget.querySelector('button'),'/employees','POST',{
-    code:fields.get('code').trim(),fullName,
-  },fullName);
+  const form=event.currentTarget;
+  const error=document.getElementById('kiosk-employee-error');
+  error.textContent='';
+  const {start,end}=kioskSyncScheduleTimes(form);
+  if(!start||!end){
+    const input=form.elements.namedItem(!start?'start':'end');
+    input.setAttribute('aria-invalid','true');
+    input.focus();
+    error.textContent='Indica una hora válida de entrada y salida.';
+    return;
+  }
+  const weekdays=Array.from(form.querySelectorAll('[data-day][aria-pressed="true"]'),day=>Number(day.dataset.day));
+  if(!weekdays.length){
+    error.textContent='Selecciona al menos un día laboral.';
+    form.querySelector('[data-day]').focus();
+    return;
+  }
+  const fields=new FormData(form);
+  const workSchedule={start,end,toleranceMinutes:Number(fields.get('toleranceMinutes')),weekdays};
+  const employeeId=form.dataset.employeeId;
+  const button=document.getElementById('kiosk-save-employee');
+  if(employeeId){
+    kioskMutation(button,'/employees/'+encodeURIComponent(employeeId)+'/schedule','PATCH',workSchedule,null,form);
+  }else{
+    const fullName=fields.get('fullName').trim();
+    const code=fields.get('code').trim();
+    kioskMutation(button,'/employees','POST',{code,fullName,workSchedule},fullName,form);
+  }
 }
 
 async function kioskCopyLink(){

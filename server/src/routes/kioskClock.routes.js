@@ -11,10 +11,17 @@ import {
   KIOSK_PUNCH_TYPES,
   recordKioskPunch,
   updateKioskEmployee,
+  updateKioskEmployeeSchedule,
 } from '../services/kioskClock.service.js';
 import { exportKioskWeekPdf } from '../services/kioskClockReport.service.js';
 
 const employeeCode = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/).transform((code) => code.toUpperCase());
+const workSchedule = z.object({
+  start: z.string().length(5),
+  end: z.string().length(5),
+  toleranceMinutes: z.number().int(),
+  weekdays: z.array(z.number().int()).max(7),
+}).strict();
 const credentials = z.object({
   publicKey: z.string().regex(/^[A-Za-z0-9_-]{32}$/),
   punchKey: z.string().regex(/^[0-9]{6}$/),
@@ -80,7 +87,7 @@ kioskClockOrgRoutes.post('/activate', async (req, res, next) => {
 
 kioskClockOrgRoutes.post('/employees', async (req, res, next) => {
   try {
-    const body = z.object({ code: employeeCode, fullName: z.string().trim().min(2).max(160) }).parse(req.body);
+    const body = z.object({ code: employeeCode, fullName: z.string().trim().min(2).max(160), workSchedule }).parse(req.body);
     res.status(201).json(await createKioskEmployee(req.kioskOrganizationId, body));
   } catch (error) {
     next(error);
@@ -91,6 +98,15 @@ kioskClockOrgRoutes.patch('/employees/:id', async (req, res, next) => {
   try {
     const body = employeeChange.parse(req.body);
     res.json(await updateKioskEmployee(req.kioskOrganizationId, req.params.id, body));
+  } catch (error) {
+    next(error);
+  }
+});
+
+kioskClockOrgRoutes.patch('/employees/:id/schedule', async (req, res, next) => {
+  try {
+    const body = workSchedule.parse(req.body);
+    res.json(await updateKioskEmployeeSchedule(req.kioskOrganizationId, req.params.id, body));
   } catch (error) {
     next(error);
   }

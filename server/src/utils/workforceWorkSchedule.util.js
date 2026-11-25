@@ -149,11 +149,11 @@ export function parseWorkScheduleInput(value) {
   if (typeof tolerance !== 'number' || !Number.isInteger(tolerance) || tolerance < 0 || tolerance > 120) {
     throw workScheduleError(WORK_SCHEDULE_TOLERANCE_MESSAGE);
   }
-  const weekdays = parseWeekdays(value.weekdays);
+  const weekdays = parseWorkScheduleWeekdays(value.weekdays);
   return { startMinute, endMinute, toleranceMinutes: tolerance, weekdays, weekdayMask: encodeWeekdayMask(weekdays) };
 }
 
-function parseWeekdays(value) {
+export function parseWorkScheduleWeekdays(value) {
   if (!Array.isArray(value) || value.length < 1 || value.length > 7) {
     throw workScheduleError(WORK_SCHEDULE_DAYS_MESSAGE);
   }
