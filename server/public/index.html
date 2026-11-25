@@ -262,64 +262,130 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item-cta-timeclock.active{border-color:rgba(37,99,235,.55)!important;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12);}
 .sidebar-item-cta-kiosk{border:1px solid var(--purple-mid)!important;background:var(--purple-light)!important;color:var(--purple-dark)!important;}
 .sidebar-item-cta-kiosk:hover,.sidebar-item-cta-kiosk.active{background:var(--purple-mid)!important;border-color:#c4b5fd!important;}
+.kiosk-admin{--kiosk-ink:#2d1743;--kiosk-muted:#654f78;--kiosk-line:#e9ddf5;--kiosk-lavender:#f5eefc;--kiosk-accent:#6525ae;background:#faf7fd;color:var(--kiosk-ink);}
 .kiosk-admin .main-content{min-width:0;}
-.kiosk-admin .sidebar-nav{overflow:auto;min-height:0;scrollbar-width:thin;}
-.kiosk-admin .page-content{width:100%;padding:22px clamp(16px,2.6vw,38px);}
+.kiosk-admin .sidebar{width:230px;padding:18px 0 10px;border:0;background:radial-gradient(ellipse at 105% 115%,#704299 0%,#532773 26%,transparent 46%),linear-gradient(165deg,#37134e,#2d123e 58%,#47215f);}
+.kiosk-admin .sidebar-logo,.kiosk-admin .sidebar-footer{border-color:#ffffff22;}
+.kiosk-admin .sidebar-logo{padding-bottom:15px;margin-bottom:8px;}
+.kiosk-admin .sidebar-footer{padding-block:7px;}
+.kiosk-admin .sidebar-logo-text,.kiosk-admin .sidebar-user-name{color:#fff;}
+.kiosk-admin .sidebar-logo-text span,.kiosk-admin .sidebar-user-role{color:#e4c7f4;}
+.kiosk-admin .sidebar-nav{overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#9e71b8 transparent;}
+.kiosk-admin .sidebar-section-label{padding-top:8px;color:#d2aadf;}
+.kiosk-admin .sidebar-item{padding:5px 9px;border:1px solid transparent!important;background:transparent!important;color:#efe0fa!important;box-shadow:none!important;}
+.kiosk-admin .sidebar-item:hover,.kiosk-admin .sidebar-item.active{background:#ffffff1f!important;color:#fff!important;}
+.kiosk-admin .sidebar-item .si-icon{width:28px;height:28px;background:#ffffff12;color:#fff;}
+.kiosk-admin .sidebar-item .si-icon svg{width:17px;height:17px;}
+.kiosk-admin .sidebar-user:hover{background:#ffffff12;}
+.kiosk-admin .sidebar-footer .back-btn{border-color:#ffffff2b;background:#ffffff12;color:#f5e4ff;}
+.kiosk-section-nav{padding-bottom:9px;margin-bottom:3px;border-bottom:1px solid #ffffff22;}
+.kiosk-section-nav .sidebar-item{font-size:13px;font-weight:650;}
+.kiosk-section-nav .sidebar-item:first-child{background:#ffffff16!important;}
+.kiosk-admin .page-content{width:100%;padding:16px clamp(14px,2.3vw,34px) 24px;}
+.kiosk-hero{position:relative;isolation:isolate;overflow:hidden;min-height:148px;display:flex;align-items:center;flex-shrink:0;padding:32px clamp(14px,2.3vw,34px);background:#fbf7ff;}
+.kiosk-hero h1{position:relative;z-index:1;max-width:100%;margin:0;font-size:clamp(31px,3.2vw,51px);letter-spacing:-.055em;line-height:1.05;color:var(--kiosk-ink);}
+.kiosk-hero-art{position:absolute;z-index:0;right:0;bottom:-2px;width:min(72%,820px);height:100%;pointer-events:none;}
+.kiosk-hero-actions{position:absolute;z-index:1;top:12px;right:clamp(14px,2.3vw,34px);display:flex;gap:6px;}
+.kiosk-ghost{min-height:34px;padding:6px 10px;border:1px solid #e3d4f0;border-radius:9px;background:#fff;color:var(--kiosk-accent);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.kiosk-ghost:hover{background:#f1e5fc;}
+.kiosk-icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .kiosk-stack{display:grid;gap:16px;align-content:start;}
-.kiosk-card{min-width:0;padding:18px;border:1px solid var(--slate-200);border-radius:14px;background:#fff;}
-.kiosk-card h2{font-size:17px;color:var(--primary);margin:0 0 8px;}
-.kiosk-card p{margin:6px 0 12px;color:var(--slate-600);font-size:13px;line-height:1.5;}
-.kiosk-share{background:linear-gradient(110deg,var(--purple-light),#fff 72%);border-color:var(--purple-mid);}
-.kiosk-share-row,.kiosk-form,.kiosk-person-actions,.kiosk-day-tools{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
-.kiosk-share-row{justify-content:space-between;align-items:center;}
-.kiosk-share-row h2,.kiosk-share-row p{margin:0;}
-.kiosk-address{margin-top:10px;font-size:12px;color:var(--purple-dark);}
-.kiosk-address summary{cursor:pointer;margin-bottom:6px;font-weight:650;}
-.kiosk-admin .create-input{min-width:0;min-height:38px;width:100%;}
-.kiosk-admin label{display:grid;gap:5px;font-size:13px;font-weight:700;color:var(--primary);}
-.kiosk-form label{flex:1 1 170px;}
-.kiosk-primary,.kiosk-open{border-radius:8px;padding:9px 13px;min-height:38px;font:inherit;font-size:13px;font-weight:700;}
-.kiosk-primary{border:1px solid var(--purple-dark);background:var(--purple-dark);color:white;cursor:pointer;}
-.kiosk-primary:hover:enabled{background:var(--purple-deep);}
+#kiosk-admin-content{grid-template-columns:minmax(0,1.125fr) minmax(0,1fr);align-items:start;}
+#kiosk-day{grid-column:1/-1;min-width:0;}
+.kiosk-card{min-width:0;padding:clamp(14px,1.65vw,23px);border:1px solid var(--kiosk-line);border-radius:19px;background:#fff;box-shadow:0 3px 12px rgb(76 29 119 / .035);}
+.kiosk-card h2,.kiosk-day-head h2{margin:0;color:var(--kiosk-ink);font-size:clamp(19px,1.75vw,25px);font-weight:800;letter-spacing:-.035em;line-height:1.18;}
+.kiosk-card p{margin:8px 0 13px;color:var(--kiosk-muted);font-size:13px;line-height:1.5;}
+.kiosk-share{background:linear-gradient(145deg,#fff 38%,#fbf4ff);}
+.kiosk-share-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.kiosk-share-art{width:clamp(94px,11vw,150px);height:auto;flex:none;}
+.kiosk-share-choices,.kiosk-form,.kiosk-person-actions,.kiosk-day-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.kiosk-share-choices{margin-top:12px;}
+.kiosk-address{margin-top:10px;font-size:12px;color:var(--kiosk-accent);}
+.kiosk-address summary{width:fit-content;cursor:pointer;margin-bottom:6px;font-weight:700;}
+.kiosk-admin .create-input{min-width:0;min-height:38px;width:100%;background:#fcf9ff;border-color:#e2d5ed;color:var(--kiosk-ink);}
+.kiosk-admin label{display:grid;gap:5px;font-size:12px;font-weight:700;color:var(--kiosk-ink);}
+.kiosk-form{align-items:flex-end;margin-top:12px;}
+.kiosk-form label{flex:1 1 115px;min-width:0;}
+.kiosk-primary,.kiosk-open{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:8px 12px;min-height:38px;font:inherit;font-size:13px;font-weight:750;}
+.kiosk-primary{border:1px solid #6525ae;background:linear-gradient(135deg,#7934bf,#5b20a5);color:#fff;cursor:pointer;}
+.kiosk-primary:hover:enabled{background:#51218a;}
 .kiosk-primary:disabled{opacity:.6;cursor:wait;}
-.kiosk-open{border:1px solid #ddd6fe;color:var(--purple-dark);text-decoration:none;background:white;}
-.kiosk-open:hover{background:var(--purple-mid);}
+.kiosk-open{border:1px solid #e1cdee;color:var(--kiosk-accent);text-decoration:none;background:#fff;}
+.kiosk-open:hover{background:var(--kiosk-lavender);}
+.kiosk-admin :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid #8751bb;outline-offset:2px;}
+.kiosk-admin .sidebar :focus-visible{outline-color:#f4d3ff;}
 .kiosk-message{color:#952727;font-size:13px;}
-.kiosk-message:empty{display:none;}
-.kiosk-key{padding:12px;margin:0 0 12px;background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:var(--purple-dark);}
-.kiosk-day-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin-bottom:12px;}
-.kiosk-day-head h2{margin:0;}
-.kiosk-day-tools .create-input{min-height:36px;}
-.kiosk-day-totals{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap;padding:10px 12px;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);font-size:13px;}
+.kiosk-message:empty,.kiosk-person-meta:empty{display:none;}
+.kiosk-key{padding:10px;margin:10px 0 0;background:var(--kiosk-lavender);border:1px solid var(--kiosk-line);border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;}
+.kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:var(--kiosk-accent);}
+.kiosk-day-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;margin-bottom:10px;}
+.kiosk-day-tools .create-input{min-height:35px;}
+.kiosk-day-totals{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
 .kiosk-day-totals:empty,.kiosk-day-message:empty{display:none;}
-.kiosk-day-table{overflow-x:auto;margin-top:8px;}
-.kiosk-day-table table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
-.kiosk-day-table th,.kiosk-day-table td{padding:10px 8px;border-bottom:1px solid var(--slate-100);vertical-align:top;}
-.kiosk-day-table th{color:var(--slate-600);font-weight:700;}
-.kiosk-day-state{display:inline-block;border-radius:20px;padding:4px 8px;background:var(--slate-100);color:var(--slate-600);white-space:nowrap;font-size:12px;}
-.kiosk-day-state.is-in{background:var(--purple-mid);color:var(--purple-dark);}
-.kiosk-day-state.is-meal{background:#fef3c7;color:#92400e;}
-.kiosk-day-person{min-width:115px;overflow-wrap:anywhere;}
-.kiosk-day-events{display:flex;flex-wrap:wrap;gap:5px 10px;padding:0;margin:0;list-style:none;}
-.kiosk-day-events li{white-space:nowrap;}
-.kiosk-day-events time{font-weight:750;font-variant-numeric:tabular-nums;}
-#kiosk-people{list-style:none;margin:14px 0 0;padding:0;}
-.kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--slate-100);}
-.kiosk-person strong,.kiosk-person-meta{display:block;overflow-wrap:anywhere;}
-.kiosk-person-meta{font-size:12px;color:var(--slate-600);}
+.kiosk-day-message{margin:0 0 10px;color:var(--kiosk-muted);font-size:13px;}
+.kiosk-day-table{border:1px solid var(--kiosk-line);border-radius:17px;background:#fff;}
+.kiosk-day-table table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;text-align:left;}
+.kiosk-day-table th,.kiosk-day-table td{padding:12px clamp(9px,1.25vw,18px);border-bottom:1px solid #f0e7f7;vertical-align:middle;}
+.kiosk-day-table tr:last-child td{border-bottom:0;}
+.kiosk-day-table th{font-size:12px;color:var(--kiosk-muted);font-weight:750;}
+.kiosk-day-table th:first-child{width:26%;}
+.kiosk-day-table th:last-child{width:23%;}
+.kiosk-day-state{--tone:#5d4c73;--wash:#f0ecf5;display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;background:var(--wash);color:var(--tone);font-size:12px;font-weight:700;line-height:1.25;}
+.kiosk-day-state .kiosk-icon{width:14px;height:14px;}
+.kiosk-day-state.is-in,.kiosk-punch[data-kind=CHECK_IN]{--tone:#185b48;--wash:#e1f3eb;}
+.kiosk-day-state.is-meal,.kiosk-punch[data-kind=MEAL_OUT]{--tone:#984426;--wash:#fff0e7;}
+.kiosk-day-state.is-out,.kiosk-punch[data-kind=CHECK_OUT]{--tone:#5e2992;--wash:#f1e8fc;}
+.kiosk-day-state strong{font-variant-numeric:tabular-nums;}
+.kiosk-day-person,.kiosk-person strong,.kiosk-person-meta{overflow-wrap:anywhere;}
+.kiosk-person-identity{display:flex;align-items:center;gap:9px;min-width:0;}
+.kiosk-person-identity strong,.kiosk-person-meta{display:block;}
+.kiosk-person-identity strong{font-size:13px;color:var(--kiosk-ink);line-height:1.35;}
+.kiosk-person-meta{font-size:11px;color:var(--kiosk-muted);line-height:1.35;}
+.kiosk-day-current .kiosk-person-meta{margin-top:4px;}
+.kiosk-avatar{width:38px;height:38px;display:grid;place-items:center;flex:none;border-radius:50%;background:#eadcf8;color:#59327a;font-size:12px;font-weight:800;}
+.kiosk-avatar[data-tone=1]{background:#fce9e5;color:#8c473f;}
+.kiosk-avatar[data-tone=2]{background:#e4f2ee;color:#225c51;}
+.kiosk-day-events{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:0;margin:0;list-style:none;}
+.kiosk-punch{--tone:#65368b;--wash:#f3ebfb;position:relative;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 7px;border:1px solid #ecdef7;border-radius:10px;background:#fdfaff;}
+.kiosk-punch:not(:first-child)::before{content:'';position:absolute;right:100%;width:13px;height:1px;background:#c7a5e1;}
+.kiosk-punch-icon{display:grid;place-items:center;width:22px;height:22px;flex:none;border-radius:7px;color:var(--tone);background:var(--wash);}
+.kiosk-punch-icon .kiosk-icon{width:13px;height:13px;}
+.kiosk-punch-label{color:var(--kiosk-muted);font-size:11px;line-height:1.1;}
+.kiosk-punch time{display:block;color:var(--kiosk-ink);font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;}
+.kiosk-no-events{display:block;width:min(155px,80%);border-top:2px dashed #e3d4ed;}
+#kiosk-people{list-style:none;margin:12px 0 0;padding:0;}
+.kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,.75fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f0e7f7;}
+.kiosk-person .kiosk-avatar{width:32px;height:32px;font-size:11px;}
 .kiosk-person-actions{justify-content:flex-end;}
+.kiosk-person-actions .kiosk-ghost{min-height:30px;padding:4px 6px;font-size:11px;}
 .kiosk-admin .kiosk-mobile-back{display:none;}
-@media(max-width:760px){
+@media(max-width:1100px){
+  .kiosk-person{grid-template-columns:minmax(0,1fr) auto;}
+  .kiosk-person-last{order:3;grid-column:1/-1;padding-left:41px;}
+}
+@media(max-width:930px){
+  #kiosk-admin-content{grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:768px){
   .kiosk-admin .sidebar{display:none;}
   .kiosk-admin .kiosk-mobile-back{display:inline-flex;}
-  .kiosk-admin .topbar,.kiosk-admin .page-content{padding-inline:14px;}
-  .kiosk-admin .topbar{height:auto;min-height:64px;padding-block:8px;gap:8px;flex-wrap:wrap;}
-  .kiosk-card{padding:14px;}
-  .kiosk-day-table th,.kiosk-day-table td{padding:8px 5px;}
-  .kiosk-day-person{min-width:76px;}
-  .kiosk-person{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
-  .kiosk-person-actions{grid-column:1/-1;justify-content:flex-start;}
+  .kiosk-hero{min-height:120px;align-items:flex-end;padding-top:52px;padding-bottom:20px;}
+  .kiosk-hero h1{width:min(225px,100%);}
+  .kiosk-hero-art{width:56%;height:68%;}
+}
+@media(max-width:570px){
+  .kiosk-day-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+  .kiosk-day-table :is(table,tbody){display:block;}
+  .kiosk-day-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"person current" "events events";border-bottom:1px solid #f0e7f7;}
+  .kiosk-day-table tr:last-child{border-bottom:0;}
+  .kiosk-day-table td{border:0;padding:8px 9px;min-width:0;}
+  .kiosk-day-person{grid-area:person;}
+  .kiosk-day-current{grid-area:current;justify-self:end;}
+  .kiosk-day-activity{grid-area:events;}
+  .kiosk-day-events{display:grid;justify-items:start;gap:9px;}
+  .kiosk-punch:not(:first-child)::before{right:auto;left:18px;bottom:100%;width:1px;height:10px;}
+  .kiosk-avatar{width:33px;height:33px;}
+  .kiosk-share-art{width:88px;}
 }
 .si-cta-stack{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.15;}
 .si-cta-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
@@ -4799,9 +4865,27 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 
 <!-- ════════════════════ RELOJ CHECADOR ════════════════════ -->
 <div id="view-dash-kiosk-clock" class="app-shell kiosk-admin hidden">
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="kiosk-icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h2m4 0h2"/></symbol>
+    <symbol id="kiosk-icon-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m1-15a3 3 0 0 1 0 6m2 3a4 4 0 0 1 3 4v2"/></symbol>
+    <symbol id="kiosk-icon-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-1 1a3 3 0 0 0 4 4l4-4a3 3 0 0 0 0-4m1-3 1-1a3 3 0 0 0-4-4L9 8a3 3 0 0 0 0 4"/></symbol>
+    <symbol id="kiosk-icon-external" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9m7-1v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="kiosk-icon-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="kiosk-icon-working" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="kiosk-icon-meal" viewBox="0 0 24 24"><path d="M4 3v6a3 3 0 0 0 6 0V3M7 3v18m11 0V3s-4 2-4 7v2h4"/></symbol>
+    <symbol id="kiosk-icon-in" viewBox="0 0 24 24"><path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5M4 12h11m-4-4 4 4-4 4"/></symbol>
+    <symbol id="kiosk-icon-out" viewBox="0 0 24 24"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5m-2-8h11m-4-4 4 4-4 4"/></symbol>
+    <symbol id="kiosk-icon-return" viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4m-4-4h12a4 4 0 1 0 0-8h-3"/></symbol>
+    <symbol id="kiosk-icon-empty" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2.4 3.5"/></symbol>
+  </svg>
   <aside class="sidebar">
     <div class="sidebar-logo"><div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div><div class="sidebar-badge-service sbs-assess">Mind24 Assess</div></div>
     <nav class="sidebar-nav">
+      <div class="kiosk-section-nav hidden" id="kiosk-section-nav" role="group" aria-label="Secciones del reloj checador">
+        <button type="button" class="sidebar-item" id="kiosk-day-nav" data-skip-sidebar-active="1" onclick="kioskGoToSection('kiosk-day')"><span class="si-icon"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-calendar"/></svg></span><span>Asistencia diaria</span></button>
+        <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="kioskGoToSection('kiosk-staff')"><span class="si-icon"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-people"/></svg></span><span>Personal</span></button>
+        <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="kioskGoToSection('kiosk-share')"><span class="si-icon"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-link"/></svg></span><span>Liga de checadas</span></button>
+      </div>
       <div class="sidebar-section-label">Evaluaciones</div>
       <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','nueva');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">✏️</span><span>Nueva Evaluación</span></button>
       <button type="button" class="sidebar-item" data-skip-sidebar-active="1" onclick="try{localStorage.setItem('active_admin_tab','mis');}catch(_){}showView('dash-crear-eval')"><span class="si-icon">📋</span><span>Mis Evaluaciones</span></button>
@@ -4813,18 +4897,43 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" class="sidebar-item sidebar-item-cta-kiosk active" data-skip-sidebar-active="1" onclick="showView('dash-kiosk-clock')"><span class="si-icon" aria-hidden="true">◷</span><span>Reloj checador</span></button>
     </nav>
     <div class="sidebar-footer">
-      <div class="sidebar-user"><div class="s-avatar av-green" id="kiosk-admin-avatar">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="kiosk-admin-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
+      <div class="sidebar-user"><div class="s-avatar av-purple" id="kiosk-admin-avatar">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="kiosk-admin-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
       <button type="button" class="back-btn" onclick="authLogout()" style="width:100%;margin-top:4px;">Cerrar sesión</button>
     </div>
   </aside>
   <main class="main-content">
-    <div class="topbar">
-      <div class="topbar-title">Reloj checador</div>
-      <div class="topbar-right">
-        <button type="button" class="card-action kiosk-mobile-back" onclick="showView('dash-crear-eval')">Menú principal</button>
-        <button type="button" class="card-action" onclick="kioskRefresh()">Actualizar</button>
+    <header class="kiosk-hero">
+      <h1>Reloj checador</h1>
+      <svg class="kiosk-hero-art" viewBox="0 0 760 165" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
+        <path d="M0 165c96-9 130-62 222-51 77 9 141 46 238 27 125-24 171-83 300-78v102Z" fill="#f0e3fa"/>
+        <path d="M179 141c46-22 67-73 120-70 37 2 72 32 107 31 67-1 105 36 158 27 57-10 82-56 139-54" fill="none" stroke="#8c52ba" stroke-width="2.4" stroke-linecap="round"/>
+        <g transform="translate(263 75)">
+          <path d="M-21 15a23 23 0 0 1 46 0" fill="#ffc1a0"/>
+          <path d="m0-16 0-7m-17 11-5-6m39 6 5-6m-46 26-7-2m55 2 7-2" fill="none" stroke="#d78262" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M-23 26a9 9 0 0 1-1-18 13 13 0 0 1 24 4 8 8 0 1 1 6 14Z" fill="#fffbff" stroke="#8850b2" stroke-width="2.2"/>
+        </g>
+        <g transform="translate(433 78)">
+          <circle cy="3" r="49" fill="#e2ccf4"/>
+          <circle r="46" fill="#fffbff" stroke="#7842ae" stroke-width="3.5"/>
+          <circle r="35" fill="#f8effe"/>
+          <path d="M0-35v6m35 29h-6M0 35v-6m-35-29h6m5-24 4 4m44-4-4 4m4 44-4-4m-44 4 4-4" fill="none" stroke="#a16bc6" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M0-24V0h20" fill="none" stroke="#562385" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle r="4.5" fill="#ed9e7b"/>
+        </g>
+        <g transform="translate(581 111)">
+          <path d="M-24 23h50" fill="none" stroke="#c297df" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M18-15h9a8 8 0 0 1 0 16h-7" fill="none" stroke="#8550aa" stroke-width="2.8"/>
+          <path d="M-25-19h47v19a19 19 0 0 1-19 19h-9A19 19 0 0 1-25 0Z" fill="#ffbda2" stroke="#8550aa" stroke-width="2.6"/>
+          <ellipse cx="-1.5" cy="-19" rx="23.5" ry="4.5" fill="#ffe0c9" stroke="#8550aa" stroke-width="2.2"/>
+          <path d="M-13-29c8-6-7-10 2-17m10 14c8-6-7-10 2-17m10 20c8-6-7-10 2-17" fill="none" stroke="#9658b7" stroke-width="2.2" stroke-linecap="round"/>
+        </g>
+        <circle cx="347" cy="81" r="4" fill="#c091e0"/><circle cx="671" cy="85" r="3.5" fill="#d28cb4"/>
+      </svg>
+      <div class="kiosk-hero-actions">
+        <button type="button" class="kiosk-ghost kiosk-mobile-back" onclick="showView('dash-crear-eval')">Menú principal</button>
+        <button type="button" class="kiosk-ghost" onclick="kioskRefresh()">Actualizar</button>
       </div>
-    </div>
+    </header>
     <div class="page-content kiosk-stack">
       <p id="kiosk-loading" class="hidden" role="status">Cargando reloj checador…</p>
       <p id="kiosk-message" class="kiosk-message" role="alert"></p>
@@ -4834,22 +4943,9 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <button type="button" class="kiosk-primary" onclick="kioskMutation(this,'/activate','POST',{})">Activar reloj checador</button>
       </section>
       <div id="kiosk-admin-content" class="kiosk-stack hidden">
-        <section class="kiosk-card kiosk-share">
-          <div class="kiosk-share-row">
-            <div><h2>Liga de checadas</h2><p>Abre la liga desde la tablet donde checa tu equipo.</p></div>
-            <div class="kiosk-person-actions">
-              <button type="button" class="kiosk-primary" onclick="kioskCopyLink()">Copiar liga</button>
-              <a class="kiosk-open" id="kiosk-open" target="_blank" rel="noopener noreferrer">Abrir checador ↗</a>
-            </div>
-          </div>
-          <details class="kiosk-address"><summary>Ver dirección</summary>
-            <input id="kiosk-link" class="create-input" type="text" aria-label="Liga de checadas" readonly>
-          </details>
-          <span id="kiosk-copy-status" class="kiosk-person-meta" role="status"></span>
-        </section>
-        <section class="kiosk-card hidden" id="kiosk-day">
+        <section class="hidden" id="kiosk-day" aria-labelledby="kiosk-day-title" tabindex="-1">
           <div class="kiosk-day-head">
-            <h2>Asistencia diaria</h2>
+            <h2 id="kiosk-day-title">Asistencia diaria</h2>
             <div class="kiosk-day-tools">
               <label for="kiosk-day-date">Fecha<input id="kiosk-day-date" class="create-input" type="date" onchange="kioskLoadDay(this.value)"></label>
               <button type="button" class="card-action" onclick="kioskLoadDay()">Hoy</button>
@@ -4858,14 +4954,14 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <p id="kiosk-day-message" class="kiosk-day-message" role="status"></p>
           <div id="kiosk-day-totals" class="kiosk-day-totals"></div>
           <div id="kiosk-day-table" class="kiosk-day-table hidden">
-            <table aria-label="Asistencia diaria">
-              <thead><tr><th scope="col">Colaborador</th><th scope="col">Estado</th><th scope="col">Checadas del día</th></tr></thead>
-              <tbody id="kiosk-day-people"></tbody>
+            <table role="table" aria-labelledby="kiosk-day-title">
+              <thead role="rowgroup"><tr role="row"><th scope="col">Colaborador</th><th scope="col">Checadas del día</th><th scope="col">Estado</th></tr></thead>
+              <tbody role="rowgroup" id="kiosk-day-people"></tbody>
             </table>
           </div>
         </section>
-        <section class="kiosk-card">
-          <h2>Personal</h2>
+        <section class="kiosk-card" id="kiosk-staff" aria-labelledby="kiosk-staff-title" tabindex="-1">
+          <h2 id="kiosk-staff-title">Personal</h2>
           <div class="kiosk-key hidden" id="kiosk-key-box">
             <span id="kiosk-key-label"></span><output id="kiosk-key-value"></output>
             <button type="button" class="card-action" onclick="kioskHideKey()">Ocultar clave</button>
@@ -4873,10 +4969,36 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <form id="kiosk-employee-form" class="kiosk-form" onsubmit="kioskAddEmployee(event)">
             <label>Nombre completo<input class="create-input" name="fullName" maxlength="160" minlength="2" autocomplete="off" required></label>
             <label>Número de empleado<input class="create-input" name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9\-]{0,31}" autocomplete="off" required></label>
-            <button type="submit" class="kiosk-primary">Agregar colaborador</button>
+            <button type="submit" class="kiosk-primary"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-add"/></svg>Agregar colaborador</button>
           </form>
           <p id="kiosk-empty">Agrega al primer colaborador para generar su clave de checada.</p>
           <ul id="kiosk-people"></ul>
+        </section>
+        <section class="kiosk-card kiosk-share" id="kiosk-share" aria-labelledby="kiosk-share-title" tabindex="-1">
+          <div class="kiosk-share-intro">
+            <div><h2 id="kiosk-share-title">Liga de checadas</h2><p>Abre la liga desde la tablet donde checa tu equipo.</p></div>
+            <svg class="kiosk-share-art" viewBox="0 0 170 110" aria-hidden="true" focusable="false">
+              <path d="M25 91C11 72 36 29 73 20c32-8 70 2 79 30 6 22-10 44-36 50-24 5-76 6-91-9Z" fill="#fbe6de"/>
+              <g transform="translate(41 15) rotate(-8 46 44)">
+                <rect x="5" y="4" width="91" height="82" rx="12" fill="#ae7cda"/>
+                <rect x="1" y="1" width="91" height="82" rx="12" fill="#d7b5f0" stroke="#754398" stroke-width="2.5"/>
+                <rect x="9" y="9" width="75" height="59" rx="6" fill="#fff9fe"/>
+                <circle cx="46" cy="37" r="18" fill="#f1e5fb" stroke="#8c50b2" stroke-width="2"/>
+                <path d="M46 26v11h8" fill="none" stroke="#682f98" stroke-width="2.7" stroke-linecap="round"/>
+                <path d="M42 75h8" fill="none" stroke="#754398" stroke-width="2.5" stroke-linecap="round"/>
+              </g>
+              <path d="m32 29-11-7m18-1-5-12m10 7 1-9" fill="none" stroke="#d78262" stroke-width="2.8" stroke-linecap="round"/>
+              <circle cx="147" cy="81" r="4" fill="#b585d7"/>
+            </svg>
+          </div>
+          <div class="kiosk-share-choices">
+            <button type="button" class="kiosk-primary" onclick="kioskCopyLink()"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-link"/></svg>Copiar liga</button>
+            <a class="kiosk-open" id="kiosk-open" target="_blank" rel="noopener noreferrer">Abrir checador<svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-external"/></svg></a>
+          </div>
+          <details class="kiosk-address"><summary>Ver dirección</summary>
+            <input id="kiosk-link" class="create-input" type="text" aria-label="Liga de checadas" readonly>
+          </details>
+          <span id="kiosk-copy-status" class="kiosk-person-meta" role="status"></span>
         </section>
       </div>
     </div>
@@ -6632,11 +6754,48 @@ async function aspenProvisionAdmin(e){
 }
 const kioskApi='/api/org/reloj-checador';
 const kioskPunchLabels={CHECK_IN:'Entrada',MEAL_OUT:'Salida a comida',MEAL_IN:'Regreso de comida',CHECK_OUT:'Salida'};
+const kioskPunchIcons={CHECK_IN:'in',MEAL_OUT:'meal',MEAL_IN:'return',CHECK_OUT:'out'};
 let kioskRefreshVersion=0;
 let kioskViewVersion=0;
 let kioskAdminBusy=false;
 let kioskDayVersion=0;
 let kioskDayToday='';
+
+function kioskIcon(name){
+  const ns='http://www.w3.org/2000/svg';
+  const icon=document.createElementNS(ns,'svg');
+  icon.setAttribute('class','kiosk-icon');
+  icon.setAttribute('aria-hidden','true');
+  const use=document.createElementNS(ns,'use');
+  use.setAttribute('href','#kiosk-icon-'+name);
+  icon.append(use);
+  return icon;
+}
+
+function kioskPersonIdentity(person,detail){
+  const identity=document.createElement('div');
+  identity.className='kiosk-person-identity';
+  const avatar=document.createElement('span');
+  avatar.className='kiosk-avatar';
+  avatar.dataset.tone=Array.from(person.code).reduce((sum,letter)=>sum+letter.charCodeAt(0),0)%3;
+  avatar.setAttribute('aria-hidden','true');
+  avatar.textContent=initialsFromName(person.fullName);
+  const text=document.createElement('div');
+  const name=document.createElement('strong');
+  name.textContent=person.fullName;
+  const description=document.createElement('span');
+  description.className='kiosk-person-meta';
+  description.textContent=detail;
+  text.append(name,description);
+  identity.append(avatar,text);
+  return identity;
+}
+
+function kioskGoToSection(sectionId){
+  const section=document.getElementById(sectionId);
+  section.focus({preventScroll:true});
+  section.scrollIntoView({block:'start'});
+}
 
 function kioskHideKey(){
   document.getElementById('kiosk-key-box').classList.add('hidden');
@@ -6656,6 +6815,7 @@ function kioskOnShow(){
   document.getElementById('kiosk-admin-name').textContent=name;
   document.getElementById('kiosk-admin-avatar').textContent=initialsFromName(name);
   document.getElementById('kiosk-admin-content').classList.add('hidden');
+  document.getElementById('kiosk-section-nav').classList.add('hidden');
   document.getElementById('kiosk-setup').classList.add('hidden');
   document.getElementById('kiosk-copy-status').textContent='';
   document.getElementById('kiosk-day-date').value='';
@@ -6682,6 +6842,7 @@ async function kioskRefresh(){
 function kioskRender(clock){
   document.getElementById('kiosk-setup').classList.toggle('hidden',Boolean(clock));
   document.getElementById('kiosk-admin-content').classList.toggle('hidden',!clock);
+  document.getElementById('kiosk-section-nav').classList.toggle('hidden',!clock);
   if(!clock) return;
   const url=new URL('/reloj-checador',location.origin);
   url.hash=clock.publicKey;
@@ -6692,6 +6853,7 @@ function kioskRender(clock){
   rows.replaceChildren();
   document.getElementById('kiosk-empty').classList.toggle('hidden',clock.employees.length>0);
   document.getElementById('kiosk-day').classList.toggle('hidden',clock.employees.length===0);
+  document.getElementById('kiosk-day-nav').classList.toggle('hidden',clock.employees.length===0);
   if(clock.employees.length){
     const selected=document.getElementById('kiosk-day-date').value;
     kioskLoadDay(selected===kioskDayToday?'':selected);
@@ -6699,15 +6861,9 @@ function kioskRender(clock){
   for(const person of clock.employees){
     const row=document.createElement('li');
     row.className='kiosk-person';
-    const identification=document.createElement('div');
-    const name=document.createElement('strong');
-    name.textContent=person.fullName;
-    const detail=document.createElement('span');
-    detail.className='kiosk-person-meta';
-    detail.textContent=person.code+' · '+(person.isActive?'Activo':'Inactivo');
-    identification.append(name,detail);
+    const identification=kioskPersonIdentity(person,person.code+' · '+(person.isActive?'Activo':'Inactivo'));
     const last=document.createElement('div');
-    last.className='kiosk-person-meta';
+    last.className='kiosk-person-meta kiosk-person-last';
     const punch=person.lastPunch;
     last.textContent=punch?kioskPunchLabels[punch.type]+' · '+format.format(new Date(punch.recordedAt)):'Aún sin checadas';
     const actions=document.createElement('div');
@@ -6715,7 +6871,7 @@ function kioskRender(clock){
     const path='/employees/'+encodeURIComponent(person.id);
     const reset=document.createElement('button');
     reset.type='button';
-    reset.className='card-action';
+    reset.className='kiosk-ghost';
     reset.textContent='Renovar clave';
     reset.onclick=()=>{
       if(confirm('¿Renovar la clave de '+person.fullName+'? La anterior dejará de funcionar.')){
@@ -6724,7 +6880,7 @@ function kioskRender(clock){
     };
     const toggle=document.createElement('button');
     toggle.type='button';
-    toggle.className='card-action';
+    toggle.className='kiosk-ghost';
     toggle.textContent=person.isActive?'Desactivar':'Activar';
     toggle.onclick=()=>kioskMutation(toggle,path,'PATCH',{isActive:!person.isActive});
     actions.append(reset,toggle);
@@ -6782,10 +6938,10 @@ async function kioskLoadDay(date=''){
     field.value=result.date;
     const historical=result.date!==result.today;
     const statuses={
-      IN:{label:historical?'Abierta al cierre':'En jornada',className:'is-in'},
-      MEAL:{label:historical?'Comida sin cerrar':'En comida',className:'is-meal'},
-      OUT:{label:'Salida registrada',className:''},
-      NO_PUNCHES:{label:'Sin checadas',className:''},
+      IN:{label:historical?'Abierta al cierre':'En jornada',className:'is-in',icon:'working'},
+      MEAL:{label:historical?'Comida sin cerrar':'En comida',className:'is-meal',icon:'meal'},
+      OUT:{label:'Salida registrada',className:'is-out',icon:'out'},
+      NO_PUNCHES:{label:'Sin checadas',className:'',icon:'empty'},
     };
     message.textContent=result.people.length?'':'No hay colaboradores registrados para esta fecha.';
     if(!result.people.length)return;
@@ -6794,18 +6950,51 @@ async function kioskLoadDay(date=''){
     for(const person of result.people){
       counts[person.status]++;
       const row=rows.insertRow();
+      row.setAttribute('role','row');
       const identity=row.insertCell();
       identity.className='kiosk-day-person';
-      const name=document.createElement('strong');
-      name.textContent=person.fullName;
-      const code=document.createElement('span');
-      code.className='kiosk-person-meta';
-      code.textContent=person.isActive?person.code:person.code+' · Inactivo';
-      identity.append(name,code);
+      identity.setAttribute('role','cell');
+      identity.append(kioskPersonIdentity(person,person.isActive?person.code:person.code+' · Inactivo'));
+      const events=row.insertCell();
+      events.className='kiosk-day-activity';
+      events.setAttribute('role','cell');
+      if(!person.punches.length){
+        const empty=document.createElement('span');
+        empty.className='kiosk-no-events';
+        empty.setAttribute('role','img');
+        empty.setAttribute('aria-label','Sin checadas en esta fecha');
+        events.append(empty);
+      }else{
+        const list=document.createElement('ol');
+        list.className='kiosk-day-events';
+        list.setAttribute('role','list');
+        for(const punch of person.punches){
+          const item=document.createElement('li');
+          item.className='kiosk-punch';
+          item.dataset.kind=punch.type;
+          const icon=document.createElement('span');
+          icon.className='kiosk-punch-icon';
+          icon.append(kioskIcon(kioskPunchIcons[punch.type]));
+          const text=document.createElement('span');
+          const label=document.createElement('span');
+          label.className='kiosk-punch-label';
+          label.textContent=kioskPunchLabels[punch.type];
+          const time=document.createElement('time');
+          time.dateTime=punch.recordedAt;
+          time.textContent=clock.format(new Date(punch.recordedAt));
+          text.append(label,time);
+          item.append(icon,text);
+          list.append(item);
+        }
+        events.append(list);
+      }
       const status=row.insertCell();
+      status.className='kiosk-day-current';
+      status.setAttribute('role','cell');
+      const state=statuses[person.status];
       const badge=document.createElement('span');
-      badge.className='kiosk-day-state '+statuses[person.status].className;
-      badge.textContent=statuses[person.status].label;
+      badge.className='kiosk-day-state '+state.className;
+      badge.append(kioskIcon(state.icon),state.label);
       status.append(badge);
       if(person.carriedIn){
         const carry=document.createElement('small');
@@ -6813,27 +7002,13 @@ async function kioskLoadDay(date=''){
         carry.textContent='Inició antes de este día';
         status.append(carry);
       }
-      const events=row.insertCell();
-      if(!person.punches.length) events.textContent='—';
-      else{
-        const list=document.createElement('ul');
-        list.className='kiosk-day-events';
-        for(const punch of person.punches){
-          const item=document.createElement('li');
-          const time=document.createElement('time');
-          time.dateTime=punch.recordedAt;
-          time.textContent=clock.format(new Date(punch.recordedAt));
-          item.append(time,' '+kioskPunchLabels[punch.type]);
-          list.append(item);
-        }
-        events.append(list);
-      }
     }
     totals.replaceChildren(...Object.entries(statuses).map(([key,status])=>{
       const item=document.createElement('span');
+      item.className='kiosk-day-state '+status.className;
       const value=document.createElement('strong');
       value.textContent=counts[key];
-      item.append(value,' '+status.label.toLowerCase());
+      item.append(kioskIcon(status.icon),value,status.label);
       return item;
     }));
     table.classList.remove('hidden');
