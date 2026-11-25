@@ -8,12 +8,13 @@ import {
   getKioskClock,
   getKioskDailyAttendance,
   identifyKioskEmployee,
-  KIOSK_PUNCH_TYPES,
   recordKioskPunch,
   updateKioskEmployee,
   updateKioskEmployeeSchedule,
 } from '../services/kioskClock.service.js';
 import { exportKioskWeekPdf } from '../services/kioskClockReport.service.js';
+import { saveKioskAttendanceAdjustment } from '../services/kioskAttendanceAdjustment.service.js';
+import { KIOSK_INCIDENTS, KIOSK_PUNCH_TYPES } from '../utils/kioskAttendance.util.js';
 
 const employeeCode = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/).transform((code) => code.toUpperCase());
 const shiftHours = z.object({
@@ -38,6 +39,32 @@ const employeeChange = z.union([
   z.object({ isActive: z.boolean() }).strict(),
   z.object({ renewKey: z.literal(true) }).strict(),
 ]);
+const adjustmentBase = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  requestId: z.string().uuid().transform((id) => id.toLowerCase()),
+  reason: z.string().trim().min(3).max(500),
+});
+const punchTime = {
+  time: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+  nextDay: z.boolean(),
+};
+const adjustment = z.discriminatedUnion('action', [
+  adjustmentBase.extend({ action: z.literal('JUSTIFY'), incident: z.enum(KIOSK_INCIDENTS) }).strict(),
+  adjustmentBase.extend({
+    action: z.literal('EDIT_PUNCH'), ordinal: z.number().int().positive(),
+    previousAt: z.string().datetime(), ...punchTime,
+  }).strict(),
+  adjustmentBase.extend({
+    action: z.literal('ADD_PUNCH'),
+    events: z.union([
+      z.tuple([z.object({ type: z.enum(KIOSK_PUNCH_TYPES), ...punchTime }).strict()]),
+      z.tuple([
+        z.object({ type: z.literal('CHECK_IN'), ...punchTime }).strict(),
+        z.object({ type: z.literal('CHECK_OUT'), ...punchTime }).strict(),
+      ]),
+    ]),
+  }).strict(),
+]);
 
 export const kioskClockOrgRoutes = Router();
 export const kioskClockPublicRoutes = Router();
@@ -45,6 +72,7 @@ export const kioskClockPublicRoutes = Router();
 kioskClockOrgRoutes.use(async (req, res, next) => {
   try {
     const admin = await assertEmpresaAdmin(req.session.userId);
+    req.kioskAdmin = admin;
     req.kioskOrganizationId = admin.organizationId;
     res.set('Cache-Control', 'no-store');
     next();
@@ -110,6 +138,14 @@ kioskClockOrgRoutes.patch('/employees/:id/schedule', async (req, res, next) => {
   try {
     const body = workSchedule.parse(req.body);
     res.json(await updateKioskEmployeeSchedule(req.kioskOrganizationId, req.params.id, body));
+  } catch (error) {
+    next(error);
+  }
+});
+
+kioskClockOrgRoutes.post('/employees/:id/attendance-adjustments', async (req, res, next) => {
+  try {
+    res.json(await saveKioskAttendanceAdjustment(req.kioskAdmin, req.params.id, adjustment.parse(req.body)));
   } catch (error) {
     next(error);
   }

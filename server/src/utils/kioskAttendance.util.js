@@ -1,6 +1,23 @@
 import { addDaysToDateKey } from '../services/remoteWorkSessionHistory.service.js';
 import { utcInstantFromLocalParts } from './timezoneLocalInstant.util.js';
 
+export const KIOSK_PUNCH_TYPES = ['CHECK_IN', 'MEAL_OUT', 'MEAL_IN', 'CHECK_OUT'];
+export const KIOSK_NEXT_PUNCH = {
+  CHECK_IN: ['MEAL_OUT', 'CHECK_OUT'],
+  MEAL_OUT: ['MEAL_IN'],
+  MEAL_IN: ['CHECK_OUT'],
+  CHECK_OUT: ['CHECK_IN'],
+};
+export const KIOSK_INCIDENTS = ['ABSENT', 'LATE', 'INCOMPLETE', 'LATE_EXIT'];
+export const kioskPunchOrder = [{ recordedAt: 'asc' }, { ordinal: 'asc' }];
+export const kioskLatestPunchOrder = [{ recordedAt: 'desc' }, { ordinal: 'desc' }];
+export const kioskAttendancePunchFields = { type: true, recordedAt: true, ordinal: true, originalRecordedAt: true, isManual: true };
+export const kioskAdjustmentFields = { id: true, action: true, reason: true, actorName: true, createdAt: true, incident: true, changes: true };
+
+export function kioskComparePunches(a, b) {
+  return +a.recordedAt - +b.recordedAt || a.ordinal - b.ordinal;
+}
+
 function expectedShift(date, schedule, createdAt, atMinute) {
   if (!schedule) return { kind: 'UNSCHEDULED' };
   const weekday = new Date(date).getUTCDay() || 7;
@@ -21,7 +38,7 @@ function belongsToPreviousShift(recordedAt, prior, current) {
     (current.kind !== 'PLANNED' || recordedAt < current.startAt);
 }
 
-// The input includes civil-day records and the following day's records, in ordinal order.
+// The input includes civil-day records and the following day's records, in chronological order.
 // A continued session belongs to its entry. An entry after midnight can still start the
 // previous overnight shift until that shift ends or the new day's shift begins.
 export function kioskAttendanceForDay(employee, { date, nextStart, now, atMinute }) {

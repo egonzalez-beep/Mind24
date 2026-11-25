@@ -386,6 +386,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-day-flag:is([data-flag="ON_TIME"],[data-flag="COMPLETED"]){background:#e5f4eb;color:#155b43;}
 .kiosk-day-flag[data-flag="LATE"],.kiosk-day-flag[data-flag="INCOMPLETE"]{background:#fff0dc;color:#794019;}
 .kiosk-day-flag[data-flag="ABSENT"]{background:#fbe8ea;color:#942b3a;}
+.kiosk-day-flag[data-justified]{background:#efe5fa;color:#59238c;}
+.kiosk-adjustment-trigger{margin-top:6px;min-height:28px;padding:3px 7px;font-size:11px;}
+.kiosk-punch-source{display:block;color:#6f389d;font-size:10px;font-weight:700;}
+.kiosk-adjustment-modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.kiosk-adjustment-modes [aria-pressed="true"]{border-color:#c098e2;background:#efe0fa;color:#50217c;}
+.kiosk-adjustment-panel{display:grid;gap:9px;}
+.kiosk-adjustment-panel[hidden]{display:none;}
+.kiosk-adjustment-times{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
+.kiosk-admin .kiosk-adjustment-next{display:flex;align-items:center;gap:6px;margin-top:5px;}
+.kiosk-adjustment-next input{accent-color:var(--kiosk-accent);}
+.kiosk-adjustment-reason{margin-top:12px;}
+.kiosk-admin .kiosk-adjustment-reason textarea{resize:vertical;padding:8px;min-height:63px;}
+.kiosk-adjustment-history{margin-top:15px;border-top:1px solid var(--kiosk-line);padding-top:10px;}
+.kiosk-adjustment-history h4{margin:0 0 8px;font-size:13px;}
+.kiosk-adjustment-history li{list-style:none;padding:7px 8px;border-radius:8px;background:#faf5fd;font-size:12px;overflow-wrap:anywhere;}
+.kiosk-adjustment-history li+li{margin-top:5px;}
+.kiosk-adjustment-history small{display:block;margin:2px 0;color:var(--kiosk-muted);}
 @media(max-width:570px){.kiosk-day-incidents{justify-content:flex-end;}}
 #kiosk-people{list-style:none;margin:12px 0 0;padding:0;}
 .kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,.75fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f0e7f7;}
@@ -5062,6 +5079,60 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             </table>
           </div>
         </section>
+        <dialog id="kiosk-adjustment-dialog" class="kiosk-employee-dialog" aria-labelledby="kiosk-adjustment-title" oncancel="if(kioskAdjustmentSaving)event.preventDefault()">
+          <form id="kiosk-adjustment-form" onsubmit="kioskSaveAdjustment(event)">
+            <header class="kiosk-employee-head">
+              <div><h3 id="kiosk-adjustment-title">Gestionar jornada</h3><p id="kiosk-adjustment-person"></p></div>
+              <button type="button" class="kiosk-ghost" aria-label="Cerrar" onclick="this.closest('dialog').close()">✕</button>
+            </header>
+            <div class="kiosk-employee-body">
+              <div class="kiosk-adjustment-modes" role="group" aria-label="Acción de asistencia">
+                <button type="button" class="kiosk-ghost" data-adjustment-mode="JUSTIFY" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Justificar</button>
+                <button type="button" class="kiosk-ghost" data-adjustment-mode="ADD_PUNCH" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Agregar checada</button>
+                <button type="button" class="kiosk-ghost" data-adjustment-mode="EDIT_PUNCH" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Corregir hora</button>
+              </div>
+              <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="JUSTIFY">
+                <label>Incidencia<select name="incident" class="create-input" required></select></label>
+              </fieldset>
+              <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="ADD_PUNCH">
+                <label>Movimiento
+                  <select name="movement" class="create-input" onchange="kioskSyncAdjustmentAdd()" required>
+                    <option value="CHECK_IN">Entrada</option><option value="MEAL_OUT">Salida a comida</option>
+                    <option value="MEAL_IN">Regreso de comida</option><option value="CHECK_OUT">Salida</option>
+                    <option value="PAIR">Entrada y salida</option>
+                  </select>
+                </label>
+                <div class="kiosk-adjustment-times">
+                  <div>
+                    <label><span id="kiosk-adjustment-time-label">Hora</span><input type="time" name="addTime" class="create-input" required></label>
+                    <label class="kiosk-adjustment-next"><input type="checkbox" name="addNextDay"> Al día siguiente</label>
+                  </div>
+                  <fieldset id="kiosk-adjustment-pair">
+                    <label>Hora de salida<input type="time" name="exitTime" class="create-input" required></label>
+                    <label class="kiosk-adjustment-next"><input type="checkbox" name="exitNextDay"> Al día siguiente</label>
+                  </fieldset>
+                </div>
+              </fieldset>
+              <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="EDIT_PUNCH">
+                <label>Checada<select name="ordinal" class="create-input" onchange="kioskSyncAdjustmentEdit()" required></select></label>
+                <label>Hora corregida<input type="time" name="editTime" class="create-input" required></label>
+                <label class="kiosk-adjustment-next"><input type="checkbox" name="editNextDay"> Al día siguiente</label>
+              </fieldset>
+              <label class="kiosk-adjustment-reason">Motivo
+                <textarea name="reason" class="create-input" minlength="3" maxlength="500" required></textarea>
+              </label>
+              <p id="kiosk-adjustment-error" class="kiosk-message" role="alert"></p>
+              <section id="kiosk-adjustment-history" class="kiosk-adjustment-history" aria-labelledby="kiosk-adjustment-history-title" hidden>
+                <h4 id="kiosk-adjustment-history-title">Historial de ajustes</h4>
+                <ul id="kiosk-adjustment-items"></ul>
+              </section>
+            </div>
+            <footer class="kiosk-employee-footer">
+              <button type="button" class="kiosk-ghost" onclick="this.closest('dialog').close()">Cancelar</button>
+              <button type="submit" class="kiosk-primary" id="kiosk-adjustment-save">Guardar</button>
+            </footer>
+          </form>
+        </dialog>
         <section class="kiosk-card" id="kiosk-staff" aria-labelledby="kiosk-staff-title" tabindex="-1">
           <div class="kiosk-staff-head">
             <h2 id="kiosk-staff-title">Personal</h2>
@@ -6938,6 +7009,8 @@ let kioskAdminBusy=false;
 let kioskDayVersion=0;
 let kioskDayToday='';
 let kioskDayTimelineTimer=0;
+let kioskAdjustmentState=null;
+let kioskAdjustmentSaving=false;
 let kioskCalendarMonth='';
 let kioskExportRequest=null;
 
@@ -7137,6 +7210,8 @@ function kioskOnLeave(){
   kioskExportRequest?.abort();
   kioskExportRequest=null;
   document.getElementById('kiosk-employee-dialog').close();
+  document.getElementById('kiosk-adjustment-dialog').close();
+  kioskAdjustmentState=null;
   kioskHideKey();
 }
 
@@ -7332,6 +7407,12 @@ function kioskDayPunchList(punches,formatTime){
     time.dateTime=punch.recordedAt;
     time.textContent=formatTime(punch.recordedAt);
     text.append(label,time);
+    if(punch.isManual||punch.originalRecordedAt){
+      const source=document.createElement('small');
+      source.className='kiosk-punch-source';
+      source.textContent=[punch.isManual?'Manual':'',punch.originalRecordedAt?'Corregida':''].filter(Boolean).join(' · ');
+      text.append(source);
+    }
     item.append(icon,text);
     list.append(item);
   }
@@ -7393,12 +7474,13 @@ function kioskDrawShift(cell,attendance,formatTime,liveTicks){
   cell.append(shift);
 }
 
-function kioskDayFlags(cell,attendance){
-  if(!attendance) return;
+const kioskJustifiableFlags=['ABSENT','LATE','INCOMPLETE','LATE_EXIT'];
+
+function kioskFlagLabels(attendance){
   const lateMinutes=attendance.lateMinutes;
   const lateLabel=lateMinutes===0?'Retardo menor a 1 min'
     :Number.isInteger(lateMinutes)?'Retardo de '+lateMinutes+' min':'Retardo';
-  const labels={
+  return {
     ON_TIME:'A tiempo',LATE:lateLabel,COMPLETED:'Jornada cumplida',ABSENT:'Falta',
     INCOMPLETE:'Checada incompleta',LATE_EXIT:'Salida posterior al horario',
     UNSCHEDULED:attendance.scheduleStartsOn
@@ -7406,6 +7488,12 @@ function kioskDayFlags(cell,attendance){
       : 'Sin horario para este día',
     REST:'Descanso',BEFORE_ENROLLMENT:'Alta posterior al inicio',UNAVAILABLE:'Horario por revisar',
   };
+}
+
+function kioskDayFlags(cell,attendance,adjustments=[]){
+  if(!attendance) return;
+  const labels=kioskFlagLabels(attendance);
+  const justified=new Set(adjustments.filter(item=>item.action==='JUSTIFY').map(item=>item.incident));
   const flags=attendance.kind==='PLANNED'?attendance.flags:[attendance.kind];
   if(!flags.length) return;
   const group=document.createElement('div');
@@ -7415,10 +7503,148 @@ function kioskDayFlags(cell,attendance){
     const label=document.createElement('span');
     label.className='kiosk-day-flag';
     label.dataset.flag=flag;
-    label.textContent=labels[flag];
+    label.textContent=labels[flag]+(justified.has(flag)?' · Con justificación':'');
+    if(justified.has(flag)) label.dataset.justified='';
     group.append(label);
   }
   cell.append(group);
+}
+
+function kioskSetAdjustmentMode(mode){
+  const form=document.getElementById('kiosk-adjustment-form');
+  kioskAdjustmentState.mode=mode;
+  for(const tab of form.querySelectorAll('[data-adjustment-mode]')){
+    tab.setAttribute('aria-pressed',String(tab.dataset.adjustmentMode===mode));
+  }
+  for(const panel of form.querySelectorAll('[data-adjustment-panel]')){
+    panel.hidden=panel.dataset.adjustmentPanel!==mode;
+    panel.disabled=panel.hidden;
+  }
+  document.getElementById('kiosk-adjustment-error').textContent='';
+}
+
+function kioskSyncAdjustmentAdd(){
+  const form=document.getElementById('kiosk-adjustment-form');
+  const pair=form.elements.namedItem('movement').value==='PAIR';
+  const fields=document.getElementById('kiosk-adjustment-pair');
+  fields.hidden=!pair;
+  fields.disabled=!pair;
+  document.getElementById('kiosk-adjustment-time-label').textContent=pair?'Hora de entrada':'Hora';
+}
+
+function kioskSyncAdjustmentEdit(){
+  const { person, day }=kioskAdjustmentState;
+  const form=document.getElementById('kiosk-adjustment-form');
+  const punch=person.attendance.punches.find(item=>item.ordinal===Number(form.elements.namedItem('ordinal').value));
+  if(!punch) return;
+  form.elements.namedItem('editTime').value=new Intl.DateTimeFormat('en-GB',{
+    timeZone:day.timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23',
+  }).format(new Date(punch.recordedAt));
+  form.elements.namedItem('editNextDay').checked=Date.parse(punch.recordedAt)>=Date.parse(day.nextDayAt);
+}
+
+function kioskOpenAdjustment(person,day){
+  if(kioskAdjustmentSaving) return;
+  const form=document.getElementById('kiosk-adjustment-form');
+  const dialog=form.closest('dialog');
+  form.reset();
+  kioskAdjustmentState={person,day};
+  document.getElementById('kiosk-adjustment-person').textContent=person.fullName+' · '+
+    recAgendaDateLabel(day.date,{day:'numeric',month:'long',year:'numeric'});
+  const adjustments=person.adjustments||[];
+  const punches=person.attendance.punches;
+  const labels=kioskFlagLabels(person.attendance);
+  const fullTime=new Intl.DateTimeFormat('es-MX',{
+    timeZone:day.timeZone,dateStyle:'short',timeStyle:'medium',
+  });
+  const format=value=>fullTime.format(new Date(value));
+  const incidents=person.attendance.flags.filter(flag=>kioskJustifiableFlags.includes(flag)&&
+    !adjustments.some(item=>item.action==='JUSTIFY'&&item.incident===flag));
+  form.elements.namedItem('incident').replaceChildren(...incidents.map(flag=>new Option(labels[flag],flag)));
+  form.elements.namedItem('ordinal').replaceChildren(...punches.map(punch=>
+    new Option(kioskPunchLabels[punch.type]+' · '+format(punch.recordedAt),punch.ordinal)));
+  form.querySelector('[data-adjustment-mode="JUSTIFY"]').disabled=!incidents.length;
+  form.querySelector('[data-adjustment-mode="EDIT_PUNCH"]').disabled=!punches.length;
+  const last=punches.at(-1)?.type;
+  form.elements.namedItem('movement').value=last==='MEAL_OUT'?'MEAL_IN':
+    last==='CHECK_IN'||last==='MEAL_IN'?'CHECK_OUT':'PAIR';
+  kioskSyncAdjustmentAdd();
+  kioskSyncAdjustmentEdit();
+  kioskSetAdjustmentMode(incidents.length?'JUSTIFY':punches.length?'EDIT_PUNCH':'ADD_PUNCH');
+
+  const history=document.getElementById('kiosk-adjustment-items');
+  history.replaceChildren();
+  document.getElementById('kiosk-adjustment-history').hidden=!adjustments.length;
+  for(const entry of adjustments){
+    const li=document.createElement('li');
+    const label=document.createElement('strong');
+    label.textContent=entry.action==='JUSTIFY'
+      ? 'Justificación · '+(labels[entry.incident]||'Incidencia')
+      : entry.action==='EDIT_PUNCH'?'Hora corregida':'Checada agregada';
+    const by=document.createElement('small');
+    by.textContent=entry.actorName+' · '+format(entry.createdAt);
+    const reason=document.createElement('div');
+    reason.textContent=entry.reason;
+    li.append(label,by,reason);
+    for(const change of entry.changes||[]){
+      const line=document.createElement('small');
+      line.textContent=kioskPunchLabels[change.type]+' · '+
+        (change.previousAt?format(change.previousAt)+' → ':'')+format(change.recordedAt);
+      li.append(line);
+    }
+    history.append(li);
+  }
+  form.querySelector('.kiosk-employee-body').scrollTop=0;
+  dialog.showModal();
+  form.querySelector('[aria-pressed="true"]').focus({preventScroll:true});
+}
+
+async function kioskSaveAdjustment(event){
+  event.preventDefault();
+  if(kioskAdjustmentSaving) return;
+  const form=event.currentTarget;
+  const state=kioskAdjustmentState;
+  const { person,day,mode }=state;
+  const fields=new FormData(form);
+  const body={action:mode,date:day.date,reason:String(fields.get('reason')).trim()};
+  if(mode==='JUSTIFY'){
+    body.incident=fields.get('incident');
+  }else if(mode==='EDIT_PUNCH'){
+    const punch=person.attendance.punches.find(item=>item.ordinal===Number(fields.get('ordinal')));
+    Object.assign(body,{ordinal:punch.ordinal,previousAt:punch.recordedAt,time:fields.get('editTime'),nextDay:fields.has('editNextDay')});
+  }else{
+    const pair=fields.get('movement')==='PAIR';
+    body.events=[{type:pair?'CHECK_IN':fields.get('movement'),time:fields.get('addTime'),nextDay:fields.has('addNextDay')}];
+    if(pair) body.events.push({type:'CHECK_OUT',time:fields.get('exitTime'),nextDay:fields.has('exitNextDay')});
+  }
+  const fingerprint=JSON.stringify(body);
+  if(state.fingerprint!==fingerprint){
+    state.fingerprint=fingerprint;
+    state.requestId=crypto.randomUUID();
+  }
+  body.requestId=state.requestId;
+  const error=document.getElementById('kiosk-adjustment-error');
+  error.textContent='';
+  const controls=form.querySelectorAll('button:enabled,input:enabled,select:enabled,textarea:enabled');
+  const version=kioskViewVersion;
+  kioskAdjustmentSaving=true;
+  for(const control of controls) control.disabled=true;
+  try{
+    await apiJson(kioskApi+'/employees/'+encodeURIComponent(person.id)+'/attendance-adjustments',{
+      method:'POST',body:JSON.stringify(body),
+    });
+    if(version!==kioskViewVersion) return;
+    form.closest('dialog').close();
+    await kioskLoadDay(day.date);
+    if(version===kioskViewVersion&&document.activeElement===document.body){
+      document.querySelector('[data-adjustment-employee="'+CSS.escape(person.id)+'"]')?.focus({preventScroll:true});
+    }
+  }catch(e){
+    if(version===kioskViewVersion) error.textContent=e.message||'No se pudo guardar el ajuste.';
+  }finally{
+    kioskAdjustmentSaving=false;
+    for(const control of controls) control.disabled=false;
+  }
 }
 
 async function kioskLoadDay(date=''){
@@ -7512,7 +7738,17 @@ async function kioskLoadDay(date=''){
         :stillRunning&&viewStatus==='MEAL'?'En comida':state.label;
       badge.append(kioskIcon(state.icon),stateLabel);
       status.append(badge);
-      kioskDayFlags(status,attendance);
+      kioskDayFlags(status,attendance,person.adjustments);
+      if(attendance){
+        const review=document.createElement('button');
+        review.type='button';
+        review.className='kiosk-ghost kiosk-adjustment-trigger';
+        review.dataset.adjustmentEmployee=person.id;
+        review.textContent=attendance.flags.some(flag=>kioskJustifiableFlags.includes(flag))||person.adjustments?.length?'Revisar':'Ajustar';
+        review.setAttribute('aria-label','Gestionar jornada de '+person.fullName);
+        review.onclick=()=>kioskOpenAdjustment(person,result);
+        status.append(review);
+      }
       if(person.carriedIn&&!planned){
         const carry=document.createElement('small');
         carry.className='kiosk-person-meta';

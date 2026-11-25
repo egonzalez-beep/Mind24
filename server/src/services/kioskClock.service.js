@@ -3,19 +3,15 @@ import { isDeepStrictEqual } from 'node:util';
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { addDaysToDateKey, localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
-import { kioskAttendanceForDay, kioskMinuteLookup } from '../utils/kioskAttendance.util.js';
+import {
+  KIOSK_NEXT_PUNCH, kioskAdjustmentFields, kioskAttendanceForDay, kioskAttendancePunchFields,
+  kioskLatestPunchOrder, kioskMinuteLookup, kioskPunchOrder,
+} from '../utils/kioskAttendance.util.js';
 import {
   decodeWeekdayMask, encodeWeekdayMask, parseHmToMinute, parseWorkScheduleWeekdays,
   WORK_SCHEDULE_MAX_DURATION_MINUTES, WORK_SCHEDULE_TOLERANCE_MESSAGE,
 } from '../utils/workforceWorkSchedule.util.js';
 
-export const KIOSK_PUNCH_TYPES = ['CHECK_IN', 'MEAL_OUT', 'MEAL_IN', 'CHECK_OUT'];
-const NEXT_PUNCH = {
-  CHECK_IN: ['MEAL_OUT', 'CHECK_OUT'],
-  MEAL_OUT: ['MEAL_IN'],
-  MEAL_IN: ['CHECK_OUT'],
-  CHECK_OUT: ['CHECK_IN'],
-};
 const punchFields = { type: true, recordedAt: true, ordinal: true };
 const employeeFields = { id: true, code: true, fullName: true, isActive: true };
 
@@ -103,7 +99,7 @@ export async function getKioskClock(organizationId, db = prisma, now = new Date(
         select: {
           ...employeeFields,
           createdAt: true,
-          punches: { select: punchFields, orderBy: { ordinal: 'desc' }, take: 1 },
+          punches: { select: punchFields, orderBy: kioskLatestPunchOrder, take: 1 },
           schedules: { orderBy: { effectiveOn: 'desc' }, take: 2 },
         },
       },
@@ -125,7 +121,7 @@ export async function getKioskClock(organizationId, db = prisma, now = new Date(
   };
 }
 
-export async function getKioskDailyAttendance(organizationId, requestedDay, db = prisma, now = new Date()) {
+export async function getKioskDailyAttendance(organizationId, requestedDay, db = prisma, now = new Date(), employeeId = null) {
   const clock = await db.kioskClock.findUnique({
     where: { organizationId },
     select: { id: true, timeZone: true },
@@ -144,7 +140,7 @@ export async function getKioskDailyAttendance(organizationId, requestedDay, db =
   const nextEnd = date === today ? end : utcRangeForLocalDateInclusive(nextDate, nextDate, clock.timeZone).end;
   const [employees, previous] = await Promise.all([
     db.kioskEmployee.findMany({
-      where: { clockId: clock.id, createdAt: { lt: end } },
+      where: { clockId: clock.id, createdAt: { lt: end }, ...(employeeId && { id: employeeId }) },
       orderBy: [{ fullName: 'asc' }, { code: 'asc' }],
       select: {
         ...employeeFields,
@@ -156,8 +152,13 @@ export async function getKioskDailyAttendance(organizationId, requestedDay, db =
         },
         punches: {
           where: { recordedAt: { gte: start, lt: nextEnd, lte: now } },
-          orderBy: { ordinal: 'asc' },
-          select: punchFields,
+          orderBy: kioskPunchOrder,
+          select: kioskAttendancePunchFields,
+        },
+        attendanceAdjustments: {
+          where: { date: dateCheck, createdAt: { lte: now } },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          select: kioskAdjustmentFields,
         },
       },
     }),
@@ -167,23 +168,23 @@ export async function getKioskDailyAttendance(organizationId, requestedDay, db =
       JOIN LATERAL (
         SELECT "type" FROM "KioskPunch"
         WHERE "employeeId" = employee."id" AND "recordedAt" < ${start}
-        ORDER BY "ordinal" DESC
+        ORDER BY "recordedAt" DESC, "ordinal" DESC
         LIMIT 1
       ) previous ON previous."type" <> 'CHECK_OUT'
-      WHERE employee."clockId" = ${clock.id}
+      WHERE employee."clockId" = ${clock.id} AND (${employeeId}::text IS NULL OR employee."id" = ${employeeId})
     `,
   ]);
   const priorByEmployee = new Map(previous.map(({ id, type }) => [id, type]));
   const atMinute = kioskMinuteLookup(clock.timeZone);
   const people = employees.flatMap((employee) => {
-    const { punches: allPunches, schedules, createdAt, ...person } = employee;
+    const { punches: allPunches, schedules, createdAt, attendanceAdjustments = [], ...person } = employee;
     const punches = allPunches.filter((punch) => punch.recordedAt < end);
     const priorType = priorByEmployee.get(person.id);
-    if (!person.isActive && !priorType && !punches.length) return [];
+    if (!person.isActive && !priorType && !punches.length && !attendanceAdjustments.length) return [];
     const lastType = punches.at(-1)?.type ?? priorType;
     const status = lastType === 'CHECK_OUT' ? 'OUT' : lastType === 'MEAL_OUT' ? 'MEAL' : lastType ? 'IN' : 'NO_PUNCHES';
     const attendance = kioskAttendanceForDay(employee, { date, nextStart: end, now, atMinute });
-    return [{ ...person, status, carriedIn: Boolean(priorType), punches, attendance }];
+    return [{ ...person, status, carriedIn: Boolean(priorType), punches, attendance, adjustments: attendanceAdjustments }];
   });
   return { date, today, timeZone: clock.timeZone, asOf: now, nextDayAt: end, people };
 }
@@ -296,22 +297,23 @@ async function matchEmployee(db, { publicKey, punchKey }) {
   return { ...employee, digest };
 }
 
-function latestPunch(db, employeeId) {
-  return db.kioskPunch.findFirst({
-    where: { employeeId },
-    select: punchFields,
-    orderBy: { ordinal: 'desc' },
-  });
+export async function kioskPunchState(db, employeeId) {
+  const where = { employeeId };
+  const [latest, highestOrdinal] = await Promise.all([
+    db.kioskPunch.findFirst({ where, select: punchFields, orderBy: kioskLatestPunchOrder }),
+    db.kioskPunch.findFirst({ where, select: { ordinal: true }, orderBy: { ordinal: 'desc' } }),
+  ]);
+  return { latest, revision: highestOrdinal?.ordinal ?? 0 };
 }
 
 export async function identifyKioskEmployee(input, db = prisma) {
   const employee = await matchEmployee(db, input);
-  const lastPunch = await latestPunch(db, employee.id);
+  const { latest, revision } = await kioskPunchState(db, employee.id);
   return {
     fullName: employee.fullName,
     timeZone: employee.clock.timeZone,
-    revision: lastPunch?.ordinal ?? 0,
-    actions: NEXT_PUNCH[lastPunch?.type ?? 'CHECK_OUT'],
+    revision,
+    actions: KIOSK_NEXT_PUNCH[latest?.type ?? 'CHECK_OUT'],
   };
 }
 
@@ -326,15 +328,15 @@ export async function recordKioskPunch(input, db = prisma, now = () => new Date(
 
     const replay = await tx.kioskPunch.findUnique({
       where: { employeeId_requestId: { employeeId: employee.id, requestId: input.requestId } },
-      select: punchFields,
+      select: { ...punchFields, originalRecordedAt: true },
     });
     if (replay && replay.type === input.type && replay.ordinal === input.revision + 1) {
-      return { ...replay, timeZone: employee.clock.timeZone };
+      const { originalRecordedAt, ...effective } = replay;
+      return { ...effective, recordedAt: originalRecordedAt ?? replay.recordedAt, timeZone: employee.clock.timeZone };
     }
 
-    const last = await latestPunch(tx, employee.id);
-    const revision = last?.ordinal ?? 0;
-    if (replay || revision !== input.revision || !NEXT_PUNCH[last?.type ?? 'CHECK_OUT'].includes(input.type)) {
+    const { latest, revision } = await kioskPunchState(tx, employee.id);
+    if (replay || revision !== input.revision || !KIOSK_NEXT_PUNCH[latest?.type ?? 'CHECK_OUT'].includes(input.type)) {
       throw kioskError('INVALID_STATE', 'La jornada cambió. Identifícate de nuevo para ver las acciones disponibles.');
     }
 

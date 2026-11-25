@@ -1,6 +1,8 @@
 import { prisma } from '../db/client.js';
 import { addDaysToDateKey, localDateKey, localMidnightUtc } from './remoteWorkSessionHistory.service.js';
-import { kioskAttendanceForDay, kioskMinuteLookup } from '../utils/kioskAttendance.util.js';
+import {
+  kioskAttendanceForDay, kioskAttendancePunchFields, kioskComparePunches, kioskMinuteLookup, kioskPunchOrder,
+} from '../utils/kioskAttendance.util.js';
 import { formatDurationEs, formatPunctualityWeekLabel, formatTimeEs, resolvePunctualityWeek } from '../utils/workforcePunctuality.util.js';
 import { formatWeekdaySelection } from '../utils/workforceWorkSchedule.util.js';
 import {
@@ -20,6 +22,12 @@ const statusLabels = {
   REST: 'Descanso',
   BEFORE_ENROLLMENT: 'Alta posterior al inicio',
   UNAVAILABLE: 'Horario por revisar',
+};
+const justifiedLabels = {
+  ABSENT: 'Falta justificada',
+  LATE: 'Retardo justificado',
+  INCOMPLETE: 'Checada incompleta justificada',
+  LATE_EXIT: 'Salida posterior justificada',
 };
 
 function measuredTime(punches, attendance) {
@@ -48,7 +56,7 @@ function measuredTime(punches, attendance) {
   return { workedMs, coveredMs };
 }
 
-function dayStatus(attendance, owned, now) {
+function dayStatus(attendance, owned, now, justified) {
   const last = owned.at(-1);
   if (attendance.kind !== 'PLANNED') {
     const progress = last
@@ -58,25 +66,26 @@ function dayStatus(attendance, owned, now) {
   }
   const flags = attendance.flags.filter((flag) => flag !== 'ON_TIME' || !attendance.flags.includes('COMPLETED'));
   const status = flags.includes('INCOMPLETE') ? 'INCOMPLETE' : flags[0] || 'PENDING';
-  const labels = flags.map((flag) => statusLabels[flag]);
+  const labels = flags.map((flag) => justified.has(flag) ? justifiedLabels[flag] : statusLabels[flag]);
   if (!last && !flags.length) labels.push('Pendiente');
   if (last && last.type !== 'CHECK_OUT' && now < attendance.endAt) labels.push('En curso');
   if (last?.type === 'CHECK_OUT' && !flags.includes('COMPLETED') && !flags.includes('LATE_EXIT')) labels.push('Salida registrada');
   return { status, label: labels.join(' · ') };
 }
 
-function buildReportDay(window, attendance, otherPunches, context) {
+function buildReportDay(window, attendance, otherPunches, justified, context) {
   const { timeZone, punchTime, now } = context;
   const { dateKey, end } = window;
   const owned = attendance.punches;
   const last = owned.at(-1);
   const { workedMs, coveredMs } = measuredTime(owned, attendance);
-  const { status, label } = dayStatus(attendance, owned, now);
+  const { status, label } = dayStatus(attendance, owned, now, justified);
   const entry = [];
   const exit = [];
-  const punches = [...owned, ...otherPunches].sort((a, b) => a.ordinal - b.ordinal);
-  for (const { type, recordedAt } of punches) {
-    const time = punchTime.format(recordedAt) + (recordedAt >= end ? ' (+1 día)' : '');
+  const punches = [...owned, ...otherPunches].sort(kioskComparePunches);
+  for (const { type, recordedAt, originalRecordedAt, isManual } of punches) {
+    const annotation = (isManual ? ' (manual)' : '') + (originalRecordedAt ? ' (corregida)' : '');
+    const time = punchTime.format(recordedAt) + (recordedAt >= end ? ' (+1 día)' : '') + annotation;
     switch (type) {
       case 'CHECK_IN': entry.push(entry.length ? 'Entrada ' + time : time); break;
       case 'MEAL_IN': entry.push('Regreso de comida ' + time); break;
@@ -106,7 +115,8 @@ function buildReportDay(window, attendance, otherPunches, context) {
       exit: exit.length ? exit : '—',
       worked: workedMs == null ? '—' : formatDurationEs(workedMs / 1000) + (isOpen ? ' (parcial)' : ''),
       late: attendance.lateMinutes === undefined ? '—' : attendance.lateMinutes === 0 ? '<1 min' : `${attendance.lateMinutes} min`,
-      status: label + (otherPunches.length ? ' · Checada sin entrada identificada' : ''),
+      status: label + (otherPunches.length ? ' · Checada sin entrada identificada' : '') +
+        (justified.size && !attendance.flags.some((flag) => justified.has(flag)) ? ' · Justificación en historial' : ''),
     },
   };
 }
@@ -119,12 +129,20 @@ function reportPerson(employee, windows, context) {
     });
   });
   const claimed = new Set(records.flatMap((attendance) => attendance.punches.map(({ ordinal }) => ordinal)));
+  const justifications = new Map();
+  for (const adjustment of employee.attendanceAdjustments ?? []) {
+    const date = adjustment.date.toISOString().slice(0, 10);
+    if (!justifications.has(date)) justifications.set(date, new Set());
+    justifications.get(date).add(adjustment.incident);
+  }
   const days = windows.slice(1).flatMap((window, i) => {
     const attendance = records[i + 1];
     const otherPunches = employee.punches.filter((punch) =>
       !claimed.has(punch.ordinal) && punch.recordedAt >= window.start && punch.recordedAt < window.end);
-    if (!attendance.punches.length && !otherPunches.length && (!employee.isActive || employee.createdAt >= window.end)) return [];
-    return [buildReportDay(window, attendance, otherPunches, context)];
+    const justified = justifications.get(window.dateKey) ?? new Set();
+    if (!attendance.punches.length && !otherPunches.length && !justified.size &&
+      (!employee.isActive || employee.createdAt >= window.end)) return [];
+    return [buildReportDay(window, attendance, otherPunches, justified, context)];
   });
   if (!days.length) return null;
   const hours = new Map();
@@ -184,8 +202,12 @@ export async function prepareKioskWeekReport(organizationId, week, db = prisma, 
       schedules: { where: { effectiveOn: { lte: new Date(addDaysToDateKey(lastDate, 1)) } }, orderBy: { effectiveOn: 'desc' } },
       punches: {
         where: { recordedAt: { gte: windows[0].start, lt: followingEnd, lte: now } },
-        orderBy: { ordinal: 'asc' },
-        select: { type: true, recordedAt: true, ordinal: true },
+        orderBy: kioskPunchOrder,
+        select: kioskAttendancePunchFields,
+      },
+      attendanceAdjustments: {
+        where: { action: 'JUSTIFY', date: { gte: new Date(weekStart), lte: new Date(lastDate) }, createdAt: { lte: now } },
+        select: { date: true, incident: true },
       },
     },
   });
@@ -199,7 +221,7 @@ export async function prepareKioskWeekReport(organizationId, week, db = prisma, 
     weekLabel: formatPunctualityWeekLabel(weekStart, timeZone),
     generatedAtLabel: formatReportGeneratedAt(now, timeZone),
     summary: summarizePunctualityReports(people),
-    summaryNote: 'La cobertura mide cuánto del horario previsto respaldan las checadas. El tiempo trabajado descuenta la comida registrada.',
+    summaryNote: 'La cobertura mide cuánto del horario previsto respaldan las checadas. El tiempo trabajado descuenta la comida registrada. Los indicadores reflejan las checadas, incluidas las incidencias justificadas.',
     people,
   };
   return { ...model, html: buildWeeklyPunctualityReportDocument(model), filename: `mind24-checadas-${weekStart}.pdf` };

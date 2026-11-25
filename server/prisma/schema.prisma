@@ -114,6 +114,7 @@ model KioskEmployee {
 
   punches KioskPunch[]
   schedules KioskEmployeeSchedule[]
+  attendanceAdjustments KioskAttendanceAdjustment[]
 
   @@unique([clockId, code])
   @@unique([clockId, punchKeyDigest])
@@ -141,10 +142,37 @@ model KioskPunch {
   ordinal    Int
   type       KioskPunchType
   recordedAt DateTime      @db.Timestamptz(6)
+  originalRecordedAt DateTime? @db.Timestamptz(6)
+  isManual   Boolean       @default(false)
   requestId  String        @db.Uuid
 
   @@unique([employeeId, ordinal])
   @@unique([employeeId, requestId])
+  @@index([employeeId, recordedAt, ordinal])
+}
+
+enum KioskAttendanceAction {
+  JUSTIFY
+  ADD_PUNCH
+  EDIT_PUNCH
+}
+
+model KioskAttendanceAdjustment {
+  id          String               @id @default(cuid())
+  employeeId  String
+  employee    KioskEmployee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        DateTime             @db.Date
+  requestId   String               @db.Uuid
+  action      KioskAttendanceAction
+  reason      String               @db.VarChar(500)
+  actorId     String
+  actorName   String
+  createdAt   DateTime             @default(now()) @db.Timestamptz(6)
+  incident    String?              @db.VarChar(32)
+  changes     Json                 @default("[]")
+
+  @@unique([employeeId, requestId])
+  @@index([employeeId, date, createdAt])
 }
 
 enum WorkforceRecruitmentNovedadEventType {

@@ -438,7 +438,8 @@ const reportDb = {
     async findMany({ where, select }) {
       assert.equal(where.clockId, 'clock-report');
       const { gte, lt, lte } = select.punches.where.recordedAt;
-      assert.deepEqual(Object.keys(select.punches.select), ['type', 'recordedAt', 'ordinal']);
+      assert.deepEqual(Object.keys(select.punches.select), ['type', 'recordedAt', 'ordinal', 'originalRecordedAt', 'isManual']);
+      assert.deepEqual(Object.keys(select.attendanceAdjustments.select), ['date', 'incident']);
       assert.equal(select.punchKeyDigest, undefined);
       return reportEmployees.map((employee) => ({
         ...employee,
