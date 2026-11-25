@@ -393,6 +393,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-adjustment-modes [aria-pressed="true"]{border-color:#c098e2;background:#efe0fa;color:#50217c;}
 .kiosk-adjustment-panel{display:grid;gap:9px;}
 .kiosk-adjustment-panel[hidden]{display:none;}
+.kiosk-refresh-icon{display:grid;place-items:center;width:36px;padding:0;}
+.kiosk-adjustment-field{display:grid;gap:5px;min-width:0;}
+.kiosk-adjustment-field>span{font-size:12px;font-weight:700;color:var(--kiosk-ink);}
+.kiosk-adjustment-field .rec-cand-form-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;text-align:left;cursor:pointer;}
+.kiosk-adjustment-field .rec-cand-form-picker-trigger[hidden]{display:none;}
+#kiosk-adjustment-picker .rec-cand-ms-list{max-height:none;}
 .kiosk-adjustment-times{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
 .kiosk-admin .kiosk-adjustment-next{display:flex;align-items:center;gap:6px;margin-top:5px;}
 .kiosk-adjustment-next input{accent-color:var(--kiosk-accent);}
@@ -4965,6 +4971,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
     <symbol id="kiosk-icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h2m4 0h2"/></symbol>
     <symbol id="kiosk-icon-download" viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="kiosk-icon-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5 10a7.5 7.5 0 0 1 12.8-4L20 9M4 15l2.2 3A7.5 7.5 0 0 0 19 14"/></symbol>
     <symbol id="kiosk-icon-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m1-15a3 3 0 0 1 0 6m2 3a4 4 0 0 1 3 4v2"/></symbol>
     <symbol id="kiosk-icon-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-1 1a3 3 0 0 0 4 4l4-4a3 3 0 0 0 0-4m1-3 1-1a3 3 0 0 0-4-4L9 8a3 3 0 0 0 0 4"/></symbol>
     <symbol id="kiosk-icon-external" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9m7-1v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
@@ -5029,7 +5036,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       </svg>
       <div class="kiosk-hero-actions">
         <button type="button" class="kiosk-ghost kiosk-mobile-back" onclick="showView('dash-crear-eval')">Menú principal</button>
-        <button type="button" class="kiosk-ghost" onclick="kioskRefresh()">Actualizar</button>
+        <button type="button" class="kiosk-ghost kiosk-refresh-icon" aria-label="Actualizar" title="Actualizar" onclick="kioskRefresh()"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-refresh"/></svg></button>
       </div>
     </header>
     <div class="page-content kiosk-stack">
@@ -5085,37 +5092,47 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
               <div><h3 id="kiosk-adjustment-title">Gestionar jornada</h3><p id="kiosk-adjustment-person"></p></div>
               <button type="button" class="kiosk-ghost" aria-label="Cerrar" onclick="this.closest('dialog').close()">✕</button>
             </header>
-            <div class="kiosk-employee-body">
+            <div class="kiosk-employee-body" onscroll="kioskTrackAdjustmentPicker()" oninput="kioskTimeEditorInput(event)" onpaste="kioskSchedulePaste(event)">
               <div class="kiosk-adjustment-modes" role="group" aria-label="Acción de asistencia">
                 <button type="button" class="kiosk-ghost" data-adjustment-mode="JUSTIFY" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Justificar</button>
                 <button type="button" class="kiosk-ghost" data-adjustment-mode="ADD_PUNCH" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Agregar checada</button>
                 <button type="button" class="kiosk-ghost" data-adjustment-mode="EDIT_PUNCH" onclick="kioskSetAdjustmentMode(this.dataset.adjustmentMode)">Corregir hora</button>
               </div>
               <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="JUSTIFY">
-                <label>Incidencia<select name="incident" class="create-input" required></select></label>
+                <div class="kiosk-adjustment-field">
+                  <span id="kiosk-adjustment-incident-label">Incidencia</span>
+                  <select name="incident" class="create-input" aria-labelledby="kiosk-adjustment-incident-label" hidden required></select>
+                  <button type="button" id="kiosk-adjustment-incident-trigger" class="create-input rec-cand-form-picker-trigger" aria-labelledby="kiosk-adjustment-incident-label kiosk-adjustment-incident-trigger" aria-controls="kiosk-adjustment-picker" aria-expanded="false" aria-haspopup="dialog" onclick="kioskOpenAdjustmentPicker(this)"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+                </div>
               </fieldset>
               <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="ADD_PUNCH">
-                <label>Movimiento
-                  <select name="movement" class="create-input" onchange="kioskSyncAdjustmentAdd()" required>
+                <div class="kiosk-adjustment-field">
+                  <span id="kiosk-adjustment-movement-label">Movimiento</span>
+                  <select name="movement" class="create-input" aria-labelledby="kiosk-adjustment-movement-label" onchange="kioskSyncAdjustmentAdd()" hidden required>
                     <option value="CHECK_IN">Entrada</option><option value="MEAL_OUT">Salida a comida</option>
                     <option value="MEAL_IN">Regreso de comida</option><option value="CHECK_OUT">Salida</option>
                     <option value="PAIR">Entrada y salida</option>
                   </select>
-                </label>
+                  <button type="button" id="kiosk-adjustment-movement-trigger" class="create-input rec-cand-form-picker-trigger" aria-labelledby="kiosk-adjustment-movement-label kiosk-adjustment-movement-trigger" aria-controls="kiosk-adjustment-picker" aria-expanded="false" aria-haspopup="dialog" onclick="kioskOpenAdjustmentPicker(this)"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+                </div>
                 <div class="kiosk-adjustment-times">
                   <div>
-                    <label><span id="kiosk-adjustment-time-label">Hora</span><input type="time" name="addTime" class="create-input" required></label>
+                    <div data-adjustment-time="add">Hora</div>
                     <label class="kiosk-adjustment-next"><input type="checkbox" name="addNextDay"> Al día siguiente</label>
                   </div>
                   <fieldset id="kiosk-adjustment-pair">
-                    <label>Hora de salida<input type="time" name="exitTime" class="create-input" required></label>
+                    <div data-adjustment-time="exit">Hora de salida</div>
                     <label class="kiosk-adjustment-next"><input type="checkbox" name="exitNextDay"> Al día siguiente</label>
                   </fieldset>
                 </div>
               </fieldset>
               <fieldset class="kiosk-adjustment-panel" data-adjustment-panel="EDIT_PUNCH">
-                <label>Checada<select name="ordinal" class="create-input" onchange="kioskSyncAdjustmentEdit()" required></select></label>
-                <label>Hora corregida<input type="time" name="editTime" class="create-input" required></label>
+                <div class="kiosk-adjustment-field">
+                  <span id="kiosk-adjustment-ordinal-label">Checada</span>
+                  <select name="ordinal" class="create-input" aria-labelledby="kiosk-adjustment-ordinal-label" onchange="kioskSyncAdjustmentEdit()" hidden required></select>
+                  <button type="button" id="kiosk-adjustment-ordinal-trigger" class="create-input rec-cand-form-picker-trigger" aria-labelledby="kiosk-adjustment-ordinal-label kiosk-adjustment-ordinal-trigger" aria-controls="kiosk-adjustment-picker" aria-expanded="false" aria-haspopup="dialog" onclick="kioskOpenAdjustmentPicker(this)"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+                </div>
+                <div data-adjustment-time="edit">Hora corregida</div>
                 <label class="kiosk-adjustment-next"><input type="checkbox" name="editNextDay"> Al día siguiente</label>
               </fieldset>
               <label class="kiosk-adjustment-reason">Motivo
@@ -5132,6 +5149,9 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
               <button type="submit" class="kiosk-primary" id="kiosk-adjustment-save">Guardar</button>
             </footer>
           </form>
+          <div id="kiosk-adjustment-picker" class="rec-cand-ms-menu rec-cand-form-picker" popover="auto" role="dialog" aria-label="Opciones de jornada" onkeydown="kioskAdjustmentPickerKey(event)" onbeforetoggle="kioskAdjustmentPickerState(event)">
+            <div class="rec-cand-ms-list"></div>
+          </div>
         </dialog>
         <section class="kiosk-card" id="kiosk-staff" aria-labelledby="kiosk-staff-title" tabindex="-1">
           <div class="kiosk-staff-head">
@@ -7210,6 +7230,7 @@ function kioskOnLeave(){
   kioskExportRequest?.abort();
   kioskExportRequest=null;
   document.getElementById('kiosk-employee-dialog').close();
+  kioskCloseAdjustmentPicker();
   document.getElementById('kiosk-adjustment-dialog').close();
   kioskAdjustmentState=null;
   kioskHideKey();
@@ -7483,9 +7504,7 @@ function kioskFlagLabels(attendance){
   return {
     ON_TIME:'A tiempo',LATE:lateLabel,COMPLETED:'Jornada cumplida',ABSENT:'Falta',
     INCOMPLETE:'Checada incompleta',LATE_EXIT:'Salida posterior al horario',
-    UNSCHEDULED:attendance.scheduleStartsOn
-      ? 'Horario programado desde el '+recAgendaDateLabel(attendance.scheduleStartsOn,{day:'numeric',month:'long'})
-      : 'Sin horario para este día',
+    UNSCHEDULED:attendance.scheduleStartsOn?'':'Sin horario para este día',
     REST:'Descanso',BEFORE_ENROLLMENT:'Alta posterior al inicio',UNAVAILABLE:'Horario por revisar',
   };
 }
@@ -7495,7 +7514,7 @@ function kioskDayFlags(cell,attendance,adjustments=[]){
   const labels=kioskFlagLabels(attendance);
   const justified=new Set(adjustments.filter(item=>item.action==='JUSTIFY').map(item=>item.incident));
   const flags=attendance.kind==='PLANNED'?attendance.flags:[attendance.kind];
-  if(!flags.length) return;
+  if(!flags.length||!flags.some(flag=>labels[flag])) return;
   const group=document.createElement('div');
   group.className='kiosk-day-incidents';
   for(const flag of flags){
@@ -7512,6 +7531,7 @@ function kioskDayFlags(cell,attendance,adjustments=[]){
 
 function kioskSetAdjustmentMode(mode){
   const form=document.getElementById('kiosk-adjustment-form');
+  kioskCloseAdjustmentPicker();
   kioskAdjustmentState.mode=mode;
   for(const tab of form.querySelectorAll('[data-adjustment-mode]')){
     tab.setAttribute('aria-pressed',String(tab.dataset.adjustmentMode===mode));
@@ -7529,7 +7549,8 @@ function kioskSyncAdjustmentAdd(){
   const fields=document.getElementById('kiosk-adjustment-pair');
   fields.hidden=!pair;
   fields.disabled=!pair;
-  document.getElementById('kiosk-adjustment-time-label').textContent=pair?'Hora de entrada':'Hora';
+  const editor=form.querySelector('[data-adjustment-time="add"] .kiosk-schedule-time-title');
+  editor.textContent=pair?'Hora de entrada':'Hora de la checada';
 }
 
 function kioskSyncAdjustmentEdit(){
@@ -7537,17 +7558,107 @@ function kioskSyncAdjustmentEdit(){
   const form=document.getElementById('kiosk-adjustment-form');
   const punch=person.attendance.punches.find(item=>item.ordinal===Number(form.elements.namedItem('ordinal').value));
   if(!punch) return;
-  form.elements.namedItem('editTime').value=new Intl.DateTimeFormat('en-GB',{
+  const [hour,minute]=new Intl.DateTimeFormat('en-GB',{
     timeZone:day.timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23',
-  }).format(new Date(punch.recordedAt));
+  }).format(new Date(punch.recordedAt)).split(':').map(Number);
+  kioskSetTimeEditor(form.querySelector('[data-adjustment-time="edit"] .kiosk-schedule-time'),hour*60+minute);
   form.elements.namedItem('editNextDay').checked=Date.parse(punch.recordedAt)>=Date.parse(day.nextDayAt);
+}
+
+function kioskPrepareAdjustmentInputs(form){
+  for(const host of form.querySelectorAll('[data-adjustment-time]')){
+    if(!host.querySelector('.kiosk-schedule-time')){
+      const part=host.dataset.adjustmentTime;
+      const description={add:'la checada',exit:'salida',edit:'la corrección'}[part];
+      host.replaceChildren(kioskCreateTimeEditor(host.textContent,'adjustment-'+part,description));
+    }
+  }
+  if(typeof document.getElementById('kiosk-adjustment-picker').showPopover!=='function'){
+    for(const select of form.querySelectorAll('select')){
+      select.hidden=false;
+      select.nextElementSibling.hidden=true;
+    }
+  }
+}
+
+function kioskOpenAdjustmentPicker(trigger){
+  const picker=document.getElementById('kiosk-adjustment-picker');
+  const select=trigger.previousElementSibling;
+  const same=picker.matches(':popover-open')&&kioskAdjustmentState.pickerSelect===select;
+  kioskCloseAdjustmentPicker();
+  if(same) return;
+  kioskAdjustmentState.pickerSelect=select;
+  picker.setAttribute('aria-label',document.getElementById(select.getAttribute('aria-labelledby')).textContent);
+  const choices=Array.from(select.options,option=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='rec-cand-ms-option';
+    button.textContent=option.label;
+    button.disabled=option.disabled;
+    button.setAttribute('aria-pressed',String(option.selected));
+    button.onclick=()=>{
+      select.value=option.value;
+      recCandFormSyncSelectPicker(select);
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+      kioskCloseAdjustmentPicker(true);
+    };
+    return button;
+  });
+  picker.querySelector('.rec-cand-ms-list').replaceChildren(...choices);
+  m24PositionAnchoredPicker(picker,trigger);
+  picker.showPopover({source:trigger});
+  trigger.setAttribute('aria-expanded','true');
+  (choices.find(button=>button.getAttribute('aria-pressed')==='true'&&!button.disabled)||choices.find(button=>!button.disabled))?.focus();
+}
+
+function kioskAdjustmentPickerState(event){
+  if(event.newState!=='closed') return;
+  const select=kioskAdjustmentState?.pickerSelect;
+  select?.nextElementSibling.setAttribute('aria-expanded','false');
+  if(kioskAdjustmentState) kioskAdjustmentState.pickerSelect=null;
+}
+
+function kioskCloseAdjustmentPicker(restoreFocus=false){
+  const picker=document.getElementById('kiosk-adjustment-picker');
+  if(typeof picker.hidePopover!=='function'||!picker.matches(':popover-open')) return;
+  const trigger=kioskAdjustmentState?.pickerSelect?.nextElementSibling;
+  picker.hidePopover();
+  if(restoreFocus) trigger?.focus({preventScroll:true});
+}
+
+function kioskTrackAdjustmentPicker(){
+  const trigger=kioskAdjustmentState?.pickerSelect?.nextElementSibling;
+  if(!trigger) return;
+  const picker=document.getElementById('kiosk-adjustment-picker');
+  const field=trigger.getBoundingClientRect();
+  const body=trigger.closest('.kiosk-employee-body').getBoundingClientRect();
+  if(field.bottom<=body.top||field.top>=body.bottom) kioskCloseAdjustmentPicker();
+  else m24PositionAnchoredPicker(picker,trigger);
+}
+
+function kioskAdjustmentPickerKey(event){
+  if(event.key==='Escape'){
+    event.preventDefault();
+    event.stopPropagation();
+    kioskCloseAdjustmentPicker(true);
+    return;
+  }
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
+  const choices=Array.from(event.currentTarget.querySelectorAll('button:not(:disabled)'));
+  const index=choices.indexOf(event.target);
+  const next=event.key==='Home'?0:event.key==='End'?choices.length-1:
+    index+(event.key==='ArrowDown'?1:-1);
+  event.preventDefault();
+  choices[Math.max(0,Math.min(next,choices.length-1))]?.focus();
 }
 
 function kioskOpenAdjustment(person,day){
   if(kioskAdjustmentSaving) return;
   const form=document.getElementById('kiosk-adjustment-form');
   const dialog=form.closest('dialog');
+  kioskPrepareAdjustmentInputs(form);
   form.reset();
+  for(const input of form.querySelectorAll('[aria-invalid]')) input.removeAttribute('aria-invalid');
   kioskAdjustmentState={person,day};
   document.getElementById('kiosk-adjustment-person').textContent=person.fullName+' · '+
     recAgendaDateLabel(day.date,{day:'numeric',month:'long',year:'numeric'});
@@ -7568,6 +7679,7 @@ function kioskOpenAdjustment(person,day){
   const last=punches.at(-1)?.type;
   form.elements.namedItem('movement').value=last==='MEAL_OUT'?'MEAL_IN':
     last==='CHECK_IN'||last==='MEAL_IN'?'CHECK_OUT':'PAIR';
+  for(const select of form.querySelectorAll('select')) recCandFormSyncSelectPicker(select);
   kioskSyncAdjustmentAdd();
   kioskSyncAdjustmentEdit();
   kioskSetAdjustmentMode(incidents.length?'JUSTIFY':punches.length?'EDIT_PUNCH':'ADD_PUNCH');
@@ -7606,16 +7718,31 @@ async function kioskSaveAdjustment(event){
   const state=kioskAdjustmentState;
   const { person,day,mode }=state;
   const fields=new FormData(form);
+  const error=document.getElementById('kiosk-adjustment-error');
+  error.textContent='';
+  const readTime=(part)=>{
+    const value=kioskReadTimeEditor(form.querySelector('[data-adjustment-time="'+part+'"] .kiosk-schedule-time'),true);
+    if(!value) error.textContent='Escribe una hora válida y selecciona AM o PM.';
+    return value;
+  };
   const body={action:mode,date:day.date,reason:String(fields.get('reason')).trim()};
   if(mode==='JUSTIFY'){
     body.incident=fields.get('incident');
   }else if(mode==='EDIT_PUNCH'){
     const punch=person.attendance.punches.find(item=>item.ordinal===Number(fields.get('ordinal')));
-    Object.assign(body,{ordinal:punch.ordinal,previousAt:punch.recordedAt,time:fields.get('editTime'),nextDay:fields.has('editNextDay')});
+    const time=readTime('edit');
+    if(!time) return;
+    Object.assign(body,{ordinal:punch.ordinal,previousAt:punch.recordedAt,time,nextDay:fields.has('editNextDay')});
   }else{
     const pair=fields.get('movement')==='PAIR';
-    body.events=[{type:pair?'CHECK_IN':fields.get('movement'),time:fields.get('addTime'),nextDay:fields.has('addNextDay')}];
-    if(pair) body.events.push({type:'CHECK_OUT',time:fields.get('exitTime'),nextDay:fields.has('exitNextDay')});
+    const time=readTime('add');
+    if(!time) return;
+    body.events=[{type:pair?'CHECK_IN':fields.get('movement'),time,nextDay:fields.has('addNextDay')}];
+    if(pair){
+      const exitTime=readTime('exit');
+      if(!exitTime) return;
+      body.events.push({type:'CHECK_OUT',time:exitTime,nextDay:fields.has('exitNextDay')});
+    }
   }
   const fingerprint=JSON.stringify(body);
   if(state.fingerprint!==fingerprint){
@@ -7623,8 +7750,6 @@ async function kioskSaveAdjustment(event){
     state.requestId=crypto.randomUUID();
   }
   body.requestId=state.requestId;
-  const error=document.getElementById('kiosk-adjustment-error');
-  error.textContent='';
   const controls=form.querySelectorAll('button:enabled,input:enabled,select:enabled,textarea:enabled');
   const version=kioskViewVersion;
   kioskAdjustmentSaving=true;
@@ -7813,14 +7938,8 @@ function kioskOpenEmployee(person){
     if(day!=='regular') group.closest('[data-weekend]').querySelector('[data-custom-hours]').checked=Boolean(hours);
     for(const input of group.querySelectorAll('[aria-invalid]')) input.removeAttribute('aria-invalid');
     for(const time of group.querySelectorAll('[data-time]')){
-      const hour=time.querySelector('[data-hour]');
-      const minute=time.querySelector('[data-minute]');
       if(!hours) continue;
-      const value=hours[time.dataset.time+'Minute'];
-      const hour24=Math.floor(value/60);
-      hour.value=String(hour24%12||12);
-      minute.value=String(value%60).padStart(2,'0');
-      time.querySelector('input[value="'+(hour24<12?'am':'pm')+'"]').checked=true;
+      kioskSetTimeEditor(time,hours[time.dataset.time+'Minute']);
     }
     kioskReadScheduleTimes(group);
   }
@@ -7835,23 +7954,35 @@ function kioskOpenEmployee(person){
 
 function kioskPrepareScheduleInputs(form){
   if(form.querySelector('[data-time]')) return;
-  const template=document.getElementById('kiosk-schedule-time').content;
   const suffixes={regular:'','6':' del sábado','7':' del domingo'};
   for(const group of form.querySelectorAll('[data-hours-group]')){
     const key=group.dataset.hoursGroup;
     for(const [part,label] of [['start','Entrada'],['end','Salida']]){
-      const time=template.firstElementChild.cloneNode(true);
-      const description=label.toLowerCase()+suffixes[key];
+      const time=kioskCreateTimeEditor(label,key+'-'+part,label.toLowerCase()+suffixes[key]);
       time.dataset.time=part;
-      time.querySelector('.kiosk-schedule-time-title').textContent=label;
-      time.querySelector('[data-hour]').setAttribute('aria-label','Hora de '+description);
-      time.querySelector('[data-minute]').setAttribute('aria-label','Minutos de '+description);
-      const period=time.querySelector('.tc-emp-edit-period');
-      period.setAttribute('aria-label','AM o PM de '+description);
-      for(const radio of period.querySelectorAll('input')) radio.name='kiosk-period-'+key+'-'+part;
       group.querySelector('[data-hours-inputs]').append(time);
     }
   }
+}
+
+function kioskCreateTimeEditor(label,key,description){
+  const template=document.getElementById('kiosk-schedule-time').content;
+  const editor=template.firstElementChild.cloneNode(true);
+  editor.querySelector('.kiosk-schedule-time-title').textContent=label;
+  editor.querySelector('[data-hour]').setAttribute('aria-label','Hora de '+description);
+  editor.querySelector('[data-minute]').setAttribute('aria-label','Minutos de '+description);
+  const period=editor.querySelector('.tc-emp-edit-period');
+  period.setAttribute('aria-label','AM o PM de '+description);
+  for(const radio of period.querySelectorAll('input')) radio.name='kiosk-period-'+key;
+  return editor;
+}
+
+function kioskSetTimeEditor(editor,minutes){
+  const hour=Math.floor(minutes/60);
+  for(const input of editor.querySelectorAll('[aria-invalid]')) input.removeAttribute('aria-invalid');
+  editor.querySelector('[data-hour]').value=String(hour%12||12);
+  editor.querySelector('[data-minute]').value=String(minutes%60).padStart(2,'0');
+  editor.querySelector('input[value="'+(hour<12?'am':'pm')+'"]').checked=true;
 }
 
 function kioskSyncWeekendFields(form){
@@ -7876,13 +8007,18 @@ function kioskScheduleInput(event){
   if(input.matches('[data-custom-hours]')) kioskSyncWeekendFields(input.form);
   const group=input.closest('[data-hours-group]');
   if(!group) return;
+  kioskTimeEditorInput(event);
+  kioskReadScheduleTimes(group);
+}
+
+function kioskTimeEditorInput(event){
+  const input=event.target;
   if(input.matches('[data-hour],[data-minute]')){
     input.value=input.value.replace(/\D/g,'').slice(0,2);
     input.removeAttribute('aria-invalid');
   }else if(input.type==='radio'){
-    input.closest('.tc-emp-edit-period').querySelector('[aria-invalid]')?.removeAttribute('aria-invalid');
+    input.closest('.tc-emp-edit-period')?.querySelector('[aria-invalid]')?.removeAttribute('aria-invalid');
   }
-  kioskReadScheduleTimes(group);
 }
 
 function kioskSchedulePaste(event){
@@ -7894,25 +8030,32 @@ function kioskSchedulePaste(event){
   const minute=event.target.closest('[data-time]').querySelector('[data-minute]');
   minute.value=match[2];
   minute.removeAttribute('aria-invalid');
-  kioskScheduleInput(event);
+  if(event.target.closest('[data-hours-group]')) kioskScheduleInput(event);
+  else kioskTimeEditorInput(event);
+}
+
+function kioskReadTimeEditor(editor,validate=false){
+  const hour=editor.querySelector('[data-hour]');
+  const minute=editor.querySelector('[data-minute]');
+  const period=editor.querySelector('input:checked');
+  const parsed=tcEmpNoshowParseTypedTime(hour.value+':'+(minute.value||'00'));
+  if(parsed.hour!=null&&period) return tcEmpNoshowTimeToHHmm(parsed.hour,parsed.minute,period.value);
+  if(validate){
+    const invalid=Number(hour.value)<1||Number(hour.value)>12
+      ? hour
+      : Number(minute.value)>59?minute:editor.querySelector('input[type="radio"]');
+    invalid.setAttribute('aria-invalid','true');
+    invalid.focus();
+  }
+  return '';
 }
 
 function kioskReadScheduleTimes(group, validate=false){
   const times={};
   for(const time of group.querySelectorAll('[data-time]')){
-    const hour=time.querySelector('[data-hour]');
-    const minute=time.querySelector('[data-minute]');
-    const period=time.querySelector('input:checked');
-    const parsed=tcEmpNoshowParseTypedTime(hour.value+':'+(minute.value||'00'));
-    if(validate&&(parsed.hour==null||!period)){
-      const invalid=Number(hour.value)<1||Number(hour.value)>12
-        ? hour
-        : Number(minute.value)>59?minute:time.querySelector('input[type="radio"]');
-      invalid.setAttribute('aria-invalid','true');
-      invalid.focus();
-      return null;
-    }
-    times[time.dataset.time]=parsed.hour!=null&&period?tcEmpNoshowTimeToHHmm(parsed.hour,parsed.minute,period.value):'';
+    const value=kioskReadTimeEditor(time,validate);
+    if(validate&&!value) return null;
+    times[time.dataset.time]=value;
   }
   group.querySelector('[data-next-day]').textContent=times.start&&times.end&&times.end<times.start
     ? 'La salida es al día siguiente.'

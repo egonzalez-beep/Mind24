@@ -114,7 +114,7 @@ function pctLabel(value) {
   return value == null ? '—' : `${value}%`;
 }
 
-function personHtml(person) {
+function personHtml(person, showMealColumn) {
   const schedule = person.scheduleLabel || (person.schedule
     ? `${formatWeekdaySelection(person.schedule.weekdays)} · ${formatMinuteEsMx(person.schedule.startMinute)}–${formatMinuteEsMx(person.schedule.endMinute)}`
     : 'Sin horario aplicable en la semana');
@@ -130,12 +130,15 @@ function personHtml(person) {
   const rows = person.days.map((day) => {
     const cells = day.cells || punctualityPdfDayCells(day, person.timeZone);
     const statusClass = /^[A-Z_]+$/.test(String(day.status || '')) ? ` class="status-${day.status}"` : '';
-    return `<tr><td>${escapeReportHtml(cells.day)}</td><td>${timeCellHtml(cells.entry)}</td><td>${timeCellHtml(cells.exit)}</td><td>${escapeReportHtml(cells.worked)}</td><td>${escapeReportHtml(cells.late)}</td><td${statusClass}>${escapeReportHtml(cells.status)}</td></tr>`;
+    const meal = showMealColumn ? `<td>${timeCellHtml(cells.meal?.length ? cells.meal : '-')}</td>` : '';
+    return `<tr><td>${escapeReportHtml(cells.day)}</td><td>${timeCellHtml(cells.entry)}</td><td>${timeCellHtml(cells.exit)}</td><td>${escapeReportHtml(cells.worked)}</td><td>${escapeReportHtml(cells.late)}</td><td${statusClass}>${escapeReportHtml(cells.status)}</td>${meal}</tr>`;
   }).join('');
   const note = person.emptyReason === 'NO_EVALUABLE'
     ? '<p class="note">Aún no hay días evaluables en esta semana.</p>'
     : '';
-  return `<section class="person">${head}${note}<table><thead><tr><th scope="col">Día</th><th scope="col">Entrada real</th><th scope="col">Salida real</th><th scope="col">Tiempo trabajado</th><th scope="col">Retardo</th><th scope="col">Estado</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+  const tableClass = showMealColumn ? ' class="has-meal-column"' : '';
+  const mealHeader = showMealColumn ? '<th scope="col">Comida</th>' : '';
+  return `<section class="person">${head}${note}<table${tableClass}><thead><tr><th scope="col">Día</th><th scope="col">Entrada real</th><th scope="col">Salida real</th><th scope="col">Tiempo trabajado</th><th scope="col">Retardo</th><th scope="col">Estado</th>${mealHeader}</tr></thead><tbody>${rows}</tbody></table></section>`;
 }
 
 function timeCellHtml(value) {
@@ -172,7 +175,7 @@ export function weeklyPunctualityPdfOptions() {
 export function buildWeeklyPunctualityReportDocument(model) {
   const mast = `<header class="mast"><p class="org">${escapeReportHtml(model.organizationName)}</p><h1>Reporte semanal de horarios y puntualidad</h1><p class="meta">${escapeReportHtml(model.weekLabel)} · Generado ${escapeReportHtml(model.generatedAtLabel)}</p></header>${summaryHtml(model.summary)}`;
   const summaryNote = model.summaryNote ? `<p class="note summary-note">${escapeReportHtml(model.summaryNote)}</p>` : '';
-  const people = (model.people || []).map(personHtml).join('') ||
+  const people = (model.people || []).map((person) => personHtml(person, model.showMealColumn)).join('') ||
     `<p class="note">${escapeReportHtml(model.emptyLabel || 'No hay colaboradores para esta semana.')}</p>`;
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte semanal de horarios y puntualidad</title><style>
     @page{size:A4 landscape;}
@@ -204,6 +207,12 @@ export function buildWeeklyPunctualityReportDocument(model) {
     th:nth-child(4),td:nth-child(4){width:15%;}
     th:nth-child(5),td:nth-child(5){width:9%;}
     th:nth-child(6),td:nth-child(6){width:24%;}
+    .has-meal-column :is(th,td):nth-child(1){width:10%;}
+    .has-meal-column :is(th,td):is(:nth-child(2),:nth-child(3)){width:14%;}
+    .has-meal-column :is(th,td):nth-child(4){width:14%;}
+    .has-meal-column :is(th,td):nth-child(5){width:8%;}
+    .has-meal-column :is(th,td):nth-child(6){width:22%;}
+    .has-meal-column :is(th,td):nth-child(7){width:18%;}
     td.status-IN_PROGRESS{color:#b45309;font-weight:600;}
     td.status-INCOMPLETE,td.status-NO_SHIFT{color:#64748b;}
     td.status-COMPLETED,td.status-ON_TIME{color:#166534;font-weight:600;}

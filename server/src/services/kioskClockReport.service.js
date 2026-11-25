@@ -82,14 +82,15 @@ function buildReportDay(window, attendance, otherPunches, justified, context) {
   const { status, label } = dayStatus(attendance, owned, now, justified);
   const entry = [];
   const exit = [];
+  const meal = [];
   const punches = [...owned, ...otherPunches].sort(kioskComparePunches);
   for (const { type, recordedAt, originalRecordedAt, isManual } of punches) {
     const annotation = (isManual ? ' (manual)' : '') + (originalRecordedAt ? ' (corregida)' : '');
     const time = punchTime.format(recordedAt) + (recordedAt >= end ? ' (+1 día)' : '') + annotation;
     switch (type) {
-      case 'CHECK_IN': entry.push(entry.length ? 'Entrada ' + time : time); break;
-      case 'MEAL_IN': entry.push('Regreso de comida ' + time); break;
-      case 'MEAL_OUT': exit.push('Salida a comida ' + time); break;
+      case 'CHECK_IN': entry.push(time); break;
+      case 'MEAL_IN': meal.push('Regreso ' + time); break;
+      case 'MEAL_OUT': meal.push('Salida ' + time); break;
       case 'CHECK_OUT': exit.push(time); break;
     }
   }
@@ -117,6 +118,7 @@ function buildReportDay(window, attendance, otherPunches, justified, context) {
       late: attendance.lateMinutes === undefined ? '—' : attendance.lateMinutes === 0 ? '<1 min' : `${attendance.lateMinutes} min`,
       status: label + (otherPunches.length ? ' · Checada sin entrada identificada' : '') +
         (justified.size && !attendance.flags.some((flag) => justified.has(flag)) ? ' · Justificación en historial' : ''),
+      meal,
     },
   };
 }
@@ -212,7 +214,7 @@ export async function prepareKioskWeekReport(organizationId, week, db = prisma, 
     },
   });
   const punchTime = new Intl.DateTimeFormat('es-MX', {
-    timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZoneName: 'shortOffset',
+    timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   });
   const context = { timeZone, punchTime, now, atMinute: kioskMinuteLookup(timeZone) };
   const people = employees.map((employee) => reportPerson(employee, windows, context)).filter(Boolean);
@@ -222,6 +224,7 @@ export async function prepareKioskWeekReport(organizationId, week, db = prisma, 
     generatedAtLabel: formatReportGeneratedAt(now, timeZone),
     summary: summarizePunctualityReports(people),
     summaryNote: 'La cobertura mide cuánto del horario previsto respaldan las checadas. El tiempo trabajado descuenta la comida registrada. Los indicadores reflejan las checadas, incluidas las incidencias justificadas.',
+    showMealColumn: people.some(({ days }) => days.some(({ cells }) => cells.meal.length > 0)),
     people,
   };
   return { ...model, html: buildWeeklyPunctualityReportDocument(model), filename: `mind24-checadas-${weekStart}.pdf` };
