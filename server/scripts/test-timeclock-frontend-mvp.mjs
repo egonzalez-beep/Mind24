@@ -58,7 +58,7 @@ check(/Este enlace no es válido o la sesión ha expirado/.test(indexHtml), 'inv
 check(/Solicita un nuevo enlace a tu administrador/.test(indexHtml), 'ask admin for new link');
 
 check(/Gestión de equipo/.test(indexHtml), 'admin module title Gestión de equipo');
-check(/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin module subtitle');
+check(!/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin menu omits redundant team subtitle');
 check(/tc-emp-title/.test(indexHtml) && /Mi espacio de trabajo/.test(indexHtml), 'employee title Mi espacio de trabajo');
 check(/Asistencia, actividades y reclutamiento/.test(indexHtml), 'employee subtitle');
 check(!/Reloj checador remoto/.test(indexHtml), 'no legacy reloj checador subtitle');

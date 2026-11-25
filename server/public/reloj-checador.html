@@ -36,17 +36,20 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      justify-content: space-between;
+      justify-content: center;
       isolation: isolate;
       overflow: hidden;
-      padding: clamp(32px, 6vw, 100px);
-      padding-block: clamp(30px, 6vh, 72px);
+      --hero-inline: clamp(32px, 6vw, 100px);
+      --hero-top: clamp(30px, 6vh, 72px);
+      padding: max(112px, var(--hero-top)) var(--hero-inline) var(--hero-top);
       color: #fff;
       background:
         radial-gradient(ellipse at 94% 87%, #8448cc 0%, transparent 64%),
         linear-gradient(145deg, #2a144a 8%, #4b2184 65%, #6334a0 100%);
     }
     .wordmark {
+      position: absolute;
+      inset: var(--hero-top) auto auto var(--hero-inline);
       display: inline-flex;
       align-items: center;
       gap: 9px;
@@ -55,7 +58,7 @@
       letter-spacing: -.045em;
     }
     .wordmark .icon { width: 30px; height: 30px; color: #2a144a; }
-    .hero-copy { position: relative; z-index: 1; width: 100%; margin-top: 28px; }
+    .hero-copy { position: relative; z-index: 1; width: 100%; }
     h1 {
       max-width: 9ch;
       font-size: clamp(45px, 5.8vw, 96px);
@@ -84,14 +87,12 @@
       background: #ffc6a6;
       transform: translateY(-.12em);
     }
-    .hero-art {
-      width: calc(100% + clamp(16px, 3vw, 52px));
-      max-width: min(580px, 100% + 52px);
-      max-height: 42vh;
-      flex: none;
-      align-self: center;
-      margin-top: 8px;
-      overflow: visible;
+    .hero-pattern {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .48;
+      mask-image: radial-gradient(ellipse at 27% 51%, #0001 7%, #0005 33%, #000 78%);
       pointer-events: none;
     }
     .panel {
@@ -226,19 +227,12 @@
     @media (max-width: 760px) {
       .kiosk { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
       .hero { padding: 22px clamp(20px, 6vw, 42px) 27px; }
-      .wordmark { font-size: 17px; }
+      .wordmark { position: static; font-size: 17px; }
       .wordmark .icon { width: 25px; height: 25px; }
-      .hero-copy { width: min(77%, 560px); margin-top: 22px; }
+      .hero-copy { width: min(100%, 560px); margin-top: 22px; }
       h1 { font-size: clamp(34px, 7vw, 60px); }
       .organization { margin-top: 10px; }
-      .hero-art {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        width: clamp(132px, 35vw, 250px);
-        max-height: none;
-        margin: 0;
-      }
+      .hero-pattern { opacity: .42; mask-image: linear-gradient(107deg,#0002 14%,#0007 48%,#000 90%); }
       .panel { align-items: start; padding: clamp(15px, 5vw, 36px); }
       .panel-inner { border-radius: 22px; }
       .view { gap: 17px; }
@@ -247,15 +241,11 @@
       .button { min-height: 52px; }
     }
     @media (max-width: 400px) {
-      .hero-copy { width: 73%; }
-      .hero-art { right: -8px; }
       .panel-inner { padding: 20px; }
     }
     @media (min-width: 761px) and (max-height: 600px) {
-      .hero { padding-block: 25px; }
-      .hero-copy { margin-top: 15px; }
+      .hero { --hero-top: 25px; padding-top: 86px; }
       h1 { font-size: clamp(40px, 5vw, 68px); }
-      .hero-art { max-height: 38vh; }
       .panel { padding-block: 22px; }
       .panel-inner { padding-block: 25px; }
     }
@@ -305,38 +295,56 @@
         <h1>Reloj checador</h1>
         <p id="organization-name" class="organization" hidden></p>
       </div>
-      <svg class="hero-art" viewBox="0 0 440 300" aria-hidden="true" focusable="false">
+      <svg class="hero-pattern" width="100%" height="100%" aria-hidden="true" focusable="false">
         <defs>
-          <linearGradient id="clock-face" x2=".85" y2="1" gradientUnits="objectBoundingBox">
-            <stop stop-color="#fff8ff"/><stop offset="1" stop-color="#e7caff"/>
-          </linearGradient>
-          <linearGradient id="clock-rim" x2=".65" y2="1" gradientUnits="objectBoundingBox">
-            <stop stop-color="#bf8cec"/><stop offset="1" stop-color="#7135af"/>
-          </linearGradient>
+          <g id="doodle-clock">
+            <circle cx="11" cy="11" r="11"/>
+            <path d="M11 4v7l4 3"/>
+          </g>
+          <g id="doodle-calendar">
+            <rect x="0" y="3" width="25" height="23" rx="4"/>
+            <path d="M0 10h25M6 0v6M19 0v6m-12 9h2m6 0h2m-10 5h2m6 0h2"/>
+          </g>
+          <path id="doodle-cup" d="M0 8h22v7a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8Zm22 2h4a4 4 0 0 1 0 8h-4M-3 27h30M7 4c-2-2 2-3 0-5m7 5c-2-2 2-3 0-5"/>
+          <g id="doodle-timer">
+            <circle cx="13" cy="16" r="11"/>
+            <path d="M10 0h6m-3 0v5m8 4 3-3m-11 5v6l3 2"/>
+          </g>
+          <g id="doodle-check">
+            <rect x="0" y="0" width="24" height="24" rx="7"/>
+            <path d="m6 12 4 4 8-9"/>
+          </g>
+          <path id="doodle-meal" d="M0 0v7a4 4 0 0 0 8 0V0M4 0v25M20 25V0a10 10 0 0 0-7 12h7"/>
+          <path id="doodle-spark" d="M0 6a6 6 0 0 0 6-6 6 6 0 0 0 6 6 6 6 0 0 0-6 6 6 6 0 0 0-6-6Z"/>
+          <pattern id="kiosk-doodles" width="310" height="286" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+            <g fill="none" stroke="#e1baff" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round">
+              <use href="#doodle-clock" transform="translate(31 19) rotate(-15) scale(1.2)"/>
+              <use href="#doodle-calendar" transform="translate(113 36) rotate(13)"/>
+              <use href="#doodle-cup" transform="translate(182 15) rotate(-11) scale(.88)"/>
+              <use href="#doodle-meal" transform="translate(274 48) rotate(18)"/>
+              <use href="#doodle-check" transform="translate(20 105) rotate(14) scale(.78)"/>
+              <use href="#doodle-cup" transform="translate(75 135) rotate(14) scale(1.1)"/>
+              <use href="#doodle-timer" transform="translate(197 99) rotate(-13) scale(1.18)"/>
+              <use href="#doodle-clock" transform="translate(263 138) rotate(16)"/>
+              <use href="#doodle-calendar" transform="translate(5 197) rotate(-13)"/>
+              <use href="#doodle-check" transform="translate(146 182) rotate(-9) scale(1.07)"/>
+              <use href="#doodle-cup" transform="translate(218 202) rotate(11) scale(.83)"/>
+              <use href="#doodle-timer" transform="translate(63 245) rotate(13) scale(.88)"/>
+              <use href="#doodle-clock" transform="translate(171 251) rotate(-12)"/>
+              <use href="#doodle-calendar" transform="translate(269 246) rotate(-15) scale(.82)"/>
+            </g>
+            <g fill="none" stroke="#b486e0" stroke-width="1.5">
+              <use href="#doodle-spark" x="68" y="66"/><use href="#doodle-spark" x="236" y="65"/>
+              <use href="#doodle-spark" x="144" y="113"/><use href="#doodle-spark" x="43" y="165"/>
+              <use href="#doodle-spark" x="284" y="185"/><use href="#doodle-spark" x="101" y="211"/>
+              <use href="#doodle-spark" x="226" y="253"/>
+              <circle cx="97" cy="22" r="2"/><circle cx="248" cy="20" r="2.5"/>
+              <circle cx="70" cy="108" r="2.5"/><circle cx="235" cy="155" r="2.5"/>
+              <circle cx="98" cy="190" r="1.5"/><circle cx="136" cy="253" r="2.3"/><circle cx="39" cy="264" r="2.2"/>
+            </g>
+          </pattern>
         </defs>
-        <path d="M38 253c49-35 93-19 140-38 53-22 88-58 143-42 25 7 38 24 84 19-20 53-86 77-172 86-92 9-153 1-195-25Z" fill="#b476f1" opacity=".33"/>
-        <path d="M16 237c63 22 124-6 170-42 62-47 123-70 198-54" fill="none" stroke="#d5a3fa" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 8"/>
-        <ellipse cx="227" cy="251" rx="108" ry="17" fill="#381956" opacity=".38"/>
-        <g transform="translate(190 141) rotate(-12)">
-          <rect x="-25" y="-114" width="50" height="30" rx="11" fill="#ad72dc" stroke="#d7a5ff" stroke-width="2"/>
-          <rect x="-17" y="-117" width="34" height="13" rx="5" fill="#f2dcff"/>
-          <circle cx="7" cy="8" r="96" fill="#45216c" stroke="#d193ff" stroke-width="2"/>
-          <circle r="95" fill="url(#clock-rim)" stroke="#e3b7ff" stroke-width="2"/>
-          <circle r="81" fill="url(#clock-face)" stroke="#ffdafa" stroke-width="2"/>
-          <circle r="66" fill="none" stroke="#ad78d7" stroke-width="2" opacity=".28"/>
-          <path d="M0-67v9m0 116v9m67-67h-9m-116 0h-9m114-47-6 6m-82 82-6 6m94 0-6-6m-82-82-6-6" fill="none" stroke="#9961c3" stroke-width="3.5" stroke-linecap="round"/>
-          <path d="M0-45v45l38 15" fill="none" stroke="#572b8c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle r="8" fill="#f5a583" stroke="#fff3fa" stroke-width="2"/>
-        </g>
-        <g transform="translate(321 207) rotate(11)">
-          <rect x="-35" y="-34" width="78" height="75" rx="24" fill="#53247e"/>
-          <rect x="-39" y="-40" width="78" height="75" rx="24" fill="#ffcab2" stroke="#ffe0d4" stroke-width="2.5"/>
-          <path d="m-17-2 12 12 23-24" fill="none" stroke="#5b2a78" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
-        <path d="M322 45v34m-17-17h34M74 93v24m-12-12h24m283-5v18m-9-9h18" fill="none" stroke="#f8c8cf" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="280" cy="32" r="4" fill="#dba9fa"/>
-        <circle cx="63" cy="176" r="5.5" fill="#f5aeac"/>
-        <circle cx="382" cy="155" r="4" fill="#e1b1fa"/>
+        <rect width="100%" height="100%" fill="url(#kiosk-doodles)"/>
       </svg>
     </header>
     <section class="panel" aria-label="Registro de asistencia">

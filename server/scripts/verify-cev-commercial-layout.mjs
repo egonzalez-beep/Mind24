@@ -16,23 +16,15 @@ function ok(cond, msg) {
 
 ok(!html.includes('mind24_bienestar_upsell'), 'sin mind24_bienestar_upsell en catálogo');
 ok(!html.includes('MIND24_CEV_FITNESS_UPSELL'), 'sin CTA fitness duplicado en columna módulos');
-ok(html.includes('Mind Fitness — Bienestar Organizacional'), 'copy Mind Fitness presente');
 ok(!html.includes('id="cev-mod-commercial"'), 'sin contenedor comercial en columna módulos');
 ok(!html.includes('id="cev-commercial-card"'), 'sin card comercial junto a módulos');
 ok((html.match(/salesHook:true/g) || []).length === 1, 'una sola salesHook (medida) en MIND24_EVAL_MODULES');
-ok(!html.includes('#cev-sidebar-fitness-cta{display:none'), 'sidebar fitness visible en Crear evaluación');
-ok(html.includes('id="cev-sidebar-fitness-cta"'), 'id sidebar fitness en vista Crear evaluación');
-ok(html.includes('id="cev-sidebar-medida-cta"'), 'id sidebar medida en vista Crear evaluación');
-ok(html.includes('sidebar-item-cta-medida'), 'estilo sidebar medida definido');
-
-const crearEvalStart = html.indexOf('id="view-dash-crear-eval"');
-ok(crearEvalStart >= 0, 'vista view-dash-crear-eval encontrada');
-const crearEvalEnd = html.indexOf('<!-- ═', crearEvalStart + 50);
-const crearSlice = html.slice(crearEvalStart, crearEvalEnd > 0 ? crearEvalEnd : crearEvalStart + 80000);
-
-const fitnessIdx = crearSlice.indexOf('id="cev-sidebar-fitness-cta"');
-const medidaIdx = crearSlice.indexOf('id="cev-sidebar-medida-cta"');
-const cuentaIdx = crearSlice.indexOf('sidebar-section-label">Cuenta');
+const sidebar = html.match(/<aside\b[^>]*id="admin-sidebar"[^>]*>[\s\S]*?<\/aside>/)?.[0] ?? '';
+ok(sidebar.includes('Mind Fitness · Bienestar Organizacional'), 'copy Mind Fitness presente en el menú compartido');
+ok(sidebar.includes('Módulo a la medida'), 'copy Módulo a la medida presente en el menú compartido');
+const fitnessIdx = sidebar.indexOf('id="cev-sidebar-fitness-cta"');
+const medidaIdx = sidebar.indexOf('id="cev-sidebar-medida-cta"');
+const cuentaIdx = sidebar.indexOf('sidebar-section-label">Cuenta');
 ok(cuentaIdx >= 0 && fitnessIdx > cuentaIdx && medidaIdx > fitnessIdx, 'orden sidebar: Cuenta → Mind Fitness → Módulo a la Medida');
 
 const adminStart = html.indexOf('id="view-dash-admin"');
