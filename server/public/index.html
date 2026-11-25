@@ -364,13 +364,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-count:empty{display:none;}
 .rec-agenda-count{font-size:11px;padding:3px 7px;}
 .rec-agenda-list{display:grid;gap:7px;align-content:start;}
+#rec-agenda-pending-list{max-height:min(58vh,560px);max-height:min(58dvh,560px);overflow:auto;padding:3px 5px 3px 3px;scroll-padding:5px;scrollbar-width:thin;scrollbar-color:#c4b5fd transparent;}
+#rec-agenda-pending-list:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .rec-agenda-row{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px;transition:border-color .15s,background .15s;}
 .rec-agenda-row:hover,.rec-agenda-row:focus-within{border-color:#c4b5fd;background:#fcfaff;}
 .rec-agenda-row-main{display:flex;align-items:center;gap:9px;min-width:0;padding:3px;text-align:left;border:0;background:none;color:var(--primary);font:inherit;border-radius:7px;}
-button.rec-agenda-row-main{cursor:pointer;}
+.rec-agenda-row-main--open{cursor:pointer;}
 .rec-agenda-pending .rec-agenda-row:hover:not(:focus-within){background:#fff;border-color:var(--slate-200);}
 .rec-agenda-row-copy{min-width:0;display:grid;gap:3px;}
+.rec-agenda-row-heading,.rec-iv-name-row{display:flex;align-items:center;gap:6px;min-width:0;}
 .rec-agenda-row-title{font-size:13px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;}
+button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color:inherit;font-family:inherit;text-align:left;cursor:pointer;}
+.rec-interview-copy{display:inline-flex;align-items:center;position:relative;flex:none;}
+.rec-interview-copy-btn{width:30px;height:30px;display:grid;place-items:center;padding:0;border:1px solid #d1e9df;border-radius:8px;background:#f0faf5;color:#0d6a48;cursor:pointer;}
+.rec-interview-copy-btn:hover{background:#def3e9;}
+.rec-interview-copy-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.rec-interview-copy-btn svg{width:17px;height:17px;pointer-events:none;}
+.rec-interview-copy-feedback{position:absolute;z-index:2;top:calc(100% + 3px);left:50%;transform:translateX(-50%);padding:4px 7px;border-radius:8px;background:var(--purple-dark);color:#fff;font-size:11px;font-weight:650;white-space:nowrap;pointer-events:none;}
+.rec-interview-copy-feedback:empty{padding:0;}
 .rec-agenda-row-sub{color:var(--slate-600);font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
 .rec-agenda-row-meta{color:var(--slate-500);font-size:11px;line-height:1.3;overflow-wrap:anywhere;}
 .rec-agenda-slot{min-width:66px;max-width:76px;flex:none;align-self:stretch;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);display:grid;place-content:center;text-align:center;line-height:1.2;padding:5px;font-weight:750;font-size:11px;}
@@ -411,6 +422,7 @@ button.rec-agenda-row-main{cursor:pointer;}
   .rec-agenda-row{grid-template-columns:minmax(0,1fr);gap:3px;}
   .rec-agenda-row-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
   .rec-agenda-slot{min-width:52px;max-width:58px;}
+  .rec-interview-copy-btn{width:36px;height:36px;}
 }
 @media(max-width:360px){
   .rec-agenda-nav{gap:4px;}
@@ -699,6 +711,8 @@ button.rec-agenda-row-main{cursor:pointer;}
 .rec-cand-interview-row--history{border-style:dashed;background:transparent;}
 .rec-cand-interview-row--history .rec-cand-interview-title{font-weight:600;color:var(--slate-500);}
 .rec-cand-interview-row-main{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-width:0;}
+.rec-cand-interview-ident{flex:1;display:flex;align-items:center;gap:6px;min-width:0;}
+.rec-cand-interview-ident .rec-interview-copy-feedback{top:50%;right:calc(100% + 4px);left:auto;transform:translateY(-50%);}
 .rec-cand-interview-open{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:0;background:transparent;padding:0;margin:0;font:inherit;text-align:left;cursor:pointer;color:inherit;}
 .rec-cand-interview-open[disabled]{cursor:default;}
 .rec-cand-interview-title{font-size:12px;font-weight:700;color:var(--slate-800);overflow-wrap:anywhere;}
@@ -723,7 +737,10 @@ button.rec-agenda-row-main{cursor:pointer;}
 .rec-iv-close{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--slate-500);font-size:20px;line-height:1;cursor:pointer;font-family:inherit;}
 .rec-iv-kicker{display:inline-flex;margin-top:10px;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;}
 .rec-iv-name{margin:8px 0 0;font-size:22px;line-height:1.2;font-weight:750;color:var(--slate-900);overflow-wrap:anywhere;}
+.rec-iv-name-row{margin-top:8px;}
+.rec-iv-name-row .rec-iv-name{margin:0;}
 .rec-iv-when{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.rec-iv-when--date-only{grid-template-columns:1fr;}
 .rec-iv-field{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px 10px;}
 .rec-iv-field .form-input{border:0;padding:0;min-width:0;width:100%;background:transparent;}
 .rec-iv-label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--slate-700);}
@@ -4765,7 +4782,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </div>
           <aside class="rec-agenda-panel rec-agenda-pending" aria-labelledby="rec-agenda-pending-title">
             <div class="rec-agenda-section-head"><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2></div>
-            <div class="rec-agenda-list" id="rec-agenda-pending-list"></div>
+            <div class="rec-agenda-list" id="rec-agenda-pending-list" role="region" aria-labelledby="rec-agenda-pending-title" tabindex="0"></div>
             <p id="rec-agenda-pending-status" class="rec-agenda-message" aria-live="polite"></p>
             <button type="button" class="rec-stages-ghost-btn rec-agenda-more hidden" id="rec-agenda-more" onclick="recAgendaLoadPending(true)">Cargar más postulaciones</button>
           </aside>
@@ -14330,19 +14347,23 @@ function recAgendaRowKey(row){
 }
 function recAgendaRowHtml(row,pending){
   const iv=row.interview;
-  const when=iv?recCandFormatInterviewScheduledAt(iv.scheduledAt,iv.scheduledTimeSpecified):'';
-  const time=iv?(when.split(' · ')[1]||'Sin hora'):'';
+  const timeZone=recAgendaState().timeZone;
+  const when=iv?recCandFormatInterviewScheduledAt(iv.scheduledAt,iv.scheduledTimeSpecified,timeZone):'';
+  const time=when.split(' · ')[1]||'';
   const reference=[row.vacancyTitle,row.clientName].filter(Boolean).join(' · ');
   const registered=pending?new Intl.DateTimeFormat('es-MX',{
     timeZone:recAgendaState().timeZone,day:'numeric',month:'short',year:'numeric'
   }).format(new Date(row.appliedAt)):'';
   const meta=pending?[row.stageName,'Registro '+registered].filter(Boolean).join(' · '):recCandInterviewTitle(iv);
   const opener=pending?'<div class="rec-agenda-row-main">':
-    '<button type="button" class="rec-agenda-row-main" aria-label="'+tcEsc('Ver entrevista de '+row.candidateName)+'" onclick="recAgendaOpenRow(this)">';
+    '<div class="rec-agenda-row-main rec-agenda-row-main--open" onclick="if(!event.target.closest(\'button\')) recAgendaOpenRow(this)">';
+  const name=pending?'<strong class="rec-agenda-row-title">'+tcEsc(row.candidateName)+'</strong>':
+    '<button type="button" class="rec-agenda-row-title" aria-label="'+tcEsc('Ver entrevista de '+row.candidateName)+'" onclick="recAgendaOpenRow(this)">'+tcEsc(row.candidateName)+'</button>';
+  const copy=!pending&&recInterviewCanCopy(iv,row.readonly,timeZone)?recInterviewCopyButtonHtml('agenda'):'';
   return '<article class="rec-agenda-row" data-entry="'+tcEsc(recAgendaRowKey(row))+'">'+opener+
     (time?'<span class="rec-agenda-slot">'+tcEsc(time)+'</span>':'')+
-    '<span class="rec-agenda-row-copy"><strong class="rec-agenda-row-title">'+tcEsc(row.candidateName)+'</strong>'+
-    '<span class="rec-agenda-row-sub">'+tcEsc(reference)+'</span><span class="rec-agenda-row-meta">'+tcEsc(meta)+'</span></span>'+(pending?'</div>':'</button>')+
+    '<div class="rec-agenda-row-copy"><div class="rec-agenda-row-heading">'+name+copy+'</div>'+
+    '<span class="rec-agenda-row-sub">'+tcEsc(reference)+'</span><span class="rec-agenda-row-meta">'+tcEsc(meta)+'</span></div></div>'+
     '<div class="rec-agenda-row-actions">'+
     (iv?'<span class="rec-cand-interview-status rec-cand-interview-status--'+recCandInterviewStatusClass(iv.eventType)+'">'+tcEsc(recCandInterviewStatusLabel(iv.eventType))+'</span>':'')+
     (pending?'<button type="button" class="rec-stages-ghost-btn rec-agenda-book" aria-label="'+tcEsc('Agendar entrevista para '+row.candidateName)+'" onclick="recAgendaOpenRow(this)">Agendar</button>':'')+
@@ -14926,9 +14947,9 @@ async function recEnsureRecruitmentOrgTimeZone(){
   }catch(_e){ st.recruitmentOrgTimeZone='America/Mexico_City'; }
   return st.recruitmentOrgTimeZone;
 }
-function recCandFormatInterviewScheduledAt(iso,timeSpecified){
+function recCandFormatInterviewScheduledAt(iso,timeSpecified,timeZone){
   if(!iso) return '';
-  const tz=(recEnsureState().recruitmentOrgTimeZone)||'America/Mexico_City';
+  const tz=timeZone||recEnsureState().recruitmentOrgTimeZone||'America/Mexico_City';
   const dt=new Date(iso);
   if(Number.isNaN(dt.getTime())) return '';
   const d=new Intl.DateTimeFormat('es-MX',{timeZone:tz,day:'numeric',month:'short',year:'numeric'}).format(dt);
@@ -15450,6 +15471,70 @@ function recCandInterviewStatusClass(type){
 function recCandInterviewTitle(row){
   return (row&&row.label)||(row&&row.stageName)||'Entrevista';
 }
+function recInterviewCanCopy(row,readonly,timeZone,now=new Date()){
+  if(readonly||row?.eventType!=='SCHEDULED'||!row.scheduledAt) return false;
+  const date=new Date(row.scheduledAt);
+  if(Number.isNaN(date.getTime())) return false;
+  if(row.scheduledTimeSpecified!==false) return date>=now;
+  const day=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'});
+  return day.format(date)>=day.format(now);
+}
+function recInterviewConfirmationText(candidateName,vacancyTitle,interview,timeZone,now=new Date()){
+  const date=new Date(interview.scheduledAt);
+  const civilDay=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'});
+  const today=civilDay.format(now);
+  const scheduled=civilDay.format(date);
+  const tomorrow=new Date(today+'T12:00:00Z');
+  tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+  const dateOptions={weekday:'long',day:'numeric',month:'long',timeZone};
+  if(scheduled.slice(0,4)!==today.slice(0,4)) dateOptions.year='numeric';
+  const dateText=new Intl.DateTimeFormat('es-MX',dateOptions).format(date).replace(',','');
+  const day=scheduled===today?'hoy ('+dateText+')':
+    scheduled===tomorrow.toISOString().slice(0,10)?'mañana ('+dateText+')':'el '+dateText;
+  const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone,hour:'numeric',hourCycle:'h23'}).format(now));
+  const greeting=hour<12?'Buenos días':hour<19?'Buenas tardes':'Buenas noches';
+  const firstName=String(candidateName||'').trim().split(/\s+/)[0];
+  const position=String(vacancyTitle||'').trim().replace(/\s+/g,' ');
+  const when=recCandFormatInterviewScheduledAt(interview.scheduledAt,interview.scheduledTimeSpecified,timeZone);
+  const time=when.split(' · ')[1]||'';
+  return 'Hola'+(firstName?', '+firstName:'')+'. '+greeting+'.\n\n'+
+    '¿Me confirmas tu asistencia a la entrevista'+(position?' para '+position:'')+' '+
+    day+(time?' a las '+time:'')+'?'+(time?'':' La hora está por confirmar.')+'\n\nGracias.';
+}
+function recInterviewCopyButtonHtml(surface){
+  const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.5l-4.5 1.2 1.2-4.4a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M9.6 7.9c-.6-.2-1.5.3-1.5 1.4 0 2.5 4 6.1 6.3 6.1 1 0 1.6-.7 1.6-1.4l-2.2-1.2-.8.8c-1-.4-2-1.4-2.5-2.4l.7-.9-1.1-2.1Z"/></svg>';
+  return '<span class="rec-interview-copy"><button type="button" class="rec-interview-copy-btn" title="Copiar mensaje para WhatsApp" aria-label="Copiar mensaje para WhatsApp" onclick="recInterviewCopyConfirmation(this,\''+surface+'\')">'+svg+'</button>'+
+    '<span class="rec-interview-copy-feedback" role="status" aria-live="polite"></span></span>';
+}
+async function recInterviewCopyConfirmation(button,surface){
+  const st=recEnsureState();
+  const context=surface==='agenda'?recAgendaFindRow(button):surface==='detail'?st.interviewAgendaEntry:null;
+  const timeZone=context?recAgendaState().timeZone:st.recruitmentOrgTimeZone||'America/Mexico_City';
+  const appId=context?.applicationId||(surface==='detail'?st.interviewDetailAppId:button.closest('.rec-cand-interviews')?.dataset.appId);
+  const eventId=surface==='detail'?st.interviewDetailEventId:button.closest('[data-interview-id]')?.dataset.interviewId;
+  const app=st.detailCandidate?.applications?.find(row=>recCandGetAppId(row)===appId);
+  const row=context?context.interview:recCandFindInterview(appId,eventId);
+  const readonly=context?context.readonly:surface==='detail'?st.interviewDialogReadonly:
+    button.closest('[data-readonly]')?.dataset.readonly==='1';
+  const feedback=button.nextElementSibling;
+  if(button.getAttribute('aria-busy')==='true') return;
+  button.setAttribute('aria-busy','true');
+  feedback.textContent='';
+  try{
+    const now=new Date();
+    if(!recInterviewCanCopy(row,readonly,timeZone,now)) feedback.textContent='Cita no vigente';
+    else{
+      const text=recInterviewConfirmationText(context?.candidateName||st.detailCandidate?.fullName,context?.vacancyTitle||app?.vacancy?.title,row,timeZone,now);
+      await navigator.clipboard.writeText(text);
+      feedback.textContent='Copiado ✓';
+    }
+  }catch(_error){
+    feedback.textContent='No se pudo copiar';
+  }finally{
+    button.removeAttribute('aria-busy');
+    window.setTimeout(function(){ feedback.textContent=''; },2400);
+  }
+}
 function recCandInterviewCommentPreview(text){
   const value=String(text||'').trim();
   if(!value) return '';
@@ -15481,6 +15566,8 @@ function recCandInterviewRowHtml(row, appId, readonly, highlight){
   const eventId=row.id||(row.legacy?'legacy':'');
   const canOpen=!!eventId;
   const showActions=!readonly&&row.eventType==='SCHEDULED'&&canOpen;
+  const timeZone=recEnsureState().recruitmentOrgTimeZone||'America/Mexico_City';
+  const copy=showActions&&recInterviewCanCopy(row,readonly,timeZone)?recInterviewCopyButtonHtml('candidate'):'';
   const openClick=canOpen
     ? ' onclick="recCandOpenInterviewDetail(this,\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\')"'
     : '';
@@ -15496,14 +15583,14 @@ function recCandInterviewRowHtml(row, appId, readonly, highlight){
       '</div>';
   }
   return '<div class="rec-cand-interview-row'+next+history+'" data-interview-id="'+tcEsc(eventId||'')+'">'+
-    '<div class="rec-cand-interview-row-main">'+
+    '<div class="rec-cand-interview-row-main"><div class="rec-cand-interview-ident">'+
     '<button type="button" class="rec-cand-interview-open"'+openClick+openDisabled+' aria-label="Ver detalle de '+tcEsc(title)+'">'+
     '<span class="rec-cand-interview-title">'+tcEsc(title)+'</span>'+
     '<span class="rec-cand-interview-line">'+
     '<span class="rec-cand-interview-meta">'+tcEsc(when||'')+'</span>'+
     '<span class="rec-cand-interview-status rec-cand-interview-status--'+cls+'">'+tcEsc(status)+'</span>'+
     (row.comment?'<span class="rec-cand-interview-has-note">Nota</span>':'')+
-    '</span></button>'+
+    '</span></button>'+copy+'</div>'+
     actions+
     '</div></div>';
 }
@@ -15682,12 +15769,15 @@ function recCandPaintInterviewDialog(){
       '<div class="rec-iv-form-actions"><button type="button" class="rec-iv-btn" onclick="recCandInterviewMode(\'detail\')">Volver</button>'+
       '<button type="button" class="rec-iv-btn '+tone+'" data-iv-submit data-iv-focus onclick="recCandInterviewAction(\''+tcEsc(appId)+'\',\''+tcEsc(eventId)+'\',\''+pending+'\')">Confirmar</button></div>';
   }else if(row){
-    const when=recCandFormatInterviewScheduledAt(row.scheduledAt,row.scheduledTimeSpecified!==false);
+    const timeZone=agendaEntry?recAgendaState().timeZone:st.recruitmentOrgTimeZone||'America/Mexico_City';
+    const when=recCandFormatInterviewScheduledAt(row.scheduledAt,row.scheduledTimeSpecified!==false,timeZone);
+    const [dateLabel,timeLabel]=when.split(' · ');
+    const copy=recInterviewCanCopy(row,readonly,timeZone)?recInterviewCopyButtonHtml('detail'):'';
     const comment=row.comment?String(row.comment):'';
     body+='<span class="rec-iv-kicker rec-cand-interview-status rec-cand-interview-status--'+statusCls+'">'+tcEsc(recCandInterviewStatusLabel(row.eventType))+'</span>'+
-      '<p class="rec-iv-name">'+tcEsc(recCandInterviewTitle(row))+'</p>'+
-      '<div class="rec-iv-when"><div class="rec-iv-field"><span aria-hidden="true">📅</span><span>'+tcEsc((when||'').split(' · ')[0]||'')+'</span></div>'+
-      '<div class="rec-iv-field"><span aria-hidden="true">🕒</span><span>'+tcEsc((when||'').split(' · ')[1]||'Sin hora')+'</span></div></div>'+
+      '<div class="rec-iv-name-row"><p class="rec-iv-name">'+tcEsc(recCandInterviewTitle(row))+'</p>'+copy+'</div>'+
+      '<div class="rec-iv-when'+(!timeLabel?' rec-iv-when--date-only':'')+'"><div class="rec-iv-field"><span aria-hidden="true">📅</span><span>'+tcEsc(dateLabel)+'</span></div>'+
+      (timeLabel?'<div class="rec-iv-field"><span aria-hidden="true">🕒</span><span>'+tcEsc(timeLabel)+'</span></div>':'')+'</div>'+
       '<p class="rec-iv-label">Comentario</p><div class="rec-iv-comment-box">'+(comment?tcEsc(comment):'Sin comentario')+'</div>';
     if(!readonly&&row.eventType==='SCHEDULED'){
       body+='<button type="button" class="rec-iv-edit" onclick="recCandInterviewMode(\'edit\')">✎ Editar entrevista</button>'+
