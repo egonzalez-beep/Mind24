@@ -298,7 +298,7 @@ console.log('\n=== Interfaz ===\n');
 
 check(indexHtml.includes('id="rec-headcount"'), 'indicador de headcount');
 check(indexHtml.includes('recDeriveHeadcount'), 'headcount suma solo activas');
-check(indexHtml.includes('Headcount: '), 'texto de headcount');
+check(indexHtml.includes('Total de plazas en vacantes activas'), 'el indicador identifica el total de plazas activas');
 check(!indexHtml.includes('id="rec-hired-fold"'), 'ya no existe el desplegable inline');
 check(!indexHtml.includes('Contratados: '), 'ya no aparece Contratados de P');
 check(!indexHtml.includes('Sin fecha registrada'), 'no se reserva una fecha vacía');
