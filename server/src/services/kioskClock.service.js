@@ -3,6 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { addDaysToDateKey, localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
+import { kioskAttendanceForDay, kioskMinuteLookup } from '../utils/kioskAttendance.util.js';
 import {
   decodeWeekdayMask, encodeWeekdayMask, parseHmToMinute, parseWorkScheduleWeekdays,
   WORK_SCHEDULE_MAX_DURATION_MINUTES, WORK_SCHEDULE_TOLERANCE_MESSAGE,
@@ -138,15 +139,23 @@ export async function getKioskDailyAttendance(organizationId, requestedDay, db =
       dateCheck.toISOString().slice(0, 10) !== date || date > today || date < '1900-01-01') {
     throw kioskError('VALIDATION_ERROR', 'Elige una fecha válida hasta hoy.');
   }
+  const nextDate = addDaysToDateKey(date, 1);
   const { start, end } = utcRangeForLocalDateInclusive(date, date, clock.timeZone);
+  const nextEnd = date === today ? end : utcRangeForLocalDateInclusive(nextDate, nextDate, clock.timeZone).end;
   const [employees, previous] = await Promise.all([
     db.kioskEmployee.findMany({
       where: { clockId: clock.id, createdAt: { lt: end } },
       orderBy: [{ fullName: 'asc' }, { code: 'asc' }],
       select: {
         ...employeeFields,
+        createdAt: true,
+        schedules: {
+          where: { effectiveOn: { lte: new Date(nextDate) } },
+          orderBy: { effectiveOn: 'desc' },
+          take: 3,
+        },
         punches: {
-          where: { recordedAt: { gte: start, lt: end } },
+          where: { recordedAt: { gte: start, lt: nextEnd, lte: now } },
           orderBy: { ordinal: 'asc' },
           select: punchFields,
         },
@@ -165,14 +174,18 @@ export async function getKioskDailyAttendance(organizationId, requestedDay, db =
     `,
   ]);
   const priorByEmployee = new Map(previous.map(({ id, type }) => [id, type]));
-  const people = employees.flatMap(({ punches, ...person }) => {
+  const atMinute = kioskMinuteLookup(clock.timeZone);
+  const people = employees.flatMap((employee) => {
+    const { punches: allPunches, schedules, createdAt, ...person } = employee;
+    const punches = allPunches.filter((punch) => punch.recordedAt < end);
     const priorType = priorByEmployee.get(person.id);
     if (!person.isActive && !priorType && !punches.length) return [];
     const lastType = punches.at(-1)?.type ?? priorType;
     const status = lastType === 'CHECK_OUT' ? 'OUT' : lastType === 'MEAL_OUT' ? 'MEAL' : lastType ? 'IN' : 'NO_PUNCHES';
-    return [{ ...person, status, carriedIn: Boolean(priorType), punches }];
+    const attendance = kioskAttendanceForDay(employee, { date, nextStart: end, now, atMinute });
+    return [{ ...person, status, carriedIn: Boolean(priorType), punches, attendance }];
   });
-  return { date, today, timeZone: clock.timeZone, people };
+  return { date, today, timeZone: clock.timeZone, asOf: now, nextDayAt: end, people };
 }
 
 export async function activateKioskClock(organizationId) {

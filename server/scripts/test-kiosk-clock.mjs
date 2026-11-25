@@ -283,22 +283,26 @@ assert.deepEqual(editedWeekend.upcomingWorkSchedule.weekendHours, {});
 console.log('Horario de fin de semana: sábado, domingo nocturno, días de descanso, edición e historial OK (base simulada).');
 
 const dailyRoster = [
-  { id: created.employee.id, code: created.employee.code, fullName: 'Turno nocturno', isActive: false },
-  { id: 'another', code: '0008', fullName: 'Sin checadas', isActive: true },
-  { id: 'disabled', code: '0009', fullName: 'Inactivo sin checadas', isActive: false },
+  { id: created.employee.id, code: created.employee.code, fullName: 'Turno nocturno', isActive: false, schedules: [] },
+  { id: 'another', code: '0008', fullName: 'Sin checadas', isActive: true, schedules: [] },
+  { id: 'disabled', code: '0009', fullName: 'Inactivo sin checadas', isActive: false, schedules: [] },
 ];
 const morning = new Date('2026-11-25T15:00:00Z');
+const dailyRecords = records.slice(0, 4);
 const dailyDb = {
   kioskClock: { findUnique: db.kioskClock.findUnique },
   kioskEmployee: {
     async findMany({ where, select }) {
       assert.equal(where.clockId, 'clock-a');
-      const { gte: start, lt: end } = select.punches.where.recordedAt;
-      assert.deepEqual(where.createdAt, { lt: end });
-      return dailyRoster.map((employee) => ({
+      const { gte: start, lt: end, lte: now } = select.punches.where.recordedAt;
+      const lastEffective = select.schedules.where.effectiveOn.lte;
+      assert.ok(where.createdAt.lt <= end);
+      return dailyRoster.filter((employee) => !employee.createdAt || employee.createdAt < where.createdAt.lt).map((employee) => ({
         ...employee,
-        punches: records.slice(0, 4).filter((punch) =>
-          punch.employeeId === employee.id && punch.recordedAt >= start && punch.recordedAt < end,
+        schedules: employee.schedules.filter((row) => row.effectiveOn <= lastEffective)
+          .sort((a, b) => b.effectiveOn - a.effectiveOn).slice(0, select.schedules.take),
+        punches: dailyRecords.filter((punch) =>
+          punch.employeeId === employee.id && punch.recordedAt >= start && punch.recordedAt < end && punch.recordedAt <= now,
         ).map(punchFields),
       }));
     },
@@ -306,8 +310,10 @@ const dailyDb = {
   async $queryRaw(sql, start, clockId) {
     assert.match(sql.join(''), /JOIN LATERAL/);
     assert.equal(clockId, 'clock-a');
-    const last = records.slice(0, 4).filter((punch) => punch.recordedAt < start).at(-1);
-    return last && last.type !== 'CHECK_OUT' ? [{ id: last.employeeId, type: last.type }] : [];
+    return dailyRoster.flatMap((employee) => {
+      const last = dailyRecords.filter((punch) => punch.employeeId === employee.id && punch.recordedAt < start).at(-1);
+      return last && last.type !== 'CHECK_OUT' ? [{ id: employee.id, type: last.type }] : [];
+    });
   },
 };
 const yesterday = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, morning);
@@ -325,6 +331,66 @@ await assert.rejects(getKioskDailyAttendance('org-a', '2026-11-26', dailyDb, mor
 await assert.rejects(getKioskDailyAttendance('org-a', '2026-02-31', dailyDb, morning), { code: 'VALIDATION_ERROR' });
 await assert.rejects(getKioskDailyAttendance('unknown', undefined, dailyDb, morning), { code: 'NOT_FOUND' });
 console.log('Asistencia diaria: cambio de día local, turno abierto al cierre, histórico de inactivos y fechas inválidas OK (base simulada).');
+
+const rosterDay = (id, versions, createdAt = '2026-11-01T15:00:00Z') =>
+  dailyRoster.push({ id, code: id, fullName: id, isActive: true, createdAt: new Date(createdAt), schedules: versions });
+const daySchedule = {
+  effectiveOn: new Date('2026-11-01'), startMinute: 480, endMinute: 1020,
+  toleranceMinutes: 10, weekdayMask: 31, weekendHours: {},
+};
+const nightSchedule = { ...daySchedule, startMinute: 1320, endMinute: 360, weekdayMask: 127 };
+rosterDay('on-time', [daySchedule]);
+rosterDay('late', [daySchedule, { ...daySchedule, effectiveOn: new Date('2026-11-26'), startMinute: 540 }]);
+rosterDay('absent', [daySchedule]);
+rosterDay('no-schedule', []);
+rosterDay('new-employee', [daySchedule], '2026-11-24T15:00:00Z');
+rosterDay('night', [nightSchedule]);
+rosterDay('late-night-entry', [nightSchedule]);
+rosterDay('weekend', [{ ...daySchedule, weekdayMask: 63, weekendHours: { 6: { startMinute: 480, endMinute: 780 } } }]);
+function attendancePunches(id, events) {
+  for (const [index, [type, time]] of events.entries()) {
+    dailyRecords.push({ employeeId: id, type, recordedAt: new Date(time), ordinal: index + 1 });
+  }
+}
+attendancePunches('on-time', [
+  ['CHECK_IN', '2026-11-24T14:10:00.000Z'], ['CHECK_OUT', '2026-11-24T23:00:00Z'],
+]);
+attendancePunches('late', [
+  ['CHECK_IN', '2026-11-24T14:10:00.001Z'], ['MEAL_OUT', '2026-11-24T20:00:00Z'],
+]);
+attendancePunches('night', [
+  ['CHECK_IN', '2026-11-25T04:00:00Z'], ['MEAL_OUT', '2026-11-25T05:00:00Z'],
+  ['MEAL_IN', '2026-11-25T06:00:00Z'], ['CHECK_OUT', '2026-11-25T12:08:00Z'],
+  ['CHECK_IN', '2026-11-26T04:00:00Z'], ['CHECK_OUT', '2026-11-26T12:00:00Z'],
+]);
+attendancePunches('late-night-entry', [
+  ['CHECK_IN', '2026-11-25T07:00:00Z'], ['CHECK_OUT', '2026-11-25T12:00:00Z'],
+]);
+const findDay = (result, id) => result.people.find((entry) => entry.id === id);
+const dayBeforeEnd = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-24T22:59:59Z'));
+assert.deepEqual(findDay(dayBeforeEnd, 'absent').attendance.flags, []);
+assert.deepEqual(findDay(dayBeforeEnd, 'late').attendance.flags, ['LATE']);
+const overnightStillOpen = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-25T06:30:00Z'));
+assert.deepEqual(findDay(overnightStillOpen, 'night').attendance.flags, ['ON_TIME']);
+const done = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-26T16:00:00Z'));
+assert.deepEqual(findDay(done, 'on-time').attendance.flags, ['ON_TIME']);
+assert.deepEqual(findDay(done, 'late').attendance.flags, ['LATE', 'INCOMPLETE']);
+assert.deepEqual(findDay(done, 'absent').attendance.flags, ['ABSENT']);
+assert.equal(findDay(done, 'no-schedule').attendance.kind, 'UNSCHEDULED');
+assert.equal(findDay(done, 'new-employee').attendance.kind, 'BEFORE_ENROLLMENT');
+assert.deepEqual(findDay(done, 'night').attendance.flags, ['ON_TIME', 'LATE_EXIT']);
+assert.deepEqual(findDay(done, 'night').attendance.punches.map(({ ordinal }) => ordinal), [1, 2, 3, 4]);
+assert.deepEqual(findDay(done, 'late-night-entry').attendance.flags, ['LATE']);
+const following = await getKioskDailyAttendance('org-a', '2026-11-25', dailyDb, new Date('2026-11-26T16:00:00Z'));
+assert.deepEqual(findDay(following, 'night').attendance.punches.map(({ ordinal }) => ordinal), [5, 6]);
+assert.deepEqual(findDay(following, 'late-night-entry').attendance.punches, []);
+const saturday = await getKioskDailyAttendance('org-a', '2026-11-28', dailyDb, new Date('2026-11-28T19:00:00Z'));
+assert.equal(findDay(saturday, 'weekend').attendance.endAt.toISOString(), '2026-11-28T19:00:00.000Z');
+assert.deepEqual(findDay(saturday, 'weekend').attendance.flags, ['ABSENT']);
+const sunday = await getKioskDailyAttendance('org-a', '2026-11-29', dailyDb, new Date('2026-11-29T19:00:00Z'));
+assert.equal(findDay(sunday, 'weekend').attendance.kind, 'REST');
+assert.deepEqual(findDay(sunday, 'weekend').attendance.flags, []);
+console.log('Incidencias: tolerancia exacta, alta, descanso, horario histórico, sábado especial y turnos nocturnos OK.');
 
 const reportNow = new Date('2026-03-10T12:00:00Z');
 let reportRows = [

@@ -363,6 +363,30 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-punch-label{color:var(--kiosk-muted);font-size:11px;line-height:1.1;}
 .kiosk-punch time{display:block;color:var(--kiosk-ink);font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;}
 .kiosk-no-events{display:block;width:min(155px,80%);border-top:2px dashed #e3d4ed;}
+.kiosk-shift{margin-bottom:8px;}
+.kiosk-shift-track{position:relative;height:25px;margin:0 5px;color:#6732a1;}
+.kiosk-shift-track span{position:absolute;}
+.kiosk-shift-axis,.kiosk-shift-expected,.kiosk-shift-elapsed{top:11px;height:4px;border-radius:5px;}
+.kiosk-shift-axis{inset-inline:0;background:#eee5f5;}
+.kiosk-shift-expected{background:#dbc4ec;}
+.kiosk-shift-elapsed{background:#a36dcb;}
+.kiosk-shift-bound{top:8px;height:10px;border-left:2px solid #a381bf;transform:translateX(-50%);}
+.kiosk-shift-mark{top:9px;width:8px;height:8px;border-radius:50%;background:#713da2;box-shadow:0 0 0 1px #fff;transform:translateX(-50%);}
+.kiosk-shift-mark[data-kind="CHECK_IN"]{background:#187a5d;}
+.kiosk-shift-mark[data-kind="MEAL_OUT"],.kiosk-shift-mark[data-kind="MEAL_IN"]{background:#b35a35;}
+.kiosk-shift-now{top:3px;height:20px;border-left:2px dashed #713da2;transform:translateX(-50%);}
+.kiosk-shift-caption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;color:var(--kiosk-muted);font-size:11px;line-height:1.35;}
+.kiosk-shift-caption strong{color:var(--kiosk-ink);font-weight:750;}
+.kiosk-shift-current{color:#65349b;font-weight:700;}
+.kiosk-shift + .kiosk-day-events .kiosk-punch::before{content:none;}
+.kiosk-shift-context{margin-top:6px;}
+.kiosk-shift-context small{display:block;margin-bottom:4px;font-size:11px;color:var(--kiosk-muted);}
+.kiosk-day-incidents{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.kiosk-day-flag{display:inline-flex;padding:3px 6px;border-radius:7px;background:#f1ecf5;color:#604873;font-size:11px;line-height:1.25;font-weight:720;}
+.kiosk-day-flag[data-flag="ON_TIME"]{background:#e5f4eb;color:#155b43;}
+.kiosk-day-flag[data-flag="LATE"],.kiosk-day-flag[data-flag="INCOMPLETE"]{background:#fff0dc;color:#794019;}
+.kiosk-day-flag[data-flag="ABSENT"]{background:#fbe8ea;color:#942b3a;}
+@media(max-width:570px){.kiosk-day-incidents{justify-content:flex-end;}}
 #kiosk-people{list-style:none;margin:12px 0 0;padding:0;}
 .kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,.75fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f0e7f7;}
 .kiosk-person .kiosk-avatar{width:32px;height:32px;font-size:11px;}
@@ -5033,7 +5057,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <div id="kiosk-day-totals" class="kiosk-day-totals"></div>
           <div id="kiosk-day-table" class="kiosk-day-table hidden">
             <table role="table" aria-labelledby="kiosk-day-title">
-              <thead role="rowgroup"><tr role="row"><th scope="col">Colaborador</th><th scope="col">Checadas del día</th><th scope="col">Estado</th></tr></thead>
+              <thead role="rowgroup"><tr role="row"><th scope="col">Colaborador</th><th scope="col">Jornada y checadas</th><th scope="col">Estado</th></tr></thead>
               <tbody role="rowgroup" id="kiosk-day-people"></tbody>
             </table>
           </div>
@@ -6913,6 +6937,7 @@ let kioskViewVersion=0;
 let kioskAdminBusy=false;
 let kioskDayVersion=0;
 let kioskDayToday='';
+let kioskDayTimelineTimer=0;
 let kioskCalendarMonth='';
 let kioskExportRequest=null;
 
@@ -7107,6 +7132,7 @@ function kioskOnLeave(){
   kioskRefreshVersion++;
   kioskViewVersion++;
   kioskDayVersion++;
+  clearInterval(kioskDayTimelineTimer);
   kioskCloseCalendar(false);
   kioskExportRequest?.abort();
   kioskExportRequest=null;
@@ -7287,8 +7313,110 @@ async function kioskMutation(button,path,method,body,employeeName,form){
   }
 }
 
+function kioskDayPunchList(punches,formatTime){
+  const list=document.createElement('ol');
+  list.className='kiosk-day-events';
+  list.setAttribute('role','list');
+  for(const punch of punches){
+    const item=document.createElement('li');
+    item.className='kiosk-punch';
+    item.dataset.kind=punch.type;
+    const icon=document.createElement('span');
+    icon.className='kiosk-punch-icon';
+    icon.append(kioskIcon(kioskPunchIcons[punch.type]));
+    const text=document.createElement('span');
+    const label=document.createElement('span');
+    label.className='kiosk-punch-label';
+    label.textContent=kioskPunchLabels[punch.type];
+    const time=document.createElement('time');
+    time.dateTime=punch.recordedAt;
+    time.textContent=formatTime(punch.recordedAt);
+    text.append(label,time);
+    item.append(icon,text);
+    list.append(item);
+  }
+  return list;
+}
+
+function kioskDrawShift(cell,attendance,formatTime,liveTicks){
+  const start=Date.parse(attendance.startAt), end=Date.parse(attendance.endAt);
+  const plotted=attendance.punches.map(punch=>({punch, at:Date.parse(punch.recordedAt)}));
+  const left=plotted.reduce((bound,event)=>Math.min(bound,event.at),start);
+  const right=plotted.reduce((bound,event)=>Math.max(bound,event.at),end);
+  const offset=instant=>100*(instant-left)/(right-left);
+  const range=(el,from,to)=>{
+    el.style.left=offset(from)+'%';
+    el.style.width=(offset(to)-offset(from))+'%';
+  };
+  const shift=document.createElement('div');
+  shift.className='kiosk-shift';
+  const track=document.createElement('div');
+  track.className='kiosk-shift-track';
+  track.setAttribute('aria-hidden','true');
+  const caption=document.createElement('div');
+  caption.className='kiosk-shift-caption';
+  const label=document.createElement('strong');
+  label.textContent='Horario esperado';
+  caption.append(label,formatTime(start)+' – '+formatTime(end));
+  const part=(className)=>{
+    const el=document.createElement('span');
+    el.className=className;
+    track.append(el);
+    return el;
+  };
+  part('kiosk-shift-axis');
+  range(part('kiosk-shift-expected'),start,end);
+  if(liveTicks){
+    const elapsed=part('kiosk-shift-elapsed');
+    const now=part('kiosk-shift-now');
+    const nowLabel=document.createElement('span');
+    nowLabel.className='kiosk-shift-current';
+    caption.append(nowLabel);
+    liveTicks.push(at=>{
+      range(elapsed,start,Math.max(start,Math.min(at,end)));
+      now.hidden=at<left||at>right;
+      nowLabel.hidden=now.hidden;
+      if(!now.hidden){
+        now.style.left=offset(at)+'%';
+        nowLabel.textContent='Ahora '+formatTime(at);
+      }
+    });
+  }
+  for(const edge of [start,end]) part('kiosk-shift-bound').style.left=offset(edge)+'%';
+  for(const {punch,at} of plotted){
+    const dot=part('kiosk-shift-mark');
+    dot.style.left=offset(at)+'%';
+    dot.dataset.kind=punch.type;
+    dot.title=kioskPunchLabels[punch.type]+' · '+formatTime(at);
+  }
+  shift.append(track,caption);
+  cell.append(shift);
+}
+
+function kioskDayFlags(cell,attendance){
+  if(!attendance) return;
+  const labels={
+    ON_TIME:'A tiempo',LATE:'Retardo',ABSENT:'Falta',INCOMPLETE:'Checada incompleta',LATE_EXIT:'Salida posterior al horario',
+    UNSCHEDULED:'Sin horario para este día',REST:'Descanso',BEFORE_ENROLLMENT:'Alta posterior al inicio',UNAVAILABLE:'Horario por revisar',
+  };
+  const flags=attendance.kind==='PLANNED'?attendance.flags:[attendance.kind];
+  if(!flags.length) return;
+  const group=document.createElement('div');
+  group.className='kiosk-day-incidents';
+  for(const flag of flags){
+    if(!labels[flag]) continue;
+    const label=document.createElement('span');
+    label.className='kiosk-day-flag';
+    label.dataset.flag=flag;
+    label.textContent=labels[flag];
+    group.append(label);
+  }
+  cell.append(group);
+}
+
 async function kioskLoadDay(date=''){
   kioskCloseCalendar(false);
+  clearInterval(kioskDayTimelineTimer);
   const request=++kioskDayVersion;
   const section=document.getElementById('kiosk-day');
   const message=document.getElementById('kiosk-day-message');
@@ -7310,17 +7438,31 @@ async function kioskLoadDay(date=''){
     field.value=result.date;
     const historical=result.date!==result.today;
     const statuses={
-      IN:{label:historical?'Abierta al cierre':'En jornada',className:'is-in',icon:'working'},
-      MEAL:{label:historical?'Comida sin cerrar':'En comida',className:'is-meal',icon:'meal'},
+      IN:{label:historical?'Jornada abierta':'En jornada',className:'is-in',icon:'working'},
+      MEAL:{label:historical?'Comida abierta':'En comida',className:'is-meal',icon:'meal'},
       OUT:{label:'Salida registrada',className:'is-out',icon:'out'},
       NO_PUNCHES:{label:'Sin checadas',className:'',icon:'empty'},
     };
     message.textContent=result.people.length?'':'No hay colaboradores registrados para esta fecha.';
     if(!result.people.length)return;
     const clock=new Intl.DateTimeFormat('es-MX',{timeZone:result.timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+    const nextDay=Date.parse(result.nextDayAt);
+    const asOf=Date.parse(result.asOf);
+    const liveTicks=!historical&&Number.isFinite(asOf)?[]:null;
+    const formatTime=value=>{
+      const at=new Date(value);
+      return clock.format(at)+(+at>=nextDay?' (+1 día)':'');
+    };
     const counts={IN:0,MEAL:0,OUT:0,NO_PUNCHES:0};
     for(const person of result.people){
-      counts[person.status]++;
+      const attendance=person.attendance;
+      const planned=attendance?.kind==='PLANNED';
+      const punches=planned?attendance.punches:person.punches;
+      const lastType=punches.at(-1)?.type;
+      const viewStatus=planned
+        ? lastType==='CHECK_OUT'?'OUT':lastType==='MEAL_OUT'?'MEAL':lastType?'IN':'NO_PUNCHES'
+        : person.status;
+      counts[viewStatus]++;
       const row=rows.insertRow();
       row.setAttribute('role','row');
       const identity=row.insertCell();
@@ -7330,45 +7472,41 @@ async function kioskLoadDay(date=''){
       const events=row.insertCell();
       events.className='kiosk-day-activity';
       events.setAttribute('role','cell');
-      if(!person.punches.length){
+      if(planned) kioskDrawShift(events,attendance,formatTime,liveTicks);
+      if(punches.length){
+        events.append(kioskDayPunchList(punches,formatTime));
+      }else if(!planned){
         const empty=document.createElement('span');
         empty.className='kiosk-no-events';
         empty.setAttribute('role','img');
         empty.setAttribute('aria-label','Sin checadas en esta fecha');
         events.append(empty);
-      }else{
-        const list=document.createElement('ol');
-        list.className='kiosk-day-events';
-        list.setAttribute('role','list');
-        for(const punch of person.punches){
-          const item=document.createElement('li');
-          item.className='kiosk-punch';
-          item.dataset.kind=punch.type;
-          const icon=document.createElement('span');
-          icon.className='kiosk-punch-icon';
-          icon.append(kioskIcon(kioskPunchIcons[punch.type]));
-          const text=document.createElement('span');
-          const label=document.createElement('span');
-          label.className='kiosk-punch-label';
-          label.textContent=kioskPunchLabels[punch.type];
-          const time=document.createElement('time');
-          time.dateTime=punch.recordedAt;
-          time.textContent=clock.format(new Date(punch.recordedAt));
-          text.append(label,time);
-          item.append(icon,text);
-          list.append(item);
+      }
+      if(planned){
+        const owned=new Set(punches.map(punch=>punch.ordinal));
+        const previous=person.punches.filter(punch=>!owned.has(punch.ordinal));
+        if(previous.length){
+          const context=document.createElement('div');
+          context.className='kiosk-shift-context';
+          const label=document.createElement('small');
+          label.textContent='Turno del día anterior';
+          context.append(label,kioskDayPunchList(previous,formatTime));
+          events.append(context);
         }
-        events.append(list);
       }
       const status=row.insertCell();
       status.className='kiosk-day-current';
       status.setAttribute('role','cell');
-      const state=statuses[person.status];
+      const state=statuses[viewStatus];
       const badge=document.createElement('span');
       badge.className='kiosk-day-state '+state.className;
-      badge.append(kioskIcon(state.icon),state.label);
+      const stillRunning=historical&&planned&&Date.parse(attendance.endAt)>asOf;
+      const stateLabel=stillRunning&&viewStatus==='IN'?'En jornada'
+        :stillRunning&&viewStatus==='MEAL'?'En comida':state.label;
+      badge.append(kioskIcon(state.icon),stateLabel);
       status.append(badge);
-      if(person.carriedIn){
+      kioskDayFlags(status,attendance);
+      if(person.carriedIn&&!planned){
         const carry=document.createElement('small');
         carry.className='kiosk-person-meta';
         carry.textContent='Inició antes de este día';
@@ -7384,6 +7522,15 @@ async function kioskLoadDay(date=''){
       return item;
     }));
     table.classList.remove('hidden');
+    if(liveTicks?.length){
+      const mounted=performance.now();
+      const update=()=>{
+        const at=asOf+performance.now()-mounted;
+        for(const tick of liveTicks) tick(at);
+      };
+      update();
+      kioskDayTimelineTimer=setInterval(update,30_000);
+    }
   }catch(error){
     if(request===kioskDayVersion) message.textContent=error.message||'No se pudo cargar la asistencia.';
   }finally{
