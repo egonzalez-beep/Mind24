@@ -6,6 +6,7 @@ import {
   activateKioskClock,
   createKioskEmployee,
   getKioskClock,
+  getKioskDailyAttendance,
   identifyKioskEmployee,
   KIOSK_PUNCH_TYPES,
   recordKioskPunch,
@@ -44,6 +45,15 @@ kioskClockOrgRoutes.use(async (req, res, next) => {
 kioskClockOrgRoutes.get('/', async (req, res, next) => {
   try {
     res.json({ clock: await getKioskClock(req.kioskOrganizationId) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+kioskClockOrgRoutes.get('/daily', async (req, res, next) => {
+  try {
+    const { date } = z.object({ date: z.string().length(10).optional() }).parse(req.query);
+    res.json(await getKioskDailyAttendance(req.kioskOrganizationId, date));
   } catch (error) {
     next(error);
   }

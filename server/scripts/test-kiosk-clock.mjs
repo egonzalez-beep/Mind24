@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import {
-  createKioskEmployee, identifyKioskEmployee, recordKioskPunch, updateKioskEmployee,
+  createKioskEmployee, getKioskDailyAttendance, identifyKioskEmployee, recordKioskPunch, updateKioskEmployee,
 } from '../src/services/kioskClock.service.js';
 
 process.env.SESSION_SECRET = 'kiosk-test-secret';
@@ -174,3 +174,47 @@ assert.deepEqual((await identifyKioskEmployee(currentCredentials, db)).actions, 
 await updateKioskEmployee('org-a', created.employee.id, { isActive: false }, db);
 await assert.rejects(identifyKioskEmployee(currentCredentials, db), { code: 'INVALID_CREDENTIALS' });
 console.log('Reloj checador: alta, colisiones, renovación, acceso, aislamiento, reintentos y jornada nocturna OK (base simulada).');
+
+const dailyRoster = [
+  { id: created.employee.id, code: created.employee.code, fullName: 'Turno nocturno', isActive: false },
+  { id: 'another', code: '0008', fullName: 'Sin checadas', isActive: true },
+  { id: 'disabled', code: '0009', fullName: 'Inactivo sin checadas', isActive: false },
+];
+const morning = new Date('2026-11-25T15:00:00Z');
+const dailyDb = {
+  kioskClock: { findUnique: db.kioskClock.findUnique },
+  kioskEmployee: {
+    async findMany({ where, select }) {
+      assert.equal(where.clockId, 'clock-a');
+      const { gte: start, lt: end } = select.punches.where.recordedAt;
+      assert.deepEqual(where.createdAt, { lt: end });
+      return dailyRoster.map((employee) => ({
+        ...employee,
+        punches: records.slice(0, 4).filter((punch) =>
+          punch.employeeId === employee.id && punch.recordedAt >= start && punch.recordedAt < end,
+        ).map(punchFields),
+      }));
+    },
+  },
+  async $queryRaw(sql, start, clockId) {
+    assert.match(sql.join(''), /JOIN LATERAL/);
+    assert.equal(clockId, 'clock-a');
+    const last = records.slice(0, 4).filter((punch) => punch.recordedAt < start).at(-1);
+    return last && last.type !== 'CHECK_OUT' ? [{ id: last.employeeId, type: last.type }] : [];
+  },
+};
+const yesterday = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, morning);
+assert.equal(yesterday.date, '2026-11-24');
+assert.equal(yesterday.today, '2026-11-25');
+assert.deepEqual(yesterday.people.map(({ status }) => status), ['MEAL', 'NO_PUNCHES']);
+assert.equal(yesterday.people[0].carriedIn, false);
+assert.deepEqual(yesterday.people[0].punches.map(({ type }) => type), ['CHECK_IN', 'MEAL_OUT']);
+const today = await getKioskDailyAttendance('org-a', undefined, dailyDb, morning);
+assert.equal(today.date, '2026-11-25');
+assert.equal(today.people[0].carriedIn, true);
+assert.equal(today.people[0].status, 'OUT');
+assert.deepEqual(today.people[0].punches.map(({ type }) => type), ['MEAL_IN', 'CHECK_OUT']);
+await assert.rejects(getKioskDailyAttendance('org-a', '2026-11-26', dailyDb, morning), { code: 'VALIDATION_ERROR' });
+await assert.rejects(getKioskDailyAttendance('org-a', '2026-02-31', dailyDb, morning), { code: 'VALIDATION_ERROR' });
+await assert.rejects(getKioskDailyAttendance('unknown', undefined, dailyDb, morning), { code: 'NOT_FOUND' });
+console.log('Asistencia diaria: cambio de día local, turno abierto al cierre, histórico de inactivos y fechas inválidas OK (base simulada).');

@@ -15,6 +15,8 @@ const actionList = document.getElementById('actions');
 const cancelButton = document.getElementById('cancel');
 const employeeName = document.getElementById('employee-name');
 const success = document.getElementById('success');
+const successAction = document.getElementById('success-action');
+const successTime = document.getElementById('success-time');
 const errorBox = document.getElementById('error');
 
 let identity = null;
@@ -37,7 +39,7 @@ async function send(path, body) {
   return result;
 }
 
-function showIdentify(message = '') {
+function showIdentify(message = '', focus = true) {
   clearTimeout(idleTimeout);
   identity = null;
   activePunch = null;
@@ -47,7 +49,7 @@ function showIdentify(message = '') {
   actionPanel.hidden = true;
   form.hidden = false;
   errorBox.textContent = message;
-  keyField.focus();
+  if (focus) keyField.focus({ preventScroll: true });
 }
 
 function armIdleTimeout() {
@@ -69,9 +71,12 @@ async function record(type, button) {
     const time = new Intl.DateTimeFormat('es-MX', {
       timeZone: punch.timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
     }).format(new Date(punch.recordedAt));
-    success.textContent = labels[punch.type] + ' · ' + time + ' · Checada registrada';
+    successAction.textContent = labels[punch.type];
+    successTime.textContent = time;
+    successTime.dateTime = punch.recordedAt;
     success.hidden = false;
-    showIdentify();
+    showIdentify('', false);
+    success.focus({ preventScroll: true });
   } catch (error) {
     if (error.status === 401 || error.status === 409) showIdentify(error.message);
     else {
@@ -92,7 +97,6 @@ form.addEventListener('submit', async (event) => {
   pending = true;
   submitButton.disabled = true;
   success.hidden = true;
-  success.textContent = '';
   errorBox.textContent = '';
   const credentials = { punchKey: keyField.value };
   keyField.value = '';
@@ -125,6 +129,7 @@ cancelButton.addEventListener('click', () => {
   if (!pending) showIdentify();
 });
 
+keyField.addEventListener('input', () => { success.hidden = true; });
 window.addEventListener('hashchange', () => location.reload());
-if (window.isSecureContext && /^[A-Za-z0-9_-]{32}$/.test(publicKey)) showIdentify();
+if (window.isSecureContext && /^[A-Za-z0-9_-]{32}$/.test(publicKey)) showIdentify('', false);
 else document.getElementById('invalid-link').hidden = false;

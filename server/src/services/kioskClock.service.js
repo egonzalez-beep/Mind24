@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
+import { localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
 
 export const KIOSK_PUNCH_TYPES = ['CHECK_IN', 'MEAL_OUT', 'MEAL_IN', 'CHECK_OUT'];
 const NEXT_PUNCH = {
@@ -62,6 +63,57 @@ export async function getKioskClock(organizationId) {
       lastPunch: punches[0] ?? null,
     })),
   };
+}
+
+export async function getKioskDailyAttendance(organizationId, requestedDay, db = prisma, now = new Date()) {
+  const clock = await db.kioskClock.findUnique({
+    where: { organizationId },
+    select: { id: true, timeZone: true },
+  });
+  if (!clock) throw kioskError('NOT_FOUND', 'Activa primero el reloj checador.');
+
+  const today = localDateKey(now, clock.timeZone);
+  const date = requestedDay ?? today;
+  const dateCheck = new Date(`${date}T00:00:00.000Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(dateCheck.valueOf()) ||
+      dateCheck.toISOString().slice(0, 10) !== date || date > today || date < '1900-01-01') {
+    throw kioskError('VALIDATION_ERROR', 'Elige una fecha válida hasta hoy.');
+  }
+  const { start, end } = utcRangeForLocalDateInclusive(date, date, clock.timeZone);
+  const [employees, previous] = await Promise.all([
+    db.kioskEmployee.findMany({
+      where: { clockId: clock.id, createdAt: { lt: end } },
+      orderBy: [{ fullName: 'asc' }, { code: 'asc' }],
+      select: {
+        ...employeeFields,
+        punches: {
+          where: { recordedAt: { gte: start, lt: end } },
+          orderBy: { ordinal: 'asc' },
+          select: punchFields,
+        },
+      },
+    }),
+    db.$queryRaw`
+      SELECT employee."id", previous."type"::text AS "type"
+      FROM "KioskEmployee" employee
+      JOIN LATERAL (
+        SELECT "type" FROM "KioskPunch"
+        WHERE "employeeId" = employee."id" AND "recordedAt" < ${start}
+        ORDER BY "ordinal" DESC
+        LIMIT 1
+      ) previous ON previous."type" <> 'CHECK_OUT'
+      WHERE employee."clockId" = ${clock.id}
+    `,
+  ]);
+  const priorByEmployee = new Map(previous.map(({ id, type }) => [id, type]));
+  const people = employees.flatMap(({ punches, ...person }) => {
+    const priorType = priorByEmployee.get(person.id);
+    if (!person.isActive && !priorType && !punches.length) return [];
+    const lastType = punches.at(-1)?.type ?? priorType;
+    const status = lastType === 'CHECK_OUT' ? 'OUT' : lastType === 'MEAL_OUT' ? 'MEAL' : lastType ? 'IN' : 'NO_PUNCHES';
+    return [{ ...person, status, carriedIn: Boolean(priorType), punches }];
+  });
+  return { date, today, timeZone: clock.timeZone, people };
 }
 
 export async function activateKioskClock(organizationId) {

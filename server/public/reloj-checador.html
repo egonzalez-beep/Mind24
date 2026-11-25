@@ -5,42 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reloj checador · Mind24</title>
   <style>
-    :root{font-family:system-ui,sans-serif;color:#132923;background:#edf5f0;color-scheme:light;}
+    :root{--ink:#1e1635;--muted:#625773;--purple:#5b21b6;--deep:#4c1d95;--lavender:#f5f3ff;--border:#ddd6fe;font-family:system-ui,sans-serif;color:var(--ink);background:#fff;color-scheme:light;}
     *{box-sizing:border-box;}
-    body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse at top right,#cde8dc,transparent 68%),#edf5f0;}
+    body{margin:0;}
     [hidden]{display:none!important;}
-    main{width:min(100%,470px);}
-    header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
-    .mark{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:#113c31;color:#fff;font-size:21px;font-weight:800;}
-    header p{margin:0 0 2px;color:#41665a;font-size:12px;font-weight:750;letter-spacing:.08em;}
+    main{display:grid;grid-template-columns:minmax(240px,36%) minmax(0,1fr);min-height:100vh;min-height:100dvh;}
+    header{display:grid;align-content:center;justify-items:start;gap:16px;padding:clamp(22px,5vw,76px);background:linear-gradient(145deg,#21133f 0%,var(--deep) 100%);color:#fff;}
+    .mark{font-size:18px;font-weight:850;letter-spacing:.08em;}
+    .mark span{color:#ddd6fe;}
     h1,h2{margin:0;line-height:1.15;letter-spacing:-.04em;}
-    h1{font-size:clamp(26px,6vw,36px);}
-    h2{font-size:25px;overflow-wrap:anywhere;}
-    .panel{padding:clamp(18px,5vw,30px);background:#fff;border:1px solid #d1e5dd;border-radius:24px;box-shadow:0 16px 55px #173c3020;}
-    form,#actions,#actions-panel{display:grid;gap:14px;}
-    label{display:grid;gap:6px;font-size:14px;font-weight:700;}
-    input,button{min-height:54px;border-radius:12px;font:inherit;}
-    input{width:100%;padding:10px 13px;background:#f6faf8;border:1px solid #afc9bf;color:#132923;font-size:17px;}
-    button{padding:10px 14px;background:#17604b;border:1px solid #17604b;color:#fff;cursor:pointer;font-weight:750;}
-    button:hover:enabled{background:#104d3b;}
-    button.secondary{background:#f4faf7;border-color:#b6d4c8;color:#174239;}
-    button.secondary:hover:enabled{background:#e6f4ed;}
+    h1{font-size:clamp(30px,5.4vw,60px);max-width:14ch;}
+    h2{font-size:clamp(24px,4vw,34px);overflow-wrap:anywhere;}
+    .panel{display:grid;align-content:center;justify-items:center;padding:clamp(24px,6vw,96px);background:linear-gradient(160deg,#fff 62%,#f8f6ff);}
+    .panel-inner{width:min(100%,640px);}
+    form,#actions,#actions-panel{display:grid;gap:12px;}
+    label{display:grid;gap:8px;font-size:clamp(18px,3vw,26px);font-weight:750;}
+    input,button{min-height:56px;border-radius:12px;font:inherit;}
+    input{width:100%;padding:8px 14px;background:var(--lavender);border:1px solid #c4b5fd;color:var(--ink);font-size:30px;letter-spacing:.25em;text-align:center;}
+    button{padding:10px 14px;background:var(--purple);border:1px solid var(--purple);color:#fff;cursor:pointer;font-size:17px;font-weight:750;}
+    button:hover:enabled{background:var(--deep);}
+    button.secondary{background:var(--lavender);border-color:var(--border);color:var(--deep);}
+    button.secondary:hover:enabled{background:#ede9fe;}
     button:disabled{opacity:.62;}
-    :focus-visible{outline:3px solid #1e7860;outline-offset:3px;}
-    #actions-label{margin:4px 0 0;color:#41665a;}
-    #success{padding:12px;margin:0 0 14px;background:#e6f6ee;border:1px solid #bfe4d2;border-radius:12px;color:#154d3b;font-weight:650;}
+    :focus-visible{outline:3px solid #8b5cf6;outline-offset:3px;}
+    #actions-label{margin:4px 0 0;color:var(--muted);}
+    #cancel{justify-self:start;min-width:120px;font-size:14px;}
+    #success{display:flex;align-items:center;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;padding:14px 16px;margin:0 0 18px;background:var(--lavender);border:1px solid var(--border);border-radius:12px;color:var(--deep);}
+    #success strong,#success span{display:block;}
+    #success span{font-size:14px;margin-top:2px;}
+    #success time{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
     #error{margin:12px 0 0;color:#9a2929;font-size:14px;}
     #error:empty{display:none;}
     #invalid-link{margin:0;line-height:1.55;}
+    @media(max-width:650px){
+      main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;}
+      header{gap:8px;padding:20px 18px;}
+      h1{max-width:none;}
+      .panel{align-content:start;padding:22px 18px;}
+    }
   </style>
   <script defer src="/reloj-checador/kiosk.js"></script>
 </head>
 <body>
   <main>
-    <header><div class="mark" aria-hidden="true">24</div><div><p>MIND24</p><h1>Reloj checador</h1></div></header>
+    <header><div class="mark">MIND<span>24</span></div><h1>Reloj checador</h1></header>
     <section class="panel">
+      <div class="panel-inner">
       <p id="invalid-link" hidden>Abre la liga de checadas que te compartió tu administrador.</p>
-      <p id="success" role="status" hidden></p>
+      <div id="success" role="status" tabindex="-1" hidden>
+        <div><strong>Checada registrada</strong><span id="success-action"></span></div>
+        <time id="success-time"></time>
+      </div>
       <form id="identify" autocomplete="off" hidden>
         <label>Clave de checada
           <input name="punchKey" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required>
@@ -53,6 +68,7 @@
         <button class="secondary" id="cancel" type="button">Cancelar</button>
       </div>
       <p id="error" role="alert"></p>
+      </div>
     </section>
   </main>
 </body>

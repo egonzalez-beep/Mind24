@@ -260,29 +260,50 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .sidebar-item-cta-timeclock{border:1px solid rgba(37,99,235,.32)!important;background:linear-gradient(135deg,rgba(37,99,235,.09),rgba(14,165,233,.06))!important;color:#1e3a8a!important;font-weight:600!important;align-items:center;}
 .sidebar-item-cta-timeclock:hover{border-color:rgba(37,99,235,.55)!important;background:linear-gradient(135deg,rgba(37,99,235,.16),rgba(14,165,233,.1))!important;box-shadow:0 2px 12px rgba(37,99,235,.14);}
 .sidebar-item-cta-timeclock.active{border-color:rgba(37,99,235,.55)!important;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12);}
-.sidebar-item-cta-kiosk{border:1px solid #cfe5dc!important;background:#edf7f2!important;color:#155542!important;}
-.sidebar-item-cta-kiosk:hover,.sidebar-item-cta-kiosk.active{background:#daeee5!important;border-color:#91c6b2!important;}
+.sidebar-item-cta-kiosk{border:1px solid var(--purple-mid)!important;background:var(--purple-light)!important;color:var(--purple-dark)!important;}
+.sidebar-item-cta-kiosk:hover,.sidebar-item-cta-kiosk.active{background:var(--purple-mid)!important;border-color:#c4b5fd!important;}
 .kiosk-admin .main-content{min-width:0;}
 .kiosk-admin .sidebar-nav{overflow:auto;min-height:0;scrollbar-width:thin;}
-.kiosk-admin .page-content{max-width:1140px;width:100%;margin-inline:auto;}
+.kiosk-admin .page-content{width:100%;padding:22px clamp(16px,2.6vw,38px);}
 .kiosk-stack{display:grid;gap:16px;align-content:start;}
-.kiosk-card{padding:20px;border:1px solid var(--slate-200);border-radius:16px;background:#fff;}
+.kiosk-card{min-width:0;padding:18px;border:1px solid var(--slate-200);border-radius:14px;background:#fff;}
 .kiosk-card h2{font-size:17px;color:var(--primary);margin:0 0 8px;}
 .kiosk-card p{margin:6px 0 12px;color:var(--slate-600);font-size:13px;line-height:1.5;}
-.kiosk-share{background:linear-gradient(135deg,#eff9f4,#fff 75%);border-color:#cfe5dc;}
-.kiosk-share-row,.kiosk-form,.kiosk-person-actions{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
-.kiosk-share-row input{flex:1 1 240px;min-width:0;}
+.kiosk-share{background:linear-gradient(110deg,var(--purple-light),#fff 72%);border-color:var(--purple-mid);}
+.kiosk-share-row,.kiosk-form,.kiosk-person-actions,.kiosk-day-tools{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.kiosk-share-row{justify-content:space-between;align-items:center;}
+.kiosk-share-row h2,.kiosk-share-row p{margin:0;}
+.kiosk-address{margin-top:10px;font-size:12px;color:var(--purple-dark);}
+.kiosk-address summary{cursor:pointer;margin-bottom:6px;font-weight:650;}
 .kiosk-admin .create-input{min-width:0;min-height:38px;width:100%;}
 .kiosk-admin label{display:grid;gap:5px;font-size:13px;font-weight:700;color:var(--primary);}
 .kiosk-form label{flex:1 1 170px;}
 .kiosk-primary,.kiosk-open{border-radius:8px;padding:9px 13px;min-height:38px;font:inherit;font-size:13px;font-weight:700;}
-.kiosk-primary{border:1px solid #17604b;background:#17604b;color:white;cursor:pointer;}
+.kiosk-primary{border:1px solid var(--purple-dark);background:var(--purple-dark);color:white;cursor:pointer;}
+.kiosk-primary:hover:enabled{background:var(--purple-deep);}
 .kiosk-primary:disabled{opacity:.6;cursor:wait;}
-.kiosk-open{border:1px solid #aed0c3;color:#155542;text-decoration:none;background:white;}
+.kiosk-open{border:1px solid #ddd6fe;color:var(--purple-dark);text-decoration:none;background:white;}
+.kiosk-open:hover{background:var(--purple-mid);}
 .kiosk-message{color:#952727;font-size:13px;}
 .kiosk-message:empty{display:none;}
-.kiosk-key{padding:12px;margin:0 0 12px;background:#edf7f2;border:1px solid #cfe5dc;border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:#155542;}
+.kiosk-key{padding:12px;margin:0 0 12px;background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.kiosk-key output{font:700 19px ui-monospace,monospace;letter-spacing:.09em;color:var(--purple-dark);}
+.kiosk-day-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin-bottom:12px;}
+.kiosk-day-head h2{margin:0;}
+.kiosk-day-tools .create-input{min-height:36px;}
+.kiosk-day-totals{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap;padding:10px 12px;border-radius:8px;background:var(--purple-light);color:var(--purple-dark);font-size:13px;}
+.kiosk-day-totals:empty,.kiosk-day-message:empty{display:none;}
+.kiosk-day-table{overflow-x:auto;margin-top:8px;}
+.kiosk-day-table table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
+.kiosk-day-table th,.kiosk-day-table td{padding:10px 8px;border-bottom:1px solid var(--slate-100);vertical-align:top;}
+.kiosk-day-table th{color:var(--slate-600);font-weight:700;}
+.kiosk-day-state{display:inline-block;border-radius:20px;padding:4px 8px;background:var(--slate-100);color:var(--slate-600);white-space:nowrap;font-size:12px;}
+.kiosk-day-state.is-in{background:var(--purple-mid);color:var(--purple-dark);}
+.kiosk-day-state.is-meal{background:#fef3c7;color:#92400e;}
+.kiosk-day-person{min-width:115px;overflow-wrap:anywhere;}
+.kiosk-day-events{display:flex;flex-wrap:wrap;gap:5px 10px;padding:0;margin:0;list-style:none;}
+.kiosk-day-events li{white-space:nowrap;}
+.kiosk-day-events time{font-weight:750;font-variant-numeric:tabular-nums;}
 #kiosk-people{list-style:none;margin:14px 0 0;padding:0;}
 .kiosk-person{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--slate-100);}
 .kiosk-person strong,.kiosk-person-meta{display:block;overflow-wrap:anywhere;}
@@ -295,6 +316,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   .kiosk-admin .topbar,.kiosk-admin .page-content{padding-inline:14px;}
   .kiosk-admin .topbar{height:auto;min-height:64px;padding-block:8px;gap:8px;flex-wrap:wrap;}
   .kiosk-card{padding:14px;}
+  .kiosk-day-table th,.kiosk-day-table td{padding:8px 5px;}
+  .kiosk-day-person{min-width:76px;}
   .kiosk-person{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .kiosk-person-actions{grid-column:1/-1;justify-content:flex-start;}
 }
@@ -4795,14 +4818,34 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       </section>
       <div id="kiosk-admin-content" class="kiosk-stack hidden">
         <section class="kiosk-card kiosk-share">
-          <h2>Liga de checadas</h2>
-          <p>Abre esta liga en la tablet o compártela con tu equipo.</p>
           <div class="kiosk-share-row">
-            <input id="kiosk-link" class="create-input" type="text" aria-label="Liga de checadas" readonly>
-            <button type="button" class="kiosk-primary" onclick="kioskCopyLink()">Copiar liga</button>
-            <a class="kiosk-open" id="kiosk-open" target="_blank" rel="noopener noreferrer">Abrir checador</a>
+            <div><h2>Liga de checadas</h2><p>Abre la liga desde la tablet donde checa tu equipo.</p></div>
+            <div class="kiosk-person-actions">
+              <button type="button" class="kiosk-primary" onclick="kioskCopyLink()">Copiar liga</button>
+              <a class="kiosk-open" id="kiosk-open" target="_blank" rel="noopener noreferrer">Abrir checador ↗</a>
+            </div>
           </div>
+          <details class="kiosk-address"><summary>Ver dirección</summary>
+            <input id="kiosk-link" class="create-input" type="text" aria-label="Liga de checadas" readonly>
+          </details>
           <span id="kiosk-copy-status" class="kiosk-person-meta" role="status"></span>
+        </section>
+        <section class="kiosk-card hidden" id="kiosk-day">
+          <div class="kiosk-day-head">
+            <h2>Asistencia diaria</h2>
+            <div class="kiosk-day-tools">
+              <label for="kiosk-day-date">Fecha<input id="kiosk-day-date" class="create-input" type="date" onchange="kioskLoadDay(this.value)"></label>
+              <button type="button" class="card-action" onclick="kioskLoadDay()">Hoy</button>
+            </div>
+          </div>
+          <p id="kiosk-day-message" class="kiosk-day-message" role="status"></p>
+          <div id="kiosk-day-totals" class="kiosk-day-totals"></div>
+          <div id="kiosk-day-table" class="kiosk-day-table hidden">
+            <table aria-label="Asistencia diaria">
+              <thead><tr><th scope="col">Colaborador</th><th scope="col">Estado</th><th scope="col">Checadas del día</th></tr></thead>
+              <tbody id="kiosk-day-people"></tbody>
+            </table>
+          </div>
         </section>
         <section class="kiosk-card">
           <h2>Personal</h2>
@@ -4815,7 +4858,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <label>Número de empleado<input class="create-input" name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9\-]{0,31}" autocomplete="off" required></label>
             <button type="submit" class="kiosk-primary">Agregar colaborador</button>
           </form>
-          <p id="kiosk-empty">Aún no hay colaboradores registrados.</p>
+          <p id="kiosk-empty">Agrega al primer colaborador para generar su clave de checada.</p>
           <ul id="kiosk-people"></ul>
         </section>
       </div>
@@ -6575,6 +6618,8 @@ const kioskPunchLabels={CHECK_IN:'Entrada',MEAL_OUT:'Salida a comida',MEAL_IN:'R
 let kioskRefreshVersion=0;
 let kioskViewVersion=0;
 let kioskAdminBusy=false;
+let kioskDayVersion=0;
+let kioskDayToday='';
 
 function kioskHideKey(){
   document.getElementById('kiosk-key-box').classList.add('hidden');
@@ -6585,6 +6630,7 @@ function kioskHideKey(){
 function kioskOnLeave(){
   kioskRefreshVersion++;
   kioskViewVersion++;
+  kioskDayVersion++;
   kioskHideKey();
 }
 
@@ -6595,6 +6641,8 @@ function kioskOnShow(){
   document.getElementById('kiosk-admin-content').classList.add('hidden');
   document.getElementById('kiosk-setup').classList.add('hidden');
   document.getElementById('kiosk-copy-status').textContent='';
+  document.getElementById('kiosk-day-date').value='';
+  kioskDayToday='';
   kioskRefresh();
 }
 
@@ -6626,6 +6674,11 @@ function kioskRender(clock){
   const rows=document.getElementById('kiosk-people');
   rows.replaceChildren();
   document.getElementById('kiosk-empty').classList.toggle('hidden',clock.employees.length>0);
+  document.getElementById('kiosk-day').classList.toggle('hidden',clock.employees.length===0);
+  if(clock.employees.length){
+    const selected=document.getElementById('kiosk-day-date').value;
+    kioskLoadDay(selected===kioskDayToday?'':selected);
+  }
   for(const person of clock.employees){
     const row=document.createElement('li');
     row.className='kiosk-person';
@@ -6693,6 +6746,85 @@ async function kioskMutation(button,path,method,body,employeeName){
   }
 }
 
+async function kioskLoadDay(date=''){
+  const request=++kioskDayVersion;
+  const message=document.getElementById('kiosk-day-message');
+  const totals=document.getElementById('kiosk-day-totals');
+  const table=document.getElementById('kiosk-day-table');
+  const field=document.getElementById('kiosk-day-date');
+  const rows=document.getElementById('kiosk-day-people');
+  message.textContent='Cargando checadas…';
+  totals.replaceChildren();
+  table.classList.add('hidden');
+  rows.replaceChildren();
+  try{
+    const result=await apiJson(kioskApi+'/daily'+(date?'?date='+encodeURIComponent(date):''));
+    if(request!==kioskDayVersion)return;
+    kioskDayToday=result.today;
+    field.max=result.today;
+    field.value=result.date;
+    const historical=result.date!==result.today;
+    const statuses={
+      IN:{label:historical?'Abierta al cierre':'En jornada',className:'is-in'},
+      MEAL:{label:historical?'Comida sin cerrar':'En comida',className:'is-meal'},
+      OUT:{label:'Salida registrada',className:''},
+      NO_PUNCHES:{label:'Sin checadas',className:''},
+    };
+    message.textContent=result.people.length?'':'No hay colaboradores registrados para esta fecha.';
+    if(!result.people.length)return;
+    const clock=new Intl.DateTimeFormat('es-MX',{timeZone:result.timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+    const counts={IN:0,MEAL:0,OUT:0,NO_PUNCHES:0};
+    for(const person of result.people){
+      counts[person.status]++;
+      const row=rows.insertRow();
+      const identity=row.insertCell();
+      identity.className='kiosk-day-person';
+      const name=document.createElement('strong');
+      name.textContent=person.fullName;
+      const code=document.createElement('span');
+      code.className='kiosk-person-meta';
+      code.textContent=person.isActive?person.code:person.code+' · Inactivo';
+      identity.append(name,code);
+      const status=row.insertCell();
+      const badge=document.createElement('span');
+      badge.className='kiosk-day-state '+statuses[person.status].className;
+      badge.textContent=statuses[person.status].label;
+      status.append(badge);
+      if(person.carriedIn){
+        const carry=document.createElement('small');
+        carry.className='kiosk-person-meta';
+        carry.textContent='Inició antes de este día';
+        status.append(carry);
+      }
+      const events=row.insertCell();
+      if(!person.punches.length) events.textContent='—';
+      else{
+        const list=document.createElement('ul');
+        list.className='kiosk-day-events';
+        for(const punch of person.punches){
+          const item=document.createElement('li');
+          const time=document.createElement('time');
+          time.dateTime=punch.recordedAt;
+          time.textContent=clock.format(new Date(punch.recordedAt));
+          item.append(time,' '+kioskPunchLabels[punch.type]);
+          list.append(item);
+        }
+        events.append(list);
+      }
+    }
+    totals.replaceChildren(...Object.entries(statuses).map(([key,status])=>{
+      const item=document.createElement('span');
+      const value=document.createElement('strong');
+      value.textContent=counts[key];
+      item.append(value,' '+status.label.toLowerCase());
+      return item;
+    }));
+    table.classList.remove('hidden');
+  }catch(error){
+    if(request===kioskDayVersion) message.textContent=error.message||'No se pudo cargar la asistencia.';
+  }
+}
+
 function kioskAddEmployee(event){
   event.preventDefault();
   const fields=new FormData(event.currentTarget);
@@ -6709,6 +6841,7 @@ async function kioskCopyLink(){
     await navigator.clipboard.writeText(field.value);
     status.textContent='Liga copiada.';
   }catch(_){
+    field.closest('details').open=true;
     field.focus();
     field.select();
     status.textContent='Liga seleccionada. Puedes copiarla desde el campo.';
