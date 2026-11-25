@@ -215,7 +215,7 @@ const employeeId = created.employee.id;
 const original = await currentSchedule(employeeId, nov24());
 assert.deepEqual(original.workSchedule, {
   effectiveOn: '2026-11-24', startMinute: 1320, endMinute: 360,
-  toleranceMinutes: 5, weekdays: [1, 2, 3, 4, 7], endsNextDay: true,
+  toleranceMinutes: 5, weekdays: [1, 2, 3, 4, 7], endsNextDay: true, weekendHours: {},
 });
 assert.equal(original.upcomingWorkSchedule, null);
 await assert.rejects(createKioskEmployee('org-a', { ...person, workSchedule: null }, db), { code: 'VALIDATION_ERROR' });
@@ -226,6 +226,9 @@ for (const invalid of [
   { ...workSchedule, toleranceMinutes: -1 },
   { ...workSchedule, weekdays: [1, 1] },
   { ...workSchedule, weekdays: [] },
+  { ...workSchedule, weekendHours: { 1: { start: '08:00', end: '13:00' } } },
+  { ...workSchedule, weekendHours: { 6: { start: '08:00', end: '13:00' } } },
+  { ...workSchedule, weekendHours: { 7: { start: '08:00', end: '08:00' } } },
 ]) {
   await assert.rejects(updateKioskEmployeeSchedule('org-a', employeeId, invalid, db, nov24), { code: 'VALIDATION_ERROR' });
 }
@@ -252,6 +255,32 @@ const legacy = await currentSchedule('legacy', nov24());
 assert.equal(legacy.workSchedule, null);
 assert.equal(legacy.upcomingWorkSchedule.effectiveOn, '2026-11-25');
 console.log('Horario esperado: alta, vigencia local, turnos nocturnos, personal existente y edición concurrente OK (base simulada).');
+
+const weekendSchedule = {
+  ...workSchedule,
+  weekdays: [1, 2, 3, 4, 6, 7],
+  weekendHours: {
+    6: { start: '08:00', end: '13:00' },
+    7: { start: '21:00', end: '04:30' },
+  },
+};
+const weekendEmployee = (await createKioskEmployee(
+  'org-a', { ...person, code: '0012', workSchedule: weekendSchedule }, db, keySequence(7654), nov24,
+)).employee;
+const expectedWeekend = { 6: { startMinute: 480, endMinute: 780 }, 7: { startMinute: 1260, endMinute: 270 } };
+assert.deepEqual((await currentSchedule(weekendEmployee.id, nov24())).workSchedule.weekendHours, expectedWeekend);
+await updateKioskEmployeeSchedule('org-a', weekendEmployee.id, weekendSchedule, db, nov24);
+assert.equal((await currentSchedule(weekendEmployee.id, nov24())).upcomingWorkSchedule, null);
+const { weekendHours: _weekendHours, ...oldClientSchedule } = weekendSchedule;
+const compatibleEdit = await updateKioskEmployeeSchedule(
+  'org-a', weekendEmployee.id, { ...oldClientSchedule, weekdays: [1, 2, 3, 4, 7] }, db, nov24,
+);
+assert.deepEqual(compatibleEdit.workSchedule.weekendHours, { 7: expectedWeekend[7] });
+await updateKioskEmployeeSchedule('org-a', weekendEmployee.id, { ...weekendSchedule, weekendHours: {} }, db, nov24);
+const editedWeekend = await currentSchedule(weekendEmployee.id, nov24());
+assert.deepEqual(editedWeekend.workSchedule.weekendHours, expectedWeekend);
+assert.deepEqual(editedWeekend.upcomingWorkSchedule.weekendHours, {});
+console.log('Horario de fin de semana: sábado, domingo nocturno, días de descanso, edición e historial OK (base simulada).');
 
 const dailyRoster = [
   { id: created.employee.id, code: created.employee.code, fullName: 'Turno nocturno', isActive: false },

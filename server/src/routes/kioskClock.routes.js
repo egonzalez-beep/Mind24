@@ -16,11 +16,14 @@ import {
 import { exportKioskWeekPdf } from '../services/kioskClockReport.service.js';
 
 const employeeCode = z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/).transform((code) => code.toUpperCase());
-const workSchedule = z.object({
+const shiftHours = z.object({
   start: z.string().length(5),
   end: z.string().length(5),
+}).strict();
+const workSchedule = shiftHours.extend({
   toleranceMinutes: z.number().int(),
   weekdays: z.array(z.number().int()).max(7),
+  weekendHours: z.object({ '6': shiftHours.optional(), '7': shiftHours.optional() }).strict().optional(),
 }).strict();
 const credentials = z.object({
   publicKey: z.string().regex(/^[A-Za-z0-9_-]{32}$/),

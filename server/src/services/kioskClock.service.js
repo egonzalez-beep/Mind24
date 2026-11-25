@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { addDaysToDateKey, localDateKey, utcRangeForLocalDateInclusive } from './remoteWorkSessionHistory.service.js';
@@ -44,25 +45,41 @@ async function issuePunchKey(publicKey, save, nextKey = randomInt) {
   throw kioskError('CONFLICT', 'No se pudo asignar una clave. Intenta de nuevo.');
 }
 
-function kioskScheduleData(input) {
+function kioskShiftHours(input, label = '') {
   const startMinute = parseHmToMinute(input?.start);
   const endMinute = parseHmToMinute(input?.end);
   if (startMinute == null || endMinute == null) {
-    throw kioskError('VALIDATION_ERROR', 'Indica una hora válida de entrada y salida.');
+    throw kioskError('VALIDATION_ERROR', `Indica una hora válida de entrada y salida${label}.`);
   }
   const duration = (endMinute - startMinute + 1440) % 1440;
   if (duration === 0 || duration > WORK_SCHEDULE_MAX_DURATION_MINUTES) {
-    throw kioskError('VALIDATION_ERROR', 'El turno debe durar entre 1 minuto y 16 horas.');
+    throw kioskError('VALIDATION_ERROR', `El turno${label} debe durar entre 1 minuto y 16 horas.`);
   }
+  return { startMinute, endMinute };
+}
+
+function kioskScheduleData(input) {
+  const hours = kioskShiftHours(input);
   const toleranceMinutes = input.toleranceMinutes;
   if (!Number.isInteger(toleranceMinutes) || toleranceMinutes < 0 || toleranceMinutes > 120) {
     throw kioskError('VALIDATION_ERROR', WORK_SCHEDULE_TOLERANCE_MESSAGE);
   }
-  const weekdayMask = encodeWeekdayMask(parseWorkScheduleWeekdays(input.weekdays));
-  return { startMinute, endMinute, toleranceMinutes, weekdayMask };
+  const weekdays = parseWorkScheduleWeekdays(input.weekdays);
+  const weekendHours = {};
+  if (input.weekendHours !== undefined &&
+      (!input.weekendHours || typeof input.weekendHours !== 'object' || Array.isArray(input.weekendHours))) {
+    throw kioskError('VALIDATION_ERROR', 'Indica un horario de fin de semana válido.');
+  }
+  for (const [key, shift] of Object.entries(input.weekendHours ?? {})) {
+    if ((key !== '6' && key !== '7') || !weekdays.includes(Number(key))) {
+      throw kioskError('VALIDATION_ERROR', 'El horario especial requiere seleccionar sábado o domingo como día laboral.');
+    }
+    weekendHours[key] = kioskShiftHours(shift, key === '6' ? ' del sábado' : ' del domingo');
+  }
+  return { ...hours, toleranceMinutes, weekdayMask: encodeWeekdayMask(weekdays), weekendHours };
 }
 
-function kioskScheduleDto({ effectiveOn, weekdayMask, startMinute, endMinute, toleranceMinutes }) {
+function kioskScheduleDto({ effectiveOn, weekdayMask, startMinute, endMinute, toleranceMinutes, weekendHours }) {
   return {
     effectiveOn: effectiveOn.toISOString().slice(0, 10),
     startMinute,
@@ -70,6 +87,7 @@ function kioskScheduleDto({ effectiveOn, weekdayMask, startMinute, endMinute, to
     toleranceMinutes,
     weekdays: decodeWeekdayMask(weekdayMask),
     endsNextDay: endMinute < startMinute,
+    weekendHours: weekendHours ?? {},
   };
 }
 
@@ -210,7 +228,11 @@ export async function updateKioskEmployeeSchedule(organizationId, employeeId, wo
       where: { employeeId },
       orderBy: { effectiveOn: 'desc' },
     });
-    if (latest && Object.keys(data).every((key) => latest[key] === data[key])) {
+    if (workSchedule.weekendHours === undefined && latest?.weekendHours) {
+      data.weekendHours = Object.fromEntries(Object.entries(latest.weekendHours)
+        .filter(([day]) => (data.weekdayMask & (1 << (Number(day) - 1))) !== 0));
+    }
+    if (latest && Object.entries(data).every(([key, value]) => isDeepStrictEqual(latest[key], value))) {
       return { workSchedule: kioskScheduleDto(latest) };
     }
     const schedule = await tx.kioskEmployeeSchedule.upsert({
