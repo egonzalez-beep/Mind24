@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { prepareKioskWeekReport } from '../src/services/kioskClockReport.service.js';
 import {
-  createKioskEmployee, getKioskClock, getKioskDailyAttendance, identifyKioskEmployee, recordKioskPunch,
+  createKioskEmployee, getKioskClock, getKioskDailyAttendance, getPublicKioskContext, identifyKioskEmployee, recordKioskPunch,
   updateKioskEmployee, updateKioskEmployeeSchedule,
 } from '../src/services/kioskClock.service.js';
 
@@ -11,6 +11,10 @@ const clocks = [
   { id: 'clock-a', organizationId: 'org-a', publicKey: 'Q'.repeat(32), timeZone: 'America/Mexico_City' },
   { id: 'clock-b', organizationId: 'org-b', publicKey: 'X'.repeat(32), timeZone: 'America/Mexico_City' },
 ];
+const organizations = {
+  'org-a': { name: 'Empresa Uno', blocked: false, empresaPortalEnabled: true },
+  'org-b': { name: 'Empresa Dos', blocked: false, empresaPortalEnabled: true },
+};
 const employees = [];
 const records = [];
 const schedules = [];
@@ -71,6 +75,15 @@ const tx = {
 let transactions = Promise.resolve();
 const db = {
   kioskClock: {
+    async findFirst({ where, select }) {
+      assert.deepEqual(where.organization, { blocked: false, empresaPortalEnabled: true });
+      assert.deepEqual(select, { organization: { select: { name: true } } });
+      const clock = clocks.find((item) => item.publicKey === where.publicKey);
+      const organization = organizations[clock?.organizationId];
+      return organization && !organization.blocked && organization.empresaPortalEnabled
+        ? { organization: { name: organization.name } }
+        : null;
+    },
     async findUnique({ where, select }) {
       const clock = clocks.find((item) => item.organizationId === where.organizationId);
       if (!clock || !select?.employees) return clock;
@@ -135,6 +148,15 @@ const keySequence = (...values) => (max) => {
 const workSchedule = { start: '22:00', end: '06:00', weekdays: [1, 2, 3, 4, 7], toleranceMinutes: 5 };
 const person = { code: '0007', fullName: 'Persona de prueba', workSchedule };
 const nov24 = () => new Date('2026-11-25T02:00:00Z');
+assert.deepEqual(await getPublicKioskContext({ publicKey: clocks[0].publicKey }, db), { organizationName: 'Empresa Uno' });
+assert.deepEqual(await getPublicKioskContext({ publicKey: clocks[1].publicKey }, db), { organizationName: 'Empresa Dos' });
+await assert.rejects(getPublicKioskContext({ publicKey: 'Z'.repeat(32) }, db), { code: 'NOT_FOUND' });
+organizations['org-b'].blocked = true;
+await assert.rejects(getPublicKioskContext({ publicKey: clocks[1].publicKey }, db), { code: 'NOT_FOUND' });
+organizations['org-b'].blocked = false;
+organizations['org-b'].empresaPortalEnabled = false;
+await assert.rejects(getPublicKioskContext({ publicKey: clocks[1].publicKey }, db), { code: 'NOT_FOUND' });
+organizations['org-b'].empresaPortalEnabled = true;
 const created = await createKioskEmployee('org-a', person, db, keySequence(1234), nov24);
 assert.equal(created.punchKey, '001234');
 assert.equal(created.employee.code, '0007');

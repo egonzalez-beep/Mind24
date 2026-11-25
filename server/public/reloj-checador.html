@@ -3,71 +3,375 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#301657">
   <title>Reloj checador · Mind24</title>
   <style>
-    :root{--ink:#1e1635;--muted:#625773;--purple:#5b21b6;--deep:#4c1d95;--lavender:#f5f3ff;--border:#ddd6fe;font-family:system-ui,sans-serif;color:var(--ink);background:#fff;color-scheme:light;}
-    *{box-sizing:border-box;}
-    body{margin:0;}
-    [hidden]{display:none!important;}
-    main{display:grid;grid-template-columns:minmax(240px,36%) minmax(0,1fr);min-height:100vh;min-height:100dvh;}
-    header{display:grid;align-content:center;justify-items:start;gap:16px;padding:clamp(22px,5vw,76px);background:linear-gradient(145deg,#21133f 0%,var(--deep) 100%);color:#fff;}
-    .mark{font-size:18px;font-weight:850;letter-spacing:.08em;}
-    .mark span{color:#ddd6fe;}
-    h1,h2{margin:0;line-height:1.15;letter-spacing:-.04em;}
-    h1{font-size:clamp(30px,5.4vw,60px);max-width:14ch;}
-    h2{font-size:clamp(24px,4vw,34px);overflow-wrap:anywhere;}
-    .panel{display:grid;align-content:center;justify-items:center;padding:clamp(24px,6vw,96px);background:linear-gradient(160deg,#fff 62%,#f8f6ff);}
-    .panel-inner{width:min(100%,640px);}
-    form,#actions,#actions-panel{display:grid;gap:12px;}
-    label{display:grid;gap:8px;font-size:clamp(18px,3vw,26px);font-weight:750;}
-    input,button{min-height:56px;border-radius:12px;font:inherit;}
-    input{width:100%;padding:8px 14px;background:var(--lavender);border:1px solid #c4b5fd;color:var(--ink);font-size:30px;letter-spacing:.25em;text-align:center;}
-    button{padding:10px 14px;background:var(--purple);border:1px solid var(--purple);color:#fff;cursor:pointer;font-size:17px;font-weight:750;}
-    button:hover:enabled{background:var(--deep);}
-    button.secondary{background:var(--lavender);border-color:var(--border);color:var(--deep);}
-    button.secondary:hover:enabled{background:#ede9fe;}
-    button:disabled{opacity:.62;}
-    :focus-visible{outline:3px solid #8b5cf6;outline-offset:3px;}
-    #actions-label{margin:4px 0 0;color:var(--muted);}
-    #cancel{justify-self:start;min-width:120px;font-size:14px;}
-    #success{display:flex;align-items:center;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;padding:14px 16px;margin:0 0 18px;background:var(--lavender);border:1px solid var(--border);border-radius:12px;color:var(--deep);}
-    #success strong,#success span{display:block;}
-    #success span{font-size:14px;margin-top:2px;}
-    #success time{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
-    #error{margin:12px 0 0;color:#9a2929;font-size:14px;}
-    #error:empty{display:none;}
-    #invalid-link{margin:0;line-height:1.55;}
-    @media(max-width:650px){
-      main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;}
-      header{gap:8px;padding:20px 18px;}
-      h1{max-width:none;}
-      .panel{align-content:start;padding:22px 18px;}
+    :root {
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #281841;
+      background: #f7f3ff;
+      color-scheme: light;
+      --primary: #642bba;
+      --deep: #482082;
+      --muted: #665775;
+      --border: #e5daf2;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    [hidden] { display: none !important; }
+    h1, h2, p { margin: 0; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; }
+    :focus-visible { outline: 3px solid #8b4be2; outline-offset: 4px; }
+    .icon { width: 24px; height: 24px; flex: none; }
+    .kiosk {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+    }
+    .hero {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      isolation: isolate;
+      overflow: hidden;
+      padding: clamp(32px, 6vw, 100px);
+      padding-block: clamp(30px, 6vh, 72px);
+      color: #fff;
+      background:
+        radial-gradient(ellipse at 94% 87%, #8448cc 0%, transparent 64%),
+        linear-gradient(145deg, #2a144a 8%, #4b2184 65%, #6334a0 100%);
+    }
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -.045em;
+    }
+    .wordmark .icon { width: 30px; height: 30px; color: #2a144a; }
+    .hero-copy { position: relative; z-index: 1; width: 100%; margin-top: 28px; }
+    h1 {
+      max-width: 9ch;
+      font-size: clamp(45px, 5.8vw, 96px);
+      font-weight: 800;
+      line-height: .96;
+      letter-spacing: -.072em;
+    }
+    .organization {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      max-width: 100%;
+      margin-top: clamp(14px, 2vw, 24px);
+      color: #f2e7ff;
+      font-size: clamp(16px, 1.85vw, 26px);
+      font-weight: 650;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .organization::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: #ffc6a6;
+      transform: translateY(-.12em);
+    }
+    .hero-art {
+      width: calc(100% + clamp(16px, 3vw, 52px));
+      max-width: min(580px, 100% + 52px);
+      max-height: 42vh;
+      flex: none;
+      align-self: center;
+      margin-top: 8px;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .panel {
+      display: grid;
+      place-items: center;
+      padding: clamp(20px, 5vw, 80px);
+      background:
+        radial-gradient(ellipse at 85% 18%, #ede1ff 0%, transparent 71%),
+        linear-gradient(155deg, #fbf9ff, #f8f3ff);
+    }
+    .panel-inner {
+      width: min(100%, 490px);
+      min-width: 0;
+      padding: clamp(24px, 4vw, 50px);
+      border: 1px solid #eae0f5;
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 22px 65px #39146c12, 0 4px 12px #39146c08;
+    }
+    .view { display: grid; gap: 22px; }
+    .view-heading { display: grid; gap: 7px; }
+    .view-symbol {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 7px;
+      border: 1px solid #eddefa;
+      border-radius: 17px;
+      background: #f4eaff;
+      color: var(--primary);
+    }
+    label, h2 {
+      font-size: clamp(25px, 3.35vw, 38px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -.048em;
+      overflow-wrap: anywhere;
+    }
+    .hint, #invalid-link p { color: var(--muted); line-height: 1.45; }
+    .key-field {
+      width: 100%;
+      min-height: 73px;
+      padding: 10px 8px;
+      border: 1.5px solid #dfcef1;
+      border-radius: 15px;
+      background: #faf7ff;
+      color: var(--deep);
+      text-align: center;
+      font-size: clamp(24px, 4.2vw, 32px);
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .45em;
+      text-indent: .45em;
+    }
+    .key-field::placeholder { color: #a084be; opacity: 1; }
+    .key-field:focus { border-color: #a86de4; background: #fff; }
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 56px;
+      padding: 12px 16px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 750;
+      font-size: 17px;
+      line-height: 1.25;
+      box-shadow: 0 4px 12px #642bba26;
+    }
+    .button:hover:enabled { background: var(--deep); }
+    .button:active:enabled { transform: translateY(1px); }
+    .button:disabled { opacity: .58; }
+    .button.secondary {
+      border-color: var(--border);
+      background: #f8f2fe;
+      color: var(--deep);
+      box-shadow: none;
+    }
+    .button.secondary:hover:enabled { background: #f0e5fc; }
+    #actions { display: grid; gap: 10px; }
+    .cancel {
+      justify-self: start;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--deep);
+      font-weight: 700;
+    }
+    .cancel:hover:enabled { background: #f5edfd; }
+    .cancel:disabled { opacity: .58; }
+    #success {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding: 13px;
+      border: 1px solid #decaf6;
+      border-radius: 16px;
+      background: #f6eeff;
+      color: var(--deep);
+    }
+    #success:focus { outline: 3px solid #8b4be2; outline-offset: 3px; }
+    .success-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #ebdbff;
+    }
+    .success-detail { flex: 1 1 116px; }
+    .success-detail strong, #success-action { display: block; }
+    #success-action { margin-top: 2px; color: var(--muted); font-size: 14px; }
+    #success-time { margin-left: auto; font-size: 25px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    #error {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff0f2;
+      color: #8f2637;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    #error:empty { display: none; }
+    @media (max-width: 760px) {
+      .kiosk { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+      .hero { padding: 22px clamp(20px, 6vw, 42px) 27px; }
+      .wordmark { font-size: 17px; }
+      .wordmark .icon { width: 25px; height: 25px; }
+      .hero-copy { width: min(77%, 560px); margin-top: 22px; }
+      h1 { font-size: clamp(34px, 7vw, 60px); }
+      .organization { margin-top: 10px; }
+      .hero-art {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: clamp(132px, 35vw, 250px);
+        max-height: none;
+        margin: 0;
+      }
+      .panel { align-items: start; padding: clamp(15px, 5vw, 36px); }
+      .panel-inner { border-radius: 22px; }
+      .view { gap: 17px; }
+      .view-symbol { width: 46px; height: 46px; margin-bottom: 3px; border-radius: 14px; }
+      .key-field { min-height: 62px; }
+      .button { min-height: 52px; }
+    }
+    @media (max-width: 400px) {
+      .hero-copy { width: 73%; }
+      .hero-art { right: -8px; }
+      .panel-inner { padding: 20px; }
+    }
+    @media (min-width: 761px) and (max-height: 600px) {
+      .hero { padding-block: 25px; }
+      .hero-copy { margin-top: 15px; }
+      h1 { font-size: clamp(40px, 5vw, 68px); }
+      .hero-art { max-height: 38vh; }
+      .panel { padding-block: 22px; }
+      .panel-inner { padding-block: 25px; }
     }
   </style>
   <script defer src="/reloj-checador/kiosk.js"></script>
 </head>
 <body>
-  <main>
-    <header><div class="mark">MIND<span>24</span></div><h1>Reloj checador</h1></header>
-    <section class="panel">
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" hidden aria-hidden="true">
+    <symbol id="icon-brand" viewBox="0 0 32 32">
+      <rect width="32" height="32" rx="10" fill="#ead9ff"/>
+      <path d="m8 21 4-10 4 7 4-7 4 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-key" viewBox="0 0 24 24">
+      <rect x="4" y="10" width="16" height="11" rx="3"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/>
+    </symbol>
+    <symbol id="icon-person" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3.5"/>
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M4 12h15m-6-6 6 6-6 6"/>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="m5 12 4 4 10-9"/>
+    </symbol>
+    <symbol id="icon-entry" viewBox="0 0 24 24">
+      <path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5m-4-4 4-4-4-4m4 4H4"/>
+    </symbol>
+    <symbol id="icon-exit" viewBox="0 0 24 24">
+      <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4m6-4 4-4-4-4m4 4h-9"/>
+    </symbol>
+    <symbol id="icon-meal" viewBox="0 0 24 24">
+      <path d="M4 3v5a3 3 0 0 0 6 0V3M7 3v18m13 0V3c-3 1-5 5-5 10h5"/>
+    </symbol>
+    <symbol id="icon-return" viewBox="0 0 24 24">
+      <path d="m8 11-4-4 4-4M4 7h11a5 5 0 0 1 0 10h-5"/>
+    </symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24">
+      <path d="m10 13 4-4m-7 6-1 1a3.5 3.5 0 1 1-5-5l4-4a3.5 3.5 0 0 1 5 0m4 2 1-1a3.5 3.5 0 1 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 0)"/>
+    </symbol>
+  </svg>
+  <main class="kiosk">
+    <header class="hero">
+      <div class="wordmark"><svg class="icon" aria-hidden="true"><use href="#icon-brand"/></svg>Mind24</div>
+      <div class="hero-copy">
+        <h1>Reloj checador</h1>
+        <p id="organization-name" class="organization" hidden></p>
+      </div>
+      <svg class="hero-art" viewBox="0 0 440 300" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="clock-face" x2=".85" y2="1" gradientUnits="objectBoundingBox">
+            <stop stop-color="#fff8ff"/><stop offset="1" stop-color="#e7caff"/>
+          </linearGradient>
+          <linearGradient id="clock-rim" x2=".65" y2="1" gradientUnits="objectBoundingBox">
+            <stop stop-color="#bf8cec"/><stop offset="1" stop-color="#7135af"/>
+          </linearGradient>
+        </defs>
+        <path d="M38 253c49-35 93-19 140-38 53-22 88-58 143-42 25 7 38 24 84 19-20 53-86 77-172 86-92 9-153 1-195-25Z" fill="#b476f1" opacity=".33"/>
+        <path d="M16 237c63 22 124-6 170-42 62-47 123-70 198-54" fill="none" stroke="#d5a3fa" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 8"/>
+        <ellipse cx="227" cy="251" rx="108" ry="17" fill="#381956" opacity=".38"/>
+        <g transform="translate(190 141) rotate(-12)">
+          <rect x="-25" y="-114" width="50" height="30" rx="11" fill="#ad72dc" stroke="#d7a5ff" stroke-width="2"/>
+          <rect x="-17" y="-117" width="34" height="13" rx="5" fill="#f2dcff"/>
+          <circle cx="7" cy="8" r="96" fill="#45216c" stroke="#d193ff" stroke-width="2"/>
+          <circle r="95" fill="url(#clock-rim)" stroke="#e3b7ff" stroke-width="2"/>
+          <circle r="81" fill="url(#clock-face)" stroke="#ffdafa" stroke-width="2"/>
+          <circle r="66" fill="none" stroke="#ad78d7" stroke-width="2" opacity=".28"/>
+          <path d="M0-67v9m0 116v9m67-67h-9m-116 0h-9m114-47-6 6m-82 82-6 6m94 0-6-6m-82-82-6-6" fill="none" stroke="#9961c3" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M0-45v45l38 15" fill="none" stroke="#572b8c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle r="8" fill="#f5a583" stroke="#fff3fa" stroke-width="2"/>
+        </g>
+        <g transform="translate(321 207) rotate(11)">
+          <rect x="-35" y="-34" width="78" height="75" rx="24" fill="#53247e"/>
+          <rect x="-39" y="-40" width="78" height="75" rx="24" fill="#ffcab2" stroke="#ffe0d4" stroke-width="2.5"/>
+          <path d="m-17-2 12 12 23-24" fill="none" stroke="#5b2a78" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <path d="M322 45v34m-17-17h34M74 93v24m-12-12h24m283-5v18m-9-9h18" fill="none" stroke="#f8c8cf" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="280" cy="32" r="4" fill="#dba9fa"/>
+        <circle cx="63" cy="176" r="5.5" fill="#f5aeac"/>
+        <circle cx="382" cy="155" r="4" fill="#e1b1fa"/>
+      </svg>
+    </header>
+    <section class="panel" aria-label="Registro de asistencia">
       <div class="panel-inner">
-      <p id="invalid-link" hidden>Abre la liga de checadas que te compartió tu administrador.</p>
-      <div id="success" role="status" tabindex="-1" hidden>
-        <div><strong>Checada registrada</strong><span id="success-action"></span></div>
-        <time id="success-time"></time>
-      </div>
-      <form id="identify" autocomplete="off" hidden>
-        <label>Clave de checada
-          <input name="punchKey" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required>
-        </label>
-        <button type="submit">Continuar</button>
-      </form>
-      <div id="actions-panel" hidden>
-        <div><h2 id="employee-name" tabindex="-1"></h2><p id="actions-label">Elige qué quieres registrar.</p></div>
-        <div id="actions"></div>
-        <button class="secondary" id="cancel" type="button">Cancelar</button>
-      </div>
-      <p id="error" role="alert"></p>
+        <div id="invalid-link" class="view" hidden>
+          <div class="view-heading">
+            <span class="view-symbol"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-link"/></svg></span>
+            <h2>Abre tu liga de checadas</h2>
+            <p>Usa la liga que te compartió tu administrador.</p>
+          </div>
+        </div>
+        <div id="success" role="status" tabindex="-1" hidden>
+          <span class="success-mark"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-check"/></svg></span>
+          <div class="success-detail"><strong>Checada registrada</strong><span id="success-action"></span></div>
+          <time id="success-time"></time>
+        </div>
+        <form id="identify" class="view" autocomplete="off" hidden>
+          <div class="view-heading">
+            <span class="view-symbol"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-key"/></svg></span>
+            <label for="punch-key">Clave de checada</label>
+            <p id="key-hint" class="hint">Ingresa tus 6 dígitos.</p>
+          </div>
+          <input id="punch-key" class="key-field" name="punchKey" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" placeholder="••••••" aria-describedby="key-hint" required>
+          <button class="button" type="submit"><span>Continuar</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-arrow"/></svg></button>
+        </form>
+        <div id="actions-panel" class="view" hidden>
+          <div class="view-heading">
+            <span class="view-symbol"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-person"/></svg></span>
+            <h2 id="employee-name" tabindex="-1"></h2>
+            <p class="hint">Elige qué quieres registrar.</p>
+          </div>
+          <div id="actions"></div>
+          <button class="cancel" id="cancel" type="button">Cancelar</button>
+        </div>
+        <p id="error" role="alert"></p>
       </div>
     </section>
   </main>

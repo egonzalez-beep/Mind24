@@ -7,6 +7,7 @@ import {
   createKioskEmployee,
   getKioskClock,
   getKioskDailyAttendance,
+  getPublicKioskContext,
   identifyKioskEmployee,
   recordKioskPunch,
   updateKioskEmployee,
@@ -26,8 +27,10 @@ const workSchedule = shiftHours.extend({
   weekdays: z.array(z.number().int()).max(7),
   weekendHours: z.object({ '6': shiftHours.optional(), '7': shiftHours.optional() }).strict().optional(),
 }).strict();
-const credentials = z.object({
+const kioskLink = z.object({
   publicKey: z.string().regex(/^[A-Za-z0-9_-]{32}$/),
+});
+const credentials = kioskLink.extend({
   punchKey: z.string().regex(/^[0-9]{6}$/),
 });
 const punch = credentials.extend({
@@ -155,6 +158,15 @@ const limitMessage = { error: 'RATE_LIMIT', message: 'Demasiados intentos. Esper
 kioskClockPublicRoutes.use(rateLimit({
   windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, message: limitMessage,
 }));
+kioskClockPublicRoutes.post('/contexto', async (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    res.json(await getPublicKioskContext(kioskLink.strict().parse(req.body)));
+  } catch (error) {
+    next(error);
+  }
+});
+
 const failedAttemptOptions = {
   windowMs: 5 * 60_000,
   standardHeaders: true,

@@ -14,6 +14,7 @@ import {
 
 const punchFields = { type: true, recordedAt: true, ordinal: true };
 const employeeFields = { id: true, code: true, fullName: true, isActive: true };
+const publicOrganization = { blocked: false, empresaPortalEnabled: true };
 
 function kioskError(code, message) {
   return Object.assign(new Error(message), { code });
@@ -283,13 +284,22 @@ export async function updateKioskEmployee(organizationId, employeeId, change, db
   return { ok: true };
 }
 
+export async function getPublicKioskContext({ publicKey }, db = prisma) {
+  const clock = await db.kioskClock.findFirst({
+    where: { publicKey, organization: publicOrganization },
+    select: { organization: { select: { name: true } } },
+  });
+  if (!clock) throw kioskError('NOT_FOUND', 'No se encontró el reloj checador.');
+  return { organizationName: clock.organization.name };
+}
+
 async function matchEmployee(db, { publicKey, punchKey }) {
   const digest = punchKeyDigest(publicKey, punchKey);
   const employee = await db.kioskEmployee.findFirst({
     where: {
       punchKeyDigest: digest,
       isActive: true,
-      clock: { publicKey, organization: { blocked: false, empresaPortalEnabled: true } },
+      clock: { publicKey, organization: publicOrganization },
     },
     select: { id: true, fullName: true, clock: { select: { timeZone: true } } },
   });
