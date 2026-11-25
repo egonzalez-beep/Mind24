@@ -28,7 +28,7 @@ const { buildWeekPunctuality, formatTimeEs } = await import('../src/utils/workfo
 const { localMidnightUtc, utcRangeForLocalDateInclusive } = await import('../src/services/remoteWorkSessionHistory.service.js');
 const {
   buildPunctualityPdfFooterTemplate,
-  buildPunctualityPdfHeaderTemplate,
+  weeklyPunctualityPdfOptions,
   buildWeeklyPunctualityReportDocument,
   escapeReportHtml,
   paginatePunctualityPeople,
@@ -298,9 +298,11 @@ check(report.summary.punctualityPct === summarizePunctualityReports(report.peopl
 check(report.summary.expectedCoveragePct === summarizePunctualityReports(report.people).expectedCoveragePct, 'la cobertura promedio sale de los porcentajes canónicos');
 check(paginatePunctualityPeople(report.people).length === 1 && paginatePunctualityPeople(report.people)[0].length === report.people.length, 'sin presupuesto fijo: Chromium pagina el equipo completo');
 check(!report.html.includes('class="sheet"') && report.html.includes('@page{size:A4 landscape;}') && !/@page\{[^}]*margin:\s*0/.test(report.html), 'sin hojas fijas ni @page margin:0; Puppeteer controla márgenes');
-check(exportJs.includes('PUNCTUALITY_PDF_MARGINS_MM') && exportJs.includes('buildPunctualityPdfHeaderTemplate') && exportJs.includes('buildPunctualityPdfFooterTemplate'), 'export usa márgenes y plantillas de encabezado/pie');
-check(PUNCTUALITY_PDF_MARGINS_MM.top >= 12 && PUNCTUALITY_PDF_MARGINS_MM.bottom >= 12, 'márgenes dejan espacio para encabezado y numeración');
-check(buildPunctualityPdfHeaderTemplate(report).includes('Clínica Niño') && buildPunctualityPdfHeaderTemplate(report).includes(report.weekLabel), 'encabezado repetible identifica org y periodo');
+const pdfOptions = weeklyPunctualityPdfOptions();
+check(exportJs.includes('weeklyPunctualityPdfOptions') && pdfOptions.landscape && !pdfOptions.headerTemplate, 'export usa opciones compartidas y omite el encabezado duplicado');
+check(PUNCTUALITY_PDF_MARGINS_MM.top >= 12 && PUNCTUALITY_PDF_MARGINS_MM.bottom >= 12, 'márgenes dejan espacio para el contenido y la numeración');
+const mast = report.html.match(/<header class="mast">.*?<\/header>/)?.[0] || '';
+check(mast.includes('Clínica Niño') && mast.includes(report.weekLabel) && mast.includes('Generado') && !mast.includes(TZ), 'portada incluye organización, periodo y generación sin repetir zona');
 check(buildPunctualityPdfFooterTemplate().includes('pageNumber') && buildPunctualityPdfFooterTemplate().includes('totalPages'), 'pie con numeración');
 check(!/req\.query\.organizationId|req\.body/.test(routesJs.slice(routesJs.indexOf("'/punctuality/export'"), routesJs.indexOf("'/punctuality/export'") + 900)), 'el endpoint no toma organización ni cuerpo del cliente');
 check(routesJs.includes("'/punctuality/export'") && routesJs.includes('assertEmpresaAdmin(req.session.userId)') && routesJs.includes('exportWeeklyPunctualityPdf'), 'endpoint administrativo de exportación');
@@ -463,7 +465,7 @@ check(!dayStamp(edgeAkl.days).includes(new Date(aklMonday.getTime() - 1).toISOSt
 
 check(unifiedJs.includes('renderHtmlToPdfBuffer(html);') && !unifiedJs.includes('landscape: true') && !unifiedJs.includes('waitUntil'), 'el reporte de evaluaciones sigue llamando al PDF sin opciones nuevas');
 check(/format: options\.format \|\| 'A4'/.test(pdfJs) && /landscape: options\.landscape === true/.test(pdfJs) && /top: '10mm', right: '10mm', bottom: '10mm', left: '10mm'/.test(pdfJs) && pdfJs.includes("options.waitUntil || 'networkidle0'"), 'sin opciones, el PDF compartido conserva A4 vertical, márgenes de 10 mm y networkidle0');
-check(exportJs.includes("waitUntil: 'load'"), 'el PDF semanal usa waitUntil load sin cambiar evaluaciones');
+check(pdfOptions.waitUntil === 'load', 'el PDF semanal usa waitUntil load sin cambiar evaluaciones');
 check(/finally \{\s*await page\.close\(\);/.test(pdfJs) && !exportJs.includes('writeFile') && !pdfJs.includes('writeFile'), 'la página se cierra en finally y no se guardan temporales');
 check(pdfJs.includes('export async function closePdfBrowser') && !pdfJs.slice(0, pdfJs.indexOf('export async function closePdfBrowser')).includes('closePdfBrowser'), 'el render de producción no cierra el navegador compartido');
 
@@ -649,7 +651,8 @@ if (!chromePath) {
     await Promise.resolve(parser.destroy()).catch(() => {});
   }
   check(pageCount > 1, 'el PDF tiene varias páginas');
-  check(text.includes('Reporte semanal') && text.includes('Clínica') && text.includes('María') && text.includes('Núñez'), 'el PDF conserva título, organización y acentos');
+  check(text.includes('Reporte semanal') && /Clínica/i.test(text) && text.includes('María') && text.includes('Núñez'), 'el PDF conserva título, organización y acentos');
+  check((text.match(/Reporte semanal de horarios y puntualidad/g) || []).length === 1, 'título único en PDF paginado');
   check(text.includes('7 min') && text.includes('En curso') && text.includes('Sin jornada') && text.includes('Jornada incompleta'), 'el PDF contiene retardo, jornada abierta, sin registro e incompleta');
   check(!text.includes(SECRET_EMAIL) && !text.includes(SECRET_CURP) && !text.includes(SECRET_NOTE) && !text.includes(SECRET_LOG), 'el PDF no contiene datos sensibles');
 

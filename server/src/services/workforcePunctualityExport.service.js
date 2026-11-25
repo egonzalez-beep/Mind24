@@ -10,14 +10,12 @@ import {
 import { rejectFuturePunctualityWeek } from './workforcePunctuality.service.js';
 import { renderHtmlToPdfBuffer } from './pdf.service.js';
 import {
-  buildPunctualityPdfFooterTemplate,
-  buildPunctualityPdfHeaderTemplate,
   buildWeeklyPunctualityReportDocument,
   formatReportGeneratedAt,
   punctualityExportContentDisposition,
   punctualityExportFilename,
-  PUNCTUALITY_PDF_MARGINS_MM,
   summarizePunctualityReports,
+  weeklyPunctualityPdfOptions,
 } from '../utils/workforcePunctualityReport.util.js';
 
 function validationError(message) {
@@ -133,7 +131,7 @@ export async function assembleWeeklyPunctualityExport({
     weekStart,
     weekLabel: zones.length === 1 ? formatPunctualityWeekLabel(weekStart, zones[0]) : people[0]?.weekLabel || weekStart,
     timeZoneLabel: zones.length === 1 ? zones[0] : 'Zona horaria de cada colaborador',
-    generatedAtLabel: formatReportGeneratedAt(now, timeZone),
+    generatedAtLabel: formatReportGeneratedAt(now, timeZone) + (zones.length > 1 ? ' UTC' : ''),
     summary: summarizePunctualityReports(people),
     people,
   };
@@ -148,22 +146,7 @@ export async function assembleWeeklyPunctualityExport({
 
 export async function exportWeeklyPunctualityPdf(input) {
   const report = await assembleWeeklyPunctualityExport(input);
-  const mm = PUNCTUALITY_PDF_MARGINS_MM;
-  const buffer = await renderHtmlToPdfBuffer(report.html, {
-    format: 'A4',
-    landscape: true,
-    // HTML autocontenido: evita colgar networkidle0 entre generaciones.
-    waitUntil: 'load',
-    displayHeaderFooter: true,
-    headerTemplate: buildPunctualityPdfHeaderTemplate(report),
-    footerTemplate: buildPunctualityPdfFooterTemplate(),
-    margin: {
-      top: `${mm.top}mm`,
-      right: `${mm.right}mm`,
-      bottom: `${mm.bottom}mm`,
-      left: `${mm.left}mm`,
-    },
-  });
+  const buffer = await renderHtmlToPdfBuffer(report.html, weeklyPunctualityPdfOptions());
   return {
     buffer,
     filename: report.filename,

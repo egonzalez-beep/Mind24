@@ -407,10 +407,25 @@ assert.deepEqual(findDay(sunday, 'weekend').attendance.flags, []);
 console.log('Incidencias: tolerancia exacta, alta, descanso, horario histórico, sábado especial y turnos nocturnos OK.');
 
 const reportNow = new Date('2026-03-10T12:00:00Z');
-let reportRows = [
-  { type: 'CHECK_IN', recordedAt: new Date('2026-03-08T06:50:00Z'), employee: { code: '0001', fullName: 'Ana <Prueba>' } },
-  { type: 'CHECK_OUT', recordedAt: new Date('2026-03-08T07:10:00Z'), employee: { code: '0001', fullName: 'Ana <Prueba>' } },
-];
+const reportDaySchedule = { ...daySchedule, effectiveOn: new Date('2026-03-01'), weekdayMask: 65 };
+const reportPunches = (...events) => events.map(([type, recordedAt], index) => ({
+  type, recordedAt: new Date(recordedAt), ordinal: index + 1,
+}));
+let reportEmployees = [{
+  fullName: 'Ana <Prueba>', code: '0001', isActive: false, createdAt: new Date('2026-03-01T12:00:00Z'), schedules: [],
+  punches: reportPunches(['CHECK_IN', '2026-03-08T06:50:00Z'], ['CHECK_OUT', '2026-03-08T07:10:00Z']),
+}, {
+  fullName: 'Carlos fin de semana', code: '0002', isActive: true, createdAt: new Date('2026-03-07T14:00:00Z'),
+  schedules: [{ ...reportDaySchedule, startMinute: 1320, endMinute: 360, weekdayMask: 64 }],
+  punches: reportPunches(['CHECK_IN', '2026-03-09T02:00:00Z'], ['CHECK_OUT', '2026-03-09T10:07:00Z']),
+}, {
+  fullName: 'Daniela comida', code: '0003', isActive: true, createdAt: new Date('2026-03-01T12:00:00Z'),
+  schedules: [reportDaySchedule],
+  punches: reportPunches(
+    ['CHECK_IN', '2026-03-02T13:00:00Z'], ['MEAL_OUT', '2026-03-02T18:00:00Z'],
+    ['MEAL_IN', '2026-03-02T18:30:00Z'], ['CHECK_OUT', '2026-03-02T22:00:00Z'],
+  ),
+}];
 const reportDb = {
   kioskClock: {
     async findUnique({ where }) {
@@ -419,13 +434,16 @@ const reportDb = {
         : null;
     },
   },
-  kioskPunch: {
+  kioskEmployee: {
     async findMany({ where, select }) {
-      assert.equal(where.employee.clockId, 'clock-report');
-      assert.equal(where.recordedAt.gte.toISOString(), '2026-03-02T05:00:00.000Z');
-      assert.equal(where.recordedAt.lt.toISOString(), '2026-03-09T04:00:00.000Z');
-      assert.deepEqual(Object.keys(select.employee.select), ['code', 'fullName']);
-      return reportRows;
+      assert.equal(where.clockId, 'clock-report');
+      const { gte, lt, lte } = select.punches.where.recordedAt;
+      assert.deepEqual(Object.keys(select.punches.select), ['type', 'recordedAt', 'ordinal']);
+      assert.equal(select.punchKeyDigest, undefined);
+      return reportEmployees.map((employee) => ({
+        ...employee,
+        punches: employee.punches.filter(({ recordedAt }) => recordedAt >= gte && recordedAt < lt && recordedAt <= lte),
+      }));
     },
   },
 };
@@ -435,13 +453,21 @@ assert.match(report.html, /Empresa &amp; equipo/);
 assert.match(report.html, /Ana &lt;Prueba&gt;/);
 assert.match(report.html, /01:50:00 GMT-5/);
 assert.match(report.html, /03:10:00 GMT-4/);
-assert.match(report.html, /<td>Entrada<\/td>/);
-assert.match(report.html, /<td>Salida<\/td>/);
+assert.match(report.html, /Entrada real/);
+assert.match(report.html, /06:07:00 GMT-4 \(\+1 día\)/);
+assert.match(report.html, /Salida a comida/);
+assert.match(report.html, /Regreso de comida/);
+assert.match(report.html, /Jornada cumplida/);
+assert.match(report.html, /Falta/);
+assert.match(report.html, /8 h 30 min/);
+assert.deepEqual(report.summary, { collaborators: 3, punctualityPct: 75, expectedCoveragePct: 75, lateDays: 0 });
+const nextReport = await prepareKioskWeekReport('org-report', '2026-03-09', reportDb, reportNow);
+assert.doesNotMatch(nextReport.html, /06:07:00/);
 assert.doesNotMatch(report.html, /punchKey|publicKey/);
-reportRows = [];
+reportEmployees = [];
 const emptyReport = await prepareKioskWeekReport('org-report', '2026-03-02', reportDb, reportNow);
-assert.match(emptyReport.html, /No hay checadas registradas/);
+assert.match(emptyReport.html, /No hay colaboradores para esta semana/);
 await assert.rejects(prepareKioskWeekReport('org-report', '2026-02-31', reportDb, reportNow), { code: 'VALIDATION_ERROR' });
 await assert.rejects(prepareKioskWeekReport('org-report', '2026-03-16', reportDb, reportNow), { code: 'VALIDATION_ERROR' });
 await assert.rejects(prepareKioskWeekReport('other-org', '2026-03-02', reportDb, reportNow), { code: 'NOT_FOUND' });
-console.log('Exportación semanal: alcance por organización, semana civil con cambio de horario, datos escapados y semana vacía OK (base simulada).');
+console.log('Exportación semanal: organización, horario de verano, cierre nocturno sin duplicar, comida, indicadores, escape y semana vacía OK (base simulada).');
