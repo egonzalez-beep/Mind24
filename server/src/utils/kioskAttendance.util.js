@@ -34,6 +34,7 @@ export function kioskAttendanceForDay(employee, { date, nextStart, now, atMinute
   const prior = shiftFor(previousDate);
   const shift = shiftFor(date);
   const next = shiftFor(nextDate);
+  const upcoming = shift.kind === 'UNSCHEDULED' ? employee.schedules[0] : null;
 
   const punches = [];
   let belongsToDay = false;
@@ -47,12 +48,17 @@ export function kioskAttendanceForDay(employee, { date, nextStart, now, atMinute
   }
 
   const flags = [];
+  let lateMinutes;
   if (shift.kind === 'PLANNED') {
     const first = punches[0];
     const last = punches.at(-1);
     if (first) {
-      flags.push(first.recordedAt <= shift.toleranceEndAt ? 'ON_TIME' : 'LATE');
+      const lateBy = first.recordedAt - shift.toleranceEndAt;
+      const onTime = lateBy <= 0;
+      flags.push(onTime ? 'ON_TIME' : 'LATE');
+      if (!onTime) lateMinutes = Math.floor(lateBy / 60_000);
       if (last.type === 'CHECK_OUT') {
+        if (onTime && last.recordedAt >= shift.endAt) flags.push('COMPLETED');
         if (last.recordedAt > shift.endAt) flags.push('LATE_EXIT');
       } else if (now >= shift.endAt) {
         flags.push('INCOMPLETE');
@@ -61,7 +67,13 @@ export function kioskAttendanceForDay(employee, { date, nextStart, now, atMinute
       flags.push('ABSENT');
     }
   }
-  return { ...shift, flags, punches };
+  return {
+    ...shift,
+    ...(upcoming && { scheduleStartsOn: upcoming.effectiveOn.toISOString().slice(0, 10) }),
+    ...(lateMinutes !== undefined && { lateMinutes }),
+    flags,
+    punches,
+  };
 }
 
 export function kioskMinuteLookup(timeZone) {

@@ -340,9 +340,11 @@ const daySchedule = {
 };
 const nightSchedule = { ...daySchedule, startMinute: 1320, endMinute: 360, weekdayMask: 127 };
 rosterDay('on-time', [daySchedule]);
+rosterDay('early-exit', [daySchedule]);
 rosterDay('late', [daySchedule, { ...daySchedule, effectiveOn: new Date('2026-11-26'), startMinute: 540 }]);
 rosterDay('absent', [daySchedule]);
 rosterDay('no-schedule', []);
+rosterDay('upcoming-schedule', [{ ...daySchedule, effectiveOn: new Date('2026-11-25') }]);
 rosterDay('new-employee', [daySchedule], '2026-11-24T15:00:00Z');
 rosterDay('night', [nightSchedule]);
 rosterDay('late-night-entry', [nightSchedule]);
@@ -354,6 +356,9 @@ function attendancePunches(id, events) {
 }
 attendancePunches('on-time', [
   ['CHECK_IN', '2026-11-24T14:10:00.000Z'], ['CHECK_OUT', '2026-11-24T23:00:00Z'],
+]);
+attendancePunches('early-exit', [
+  ['CHECK_IN', '2026-11-24T14:00:00.000Z'], ['CHECK_OUT', '2026-11-24T22:50:00Z'],
 ]);
 attendancePunches('late', [
   ['CHECK_IN', '2026-11-24T14:10:00.001Z'], ['MEAL_OUT', '2026-11-24T20:00:00Z'],
@@ -370,18 +375,27 @@ const findDay = (result, id) => result.people.find((entry) => entry.id === id);
 const dayBeforeEnd = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-24T22:59:59Z'));
 assert.deepEqual(findDay(dayBeforeEnd, 'absent').attendance.flags, []);
 assert.deepEqual(findDay(dayBeforeEnd, 'late').attendance.flags, ['LATE']);
+assert.equal(findDay(dayBeforeEnd, 'late').attendance.lateMinutes, 0);
 const overnightStillOpen = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-25T06:30:00Z'));
 assert.deepEqual(findDay(overnightStillOpen, 'night').attendance.flags, ['ON_TIME']);
 const done = await getKioskDailyAttendance('org-a', '2026-11-24', dailyDb, new Date('2026-11-26T16:00:00Z'));
-assert.deepEqual(findDay(done, 'on-time').attendance.flags, ['ON_TIME']);
+assert.deepEqual(findDay(done, 'on-time').attendance.flags, ['ON_TIME', 'COMPLETED']);
+assert.deepEqual(findDay(done, 'early-exit').attendance.flags, ['ON_TIME']);
 assert.deepEqual(findDay(done, 'late').attendance.flags, ['LATE', 'INCOMPLETE']);
 assert.deepEqual(findDay(done, 'absent').attendance.flags, ['ABSENT']);
 assert.equal(findDay(done, 'no-schedule').attendance.kind, 'UNSCHEDULED');
+assert.equal(findDay(done, 'no-schedule').attendance.scheduleStartsOn, undefined);
+assert.equal(findDay(done, 'upcoming-schedule').attendance.kind, 'UNSCHEDULED');
+assert.equal(findDay(done, 'upcoming-schedule').attendance.scheduleStartsOn, '2026-11-25');
+assert.deepEqual(findDay(done, 'upcoming-schedule').attendance.flags, []);
 assert.equal(findDay(done, 'new-employee').attendance.kind, 'BEFORE_ENROLLMENT');
-assert.deepEqual(findDay(done, 'night').attendance.flags, ['ON_TIME', 'LATE_EXIT']);
+assert.deepEqual(findDay(done, 'night').attendance.flags, ['ON_TIME', 'COMPLETED', 'LATE_EXIT']);
 assert.deepEqual(findDay(done, 'night').attendance.punches.map(({ ordinal }) => ordinal), [1, 2, 3, 4]);
 assert.deepEqual(findDay(done, 'late-night-entry').attendance.flags, ['LATE']);
+assert.equal(findDay(done, 'late-night-entry').attendance.lateMinutes, 170);
 const following = await getKioskDailyAttendance('org-a', '2026-11-25', dailyDb, new Date('2026-11-26T16:00:00Z'));
+assert.equal(findDay(following, 'upcoming-schedule').attendance.kind, 'PLANNED');
+assert.deepEqual(findDay(following, 'upcoming-schedule').attendance.flags, ['ABSENT']);
 assert.deepEqual(findDay(following, 'night').attendance.punches.map(({ ordinal }) => ordinal), [5, 6]);
 assert.deepEqual(findDay(following, 'late-night-entry').attendance.punches, []);
 const saturday = await getKioskDailyAttendance('org-a', '2026-11-28', dailyDb, new Date('2026-11-28T19:00:00Z'));

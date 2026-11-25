@@ -366,15 +366,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-shift{margin-bottom:8px;}
 .kiosk-shift-track{position:relative;height:25px;margin:0 5px;color:#6732a1;}
 .kiosk-shift-track span{position:absolute;}
-.kiosk-shift-axis,.kiosk-shift-expected,.kiosk-shift-elapsed{top:11px;height:4px;border-radius:5px;}
+.kiosk-shift-axis,.kiosk-shift-expected,.kiosk-shift-elapsed{top:9px;height:7px;border-radius:6px;}
 .kiosk-shift-axis{inset-inline:0;background:#eee5f5;}
 .kiosk-shift-expected{background:#dbc4ec;}
 .kiosk-shift-elapsed{background:#a36dcb;}
-.kiosk-shift-bound{top:8px;height:10px;border-left:2px solid #a381bf;transform:translateX(-50%);}
-.kiosk-shift-mark{top:9px;width:8px;height:8px;border-radius:50%;background:#713da2;box-shadow:0 0 0 1px #fff;transform:translateX(-50%);}
+.kiosk-shift-bound{top:6px;height:13px;border-left:2px solid #8e6aa9;transform:translateX(-50%);}
+.kiosk-shift-mark{top:7px;width:11px;height:11px;border-radius:50%;background:#713da2;box-shadow:0 0 0 2px #fff;transform:translateX(-50%);}
 .kiosk-shift-mark[data-kind="CHECK_IN"]{background:#187a5d;}
 .kiosk-shift-mark[data-kind="MEAL_OUT"],.kiosk-shift-mark[data-kind="MEAL_IN"]{background:#b35a35;}
-.kiosk-shift-now{top:3px;height:20px;border-left:2px dashed #713da2;transform:translateX(-50%);}
+.kiosk-shift-now{top:2px;height:21px;border-left:3px dashed #713da2;transform:translateX(-50%);}
 .kiosk-shift-caption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;color:var(--kiosk-muted);font-size:11px;line-height:1.35;}
 .kiosk-shift-caption strong{color:var(--kiosk-ink);font-weight:750;}
 .kiosk-shift-current{color:#65349b;font-weight:700;}
@@ -383,7 +383,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .kiosk-shift-context small{display:block;margin-bottom:4px;font-size:11px;color:var(--kiosk-muted);}
 .kiosk-day-incidents{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 .kiosk-day-flag{display:inline-flex;padding:3px 6px;border-radius:7px;background:#f1ecf5;color:#604873;font-size:11px;line-height:1.25;font-weight:720;}
-.kiosk-day-flag[data-flag="ON_TIME"]{background:#e5f4eb;color:#155b43;}
+.kiosk-day-flag:is([data-flag="ON_TIME"],[data-flag="COMPLETED"]){background:#e5f4eb;color:#155b43;}
 .kiosk-day-flag[data-flag="LATE"],.kiosk-day-flag[data-flag="INCOMPLETE"]{background:#fff0dc;color:#794019;}
 .kiosk-day-flag[data-flag="ABSENT"]{background:#fbe8ea;color:#942b3a;}
 @media(max-width:570px){.kiosk-day-incidents{justify-content:flex-end;}}
@@ -7395,16 +7395,23 @@ function kioskDrawShift(cell,attendance,formatTime,liveTicks){
 
 function kioskDayFlags(cell,attendance){
   if(!attendance) return;
+  const lateMinutes=attendance.lateMinutes;
+  const lateLabel=lateMinutes===0?'Retardo menor a 1 min'
+    :Number.isInteger(lateMinutes)?'Retardo de '+lateMinutes+' min':'Retardo';
   const labels={
-    ON_TIME:'A tiempo',LATE:'Retardo',ABSENT:'Falta',INCOMPLETE:'Checada incompleta',LATE_EXIT:'Salida posterior al horario',
-    UNSCHEDULED:'Sin horario para este día',REST:'Descanso',BEFORE_ENROLLMENT:'Alta posterior al inicio',UNAVAILABLE:'Horario por revisar',
+    ON_TIME:'A tiempo',LATE:lateLabel,COMPLETED:'Jornada cumplida',ABSENT:'Falta',
+    INCOMPLETE:'Checada incompleta',LATE_EXIT:'Salida posterior al horario',
+    UNSCHEDULED:attendance.scheduleStartsOn
+      ? 'Horario programado desde el '+recAgendaDateLabel(attendance.scheduleStartsOn,{day:'numeric',month:'long'})
+      : 'Sin horario para este día',
+    REST:'Descanso',BEFORE_ENROLLMENT:'Alta posterior al inicio',UNAVAILABLE:'Horario por revisar',
   };
   const flags=attendance.kind==='PLANNED'?attendance.flags:[attendance.kind];
   if(!flags.length) return;
   const group=document.createElement('div');
   group.className='kiosk-day-incidents';
   for(const flag of flags){
-    if(!labels[flag]) continue;
+    if(!labels[flag]||(flag==='ON_TIME'&&flags.includes('COMPLETED'))) continue;
     const label=document.createElement('span');
     label.className='kiosk-day-flag';
     label.dataset.flag=flag;
