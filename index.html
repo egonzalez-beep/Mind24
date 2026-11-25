@@ -546,8 +546,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 @media(max-width:700px){
   #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-dash-topbar{height:auto;min-height:0;position:sticky;padding:10px 12px;}
   #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-topbar-cluster{display:grid;gap:8px;width:100%;min-width:0;}
-  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-topbar-cluster .topbar-title{padding-right:78px;min-height:30px;display:flex;align-items:center;}
-  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-dash-topbar .topbar-right{position:absolute;top:7px;right:12px;gap:6px;}
+  #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-topbar-cluster .topbar-title{min-height:30px;display:flex;align-items:center;}
   #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-module-nav--inline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;}
   #view-dash-recruitment:has(#rec-pane-agenda:not(.hidden)) .rec-module-nav--inline .rec-module-tab{padding:7px 2px;font-size:11px;white-space:nowrap;}
 }
@@ -2899,7 +2898,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .cev-shell .topbar-title{font-size:16px;}
   .cev-shell .topbar-right{gap:6px;}
   .cev-shell .page-content{padding:14px;}
-  .cev-shell #crear-eval-topbar-av{display:none!important;}
   .cev-shell .card-header{padding-inline:14px;}
   .cev-shell .card-body{padding-inline:14px;}
 }
@@ -3432,32 +3430,41 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 :root{--admin-sidebar-width:286px;}
 .admin-module{padding-inline-start:var(--admin-sidebar-width);height:100dvh;}
 .admin-module>.main-content{min-width:0;}
-.admin-sidebar.sidebar{position:fixed;inset:0 auto 0 0;z-index:100;width:var(--admin-sidebar-width);padding:22px 0 12px;border-color:var(--purple-border);color:var(--primary);font-family:Inter,system-ui,sans-serif;background:radial-gradient(ellipse at 100% 0%,var(--purple-border),transparent 44%),linear-gradient(165deg,var(--purple-light),var(--purple-mid) 74%);}
-.admin-sidebar .sidebar-logo{position:relative;display:flex;align-items:center;justify-content:space-between;padding:0 20px 20px;margin-bottom:8px;border-color:var(--purple-border);isolation:isolate;flex-shrink:0;}
-.admin-sidebar .sidebar-logo::after{content:'';position:absolute;inset:-22px 0 0 50%;z-index:-1;background-image:radial-gradient(circle,var(--violet) 1px,transparent 1.6px);background-size:13px 13px;opacity:.24;mask-image:linear-gradient(105deg,transparent,#000 82%);pointer-events:none;}
-.admin-sidebar .sidebar-logo-text{letter-spacing:-.045em;font-size:19px;}
+.admin-sidebar.sidebar{position:fixed;inset:0 auto 0 0;z-index:100;width:var(--admin-sidebar-width);padding:22px 0 12px;isolation:isolate;border-color:#3d187a;color:#fff;font-family:Inter,system-ui,sans-serif;background:var(--purple-deep);}
+.admin-sidebar .sidebar-logo{display:flex;align-items:center;justify-content:space-between;padding:0 18px 17px;margin-bottom:8px;border-color:#ffffff25;flex-shrink:0;}
+.admin-sidebar .sidebar-logo-text{letter-spacing:-.045em;font-size:19px;color:#fff;}
+.admin-sidebar .sidebar-logo-text span{color:#ddd6fe;}
 .admin-sidebar .sidebar-nav{min-height:0;overflow:auto;padding:0 11px 10px;scrollbar-width:thin;scrollbar-color:var(--violet-light) transparent;}
-.admin-sidebar .sidebar-section-label{display:block;padding:15px 10px 6px;color:var(--slate-600);font-size:10px;font-weight:750;letter-spacing:.09em;}
-.admin-sidebar .sidebar-item{min-height:43px;gap:9px;margin:0 0 2px;padding:5px 9px;justify-content:flex-start;border:1px solid transparent;border-radius:11px;font-size:13px;font-weight:560;color:var(--slate-700);transition:background-color .16s,border-color .16s,color .16s;}
-.admin-sidebar .sidebar-item:hover{background:var(--purple-mid);color:var(--purple-dark);}
-.admin-sidebar .sidebar-item[aria-current="page"]{border-color:#c4b5fd;background:var(--purple-border);color:var(--purple-deep);font-weight:720;box-shadow:inset 3px 0 var(--purple);}
-.admin-sidebar .sidebar-item .si-icon{width:29px;height:29px;border-radius:8px;background:var(--purple-mid);color:var(--purple-dark);}
-.admin-sidebar .sidebar-item[aria-current="page"] .si-icon{background:var(--purple-dark);color:#fff;}
+.admin-sidebar .sidebar-section-label{display:block;padding:15px 10px 6px;color:#ddd6fe;font-size:10px;font-weight:750;letter-spacing:.09em;}
+.admin-sidebar .sidebar-item{min-height:44px;gap:8px;margin:0 0 2px;padding:4px 9px;justify-content:flex-start;border:1px solid transparent;border-radius:11px;font-size:13px;font-weight:600;color:#f5f3ff;transition:background-color .16s,border-color .16s;}
+.admin-sidebar .sidebar-item:hover{background:#ffffff12;}
+.admin-sidebar .sidebar-item[aria-current="page"]{border-color:#ddd6fe48;background:#ffffff1b;color:#fff;}
+.admin-nav-art{display:block;width:34px;height:34px;flex:none;}
+.admin-sidebar-waves{position:absolute;inset:auto 0 0;z-index:-1;width:100%;height:126px;pointer-events:none;}
 .admin-nav-icon{display:block;width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;}
 .admin-sidebar .admin-nav-label{display:block;line-height:1.25;}
 .admin-sidebar .admin-nav-fitness .admin-nav-label{font-size:11.4px;letter-spacing:-.025em;white-space:nowrap;}
-.admin-sidebar .si-badge{display:inline-flex;flex-shrink:0;}
-.admin-sidebar .sidebar-footer{padding:10px 11px 0;border-color:var(--purple-border);flex-shrink:0;}
+.admin-sidebar .si-badge{display:inline-flex;flex-shrink:0;background:#ede9fe;color:var(--purple-deep);}
+.admin-sidebar .sidebar-footer{padding:10px 11px 0;border-color:#ffffff36;flex-shrink:0;}
 .admin-sidebar .sidebar-user{cursor:default;padding:7px 9px;}
 .admin-sidebar .sidebar-user:hover{background:transparent;}
 .admin-sidebar .sidebar-user-info{display:block;}
-.admin-sidebar .s-avatar{width:32px;height:32px;background:var(--assess-gradient);font-size:12px;}
-.admin-sidebar .admin-logout{width:100%;min-height:38px;color:var(--slate-600);}
-.admin-sidebar .admin-logout:hover{background:var(--purple-border);color:var(--purple-deep);}
+.admin-sidebar .sidebar-user-name{color:#fff;}
+.admin-sidebar .sidebar-user-role{color:#ede9fe;}
+.admin-sidebar .s-avatar{width:32px;height:32px;background:#ede9fe;color:var(--purple-deep);font-size:12px;}
+.admin-sidebar .admin-logout{width:100%;min-height:38px;color:#f5f3ff;}
+.admin-sidebar .admin-logout:hover{background:#ffffff19;color:#fff;}
 .admin-menu-toggle{display:none;flex:none;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-mid);color:var(--purple-dark);cursor:pointer;}
 .admin-menu-toggle:hover{background:var(--purple-border);}
-.admin-menu-toggle:focus-visible,.admin-sidebar button:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.admin-menu-toggle:focus-visible,.admin-notif-bell:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.admin-sidebar button:focus-visible{outline:2px solid #ddd6fe;outline-offset:2px;}
 .admin-nav-title{display:flex;align-items:center;gap:9px;}
+.admin-mobile-controls{display:none;align-items:center;gap:6px;flex:none;}
+.admin-notif-bell{width:38px;height:38px;flex:none;border-color:var(--purple-border);border-radius:10px;color:var(--purple-dark);}
+.admin-sidebar .admin-notif-bell,.admin-sidebar .admin-menu-close{background:#ffffff14;border:1px solid #ffffff38;color:#fff;}
+.admin-sidebar .admin-notif-bell:hover,.admin-sidebar .admin-menu-close:hover{background:#ffffff27;color:#fff;}
+.admin-notif-bell .mind24-notif-badge{top:-4px;right:-5px;min-width:18px;height:18px;padding:0 3px;line-height:15px;}
+.admin-sidebar .admin-notif-bell .mind24-notif-badge{background:#ede9fe;border-color:var(--purple-deep);color:var(--purple-deep);}
 .admin-menu-backdrop{position:fixed;inset:0;z-index:99;background:#1e1b4b57;}
 @media(max-width:900px){
   .admin-module{padding-inline-start:0;}
@@ -3465,10 +3472,12 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .admin-sidebar.sidebar.is-open{display:flex;}
   .admin-sidebar .sidebar-logo{display:flex;}
   .admin-sidebar.sidebar .sidebar-item .admin-nav-label{display:block;}
+  .admin-mobile-controls{display:flex;}
   .admin-module .admin-menu-toggle,.admin-sidebar .admin-menu-toggle{display:inline-flex;}
+  .admin-sidebar [data-admin-notif-slot]{display:none;}
 }
 @media(prefers-reduced-motion:reduce){
-  .admin-sidebar .sidebar-item,.admin-sidebar .si-icon{transition:none;}
+  .admin-sidebar .sidebar-item{transition:none;}
 }
 
 /* Reclutamiento · Vacantes */
@@ -3477,7 +3486,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-module-tab{border-radius:8px;}
 #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-module-tab--active{background:#fff;color:var(--purple-deep);box-shadow:0 1px 3px #4c1d9519;}
 #view-dash-recruitment .rec-page-content:has(#rec-pane-vacancies:not(.hidden)){padding-top:0;}
-#view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) #rec-topbar-av{background:var(--assess-gradient);}
 #rec-topbar-vac-tools{flex-wrap:nowrap;min-width:0;gap:8px;margin-right:0;}
 .rec-vac-search{position:relative;width:clamp(148px,15vw,230px);min-width:0;}
 .rec-vac-search .admin-nav-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);width:16px;height:16px;color:var(--slate-500);pointer-events:none;}
@@ -3489,9 +3497,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #rec-pane-vacancies .rec-pipeline-count-pill{background:var(--purple-light);color:var(--purple-dark);}
 .rec-pipeline-heading-icon{color:var(--purple-dark);width:16px;height:16px;}
 @media(max-width:720px){
-  #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-dash-topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding-block:8px;}
+  #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-dash-topbar{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding-block:8px;}
   #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-topbar-cluster{display:contents;}
-  #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .topbar-right{gap:6px;}
   #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-module-nav--inline{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;}
   #view-dash-recruitment:has(#rec-pane-vacancies:not(.hidden)) .rec-module-tab{padding:6px 2px;font-size:12px;}
   #rec-topbar-vac-tools{grid-column:1/-1;grid-row:3;gap:6px;}
@@ -4506,8 +4513,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <span class="m24-cc-lbl">Créditos disponibles</span>
           <span class="m24-cc-val" id="dash-admin-credits-value">0</span>
         </div>
-        <button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button>
-        <div class="s-avatar av-green" id="dash-admin-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div>
+        <div data-admin-notif-slot></div>
       </div>
     </div>
     <div class="page-content">
@@ -4791,36 +4797,102 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
   <symbol id="admin-icon-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h12M4 18h16"/></symbol>
   <symbol id="admin-icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
-  <symbol id="admin-icon-new" viewBox="0 0 24 24"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5m-7-11v4a2 2 0 0 0 2 2h1m3-6v6m-3-3h6M8 12h4m-4 4h8"/></symbol>
-  <symbol id="admin-icon-list" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1.5"/><path d="m8 13 1 1 2-2m3 1h2m-8 4h8"/></symbol>
-  <symbol id="admin-icon-team" viewBox="0 0 24 24"><circle cx="9" cy="7.5" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 5a3 3 0 0 1 0 5.5m2 3.5a4 4 0 0 1 3 3.9V20"/></symbol>
   <symbol id="admin-icon-recruiting" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M3 12a22 22 0 0 0 18 0m-9 1v3"/></symbol>
-  <symbol id="admin-icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
-  <symbol id="admin-icon-heart" viewBox="0 0 24 24"><path d="M20 6a4.5 4.5 0 0 0-6.4 0L12 7.6 10.4 6A4.5 4.5 0 0 0 4 12.4l8 8 8-8A4.5 4.5 0 0 0 20 6Z"/><path d="M5 12h4l1.5-2 2 4 1.5-2h5"/></symbol>
-  <symbol id="admin-icon-custom" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.3"/><rect x="4" y="14" width="6" height="6" rx="1.3"/><rect x="14" y="14" width="6" height="6" rx="1.3"/><path d="M17 4v6m-3-3h6"/></symbol>
   <symbol id="admin-icon-logout" viewBox="0 0 24 24"><path d="M12 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h6m4-11 4 4-4 4m4-4H9"/></symbol>
   <symbol id="admin-icon-search" viewBox="0 0 24 24"><circle cx="10.75" cy="10.75" r="6.25"/><path d="m16 16 4 4"/></symbol>
   <symbol id="admin-icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="admin-icon-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9m-8 12a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="admin-art-new" viewBox="0 0 40 40">
+    <g transform="rotate(-8 18 20)" stroke="#6832b8" stroke-width="1.3" stroke-linecap="round">
+      <rect x="9" y="8" width="22" height="29" rx="4" fill="#a78bfa"/>
+      <rect x="6" y="5" width="22" height="29" rx="4" fill="#f4edff"/>
+      <path d="M11 12h10m-10 5h12m-12 5h7" opacity=".75"/>
+    </g>
+    <path d="M20 23h13v11a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3Z" fill="#7954cd" opacity=".55"/>
+    <circle cx="29" cy="28" r="8" fill="#ffcbb4" stroke="#7139b8" stroke-width="1.25"/>
+    <path d="M29 24.5v7m-3.5-3.5h7" fill="none" stroke="#662ca6" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="admin-art-list" viewBox="0 0 40 40">
+    <g transform="rotate(-7 20 20)" stroke="#6832b8" stroke-width="1.3" stroke-linejoin="round">
+      <rect x="9" y="8" width="24" height="28" rx="5" fill="#9c75e4"/>
+      <rect x="6" y="6" width="24" height="28" rx="5" fill="#eee1ff"/>
+      <rect x="11" y="10" width="14" height="19" rx="2" fill="#fff6ff"/>
+      <rect x="13" y="4" width="10" height="7" rx="2.5" fill="#ffcbb4"/>
+      <path d="m14 17 2 2 3-4m-4 10h7" fill="none" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="admin-art-team" viewBox="0 0 40 40">
+    <g stroke="#6330ad" stroke-width="1.3" stroke-linejoin="round">
+      <circle cx="28.5" cy="13" r="5.5" fill="#efb692"/>
+      <path d="M20 32v-4a8.5 8.5 0 1 1 17 0v2a2 2 0 0 1-2 2Z" fill="#aa8aef"/>
+      <circle cx="15" cy="12" r="6" fill="#ffd0ba"/>
+      <path d="M4 31v-3a11 11 0 0 1 22 0v3a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3Z" fill="#d8c3fc"/>
+      <path d="M9 30v-3m12 3v-3" fill="none" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="admin-art-recruiting" viewBox="0 0 40 40">
+    <g transform="rotate(13 25 17)" stroke="#7341bf" stroke-width="1.2" stroke-linecap="round">
+      <rect x="20" y="5" width="15" height="23" rx="3" fill="#f7eeff"/>
+      <path d="M24 11h7m-7 4h6m-6 4h4"/>
+    </g>
+    <g transform="rotate(-8 15 25)" stroke="#6330ad" stroke-width="1.35" stroke-linejoin="round">
+      <path d="M10 17v-3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3" fill="#d8c2fc"/>
+      <rect x="3" y="18" width="26" height="17" rx="4.5" fill="#8e65df"/>
+      <rect x="2.5" y="16" width="26" height="17" rx="4.5" fill="#c5a7f7"/>
+      <path d="M3 22c7 4 18 4 25 0" fill="none"/>
+      <rect x="13" y="22.5" width="5" height="4.5" rx="1.5" fill="#ffd0ba"/>
+    </g>
+  </symbol>
+  <symbol id="admin-art-clock" viewBox="0 0 40 40">
+    <g transform="rotate(-9 19 21)" stroke="#6630b5" stroke-width="1.3" stroke-linecap="round">
+      <rect x="14" y="3.5" width="10" height="6" rx="2.2" fill="#d5baf8"/>
+      <circle cx="20.5" cy="23" r="13.5" fill="#9672df"/>
+      <circle cx="18.5" cy="21.5" r="13.5" fill="#b296ee"/>
+      <circle cx="18.5" cy="21.5" r="10.5" fill="#f4ecff"/>
+      <path d="M18.5 15.5v6l4 2.5" fill="none" stroke-width="1.8"/>
+      <circle cx="18.5" cy="21.5" r="1.7" fill="#ffc6ab" stroke="none"/>
+    </g>
+    <path d="M35 6v7m-3.5-3.5h7" stroke="#ffd0ba" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="admin-art-heart" viewBox="0 0 40 40">
+    <path d="M20 36 7 23C-2 13 10 5 17 12l3 3 3-3c8-7 19 2 11 11Z" fill="#a375e2"/>
+    <path d="M19 33 7 21c-8-8 3-18 10-11l2 2.5 2-2.5c7-7 18 3 10 11Z" fill="#ffc7af" stroke="#7440b9" stroke-width="1.45" stroke-linejoin="round"/>
+    <path d="M8 19h6l2-3.5 3 7 2.5-3.5H29" fill="none" stroke="#8b4d9e" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="admin-art-custom" viewBox="0 0 40 40">
+    <g stroke="#6832b8" stroke-width="1.25" stroke-linejoin="round">
+      <rect x="6" y="17" width="26" height="17" rx="4" fill="#9671e2"/>
+      <rect x="4" y="15" width="26" height="17" rx="4" fill="#dcc6fa"/>
+      <path d="M4 22c6 4 20 4 26 0" fill="none"/>
+      <rect x="14" y="22" width="6" height="5" rx="1.5" fill="#ffcbb4"/>
+      <path d="m14 16 10-10a3 3 0 0 1 4 0l1.4 1.4-3.4 3.4 2.2 2.2 3.4-3.4L33 11a3 3 0 0 1 0 4l-3 3H15Z" fill="#f2e9ff"/>
+    </g>
+    <path d="M10 6v6M7 9h6" stroke="#ffd0ba" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
 </svg>
 <div id="admin-menu-backdrop" class="admin-menu-backdrop hidden" aria-hidden="true" onclick="mind24AdminSetMenuOpen(false,true)"></div>
 <aside class="sidebar admin-sidebar hidden" id="admin-sidebar" aria-label="Menú principal" onkeydown="mind24AdminMenuKeydown(event)">
+  <svg class="admin-sidebar-waves" viewBox="0 0 286 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#8051c5" fill-opacity=".46" d="M0 93C55 59 102 108 157 84S224 31 286 21v105H0Z"/>
+    <path fill="#a777e9" fill-opacity=".34" d="M0 116c38 2 71-36 123-40s104 33 163 14v36H0Z"/>
+  </svg>
   <div class="sidebar-logo">
     <div class="s-logo"><div class="sidebar-logo-icon"></div><span class="sidebar-logo-text">MIND<span>24</span></span></div>
+    <div data-admin-notif-slot><button type="button" id="admin-notif-bell" class="tb-btn admin-notif-bell mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-bell"/></svg><span class="mind24-notif-badge hidden" aria-hidden="true"></span></button></div>
     <button type="button" class="admin-menu-toggle admin-menu-close" aria-label="Cerrar menú" onclick="mind24AdminSetMenuOpen(false,true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-close"/></svg></button>
   </div>
   <nav class="sidebar-nav" aria-label="Módulos">
     <div class="sidebar-section-label">Evaluaciones</div>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-crear-eval" data-cev-nav="nueva" onclick="mind24AdminNavigate(this)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-new"/></svg></span><span class="admin-nav-label">Nueva evaluación</span></button>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-crear-eval" data-cev-nav="mis" onclick="mind24AdminNavigate(this)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-list"/></svg></span><span class="admin-nav-label">Mis evaluaciones</span><span class="si-badge" id="cev-nav-mis-count" style="display:none;">0</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-crear-eval" data-cev-nav="nueva" onclick="mind24AdminNavigate(this)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-new"/></svg><span class="admin-nav-label">Nueva evaluación</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-crear-eval" data-cev-nav="mis" onclick="mind24AdminNavigate(this)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-list"/></svg><span class="admin-nav-label">Mis evaluaciones</span><span class="si-badge" id="cev-nav-mis-count" style="display:none;">0</span></button>
     <div class="sidebar-section-label">Operación</div>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-timeclock" onclick="mind24AdminNavigate(this)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-team"/></svg></span><span class="admin-nav-label">Gestión de equipos</span></button>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-recruitment" onclick="mind24AdminNavigate(this)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-recruiting"/></svg></span><span class="admin-nav-label">Reclutamiento</span></button>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-kiosk-clock" onclick="mind24AdminNavigate(this)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-clock"/></svg></span><span class="admin-nav-label">Reloj checador</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-timeclock" onclick="mind24AdminNavigate(this)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-team"/></svg><span class="admin-nav-label">Gestión de equipos</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-recruitment" onclick="mind24AdminNavigate(this)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-recruiting"/></svg><span class="admin-nav-label">Reclutamiento</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" data-admin-view="dash-kiosk-clock" onclick="mind24AdminNavigate(this)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-clock"/></svg><span class="admin-nav-label">Reloj checador</span></button>
     <div class="sidebar-section-label">Cuenta</div>
-    <button type="button" class="sidebar-item hidden" data-skip-sidebar-active="1" id="cev-nav-aspen-admin" onclick="showView('dash-admin')"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-team"/></svg></span><span class="admin-nav-label">Administradores Aspen</span></button>
-    <button type="button" class="sidebar-item admin-nav-fitness" data-skip-sidebar-active="1" id="cev-sidebar-fitness-cta" data-mind24-action="open-fitness-modal" onclick="mind24AdminSetMenuOpen(false,true);mind24OpenFitnessModal(event)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-heart"/></svg></span><span class="admin-nav-label">Mind Fitness · Bienestar Organizacional</span></button>
-    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" id="cev-sidebar-medida-cta" onclick="mind24AdminSetMenuOpen(false,true);mind24OpenMedidaModal(event)"><span class="si-icon"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-custom"/></svg></span><span class="admin-nav-label">Módulo a la medida</span></button>
+    <button type="button" class="sidebar-item hidden" data-skip-sidebar-active="1" id="cev-nav-aspen-admin" onclick="showView('dash-admin')"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-team"/></svg><span class="admin-nav-label">Administradores Aspen</span></button>
+    <button type="button" class="sidebar-item admin-nav-fitness" data-skip-sidebar-active="1" id="cev-sidebar-fitness-cta" data-mind24-action="open-fitness-modal" onclick="mind24AdminSetMenuOpen(false,true);mind24OpenFitnessModal(event)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-heart"/></svg><span class="admin-nav-label">Mind Fitness · Bienestar Organizacional</span></button>
+    <button type="button" class="sidebar-item" data-skip-sidebar-active="1" id="cev-sidebar-medida-cta" onclick="mind24AdminSetMenuOpen(false,true);mind24OpenMedidaModal(event)"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-custom"/></svg><span class="admin-nav-label">Módulo a la medida</span></button>
   </nav>
   <div class="sidebar-footer">
     <div class="sidebar-user"><div class="s-avatar av-purple" id="admin-sidebar-avatar" aria-hidden="true">—</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="admin-sidebar-name">—</div><div class="sidebar-user-role">Administrador</div></div></div>
@@ -4830,9 +4902,9 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <div id="view-dash-crear-eval" class="app-shell admin-module cev-shell hidden">
   <main class="main-content">
     <div class="topbar">
-      <button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button>
+      <div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div>
       <h1 class="topbar-title" id="cev-topbar-title" tabindex="-1">Nueva evaluación</h1>
-      <div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="crear-eval-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
+      <div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div></div>
     </div>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
@@ -4898,7 +4970,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <main class="main-content">
     <div class="topbar rec-dash-topbar">
       <div class="rec-topbar-cluster">
-        <div class="admin-nav-title"><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button><div class="topbar-title">Reclutamiento</div></div>
+        <div class="admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><div class="topbar-title">Reclutamiento</div></div>
         <nav class="rec-module-nav rec-module-nav--inline" aria-label="Sección de reclutamiento">
           <button type="button" class="rec-module-tab rec-module-tab--active" id="rec-tab-vacancies" onclick="recSwitchModuleTab('vacancies')">Vacantes</button>
           <button type="button" class="rec-module-tab" id="rec-tab-candidates" onclick="recSwitchModuleTab('candidates')">Candidatos</button>
@@ -4923,7 +4995,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           <button type="button" class="rec-metrics-month-btn" id="rec-metrics-next" aria-label="Mes siguiente" onclick="recMetricsChangeMonth(1)">›</button>
         </div>
       </div>
-      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-bell"/></svg><span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="rec-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
     </div>
     <div class="page-content rec-page-content">
       <div id="rec-pane-vacancies">
@@ -5100,7 +5171,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <circle cx="347" cy="81" r="4" fill="#c091e0"/><circle cx="671" cy="85" r="3.5" fill="#d28cb4"/>
       </svg>
       <div class="kiosk-hero-actions">
-        <button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button>
+        <div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div>
         <button type="button" class="kiosk-ghost kiosk-refresh-icon" aria-label="Actualizar" title="Actualizar" onclick="kioskRefresh()"><svg class="kiosk-icon" aria-hidden="true"><use href="#kiosk-icon-refresh"/></svg></button>
       </div>
     </header>
@@ -5342,7 +5413,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <div id="view-dash-timeclock" class="app-shell admin-module hidden">
   <main class="main-content">
     <div class="topbar rec-dash-topbar tc-dash-topbar">
-      <div class="rec-topbar-cluster admin-nav-title"><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button><div class="topbar-title">Gestión de equipos</div></div>
+      <div class="rec-topbar-cluster admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><div class="topbar-title">Gestión de equipos</div></div>
       <div class="tc-topbar-tools">
         <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
         <button type="button" class="tc-sched-export-btn" id="tc-sched-export-toggle" aria-expanded="false" aria-controls="tc-sched-export-dialog" aria-haspopup="dialog" onclick="tcOpenSchedExportDialog()">
@@ -5351,7 +5422,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </button>
         <button type="button" class="rec-btn-new" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
       </div>
-      <div class="topbar-right"><button type="button" class="tb-btn tb-notif mind24-notif-bell" aria-label="Notificaciones" aria-expanded="false" aria-controls="mind24-notif-popover" aria-haspopup="dialog">🔔<span class="mind24-notif-badge hidden" aria-hidden="true"></span></button><div class="s-avatar av-green" id="tc-topbar-av" style="width:36px;height:36px;font-size:13px;">—</div></div>
     </div>
     <div class="page-content">
       <div id="tc-pulse-popover" class="tc-pulse-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-pulse-popover-title" aria-hidden="true">
@@ -6336,7 +6406,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <p class="rec-hired-popover-title" id="rec-hired-popover-title">Contratados</p>
   <div class="rec-hired-popover-scroll" id="rec-hired-popover-list"></div>
 </div>
-<div id="mind24-notif-popover" class="mind24-notif-popover hidden" role="dialog" aria-modal="false" aria-labelledby="mind24-notif-popover-title" aria-hidden="true">
+<div id="mind24-notif-popover" class="mind24-notif-popover hidden" role="dialog" aria-modal="false" aria-labelledby="mind24-notif-popover-title" aria-hidden="true" tabindex="-1">
   <div class="mind24-notif-popover-head">
     <h3 id="mind24-notif-popover-title">Notificaciones</h3>
     <div style="display:flex;align-items:center;gap:4px;">
@@ -6420,8 +6490,15 @@ function mind24GreetingLineForSession(){
 }
 const mind24AdminSidebar=document.getElementById('admin-sidebar');
 const mind24AdminMenuMobile=matchMedia('(max-width:900px)');
+const mind24AdminBell=document.getElementById('admin-notif-bell');
+const mind24AdminBellDesktop=mind24AdminSidebar.querySelector('[data-admin-notif-slot]');
 let mind24AdminMenuView=null;
 
+function mind24AdminPlaceBell(view){
+  const useViewSlot=view?.id==='view-dash-admin'||mind24AdminMenuMobile.matches;
+  const host=(useViewSlot&&view?.querySelector('[data-admin-notif-slot]'))||mind24AdminBellDesktop;
+  if(mind24AdminBell.parentElement!==host) host.appendChild(mind24AdminBell);
+}
 function mind24SyncAdminSidebarIdentity(){
   const user=window.__MIND24_USER;
   const name=user?.fullName||user?.email||'';
@@ -6431,6 +6508,7 @@ function mind24SyncAdminSidebarIdentity(){
 function mind24AdminSetMenuOpen(open,restoreFocus=false){
   const view=open?document.querySelector('.admin-module:not(.hidden)'):mind24AdminMenuView;
   if(!view||(open&&!mind24AdminMenuMobile.matches)) return;
+  if(open) mind24NotifClose(false);
   const toggle=view.querySelector('.admin-menu-toggle');
   mind24AdminMenuView=open?view:null;
   mind24AdminSidebar.classList.toggle('is-open',open);
@@ -6454,7 +6532,7 @@ function mind24AdminMenuKeydown(event){
     event.stopPropagation();
     mind24AdminSetMenuOpen(false,true);
   }else if(event.key==='Tab'){
-    const buttons=Array.from(mind24AdminSidebar.querySelectorAll('button:not(.hidden):not(:disabled)'));
+    const buttons=Array.from(mind24AdminSidebar.querySelectorAll('button:not(:disabled)')).filter(button=>button.getClientRects().length);
     const first=buttons[0];
     const last=buttons.at(-1);
     if(event.shiftKey&&document.activeElement===first){
@@ -6467,7 +6545,12 @@ function mind24AdminMenuKeydown(event){
   }
 }
 mind24AdminMenuMobile.addEventListener('change',event=>{
+  const active=document.activeElement;
+  const returnToBell=active===mind24AdminBell||document.getElementById('mind24-notif-popover').contains(active);
+  mind24NotifClose(false);
   if(!event.matches) mind24AdminSetMenuOpen(false);
+  mind24AdminPlaceBell(document.querySelector('.admin-module:not(.hidden), #view-dash-admin:not(.hidden)'));
+  if(returnToBell) mind24AdminBell.focus({preventScroll:true});
 });
 
 function mind24AdminSidebarActive(view){
@@ -6974,7 +7057,6 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   const dateEl=document.getElementById('dash-admin-topbar-date');
   const chip=document.getElementById('dash-admin-credits-chip');
   const val=document.getElementById('dash-admin-credits-value');
-  const tbAv=document.getElementById('dash-admin-topbar-av');
   if(h2) h2.textContent=g.text;
   if(lead) lead.textContent=g.lead;
   if(dateEl) dateEl.textContent=mind24FormatTopbarDateEs();
@@ -6988,7 +7070,6 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   }
   const fn=u.fullName||u.email||'';
   const ini=initialsFromName(fn);
-  if(tbAv) tbAv.textContent=ini;
   const sbAv=document.getElementById('dash-admin-av');
   if(sbAv) sbAv.textContent=ini;
   const nameEl=document.getElementById('dash-admin-name');
@@ -6998,16 +7079,10 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   if(typeof mind24NotifInit==='function') mind24NotifInit();
   const cChip=document.getElementById('crear-eval-credits-chip');
   const cVal=document.getElementById('crear-eval-credits-value');
-  const cAv=document.getElementById('crear-eval-topbar-av');
   if(cChip&&cVal){
     cVal.textContent=String(num);
     cChip.style.display='flex';
   }
-  if(cAv) cAv.textContent=ini;
-  const tcTbAv=document.getElementById('tc-topbar-av');
-  if(tcTbAv) tcTbAv.textContent=ini;
-  const recTbAv=document.getElementById('rec-topbar-av');
-  if(recTbAv) recTbAv.textContent=ini;
   mind24SyncAdminSidebarIdentity();
   mind24UpdateAspenPioneerVisibility();
   const dashCev=document.getElementById('dash-admin-nav-crear-eval');
@@ -7313,6 +7388,7 @@ function kioskOnLeave(){
 }
 
 function kioskOnShow(){
+  mind24NotifInit();
   document.getElementById('kiosk-admin-content').classList.add('hidden');
   document.getElementById('kiosk-setup').classList.add('hidden');
   document.getElementById('kiosk-copy-status').textContent='';
@@ -8252,6 +8328,7 @@ function mind24ResetUiBlockers(){
 }
 function showView(name) {
   if(!canAccessView(name))return;
+  mind24NotifClose(false);
   if(name!=='dash-kiosk-clock') kioskOnLeave();
   const mobileMenuWasOpen=Boolean(mind24AdminMenuView);
   mind24AdminSetMenuOpen(false);
@@ -8267,6 +8344,7 @@ function showView(name) {
     const adminModule=t?.classList.contains('admin-module');
     MIND24_ALL_VIEW_ELS.forEach(function(el){ if(el!==t)el.classList.add('hidden'); });
     mind24AdminSidebar.classList.toggle('hidden',!adminModule);
+    mind24AdminPlaceBell(adminModule||name==='dash-admin'?t:null);
     if(t){
       t.classList.remove('hidden');
       if(adminModule){
@@ -22721,6 +22799,7 @@ function mind24NotifUpdateBadges(count){
   document.querySelectorAll('.mind24-notif-bell').forEach(function(btn){
     const badge=btn.querySelector('.mind24-notif-badge');
     btn.classList.toggle('mind24-notif-has-unread',n>0);
+    btn.setAttribute('aria-label',n===0?'Notificaciones':n===1?'Notificaciones, 1 sin leer':'Notificaciones, '+n+' sin leer');
     if(badge){
       if(n>0){ badge.textContent=n>99?'99+':String(n); badge.classList.remove('hidden'); }
       else badge.classList.add('hidden');
@@ -22741,7 +22820,8 @@ function mind24NotifPositionPopover(){
   if(!pop||!btn||pop.classList.contains('hidden')) return;
   const r=btn.getBoundingClientRect();
   const w=pop.offsetWidth||360;
-  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  const desiredLeft=mind24AdminSidebar.contains(btn)?r.left:r.right-w;
+  const left=Math.min(Math.max(12,desiredLeft),window.innerWidth-w-12);
   let top=r.bottom+8;
   if(top+pop.offsetHeight>window.innerHeight-12) top=Math.max(12,r.top-pop.offsetHeight-8);
   pop.style.left=left+'px';
@@ -22805,6 +22885,7 @@ async function mind24NotifOpenPopover(btn){
   mind24NotifPositionPopover();
   try{
     await mind24NotifFetchList({append:false});
+    if(mind24NotifOpen&&document.activeElement===mind24NotifAnchorBtn) pop.focus({preventScroll:true});
     await mind24NotifRefreshBadge();
   }catch(e){
     body.innerHTML='<p class="mind24-notif-empty">'+tcEsc(e.message||'No se pudieron cargar las notificaciones.')+'</p>';
