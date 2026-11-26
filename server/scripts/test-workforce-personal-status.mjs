@@ -95,7 +95,7 @@ check(!/Prototipo visual/.test(indexHtml), 'sin copia de prototipo');
 check(/POST',\{method:'POST',body:body\}/.test(indexHtml) || /method:'POST',body:body/.test(indexHtml), 'la foto se envía con FormData');
 check(/\/api\/timeclock\/public\/photo/.test(indexHtml) && /\/api\/timeclock\/public\/status/.test(indexHtml), 'la interfaz usa las rutas públicas');
 check(/textContent=text/.test(indexHtml) && /tcDirStatusBubbleHtml/.test(indexHtml) && /tcEsc\(value\)/.test(indexHtml), 'el estado se pinta como texto');
-check(/aria-label","Escribe un estado"/.test(indexHtml) || /aria-label','Escribe un estado'/.test(indexHtml), 'nombre accesible de estado vacío');
+check(/id="tc-emp-status-btn"[^>]*aria-label="Escribe un estado"/.test(indexHtml), 'nombre accesible de estado vacío');
 check(/Editar estado:/.test(indexHtml), 'nombre accesible para editar estado');
 check(!/Leer estado completo:/.test(indexHtml), 'el directorio ya no ofrece lectura expandida del estado');
 check(!/tc-dir-status-read/.test(indexHtml) && !/tcDirStatusReadOpen|tcDirStatusBind|tcDirStatusReturn/.test(indexHtml), 'sin pop-up ni listeners de lectura en Directorio');

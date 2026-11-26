@@ -172,7 +172,7 @@ const wsAppChunk=indexHtml.match(/id="tc-emp-app"[\s\S]*?id="tc-ws-panel-candida
 check(/id="tc-ws-tab-goals"/.test(wsAppChunk) && !/>\s*Novedades\s*</.test(wsAppChunk), 'tab Metas visible, Novedades solo quick action');
 check(/tcEmpWorkspaceSetTab/.test(indexHtml) && /role="tablist"/.test(indexHtml), 'tabs workspace');
 check(/tc-ws-jornada-info-tip/.test(indexHtml) && /no monitorea otras aplicaciones/.test(indexHtml), 'privacidad jornada en tooltip');
-check(/height:152px/.test(indexHtml.match(/\.tc-ws-jornada-mini[\s\S]*?\.tc-ws-jornada-mini-top/)?.[0] || ''), 'tarjeta jornada altura fija desktop');
+check(/\.tc-ws-jornada-mini\[data-jornada-mode=idle\]/.test(indexHtml) && /tcEmpJornadaSetView\('idle'\)/.test(indexHtml), 'tarjeta compacta sin jornada asignada');
 check(/tc-ws-jornada-foot/.test(indexHtml) && /tcEmpJornadaSignalHtml/.test(indexHtml), 'pie jornada estable señal');
 check(/tcEmpSyncJornadaInfoTip/.test(indexHtml) && /tc-ws-jornada-cta--in/.test(indexHtml), 'leyendas en tooltip y CTA entrada blanco');
 check(/tcEmpOpenJornadaInfoTip/.test(indexHtml) && /position:fixed/.test(indexHtml.match(/\.tc-ws-jornada-info-tip\{[\s\S]*?\}/)?.[0] || ''), 'tooltip jornada flotante sin recorte');

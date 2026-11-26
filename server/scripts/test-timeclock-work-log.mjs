@@ -366,8 +366,8 @@ check((indexHtml.match(/onclick="tcEmpSubmitWorkLog\(\)"/g) || []).length === 1,
 check((indexHtml.match(/onclick="tcAdminOpenWorkLog\(/g) || []).length === 1, 'un solo onclick de apertura admin');
 check(!empReadFn.includes('addEventListener') && !adminReadFn.includes('addEventListener') && !historyBtnFn.includes('addEventListener'), 'lectura sin listeners duplicados');
 check(/width="18" height="18"/.test(svgFn), 'SVG con width y height fijos');
-check(/\.tc-ws-jornada-work-log-btn\{[^}]*width:36px;height:36px/.test(indexHtml), 'botón 36×36');
-check(/\.tc-ws-jornada-work-log-btn svg\{[^}]*width:18px;height:18px/.test(indexHtml), 'SVG CSS 18×18');
+check(/\.tc-ws-jornada-mini :is\(\.tc-ws-jornada-work-log-btn,\.tc-ws-jornada-info\)\{[^}]*width:34px;height:34px/.test(indexHtml), 'botón de bitácora alineado con el de privacidad');
+check(/id="tc-emp-work-log-btn"[^>]*><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-list"/.test(indexHtml), 'bitácora usa el icono compartido del portal');
 check(/position:absolute/.test(indexHtml.match(/\.tc-ws-jornada-work-log-btn--done::after\{[^}]+\}/)?.[0] || ''), 'marca de enviado absoluta, sin empujar la fila');
 check(/export async function checkInRemoteWorkSession/.test(sessionSvc) && /type: 'CHECK_IN'/.test(sessionSvc), 'check-in intacto');
 check(
