@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   getRecruitmentInterviewAgenda,
   listRecruitmentInterviewAgendaPending,
+  listRecruitmentInterviewAgendaPendingHires,
 } from '../src/services/recruitmentInterviewAgenda.service.js';
 
 const org = 'org-demo';
@@ -109,4 +110,36 @@ assert.equal(nextPage.nextCursor, null);
 await assert.rejects(listRecruitmentInterviewAgendaPending({
   organizationId: org, cursor: 'invalid', db: pendingDb,
 }), { code: 'VALIDATION_ERROR' });
-console.log('Agenda de entrevistas: zona horaria, citas múltiples y antiguas, resultados y paginación OK.');
+
+const overdue = makeApp('overdue', { scheduledEmploymentStartDate: new Date('2026-11-29T00:00:00Z') });
+const hireDb = {
+  recruitmentApplication: {
+    async findMany({ where, orderBy }) {
+      assert.equal(where.organizationId, org);
+      assert.deepEqual(where.candidate, { organizationId: org, archivedAt: null });
+      assert.deepEqual(where.vacancy, { organizationId: org });
+      assert.deepEqual(where.stage, { key: 'APPROVED', isActive: true });
+      assert.equal(where.closureOutcome, null);
+      assert.equal(where.employmentStartDate, null);
+      assert.deepEqual(orderBy, [{ scheduledEmploymentStartDate: 'asc' }, { id: 'asc' }]);
+      assert.equal(where.scheduledEmploymentStartDate.lte.toISOString(), '2026-11-30T00:00:00.000Z');
+      return [overdue, approved];
+    },
+  },
+};
+const hires = await listRecruitmentInterviewAgendaPendingHires({
+  organizationId: org, now, db: hireDb, resolveTimeZone: async () => zone,
+});
+assert.equal(hires.today, '2026-11-30');
+assert.deepEqual(hires.entries.map((row) => [row.applicationId, row.scheduledDate]), [
+  ['overdue', '2026-11-29'],
+  ['approved', '2026-11-30'],
+]);
+assert.deepEqual(hires.entries[1], {
+  applicationId: 'approved',
+  candidateId: 'candidate-approved',
+  candidateName: 'Persona prueba',
+  vacancyTitle: 'Almacenista',
+  scheduledDate: '2026-11-30',
+});
+console.log('Agenda de entrevistas: zona horaria, citas, resultados, paginación e ingresos pendientes OK.');

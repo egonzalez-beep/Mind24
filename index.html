@@ -475,7 +475,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 #view-dash-recruitment #rec-pane-agenda{flex:1;min-height:0;min-width:0;overflow:auto;padding:18px 2px 24px;}
 .rec-agenda-layout{width:min(100%,1260px);margin-inline:auto;}
 .rec-agenda-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,1fr);gap:16px;align-items:start;}
-.rec-agenda-main{display:grid;align-content:start;gap:14px;min-width:0;}
+.rec-agenda-main,.rec-agenda-side{display:grid;align-content:start;gap:14px;min-width:0;}
 .rec-agenda-panel{min-width:0;border:1px solid #e5ddfa;border-radius:16px;background:linear-gradient(180deg,#f7f3ff 0,#fff 92px);padding:14px;}
 .rec-agenda-pending{border-color:#f0e5d2;background:linear-gradient(180deg,#fff8eb 0,#fff 86px);}
 .rec-agenda-month,.rec-agenda-section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
@@ -502,7 +502,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-count:empty{display:none;}
 .rec-agenda-count{font-size:11px;padding:3px 7px;}
 .rec-agenda-list{display:grid;gap:7px;align-content:start;}
-#rec-agenda-pending-list{max-height:min(58vh,560px);max-height:min(58dvh,560px);overflow:auto;padding:3px 5px 3px 3px;scroll-padding:5px;scrollbar-width:thin;scrollbar-color:#c4b5fd transparent;}
+#rec-agenda-pending-list{max-height:min(42dvh,440px);overflow:auto;padding:3px 5px 3px 3px;scroll-padding:5px;scrollbar-width:thin;scrollbar-color:#c4b5fd transparent;}
 #rec-agenda-pending-list:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .rec-agenda-row{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px;transition:border-color .15s,background .15s;}
 .rec-agenda-row:hover,.rec-agenda-row:focus-within{border-color:#c4b5fd;background:#fcfaff;}
@@ -533,9 +533,24 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-agenda-message button{margin-left:6px;}
 .rec-agenda-empty{margin:0;padding:14px 10px;border-radius:10px;background:var(--slate-50);color:var(--slate-600);font-size:13px;}
 .rec-agenda-more{margin-top:10px;}
+.rec-agenda-hires .rec-agenda-section-head{margin-bottom:9px;}
+.rec-agenda-hires-heading{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.rec-agenda-hires h2{font-size:14px;color:var(--purple-deep);}
+.rec-agenda-hire-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--purple-border);border-radius:11px;background:#fff;}
+.rec-agenda-hire-summary{display:grid;gap:3px;min-width:0;}
+.rec-agenda-hire-date{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--purple-dark);font-size:11px;font-weight:700;}
+.rec-agenda-hire-date .admin-nav-icon{width:14px;height:14px;}
+.rec-agenda-hire-card .rec-stages-ghost-btn{white-space:nowrap;}
+.rec-agenda-hire-nav{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:7px;}
+.rec-agenda-hire-nav .rec-carousel-arrow{width:30px;height:30px;}
+.rec-agenda-hire-pos{min-width:43px;color:var(--slate-600);font-size:11px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;}
+.rec-agenda-hires .rec-agenda-empty{padding:8px 10px;font-size:12px;}
 .rec-agenda-jump{display:none;}
 .rec-agenda-nav .rec-agenda-jump{border-color:#ddd6fe;background:#f3eeff;color:var(--purple-dark);padding:0 7px;white-space:nowrap;}
 .rec-iv-agenda-context{margin:0 0 10px;color:var(--slate-600);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+@media(min-width:901px){
+  #rec-agenda-pending-list{max-height:clamp(150px,calc(100dvh - 450px),440px);}
+}
 @media(max-width:900px){
   .rec-agenda-layout{grid-template-columns:minmax(0,1fr);}
   .rec-agenda-jump{display:inline-flex;align-items:center;flex:none;}
@@ -1262,7 +1277,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-cal-hire{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 2px #fff;}
 .rec-metrics-insights-list{display:flex;flex-direction:column;gap:10px;}
 .rec-metrics-insight{display:flex;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--slate-100);background:linear-gradient(180deg,#fff,rgba(248,250,252,.6));}
-.rec-metrics-insight--trend{border-color:rgba(148,163,184,.28);box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.rec-metrics-insight--trend{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;row-gap:8px;border-color:rgba(148,163,184,.28);box-shadow:0 1px 2px rgba(15,23,42,.04);}
 .rec-metrics-insight--trend-green{border-color:rgba(34,197,94,.28);background:linear-gradient(180deg,#fff,rgba(240,253,244,.75));}
 .rec-metrics-insight--trend-coral{border-color:rgba(248,113,113,.28);background:linear-gradient(180deg,#fff,rgba(255,241,242,.75));}
 .rec-metrics-insight--trend-blue{border-color:rgba(59,130,246,.22);background:linear-gradient(180deg,#fff,rgba(239,246,255,.75));}
@@ -1287,17 +1302,17 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-trend-detail-btn[aria-expanded="true"]{border-color:rgba(124,58,237,.28);background:rgba(245,243,255,.7);color:var(--purple-dark);}
 .rec-metrics-trend-detail-chevron{width:14px;height:14px;flex-shrink:0;display:block;transition:transform .18s ease;}
 .rec-metrics-trend-detail-btn[aria-expanded="true"] .rec-metrics-trend-detail-chevron{transform:rotate(180deg);}
-.rec-metrics-trend-detail{margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;}
+.rec-metrics-trend-detail{grid-column:1/-1;padding:8px 10px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;}
 .rec-metrics-trend-detail[hidden]{display:none!important;}
 .rec-metrics-trend-signal-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
-.rec-metrics-trend-signal{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;font-size:11px;font-weight:600;color:var(--slate-600);line-height:1.3;}
-.rec-metrics-trend-signal-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-metrics-trend-signal{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px;min-width:0;font-size:11px;font-weight:600;color:var(--slate-700);line-height:1.35;}
+.rec-metrics-trend-signal-name{min-width:0;overflow-wrap:anywhere;}
 .rec-metrics-trend-signal-status{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;font-size:10px;font-weight:700;color:var(--slate-500);}
 .rec-metrics-trend-signal-status svg{width:12px;height:12px;stroke-width:2;flex-shrink:0;}
 .rec-metrics-trend-signal-status--up{color:#16A34A;}
 .rec-metrics-trend-signal-status--down{color:#E11D48;}
 .rec-metrics-trend-signal-status--stable{color:#2563EB;}
-.rec-metrics-trend-signal-status--none{color:var(--slate-400);}
+.rec-metrics-trend-signal-status--none{color:var(--slate-500);}
 .rec-metrics-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-200);font-size:11px;font-weight:600;color:var(--slate-500);flex-wrap:wrap;}
 #view-dash-recruitment .rec-pipeline-slot{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 #view-dash-recruitment .rec-pipeline-slot .rec-kanban-board{flex:1;min-height:0;align-items:stretch;}
@@ -5113,11 +5128,11 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-search"/></svg>
             <input type="search" id="rec-cand-q" class="rec-global-search form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos" maxlength="120">
           </div>
-          <button type="button" class="rec-cand-filter-toggle" id="rec-cand-filter-toggle" aria-expanded="false" aria-controls="rec-cand-filter-panel" onclick="recCandSetFilterPanel(this.getAttribute('aria-expanded')==='false')">
+          <button type="button" class="rec-cand-filter-toggle" id="rec-cand-filter-toggle" aria-expanded="true" aria-controls="rec-cand-filter-panel" onclick="recCandSetFilterPanel(this.getAttribute('aria-expanded')==='false')">
             <svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path class="rec-cand-filter-plus" d="M12 5v14"/></svg><span>Filtros</span><span class="rec-cand-filter-count hidden" id="rec-cand-filter-count"></span>
           </button>
           <button type="button" class="rec-btn-new" id="rec-cand-new" onclick="recCandOpenForm('create')"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg><span>Nuevo candidato</span></button>
-          <div class="rec-cand-filter-panel hidden" id="rec-cand-filter-panel">
+          <div class="rec-cand-filter-panel" id="rec-cand-filter-panel">
             <div class="rec-cand-toolbar-filters" id="rec-cand-filter-bar">
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-profile" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-source" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
@@ -5162,12 +5177,27 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
               <div class="rec-agenda-list" id="rec-agenda-day-list"></div>
             </section>
           </div>
-          <aside class="rec-agenda-panel rec-agenda-pending" aria-labelledby="rec-agenda-pending-title">
-            <div class="rec-agenda-section-head"><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2></div>
-            <div class="rec-agenda-list" id="rec-agenda-pending-list" role="region" aria-labelledby="rec-agenda-pending-title" tabindex="0"></div>
-            <p id="rec-agenda-pending-status" class="rec-agenda-message" aria-live="polite"></p>
-            <button type="button" class="rec-stages-ghost-btn rec-agenda-more hidden" id="rec-agenda-more" onclick="recAgendaLoadPending(true)">Cargar más postulaciones</button>
-          </aside>
+          <div class="rec-agenda-side">
+            <section class="rec-agenda-panel rec-agenda-pending" aria-labelledby="rec-agenda-pending-title">
+              <div class="rec-agenda-section-head"><h2 id="rec-agenda-pending-title" tabindex="-1">Sin cita programada</h2></div>
+              <div class="rec-agenda-list" id="rec-agenda-pending-list" role="region" aria-labelledby="rec-agenda-pending-title" tabindex="0"></div>
+              <p id="rec-agenda-pending-status" class="rec-agenda-message" aria-live="polite"></p>
+              <button type="button" class="rec-stages-ghost-btn rec-agenda-more hidden" id="rec-agenda-more" onclick="recAgendaLoadPending(true)">Cargar más postulaciones</button>
+            </section>
+            <section class="rec-agenda-panel rec-agenda-hires" aria-labelledby="rec-agenda-hires-title">
+              <div class="rec-agenda-section-head rec-agenda-hires-heading">
+                <h2 id="rec-agenda-hires-title" tabindex="-1">Ingresos pendientes por confirmar</h2>
+                <span id="rec-agenda-hires-total" class="rec-agenda-count" aria-live="polite"></span>
+              </div>
+              <div id="rec-agenda-hires-card" aria-live="polite"></div>
+              <div class="rec-agenda-hire-nav hidden" id="rec-agenda-hires-nav" role="group" aria-label="Navegar ingresos pendientes">
+                <button type="button" class="rec-carousel-arrow" id="rec-agenda-hires-prev" aria-label="Ingreso anterior" onclick="recAgendaMovePendingHire(-1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+                <span class="rec-agenda-hire-pos" id="rec-agenda-hires-pos"></span>
+                <button type="button" class="rec-carousel-arrow" id="rec-agenda-hires-next" aria-label="Siguiente ingreso" onclick="recAgendaMovePendingHire(1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+              </div>
+              <p id="rec-agenda-hires-status" class="rec-agenda-message" aria-live="polite"></p>
+            </section>
+          </div>
         </div>
       </section>
       <div id="rec-pane-metrics" class="hidden rec-metrics-page">
@@ -8419,7 +8449,7 @@ function showView(name) {
     recKanbanAutoScrollStop();
   }
   if(name!=='dash-recruitment'&&window.__REC_STATE?.moduleTab==='agenda') recAgendaAbort();
-  if(name!=='dash-recruitment'&&window.__REC_STATE?.moduleTab==='candidates') recCandSetFilterPanel(false);
+  if(name!=='dash-recruitment'&&window.__REC_STATE?.candMsOpen) recCandMsCancel(false);
   if(name!=='evaluacion') mind24ResetUiBlockers();
   mind24PersistLastView(name);
   const t=mind24ViewEl(name);
@@ -15699,7 +15729,7 @@ function recSwitchModuleTab(tab){
   if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const st=recEnsureState();
   if(st.moduleTab==='agenda'&&tab!=='agenda') recAgendaAbort();
-  if(st.moduleTab==='candidates'&&tab!=='candidates') recCandSetFilterPanel(false);
+  if(tab!=='candidates'&&st.candMsOpen) recCandMsCancel(false);
   st.moduleTab=['candidates','metrics','agenda'].includes(tab)?tab:'vacancies';
   const vacPane=document.getElementById('rec-pane-vacancies');
   const candPane=document.getElementById('rec-pane-candidates');
@@ -15735,7 +15765,8 @@ function recAgendaState(){
   if(!st.agenda) st.agenda={
     month:'', selected:'', today:'', timeZone:'America/Mexico_City',
     entries:[], pending:[], nextCursor:null, monthRequest:null, pendingRequest:null,
-    calendarReady:false, pendingReady:false
+    calendarReady:false, pendingReady:false,
+    pendingHires:[], hireIndex:0, hiresToday:'', hiresRequest:null
   };
   return st.agenda;
 }
@@ -15748,6 +15779,7 @@ function recAgendaAbort(){
   const a=recAgendaState();
   a.monthRequest?.abort();
   a.pendingRequest?.abort();
+  a.hiresRequest?.abort();
 }
 function recAgendaDateLabel(date,options){
   const label=new Intl.DateTimeFormat('es-MX',Object.assign({timeZone:'UTC'},options))
@@ -15951,9 +15983,71 @@ async function recAgendaLoadPending(append){
     }
   }
 }
+function recAgendaPaintPendingHires(){
+  const a=recAgendaState();
+  const total=a.pendingHires.length;
+  const row=a.pendingHires[a.hireIndex];
+  const count=document.getElementById('rec-agenda-hires-total');
+  count.textContent=a.hiresToday?total:'';
+  if(a.hiresToday) count.setAttribute('aria-label',total+' ingresos pendientes');
+  const date=row?recAgendaDateLabel(row.scheduledDate,{day:'numeric',month:'short',year:'numeric'}):'';
+  const html=row?
+    '<article class="rec-agenda-hire-card" data-entry="'+tcEsc(row.applicationId)+'">'+
+    '<div class="rec-agenda-hire-summary">'+
+    '<span class="rec-agenda-hire-date"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-calendar"/></svg>'+
+    tcEsc((row.scheduledDate===a.hiresToday?'Hoy · ':'')+date)+'</span>'+
+    '<strong class="rec-agenda-row-title">'+tcEsc(row.candidateName)+'</strong>'+
+    '<span class="rec-agenda-row-sub">'+tcEsc(row.vacancyTitle)+'</span></div>'+
+    '<button type="button" class="rec-stages-ghost-btn" onclick="recAgendaOpenFile(this)" aria-label="'+tcEsc('Ver ficha de '+row.candidateName)+'">Ver ficha</button></article>':
+    (a.hiresToday?'<p class="rec-agenda-empty">No hay ingresos por confirmar.</p>':'');
+  recAgendaPaintList('rec-agenda-hires-card',html,'rec-agenda-hires-title');
+  const nav=document.getElementById('rec-agenda-hires-nav');
+  const prev=document.getElementById('rec-agenda-hires-prev');
+  const next=document.getElementById('rec-agenda-hires-next');
+  const active=document.activeElement;
+  nav.classList.toggle('hidden',total<2);
+  document.getElementById('rec-agenda-hires-pos').textContent=total?(a.hireIndex+1)+' de '+total:'';
+  prev.disabled=a.hireIndex===0;
+  next.disabled=a.hireIndex>=total-1;
+  if(nav.contains(active)&&(total<2||active.disabled)){
+    const fallback=total<2?document.getElementById('rec-agenda-hires-title'):(active===prev?next:prev);
+    fallback.focus({preventScroll:true});
+  }
+}
+function recAgendaMovePendingHire(delta){
+  const a=recAgendaState();
+  const index=a.hireIndex+delta;
+  if(index<0||index>=a.pendingHires.length) return;
+  a.hireIndex=index;
+  recAgendaPaintPendingHires();
+}
+async function recAgendaLoadPendingHires(){
+  const a=recAgendaState();
+  a.hiresRequest?.abort();
+  const controller=new AbortController();
+  a.hiresRequest=controller;
+  const status='rec-agenda-hires-status';
+  if(!a.hiresToday) recAgendaSetStatus(status,'Cargando ingresos…');
+  try{
+    const data=await apiJson('/api/org/recruitment/interview-agenda/pending-hires',{signal:controller.signal});
+    if(controller.signal.aborted) return;
+    const applicationId=a.pendingHires[a.hireIndex]?.applicationId;
+    a.pendingHires=data.entries;
+    a.hiresToday=data.today;
+    const sameIndex=a.pendingHires.findIndex(function(row){ return row.applicationId===applicationId; });
+    a.hireIndex=sameIndex>=0?sameIndex:Math.max(0,Math.min(a.hireIndex,a.pendingHires.length-1));
+    recAgendaSetStatus(status,'');
+    recAgendaPaintPendingHires();
+  }catch(e){
+    if(controller.signal.aborted||e?.name==='AbortError') return;
+    recAgendaSetStatus(status,e.message||'No se pudieron cargar los ingresos.',recAgendaLoadPendingHires);
+  }finally{
+    if(a.hiresRequest===controller) a.hiresRequest=null;
+  }
+}
 async function recAgendaRefresh(date){
   const a=recAgendaState();
-  await Promise.all([recAgendaLoadMonth(date?date.slice(0,7):a.month,date),recAgendaLoadPending(false)]);
+  await Promise.all([recAgendaLoadMonth(date?date.slice(0,7):a.month,date),recAgendaLoadPending(false),recAgendaLoadPendingHires()]);
 }
 function recAgendaMoveMonth(delta){
   const a=recAgendaState();
@@ -15977,7 +16071,8 @@ function recAgendaGoToday(){
 function recAgendaFindRow(button){
   const a=recAgendaState();
   const key=button.closest('[data-entry]')?.dataset.entry;
-  return a.entries.concat(a.pending).find(function(row){return recAgendaRowKey(row)===key;});
+  const rows=button.closest('#rec-agenda-hires-card')?a.pendingHires:a.entries.concat(a.pending);
+  return rows.find(function(row){return recAgendaRowKey(row)===key;});
 }
 function recAgendaOpenFile(button){
   const row=recAgendaFindRow(button);
@@ -16216,10 +16311,10 @@ function recMetricsTrendIconKey(icon){
 }
 function recMetricsTrendSignalRow(signal){
   const key=signal&&signal.key;
-  const names={hired:'Contrataciones',registrations:'Registros',rejectionShare:'Rechazos',coverageDays:'Cobertura'};
+  const names={hired:'Contrataciones',registrations:'Registros',rejectionShare:'Participación de rechazos',coverageDays:'Tiempo promedio de cobertura'};
   const name=names[key]||(signal&&signal.label)||'Señal';
   let statusKey='none';
-  let statusText='Datos insuficientes';
+  let statusText='Sin comparar';
   let iconKey='trendInfo';
   if(signal&&signal.eligible){
     if(signal.score===1){ statusKey='up'; statusText='Mejoró'; iconKey='trendUp'; }
@@ -16230,7 +16325,8 @@ function recMetricsTrendSignalRow(signal){
     '<span class="rec-metrics-trend-signal-name">'+tcEsc(name)+'</span>'+
     '<span class="rec-metrics-trend-signal-status rec-metrics-trend-signal-status--'+statusKey+'">'+
     '<span aria-hidden="true">'+recMetricsIcon(iconKey)+'</span>'+
-    '<span>'+tcEsc(statusText)+'</span></span></li>';
+    (statusKey==='none'?'<span title="Datos insuficientes para comparar">':'<span>')+
+    tcEsc(statusText)+'</span></span></li>';
 }
 function recMetricsRenderTrendInsight(trend){
   if(!trend||!trend.status) return '';
@@ -16251,17 +16347,16 @@ function recMetricsRenderTrendInsight(trend){
   const rows=order.map(function(k){
     return recMetricsTrendSignalRow(byKey[k]||{ key:k, eligible:false, score:null });
   }).join('');
-  const detailHtml=recMetricsTrendDetailBtnHtml(false,detailId)+
-    '<div id="'+detailId+'" class="rec-metrics-trend-detail" hidden><ul class="rec-metrics-trend-signal-list">'+rows+'</ul></div>';
+  const detailHtml='<div id="'+detailId+'" class="rec-metrics-trend-detail" hidden><ul class="rec-metrics-trend-signal-list">'+rows+'</ul></div>';
   const compare=trend.comparisonLabel
     ?('<span class="rec-metrics-insight-compare">'+tcEsc(trend.comparisonLabel)+'</span>')
     :'';
   return '<div class="rec-metrics-insight rec-metrics-insight--trend rec-metrics-insight--trend-'+tone+'" data-trend-status="'+tcEsc(trend.status)+'">'+
     '<span class="rec-metrics-insight-icon rec-metrics-insight-icon--'+tone+'" aria-hidden="true">'+recMetricsIcon(icon)+'</span>'+
     '<div class="rec-metrics-insight-body">'+
-    '<p class="rec-metrics-insight-title">'+tcEsc(trend.title||'Tendencia')+'</p>'+
-    compare+reasonsHtml+eligibleHtml+detailHtml+
-    '</div></div>';
+    '<p class="rec-metrics-insight-title">'+tcEsc(trend.status==='INSUFFICIENT'?'Sin tendencia':trend.title||'Tendencia')+'</p>'+
+    compare+reasonsHtml+eligibleHtml+recMetricsTrendDetailBtnHtml(false,detailId)+
+    '</div>'+detailHtml+'</div>';
 }
 function recMetricsRenderInsights(insights,trend){
   const trendHtml=recMetricsRenderTrendInsight(trend);
@@ -16275,7 +16370,7 @@ function recMetricsRenderInsights(insights,trend){
         '<div class="rec-metrics-insight-body"><p class="rec-metrics-insight-title">'+tcEsc(ins.title)+'</p>'+
         '<p class="rec-metrics-insight-text">'+tcEsc(ins.body)+'</p></div></div>';
     }).join('');
-  if(!trendHtml&&!rest) return '<p class="rec-metrics-kpi-sub" style="margin:0;">Sin insights destacados para este mes.</p>';
+  if(!trendHtml&&!rest) return '<p class="rec-metrics-kpi-sub" style="margin:0;">Sin destacados este mes.</p>';
   return trendHtml+rest;
 }
 function recMetricsMount(host){
@@ -16290,7 +16385,7 @@ function recMetricsMount(host){
     '<button type="button" class="rec-metrics-month-btn" id="rec-metrics-next" aria-label="Mes siguiente" onclick="recMetricsChangeMonth(1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>'+
     '</div></div>'+
     '<p class="rec-metrics-status" role="status"></p><div class="rec-metrics-cal-legend"></div><div class="rec-metrics-cal-grid"></div></section>'+
-    '<aside class="rec-metrics-panel rec-metrics-insights hidden"><h3 class="rec-metrics-panel-title" style="margin-bottom:12px;">Insights del mes</h3>'+
+    '<aside class="rec-metrics-panel rec-metrics-insights hidden"><h3 class="rec-metrics-panel-title" style="margin-bottom:12px;">Highlights del mes</h3>'+
     '<div class="rec-metrics-insights-list"></div></aside></div>'+
     '<footer class="rec-metrics-footer"></footer>';
 }

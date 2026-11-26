@@ -191,8 +191,7 @@ if (!executablePath) {
     const filterToggle = document.getElementById('rec-cand-filter-toggle');
     const filterPanel = document.getElementById('rec-cand-filter-panel');
     const filterBadge = document.getElementById('rec-cand-filter-count');
-    const initiallyCollapsed = filterToggle.getAttribute('aria-expanded') === 'false' && filterPanel.classList.contains('hidden');
-    filterToggle.click();
+    const initiallyOpen = filterToggle.getAttribute('aria-expanded') === 'true' && !filterPanel.classList.contains('hidden');
     const clearAtStart = document.getElementById('rec-cand-clear-filters').disabled
       && document.getElementById('rec-cand-clear-filters').title === 'Limpiar filtros'
       && document.getElementById('rec-cand-archived').title === 'Ver archivados';
@@ -308,7 +307,7 @@ if (!executablePath) {
       && !sessionStorage.getItem(recCandFilterStorageKey('org-a'));
     return {
       profileSummary,
-      initiallyCollapsed,
+      initiallyOpen,
       collapsedWithSelection,
       clearAtStart,
       afterCancel,
@@ -342,7 +341,7 @@ if (!executablePath) {
   });
 
   check(ui.profileSummary === '2 seleccionados', 'Aplicar confirma la selección en el botón');
-  check(ui.initiallyCollapsed && ui.collapsedWithSelection, 'Filtros inicia cerrado, conserva el recuento al contraerse y devuelve el foco con Escape');
+  check(ui.initiallyOpen && ui.collapsedWithSelection, 'Filtros inicia abierto, conserva el recuento al contraerse y devuelve el foco con Escape');
   check(ui.clearAtStart && ui.afterCancel && ui.afterOutsideDraft, 'Limpiar nace deshabilitado; Cancelar y clic fuera revierten lo no aplicado');
   check(ui.allComplete && ui.allCount === REC_SOURCE_COUNT(indexHtml) && ui.afterOne.draft === ui.allCount - 1 && ui.afterOne.indeterminate, 'Seleccionar todo queda completo y, al desmarcar una, indeterminado');
   check(ui.tagSafe.nodes === 0 && ui.tagSafe.text, 'etiquetas y texto peligroso se pintan como texto');

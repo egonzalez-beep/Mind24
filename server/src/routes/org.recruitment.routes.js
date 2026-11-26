@@ -102,7 +102,11 @@ import {
   removeRecruitmentCandidateTagAssignment,
 } from '../services/recruitmentCandidateTag.service.js';
 
-import { getRecruitmentInterviewAgenda, listRecruitmentInterviewAgendaPending } from '../services/recruitmentInterviewAgenda.service.js';
+import {
+  getRecruitmentInterviewAgenda,
+  listRecruitmentInterviewAgendaPending,
+  listRecruitmentInterviewAgendaPendingHires,
+} from '../services/recruitmentInterviewAgenda.service.js';
 
 const router = Router();
 
@@ -1034,6 +1038,15 @@ router.get('/interview-agenda/pending', async (req, res, next) => {
     const u = await assertEmpresaAdmin(req.session.userId);
     const { cursor } = z.object({ cursor: z.string().max(160).optional() }).parse(req.query);
     res.json(await listRecruitmentInterviewAgendaPending({ organizationId: u.organizationId, cursor }));
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/interview-agenda/pending-hires', async (req, res, next) => {
+  try {
+    const u = await assertEmpresaAdmin(req.session.userId);
+    res.json(await listRecruitmentInterviewAgendaPendingHires({ organizationId: u.organizationId }));
   } catch (e) {
     next(e);
   }

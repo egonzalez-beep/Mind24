@@ -1509,6 +1509,9 @@ async function runVisual() {
         collapsedLabel,
         openLabel,
         rows,
+        namesCanWrap: [...panel.querySelectorAll('.rec-metrics-trend-signal-name')].every((label) =>
+          getComputedStyle(label).whiteSpace === 'normal' && getComputedStyle(label).textOverflow !== 'ellipsis' &&
+          label.scrollWidth <= label.clientWidth + 1),
         reasonsDup,
         hasStatusIcons,
         overflow: document.documentElement.scrollWidth - window.innerWidth,
@@ -1523,9 +1526,11 @@ async function runVisual() {
     check(
       trendUi.rows.length === 4 &&
         /Contrataciones.*Mejoró/i.test(trendUi.rows[0] || '') &&
-        /Cobertura.*Datos insuficientes/i.test(trendUi.rows[3] || ''),
+        /Participación de rechazos/i.test(trendUi.rows[2] || '') &&
+        /Tiempo promedio de cobertura.*Sin comparar/i.test(trendUi.rows[3] || ''),
       'detalle muestra 4 filas de señales',
     );
+    check(trendUi.namesCanWrap, 'los nombres de los indicadores se leen completos');
     check(
       await page.evaluate(() => {
         const host = document.getElementById('rec-metrics-host');

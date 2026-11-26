@@ -1,6 +1,7 @@
 import { prisma } from '../db/client.js';
 import { resolveOrganizationIanaTimezone } from './organizationTimezone.service.js';
 import { localDateKey, localMidnightUtc } from './remoteWorkSessionHistory.service.js';
+import { employmentStartDateToPrisma, serializeEmploymentStartDate } from './recruitmentApplication.service.js';
 import { classifyRecruitmentApplication } from './recruitmentProcessClosure.service.js';
 import { APPROVED_STAGE_KEY, INTERVIEW_NO_SHOW_STAGE_KEY } from './recruitmentStage.service.js';
 import {
@@ -153,4 +154,39 @@ export async function listRecruitmentInterviewAgendaPending({ organizationId, cu
     ? Buffer.from(JSON.stringify([last.appliedAt, last.applicationId])).toString('base64url')
     : null;
   return { entries, nextCursor };
+}
+
+export async function listRecruitmentInterviewAgendaPendingHires({
+  organizationId, now = new Date(), db = prisma, resolveTimeZone = resolveOrganizationIanaTimezone,
+}) {
+  const timeZone = await resolveTimeZone(organizationId);
+  const today = localDateKey(now, timeZone);
+  const scope = applicationScope(organizationId);
+  const rows = await db.recruitmentApplication.findMany({
+    where: {
+      ...scope,
+      candidate: { ...scope.candidate, archivedAt: null },
+      stage: { key: APPROVED_STAGE_KEY, isActive: true },
+      closureOutcome: null,
+      employmentStartDate: null,
+      scheduledEmploymentStartDate: { lte: employmentStartDateToPrisma(today) },
+    },
+    select: {
+      id: true,
+      scheduledEmploymentStartDate: true,
+      candidate: { select: { id: true, fullName: true } },
+      vacancy: { select: { title: true } },
+    },
+    orderBy: [{ scheduledEmploymentStartDate: 'asc' }, { id: 'asc' }],
+  });
+  return {
+    today,
+    entries: rows.map((app) => ({
+      applicationId: app.id,
+      candidateId: app.candidate.id,
+      candidateName: app.candidate.fullName,
+      vacancyTitle: app.vacancy.title,
+      scheduledDate: serializeEmploymentStartDate(app.scheduledEmploymentStartDate),
+    })),
+  };
 }
