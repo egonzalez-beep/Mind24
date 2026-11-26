@@ -119,10 +119,7 @@ let badCursor = false;
 try { buildCandidateListWhere('org-1', { cursor: 'no-es-un-cursor' }); } catch (err) { badCursor = err.code === 'VALIDATION_ERROR'; }
 check(badCursor, 'un cursor inválido se rechaza');
 
-const catalogSrc = candidateSvc.slice(
-  candidateSvc.indexOf('export async function listCandidateDirectoryFilterOptions'),
-  candidateSvc.indexOf('export async function findPotentialDuplicateRecruitmentCandidates'),
-);
+const catalogSrc = candidateSvc.match(/^export async function listCandidateDirectoryFilterOptions\([\s\S]*?^}/m)?.[0] || '';
 check(!/archivedAt|candFilters/.test(catalogSrc) && /organizationId/.test(catalogSrc), 'reclutador y vacante se arman con toda la organización, incluidos los archivados');
 const assertSrc = candidateSvc.slice(
   candidateSvc.indexOf('async function assertIdsInOrg'),
@@ -191,6 +188,11 @@ if (!executablePath) {
     if (view) view.classList.remove('hidden');
     if (pane) pane.classList.remove('hidden');
     recCandBindFilters();
+    const filterToggle = document.getElementById('rec-cand-filter-toggle');
+    const filterPanel = document.getElementById('rec-cand-filter-panel');
+    const filterBadge = document.getElementById('rec-cand-filter-count');
+    const initiallyCollapsed = filterToggle.getAttribute('aria-expanded') === 'false' && filterPanel.classList.contains('hidden');
+    filterToggle.click();
     const clearAtStart = document.getElementById('rec-cand-clear-filters').disabled
       && document.getElementById('rec-cand-clear-filters').title === 'Limpiar filtros'
       && document.getElementById('rec-cand-archived').title === 'Ver archivados';
@@ -205,6 +207,11 @@ if (!executablePath) {
     openAndPick('rec-cand-profile', ['Ventas', 'Administrativo']);
     document.getElementById('rec-cand-ms-apply').click();
     const profileSummary = document.querySelector('#rec-cand-profile .rec-cand-ms-value').textContent;
+    document.getElementById('rec-cand-profile').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const collapsedWithSelection = filterToggle.getAttribute('aria-expanded') === 'false'
+      && filterPanel.classList.contains('hidden') && document.activeElement === filterToggle
+      && !filterBadge.classList.contains('hidden') && filterBadge.textContent === '1';
+    filterToggle.click();
     recCandMsOpen('rec-cand-profile');
     const dropVentas = document.querySelector('#rec-cand-ms-menu [data-rec-ms-value="Ventas"]');
     dropVentas.checked = false;
@@ -296,10 +303,13 @@ if (!executablePath) {
       && recCandBuildListQuery(recEnsureState(), null).indexOf('archivedOnly') < 0
       && document.getElementById('rec-cand-q').value === ''
       && document.getElementById('rec-cand-clear-filters').disabled
+      && filterBadge.classList.contains('hidden')
       && document.getElementById('rec-cand-archived').getAttribute('aria-pressed') === 'false'
       && !sessionStorage.getItem(recCandFilterStorageKey('org-a'));
     return {
       profileSummary,
+      initiallyCollapsed,
+      collapsedWithSelection,
       clearAtStart,
       afterCancel,
       afterOutsideDraft,
@@ -332,6 +342,7 @@ if (!executablePath) {
   });
 
   check(ui.profileSummary === '2 seleccionados', 'Aplicar confirma la selección en el botón');
+  check(ui.initiallyCollapsed && ui.collapsedWithSelection, 'Filtros inicia cerrado, conserva el recuento al contraerse y devuelve el foco con Escape');
   check(ui.clearAtStart && ui.afterCancel && ui.afterOutsideDraft, 'Limpiar nace deshabilitado; Cancelar y clic fuera revierten lo no aplicado');
   check(ui.allComplete && ui.allCount === REC_SOURCE_COUNT(indexHtml) && ui.afterOne.draft === ui.allCount - 1 && ui.afterOne.indeterminate, 'Seleccionar todo queda completo y, al desmarcar una, indeterminado');
   check(ui.tagSafe.nodes === 0 && ui.tagSafe.text, 'etiquetas y texto peligroso se pintan como texto');

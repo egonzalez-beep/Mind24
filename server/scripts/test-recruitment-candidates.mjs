@@ -415,7 +415,7 @@ console.log('\n=== Recruitment 1H.1 — cartera de talento (estático) ===\n');
 
 const candPaneBlock = indexHtml.match(/id="rec-pane-candidates"[\s\S]*?id="rec-cand-list-kicker"/)?.[0] || '';
 check(!/Cartera de talento/.test(candPaneBlock) && !/rec-cand-head-row/.test(candPaneBlock), 'sin título cartera en vista');
-check(/rec-topbar-cand-tools/.test(indexHtml) && /\+ Nuevo candidato/.test(indexHtml), 'CTA nuevo candidato en topbar');
+check(/id="rec-pane-candidates"[\s\S]*?id="rec-cand-new"[^>]*>[\s\S]*?<span>Nuevo candidato<\/span>[\s\S]*?id="rec-cand-filter-panel"/.test(indexHtml), 'CTA nuevo candidato visible junto a los filtros');
 check(/archivedOnly/.test(indexHtml.match(/function recCandBuildListQuery[\s\S]*?^function /m)?.[0] || ''), 'query archivedOnly');
 check(/archivedOnly/.test(routes) && /archivedAt:\s*\{\s*not:\s*null\s*\}/.test(candidateSvc), 'backend solo archivados');
 check(/rec-cand-toolbar/.test(indexHtml) && /rec-cand-clear-filters/.test(indexHtml), 'toolbar y limpiar filtros');

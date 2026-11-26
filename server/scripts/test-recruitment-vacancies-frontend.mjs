@@ -124,7 +124,7 @@ console.log('\n=== Recruitment 1D.2 — cartera candidatos ===\n');
 
 check(/data-admin-rec-toggle[^>]*aria-controls="admin-rec-sections"/.test(indexHtml), 'Reclutamiento despliega sus secciones');
 check(/recSwitchModuleTab/.test(indexHtml), 'switch módulo recruitment');
-check(/rec-topbar-cand-tools/.test(indexHtml), 'CTA candidatos en topbar');
+check(/id="rec-pane-candidates"[\s\S]*?id="rec-cand-new"[\s\S]*?id="rec-pane-agenda"/.test(indexHtml), 'CTA en el panel de candidatos');
 check(/id="rec-cand-archived"/.test(indexHtml) && /Ver archivados/.test(indexHtml) && /aria-pressed/.test(indexHtml), 'botón archivados');
 check(/recCandLoadList/.test(indexHtml), 'paginación cartera');
 check(/modal-rec-candidate-detail/.test(indexHtml), 'modal ficha candidato');

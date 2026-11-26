@@ -470,7 +470,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-dash-topbar{height:auto;min-height:56px;padding:8px 28px;flex-wrap:wrap;gap:8px 12px;}
 .rec-topbar-cluster{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;min-width:0;}
 .rec-topbar-cluster .topbar-title{margin:0;line-height:1.2;}
-.rec-topbar-vac-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;flex-wrap:wrap;}
 .rec-global-search{width:min(280px,42vw);min-width:160px;margin:0;font-size:13px;padding:7px 11px;border-radius:10px;}
 
 #view-dash-recruitment #rec-pane-agenda{flex:1;min-height:0;min-width:0;overflow:auto;padding:18px 2px 24px;}
@@ -485,7 +484,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
 .rec-agenda-nav{display:flex;align-items:center;flex-wrap:wrap;gap:5px;max-width:100%;}
 .rec-agenda-nav button{border:1px solid var(--slate-200);border-radius:9px;background:#fff;color:var(--slate-700);font:inherit;font-size:13px;font-weight:700;min-height:34px;cursor:pointer;}
 .rec-agenda-today{padding:0 9px;}
-.rec-agenda-nav .rec-agenda-nav-btn{width:34px;font-size:19px;line-height:1;}
+.rec-agenda-nav .rec-agenda-nav-btn{width:34px;display:grid;place-items:center;padding:0;}
+.rec-agenda-nav-btn .admin-nav-icon{width:14px;height:14px;}
 .rec-agenda-nav button:hover,.rec-agenda-nav button:focus-visible{border-color:#c4b5fd;color:var(--purple-dark);}
 .rec-agenda :is(button,h2):focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .rec-agenda-week,.rec-agenda-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
@@ -559,7 +559,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 
 .rec-page-content{padding-top:0;}
 .rec-vac-band{margin:8px 0 4px;}
-.rec-vac-hero-art{position:absolute;z-index:-1;inset:auto 0 0 auto;width:min(53%,470px);height:100%;pointer-events:none;}
+.rec-section-art{position:absolute;z-index:-1;inset:auto 0 0 auto;width:min(53%,470px);height:100%;pointer-events:none;}
 .rec-headcount{display:inline-flex;align-items:center;gap:4px;margin:0;padding:5px 8px;border:1px solid var(--purple-border);border-radius:8px;background:var(--purple-light);color:var(--purple-deep);font-size:11px;font-weight:600;white-space:nowrap;}
 .rec-headcount strong{color:var(--purple-dark);font-variant-numeric:tabular-nums;font-weight:750;}
 .rec-vac-band-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
@@ -584,14 +584,20 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-filter-chip.active .rec-filter-count{background:var(--purple-dark);color:#fff;}
 .rec-cand-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
 .rec-cand-head-row h2{font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--primary);margin:0;}
-.rec-cand-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;padding:12px 14px;background:#fff;border:1px solid var(--slate-200);border-radius:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
-.rec-cand-toolbar-search{flex:1;min-width:200px;}
-.rec-cand-toolbar-search .form-input{width:100%;margin:0;font-size:13px;padding:8px 11px 8px 34px;border-radius:10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;}
+.rec-cand-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;}
+.rec-cand-toolbar-search{flex:1 1 245px;min-width:0;}
+.rec-cand-toolbar-search .form-input{width:100%;min-width:0;min-height:38px;}
+.rec-cand-filter-panel{flex:1 0 100%;min-width:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid var(--purple-border);border-radius:12px;background:var(--purple-light);}
+.rec-cand-filter-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:6px 12px;border:1px solid var(--purple-border);border-radius:10px;background:#fff;color:var(--purple-dark);font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.rec-cand-filter-toggle:hover,.rec-cand-filter-toggle[aria-expanded="true"],.rec-cand-filter-toggle:has(.rec-cand-filter-count:not(.hidden)){background:var(--purple-mid);}
+.rec-cand-filter-toggle svg{width:16px;height:16px;}
+.rec-cand-filter-toggle[aria-expanded="true"] .rec-cand-filter-plus{visibility:hidden;}
+.rec-cand-filter-count{display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:6px;background:var(--purple-dark);color:#fff;font-size:10px;font-variant-numeric:tabular-nums;}
 .rec-cand-toolbar-filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 10px;}
 .rec-cand-toolbar-field{display:flex;flex-direction:column;gap:4px;}
 .rec-cand-toolbar-field label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);}
 .rec-cand-toolbar-field .form-input{min-width:128px;max-width:180px;margin:0;font-size:13px;padding:8px 10px;border-radius:10px;}
-.rec-cand-toolbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex:0 0 auto;}
+.rec-cand-toolbar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
 .rec-cand-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);cursor:pointer;padding:0;}
 .rec-cand-icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .rec-cand-icon-btn:hover{border-color:rgba(124,58,237,.35);color:var(--purple-dark);background:rgba(245,243,255,.7);}
@@ -633,8 +639,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-cand-ms-actions{display:flex;justify-content:flex-end;gap:6px;padding-top:8px;border-top:1px solid var(--slate-100);margin-top:6px;}
 .rec-cand-ms-actions button{border:1px solid var(--slate-200);background:#fff;border-radius:999px;padding:6px 10px;font:inherit;font-size:12px;font-weight:650;color:var(--slate-700);cursor:pointer;}
 .rec-cand-ms-actions .rec-cand-ms-apply{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-@media(max-width:900px){.rec-cand-toolbar-search{flex:1 1 100%;}.rec-cand-toolbar-actions{margin-left:0;}}
-@media(max-width:640px){.rec-cand-ms-btn{min-width:0;max-width:100%;}.rec-cand-toolbar-filters,.rec-cand-toolbar-actions{width:100%;}.rec-cand-toolbar-actions{justify-content:flex-end;}}
+@media(max-width:640px){.rec-cand-ms-btn{min-width:0;max-width:100%;}.rec-cand-toolbar-search{flex-basis:100%;}.rec-cand-toolbar-filters{width:100%;}.rec-cand-toolbar-actions{margin-inline-start:auto;}}
 .rec-cand-list-kicker{font-size:12px;font-weight:600;color:var(--slate-500);margin:0 0 8px;}
 .rec-cand-list{display:flex;flex-direction:column;gap:8px;}
 .rec-cand-row{position:relative;display:flex;align-items:stretch;gap:0;padding:0;background:#fff;border:1px solid var(--slate-200);border-radius:12px;cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:var(--tr-fast);box-shadow:0 1px 3px rgba(15,23,42,.03);overflow:hidden;}
@@ -1131,9 +1136,9 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-cand-dupe-item{padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:var(--tr-fast);}
 .rec-cand-dupe-item:hover{border-color:rgba(124,58,237,.35);background:var(--purple-light);}
 @media(max-width:960px){.rec-cand-body-grid{grid-template-columns:1fr;}.rec-cand-hero-head-right{align-items:flex-start;width:100%;}.rec-cand-hero-ctrls{justify-content:flex-start;}}
-@media(max-width:960px){.rec-cand-row-sep{display:none;}.rec-cand-row-inner{gap:10px;}.rec-cand-row-block{flex:1 1 100%;max-width:none;}}
 @media(max-width:820px){.rec-cand-expediente{grid-template-columns:1fr;}}
-@media(max-width:640px){.rec-cand-toolbar-search{flex:1 1 100%;}.rec-cand-row-inner{flex-direction:column;align-items:stretch;}.rec-cand-avatar{align-self:flex-start;}}
+@media(max-width:960px){.rec-cand-row-sep{display:none;}.rec-cand-row-inner{gap:10px;}.rec-cand-row-block{flex:1 1 100%;max-width:none;}}
+@media(max-width:640px){.rec-cand-row-inner{flex-direction:column;align-items:stretch;}.rec-cand-avatar{align-self:flex-start;}}
 @media(max-width:520px){.rec-cand-detail-modal{max-width:100%;padding:22px 18px 24px;}.rec-cand-detail-modal.rec-detail-modal .rec-cand-detail-header{padding-right:0;padding-top:44px;}.rec-cand-detail-center-col{max-width:calc(100vw - 88px);gap:8px;}.rec-cand-detail-side-nav{width:44px;height:44px;}.rec-cand-detail-side-nav svg{width:20px;height:20px;}#rec-cand-nav-prev{left:6px;}#rec-cand-nav-next{right:6px;}.rec-cand-detail-nav-pos{font-size:11px;min-width:3.5em;padding:4px 10px;}.rec-cand-filters .form-input{max-width:100%;width:100%;}.rec-cand-form-grid-row,.rec-cand-form-grid-row--3{grid-template-columns:1fr!important;}.rec-cand-form-header{padding-right:0;padding-top:40px;}.rec-cand-form-footer{flex-direction:column-reverse;align-items:stretch;}.rec-cand-form-footer .form-submit{width:100%;}}
 .rec-carousel-wrap{position:relative;margin-bottom:0;}
 .rec-carousel{display:flex;gap:10px;overflow-x:auto;padding:4px 4px 8px;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--purple-border) transparent;min-width:0;}
@@ -1173,14 +1178,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #view-dash-recruitment .rec-vac-band{flex-shrink:0;}
 #view-dash-recruitment #rec-selected-panel.rec-workspace--pipeline{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 #view-dash-recruitment .rec-pipeline-header{flex-shrink:0;}
-#view-dash-recruitment #rec-pane-candidates{flex:1;min-height:0;overflow-y:auto;}
+#view-dash-recruitment #rec-pane-candidates{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--purple-border) transparent;}
 #view-dash-recruitment #rec-pane-metrics{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
 .rec-metrics-page{padding:0 2px 8px;max-width:none;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;container-type:inline-size;container-name:rec-metrics;}
-#rec-metrics-host{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;container-type:inline-size;container-name:rec-metrics;}
-.rec-metrics-month-nav{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:4px 8px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
-.rec-metrics-month-btn{border:none;background:transparent;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;color:var(--slate-600);font-family:inherit;}
+#rec-metrics-host{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;container-type:inline-size;container-name:rec-metrics;scrollbar-width:thin;scrollbar-color:var(--purple-border) transparent;}
+.rec-metrics-month-nav{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--purple-border);border-radius:10px;padding:2px;max-width:100%;}
+.rec-metrics-month-btn{display:grid;place-items:center;flex-shrink:0;border:0;background:transparent;width:32px;height:32px;border-radius:7px;cursor:pointer;color:var(--purple-dark);}
+.rec-metrics-month-btn .admin-nav-icon{width:14px;height:14px;}
 .rec-metrics-month-btn:hover{background:var(--purple-light);color:var(--purple-dark);}
-.rec-metrics-month-label{font-size:13px;font-weight:700;color:var(--slate-800);min-width:118px;text-align:center;}
+.rec-metrics-month-label{font-size:12px;font-weight:700;color:var(--purple-deep);min-width:106px;text-align:center;}
 /* Franja ejecutiva: 7 en una fila cuando el contenedor (no el viewport) lo permite. */
 .rec-metrics-kpi-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px;align-items:stretch;}
 /* Contenedor (tras sidebar): ≥1050→7 (títulos ≤2 líneas); 680–1049→4; 440–679→2; ≤439→1.
@@ -1231,7 +1237,11 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-main{display:grid;grid-template-columns:minmax(0,1fr)280px;gap:14px;align-items:start;}
 @media(max-width:960px){.rec-metrics-main{grid-template-columns:1fr;}}
 .rec-metrics-panel{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.03);}
-.rec-metrics-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.rec-metrics-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+#rec-metrics-host :is(.rec-metrics-kpi-grid,.rec-metrics-cal-legend,.rec-metrics-cal-grid,.rec-metrics-footer,.rec-metrics-status):empty{display:none;}
+#rec-metrics-host .rec-metrics-cal-legend{margin-bottom:10px;}
+.rec-metrics-status{margin:0 0 10px;color:var(--slate-600);font-size:12px;}
+.rec-metrics-status--error{color:#b91c1c;}
 .rec-metrics-panel-title{font-size:15px;font-weight:800;color:var(--primary);margin:0;letter-spacing:-.2px;}
 .rec-metrics-cal-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;font-weight:600;color:var(--slate-500);}
 .rec-metrics-cal-legend-dots{display:flex;align-items:center;gap:3px;}
@@ -1289,9 +1299,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-metrics-trend-signal-status--stable{color:#2563EB;}
 .rec-metrics-trend-signal-status--none{color:var(--slate-400);}
 .rec-metrics-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-200);font-size:11px;font-weight:600;color:var(--slate-500);flex-wrap:wrap;}
-.rec-metrics-loading,.rec-metrics-err{padding:24px;text-align:center;font-size:13px;font-weight:600;color:var(--slate-600);}
-.rec-metrics-err{color:#DC2626;}
-.rec-topbar-metrics-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;}
 #view-dash-recruitment .rec-pipeline-slot{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 #view-dash-recruitment .rec-pipeline-slot .rec-kanban-board{flex:1;min-height:0;align-items:stretch;}
 .rec-status-badge{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;flex-shrink:0;}
@@ -1655,7 +1662,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-kanban-card-foot{font-size:9px;font-weight:600;color:var(--slate-400);margin:6px 0 0;padding-top:5px;border-top:1px solid var(--slate-100);}
 .rec-kanban-empty-msg{font-size:12px;color:var(--slate-500);margin:0 0 8px;line-height:1.45;}
 .rec-kanban-loading{font-size:13px;color:var(--slate-500);padding:8px 2px;}
-@media(max-width:720px){.rec-topbar-vac-tools{width:100%;margin-left:0;margin-right:0;order:3;}.rec-global-search{flex:1;width:auto;max-width:none;}}
+@media(max-width:720px){.rec-global-search{flex:1;width:auto;max-width:none;}}
 .rec-btn-edit{border:none;background:transparent;color:var(--purple);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;flex-shrink:0;}
 .rec-btn-edit:hover{text-decoration:underline;}
 @media(max-width:720px){.rec-workspace{padding:16px;}}
@@ -3471,32 +3478,29 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .admin-sidebar .sidebar-item{transition:none;}
 }
 
-/* Reclutamiento · Vacantes */
-.rec-section-header{position:relative;isolation:isolate;overflow:hidden;min-height:58px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;flex-shrink:0;padding:8px clamp(12px,2.2vw,28px);border-bottom:1px solid var(--slate-200);background:#fff;}
-.rec-section-header h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.045em;line-height:1.12;color:var(--primary);}
-.rec-section-header:has(.rec-vac-hero-art:not(.hidden)){min-height:88px;border-color:var(--purple-mid);background:#f7f4ff;}
-.rec-section-header:has(.rec-vac-hero-art:not(.hidden)) h1{font-size:clamp(27px,3vw,40px);color:var(--purple-deep);}
-.rec-section-header :is(.rec-topbar-vac-tools,.rec-topbar-metrics-tools){width:auto;margin:0 0 0 auto;order:0;}
-#view-dash-recruitment .rec-page-content:has(#rec-pane-vacancies:not(.hidden)){padding-top:0;}
+/* Reclutamiento */
+.rec-section-header{position:relative;isolation:isolate;overflow:hidden;min-height:88px;display:flex;align-items:center;flex-shrink:0;padding:8px clamp(12px,2.2vw,28px);border-bottom:1px solid var(--purple-mid);background:#f7f4ff;}
+.rec-section-header h1{margin:0;font-size:clamp(27px,3vw,40px);font-weight:800;letter-spacing:-.045em;line-height:1.12;color:var(--purple-deep);}
+#view-dash-recruitment .rec-page-content{padding-top:0;}
+#view-dash-recruitment :is(#rec-pane-candidates,#rec-pane-metrics){padding-top:12px;}
 #rec-topbar-vac-tools{display:flex;align-items:center;flex:0 1 auto;gap:8px;min-width:0;margin-inline-start:auto;}
 .rec-vac-search{position:relative;width:clamp(148px,15vw,230px);min-width:0;}
 .rec-vac-search .admin-nav-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);width:16px;height:16px;color:var(--slate-500);pointer-events:none;}
-.rec-vac-search .rec-global-search{width:100%;min-width:0;min-height:38px;padding:7px 9px 7px 34px;background:#fff;}
-#rec-topbar-vac-tools .rec-btn-new{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:6px 12px;border-color:transparent;background:var(--purple);color:#fff;font-weight:700;white-space:nowrap;}
-#rec-topbar-vac-tools .rec-btn-new:hover{background:var(--purple-dark);}
-#rec-pane-vacancies :is(button,.rec-vac-card):focus-visible,.rec-section-header .rec-btn-new:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.rec-vac-search .rec-global-search{width:100%;min-width:0;min-height:38px;margin:0;padding:7px 9px 7px 34px;background:#fff;}
+:is(#rec-topbar-vac-tools,.rec-cand-toolbar) .rec-btn-new{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:6px 12px;border-color:transparent;background:var(--purple);color:#fff;font-weight:700;white-space:nowrap;}
+:is(#rec-topbar-vac-tools,.rec-cand-toolbar) .rec-btn-new:hover{background:var(--purple-dark);}
+#rec-pane-vacancies :is(button,.rec-vac-card):focus-visible,.rec-cand-toolbar button:focus-visible,.rec-metrics-month-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 #rec-pane-vacancies .rec-pipeline-header{align-items:center;padding-bottom:8px;margin-bottom:8px;border-color:var(--purple-light);}
 #rec-pane-vacancies .rec-pipeline-count-pill{background:var(--purple-light);color:var(--purple-dark);}
 .rec-pipeline-heading-icon{color:var(--purple-dark);width:16px;height:16px;}
 @media(max-width:720px){
-  .rec-section-header:has(.rec-vac-hero-art:not(.hidden)){min-height:66px;}
-  .rec-section-header .rec-topbar-metrics-tools{flex-wrap:wrap;}
+  .rec-section-header{min-height:66px;}
   #rec-topbar-vac-tools{flex-basis:100%;gap:6px;}
   #rec-topbar-vac-tools .rec-vac-search{flex:1;width:auto;}
   #rec-topbar-vac-tools .rec-btn-new{padding-inline:8px;font-size:12px;}
-  #view-dash-recruitment .rec-page-content:has(#rec-pane-vacancies:not(.hidden)){padding-inline:12px;}
+  #view-dash-recruitment .rec-page-content{padding-inline:12px;}
   .rec-vac-band{margin-top:8px;}
-  .rec-vac-hero-art{opacity:.65;}
+  .rec-section-art{opacity:.8;}
   .rec-vac-band-head{gap:6px;margin-bottom:4px;}
   .rec-vac-overview{flex-basis:100%;}
   .rec-filter-bar{flex:1 1 auto;}
@@ -3509,8 +3513,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   #view-dash-recruitment #rec-selected-panel.rec-workspace--pipeline{min-height:min(390px,68dvh);padding:10px;}
 }
 @media(max-width:360px){
-  .rec-vac-hero-art{opacity:.36;}
-  .rec-section-header .rec-topbar-metrics-tools{margin-inline-start:0;}
+  .rec-section-art{opacity:.65;}
   #rec-pane-vacancies .rec-pipeline-header-sep{display:none;}
   #rec-pane-vacancies .rec-pipeline-header-vac{flex-basis:100%;}
 }
@@ -4998,32 +5001,62 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <main class="main-content">
     <header class="rec-section-header">
       <div class="admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><h1 id="rec-section-title" tabindex="-1">Vacantes</h1></div>
-      <svg class="rec-vac-hero-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
+      <svg class="rec-section-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
         <path d="M0 96C99 89 119 50 179 58c55 8 111 39 201-16v54Z" fill="#ede9fe"/>
         <path d="M94 88c53-8 68-38 106-34 42 4 70 33 109 19 19-7 34-23 59-26" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
-        <g transform="translate(285 52) rotate(10)" stroke="#8b5cf6" stroke-width="1.8" stroke-linejoin="round">
-          <rect x="-4" y="-33" width="40" height="55" rx="7" fill="#ddd6fe"/>
-          <rect x="-10" y="-37" width="40" height="55" rx="7" fill="#faf9ff"/>
-          <path d="M-1-24h22m-22 9h17m-17 9h12" fill="none" stroke-linecap="round" opacity=".75"/>
+        <g data-rec-section-art="vacancies">
+          <g transform="translate(285 52) rotate(10)" stroke="#8b5cf6" stroke-width="1.8" stroke-linejoin="round">
+            <rect x="-4" y="-33" width="40" height="55" rx="7" fill="#ddd6fe"/>
+            <rect x="-10" y="-37" width="40" height="55" rx="7" fill="#faf9ff"/>
+            <path d="M-1-24h22m-22 9h17m-17 9h12" fill="none" stroke-linecap="round" opacity=".75"/>
+          </g>
+          <g transform="translate(251 58) rotate(-9)" stroke="#6d28d9" stroke-width="1.9" stroke-linejoin="round">
+            <path d="M-9-16v-5a4 4 0 0 1 4-4H5a4 4 0 0 1 4 4v5" fill="none"/>
+            <rect x="-28" y="-16" width="56" height="38" rx="8" fill="#ddd6fe"/>
+            <path d="M-28-4C-13 6 13 6 28-4m-28 8v6" fill="none" stroke-linecap="round"/>
+          </g>
         </g>
-        <g transform="translate(251 58) rotate(-9)" stroke="#6d28d9" stroke-width="1.9" stroke-linejoin="round">
-          <path d="M-9-16v-5a4 4 0 0 1 4-4H5a4 4 0 0 1 4 4v5" fill="none"/>
-          <rect x="-28" y="-16" width="56" height="38" rx="8" fill="#ddd6fe"/>
-          <path d="M-28-4C-13 6 13 6 28-4m-28 8v6" fill="none" stroke-linecap="round"/>
+        <g data-rec-section-art="candidates" class="hidden" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <g transform="translate(280 19) rotate(13)" stroke="#8b5cf6">
+            <rect width="43" height="57" rx="8" fill="#ddd6fe"/>
+            <circle cx="21" cy="19" r="6" fill="#fff"/>
+            <path d="M11 34a10 10 0 0 1 20 0Zm6 10h14" fill="#f5f3ff"/>
+          </g>
+          <g transform="translate(217 28) rotate(-8)" stroke="#6d28d9">
+            <rect x="3" y="4" width="67" height="47" rx="8" fill="#c4b5fd"/>
+            <rect width="67" height="47" rx="8" fill="#fcfaff"/>
+            <circle cx="20" cy="17" r="6" fill="#ffd9bf"/>
+            <path d="M10 33a10 10 0 0 1 20 0Z" fill="#ddd6fe"/>
+            <path d="M40 16h17m-17 8h13m-13 8h9" fill="none"/>
+          </g>
+        </g>
+        <g data-rec-section-art="agenda" class="hidden" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <g transform="translate(220 25) rotate(-7)" stroke="#6d28d9">
+            <rect x="3" y="4" width="67" height="53" rx="9" fill="#c4b5fd"/>
+            <rect width="67" height="53" rx="9" fill="#fcfaff"/>
+            <path d="M1 10a9 9 0 0 1 9-9h47a9 9 0 0 1 9 9v8H1Z" fill="#ddd6fe"/>
+            <path d="M17-5v13m33-13v13M13 29h8m10 0h8m10 0h6M13 40h8m10 0h8" fill="none"/>
+          </g>
+          <g transform="translate(299 59)" stroke="#6d28d9">
+            <circle cx="2" cy="3" r="19" fill="#c4b5fd"/>
+            <circle r="19" fill="#fff2e8"/>
+            <path d="M0-10v11h8" fill="none"/>
+            <circle r="2" fill="#ffb58d" stroke="none"/>
+          </g>
+        </g>
+        <g data-rec-section-art="metrics" class="hidden" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <g transform="translate(217 46) rotate(-6)" stroke="#6d28d9">
+            <rect x="3" y="4" width="25" height="33" rx="6" fill="#c4b5fd"/>
+            <rect width="25" height="33" rx="6" fill="#ddd6fe"/>
+            <rect x="33" y="-13" width="25" height="46" rx="6" fill="#c4b5fd"/>
+            <rect x="66" y="-30" width="25" height="63" rx="6" fill="#ffd9bf"/>
+            <path d="M7 8h11m22-13h11m22-17h11" fill="none" opacity=".65"/>
+            <path d="M-3 33h98" fill="none"/>
+          </g>
         </g>
         <path d="M193 20v12m-6-6h12m146 38v10m-5-5h10" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round"/>
         <circle cx="325" cy="23" r="3" fill="#a78bfa"/><circle cx="187" cy="72" r="3" fill="#c4b5fd"/>
       </svg>
-      <div class="rec-topbar-vac-tools hidden" id="rec-topbar-cand-tools">
-        <button type="button" class="rec-btn-new" onclick="recCandOpenForm('create')">+ Nuevo candidato</button>
-      </div>
-      <div class="rec-topbar-metrics-tools hidden" id="rec-topbar-metrics-tools">
-        <div class="rec-metrics-month-nav" aria-label="Mes de métricas">
-          <button type="button" class="rec-metrics-month-btn" id="rec-metrics-prev" aria-label="Mes anterior" onclick="recMetricsChangeMonth(-1)">‹</button>
-          <span class="rec-metrics-month-label" id="rec-metrics-month-top">—</span>
-          <button type="button" class="rec-metrics-month-btn" id="rec-metrics-next" aria-label="Mes siguiente" onclick="recMetricsChangeMonth(1)">›</button>
-        </div>
-      </div>
     </header>
     <div class="page-content rec-page-content">
       <div id="rec-pane-vacancies">
@@ -5075,21 +5108,28 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
       </div>
       <div id="rec-pane-candidates" class="hidden rec-cand-pane-wrap">
-        <div class="rec-cand-toolbar">
-          <div class="rec-cand-toolbar-search">
-            <input type="search" id="rec-cand-q" class="form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos" maxlength="120">
+        <div class="rec-cand-toolbar" onkeydown="recCandFilterPanelKey(event)">
+          <div class="rec-vac-search rec-cand-toolbar-search">
+            <svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-search"/></svg>
+            <input type="search" id="rec-cand-q" class="rec-global-search form-input" placeholder="Buscar por nombre, contacto o ciudad…" autocomplete="off" aria-label="Buscar candidatos" maxlength="120">
           </div>
-          <div class="rec-cand-toolbar-filters" id="rec-cand-filter-bar">
+          <button type="button" class="rec-cand-filter-toggle" id="rec-cand-filter-toggle" aria-expanded="false" aria-controls="rec-cand-filter-panel" onclick="recCandSetFilterPanel(this.getAttribute('aria-expanded')==='false')">
+            <svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path class="rec-cand-filter-plus" d="M12 5v14"/></svg><span>Filtros</span><span class="rec-cand-filter-count hidden" id="rec-cand-filter-count"></span>
+          </button>
+          <button type="button" class="rec-btn-new" id="rec-cand-new" onclick="recCandOpenForm('create')"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg><span>Nuevo candidato</span></button>
+          <div class="rec-cand-filter-panel hidden" id="rec-cand-filter-panel">
+            <div class="rec-cand-toolbar-filters" id="rec-cand-filter-bar">
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-profile" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-source" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-tag" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-stage" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-recruiter" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
             <div class="rec-cand-ms"><button type="button" class="rec-cand-ms-btn" id="rec-cand-vacancy" aria-haspopup="dialog" aria-expanded="false" aria-controls="rec-cand-ms-menu"></button></div>
-          </div>
-          <div class="rec-cand-toolbar-actions">
+            </div>
+            <div class="rec-cand-toolbar-actions">
             <button type="button" class="rec-cand-icon-btn" id="rec-cand-archived" aria-pressed="false" aria-label="Ver archivados" title="Ver archivados" onclick="recCandToggleArchived()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></button>
             <button type="button" class="rec-cand-icon-btn" id="rec-cand-clear-filters" aria-label="Limpiar filtros" title="Limpiar filtros" disabled onclick="recCandClearFilters()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l-6 7v5l-4 2v-7z"/><path d="m15 15 5 5"/><path d="m20 15-5 5"/></svg></button>
+            </div>
           </div>
         </div>
         <p class="rec-cand-list-kicker" id="rec-cand-list-kicker">Talento registrado · —</p>
@@ -5108,8 +5148,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
                 <h2 id="rec-agenda-month" aria-live="polite">Calendario</h2>
                 <div class="rec-agenda-nav">
                   <button type="button" class="rec-agenda-today" onclick="recAgendaGoToday()">Hoy</button>
-                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes anterior" onclick="recAgendaMoveMonth(-1)">‹</button>
-                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes siguiente" onclick="recAgendaMoveMonth(1)">›</button>
+                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes anterior" onclick="recAgendaMoveMonth(-1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+                  <button type="button" class="rec-agenda-nav-btn" aria-label="Mes siguiente" onclick="recAgendaMoveMonth(1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
                   <button type="button" class="rec-agenda-jump" onclick="document.getElementById('rec-agenda-pending-title').focus()">Sin cita ↓</button>
                 </div>
               </div>
@@ -5131,9 +5171,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
       </section>
       <div id="rec-pane-metrics" class="hidden rec-metrics-page">
-        <div id="rec-metrics-host">
-          <p class="rec-metrics-loading">Cargando métricas…</p>
-        </div>
+        <div id="rec-metrics-host"></div>
       </div>
     </div>
   </main>
@@ -8381,6 +8419,7 @@ function showView(name) {
     recKanbanAutoScrollStop();
   }
   if(name!=='dash-recruitment'&&window.__REC_STATE?.moduleTab==='agenda') recAgendaAbort();
+  if(name!=='dash-recruitment'&&window.__REC_STATE?.moduleTab==='candidates') recCandSetFilterPanel(false);
   if(name!=='evaluacion') mind24ResetUiBlockers();
   mind24PersistLastView(name);
   const t=mind24ViewEl(name);
@@ -15660,6 +15699,7 @@ function recSwitchModuleTab(tab){
   if(typeof recHiredPopoverClose==='function') recHiredPopoverClose(false);
   const st=recEnsureState();
   if(st.moduleTab==='agenda'&&tab!=='agenda') recAgendaAbort();
+  if(st.moduleTab==='candidates'&&tab!=='candidates') recCandSetFilterPanel(false);
   st.moduleTab=['candidates','metrics','agenda'].includes(tab)?tab:'vacancies';
   const vacPane=document.getElementById('rec-pane-vacancies');
   const candPane=document.getElementById('rec-pane-candidates');
@@ -15671,12 +15711,10 @@ function recSwitchModuleTab(tab){
   if(agendaPane) agendaPane.classList.toggle('hidden',st.moduleTab!=='agenda');
   const sectionLabel=document.querySelector('#rec-tab-'+st.moduleTab+' .admin-nav-label');
   document.getElementById('rec-section-title').textContent=sectionLabel.textContent;
-  document.querySelector('.rec-vac-hero-art').classList.toggle('hidden',st.moduleTab!=='vacancies');
+  document.querySelectorAll('.rec-section-art [data-rec-section-art]').forEach(function(art){
+    art.classList.toggle('hidden',art.dataset.recSectionArt!==st.moduleTab);
+  });
   if(!mind24ViewEl('dash-recruitment').classList.contains('hidden')) mind24AdminSidebarActive('dash-recruitment');
-  const candTools=document.getElementById('rec-topbar-cand-tools');
-  const metTools=document.getElementById('rec-topbar-metrics-tools');
-  if(candTools) candTools.classList.toggle('hidden',st.moduleTab!=='candidates');
-  if(metTools) metTools.classList.toggle('hidden',st.moduleTab!=='metrics');
   if(st.moduleTab==='candidates'){
     recCandBindFilters();
     if(st.agendaCandidatesDirty||(!st.candidates.length&&!st.candidatesLoading)){
@@ -16240,11 +16278,36 @@ function recMetricsRenderInsights(insights,trend){
   if(!trendHtml&&!rest) return '<p class="rec-metrics-kpi-sub" style="margin:0;">Sin insights destacados para este mes.</p>';
   return trendHtml+rest;
 }
+function recMetricsMount(host){
+  if(host.querySelector('.rec-metrics-month-nav')) return;
+  host.innerHTML=
+    '<div class="rec-metrics-kpi-grid"></div>'+
+    '<div class="rec-metrics-main"><section class="rec-metrics-panel">'+
+    '<div class="rec-metrics-panel-head"><h3 class="rec-metrics-panel-title">Actividad diaria</h3>'+
+    '<div class="rec-metrics-month-nav" role="group" aria-label="Mes de métricas">'+
+    '<button type="button" class="rec-metrics-month-btn" id="rec-metrics-prev" aria-label="Mes anterior" onclick="recMetricsChangeMonth(-1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>'+
+    '<span class="rec-metrics-month-label" id="rec-metrics-month-label" aria-live="polite">—</span>'+
+    '<button type="button" class="rec-metrics-month-btn" id="rec-metrics-next" aria-label="Mes siguiente" onclick="recMetricsChangeMonth(1)"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>'+
+    '</div></div>'+
+    '<p class="rec-metrics-status" role="status"></p><div class="rec-metrics-cal-legend"></div><div class="rec-metrics-cal-grid"></div></section>'+
+    '<aside class="rec-metrics-panel rec-metrics-insights hidden"><h3 class="rec-metrics-panel-title" style="margin-bottom:12px;">Insights del mes</h3>'+
+    '<div class="rec-metrics-insights-list"></div></aside></div>'+
+    '<footer class="rec-metrics-footer"></footer>';
+}
+function recMetricsSetStatus(host, message, isError=false){
+  const status=host.querySelector('.rec-metrics-status');
+  status.textContent=message;
+  status.classList.toggle('rec-metrics-status--error',isError);
+  if(isError){
+    host.querySelectorAll('.rec-metrics-kpi-grid,.rec-metrics-cal-legend,.rec-metrics-cal-grid,.rec-metrics-footer').forEach(function(el){ el.replaceChildren(); });
+    host.querySelector('.rec-metrics-insights').classList.add('hidden');
+  }
+}
 function recMetricsRender(data){
   const host=document.getElementById('rec-metrics-host');
-  const topLabel=document.getElementById('rec-metrics-month-top');
-  if(topLabel) topLabel.textContent=data.period.label;
   if(!host) return;
+  recMetricsMount(host);
+  host.querySelector('#rec-metrics-month-label').textContent=data.period.label;
   const k=data.kpis;
   const reg=k.candidatesRegistered;
   const regDelta=reg.deltaDailyAverage;
@@ -16287,37 +16350,36 @@ function recMetricsRender(data){
   /* Calendario sin Declinados: evitar densidad visual frente a registros/contrataciones. */
   recMetricsCloseAllKpiTips();
   if(typeof recMetricsCloseTrendDetail==='function') recMetricsCloseTrendDetail();
-  host.innerHTML=
-    '<div class="rec-metrics-kpi-grid">'+
+  host.querySelector('.rec-metrics-kpi-grid').innerHTML=
     recMetricsKpiCard('Candidatos registrados',reg.total,regSub,'users','purple','Personas registradas por primera vez durante el mes seleccionado.')+
     recMetricsKpiCard('Ingresaron a proceso',k.enteredProcess.total,'','process','blue','Personas distintas que iniciaron al menos un proceso durante el mes seleccionado.')+
     recMetricsKpiCard('Contratados',hired.total,hiredSub,'hired','green','Procesos que llegaron a contratación y cumplieron el periodo de consolidación durante el mes.')+
     recMetricsKpiCard('Rechazados',rej.total,rejSub,'rejected','coral','Procesos cerrados como rechazados durante el mes.')+
     recMetricsKpiCard('Declinados',dec.total,decSub,'declined','orange','Procesos en los que la persona declinó durante el mes.')+
     recMetricsKpiCard('Tiempo promedio de cobertura',covVal,covSub,'coverage','amber',covTip,covMeta)+
-    recMetricsKpiCard('Vacantes activas',act.total,actSub,'vacancies','sky','Vacantes abiertas o en pausa al cierre del mes seleccionado.')+
-    '</div>'+
-    '<div class="rec-metrics-main">'+
-    '<section class="rec-metrics-panel"><div class="rec-metrics-panel-head">'+
-    '<h3 class="rec-metrics-panel-title">Actividad diaria</h3>'+
-    '<div class="rec-metrics-cal-legend">'+
+    recMetricsKpiCard('Vacantes activas',act.total,actSub,'vacancies','sky','Vacantes abiertas o en pausa al cierre del mes seleccionado.');
+  host.querySelector('.rec-metrics-cal-legend').innerHTML=
     '<span>Registros</span><div class="rec-metrics-cal-legend-dots">'+
     '<span style="background:rgba(167,139,250,.35)"></span><span style="background:rgba(139,92,246,.45)"></span>'+
     '<span style="background:rgba(124,58,237,.55)"></span><span style="background:rgba(109,40,217,.68)"></span>'+
     '<span style="background:rgba(91,33,182,.82)"></span></div>'+
     '<span>Menor → Mayor</span><span>·</span><span><span class="rec-metrics-cal-hire" style="position:static;display:inline-block;vertical-align:middle;margin-right:4px;"></span>Contratación</span>'+
-    (peakTxt?'<span class="rec-metrics-cal-peak">'+tcEsc(peakTxt)+'</span>':'')+
-    '</div></div><div class="rec-metrics-cal-grid">'+recMetricsBuildCalendar(data)+'</div></section>'+
-    '<aside class="rec-metrics-panel"><h3 class="rec-metrics-panel-title" style="margin-bottom:12px;">Insights del mes</h3>'+
-    '<div class="rec-metrics-insights-list">'+recMetricsRenderInsights(data.insights,data.trend)+'</div></aside></div>'+
-    '<footer class="rec-metrics-footer"><span>'+tcEsc(data.period.footerLabel)+'</span><span>Última actualización: hoy</span></footer>';
+    (peakTxt?'<span class="rec-metrics-cal-peak">'+tcEsc(peakTxt)+'</span>':'');
+  host.querySelector('.rec-metrics-cal-grid').innerHTML=recMetricsBuildCalendar(data);
+  host.querySelector('.rec-metrics-insights-list').innerHTML=recMetricsRenderInsights(data.insights,data.trend);
+  host.querySelector('.rec-metrics-insights').classList.remove('hidden');
+  host.querySelector('.rec-metrics-footer').innerHTML='<span>'+tcEsc(data.period.footerLabel)+'</span><span>Última actualización: hoy</span>';
+  recMetricsSetStatus(host,'');
   recMetricsBindKpiTips(host);
 }
 async function recMetricsLoad(){
   const st=recEnsureState();
   const host=document.getElementById('rec-metrics-host');
   recMetricsCloseAllKpiTips();
-  if(host) host.innerHTML='<p class="rec-metrics-loading">Cargando métricas…</p>';
+  if(host){
+    recMetricsMount(host);
+    recMetricsSetStatus(host,'Cargando métricas…');
+  }
   st.metricsLoading=true;
   st.metricsReqSeq=(st.metricsReqSeq||0)+1;
   const seq=st.metricsReqSeq;
@@ -16336,12 +16398,19 @@ async function recMetricsLoad(){
       st.metricsMonth=st.metricsData.period.month;
       recMetricsRender(st.metricsData);
     }
-    else if(host) host.innerHTML='<p class="rec-metrics-err">No hay datos para este periodo.</p>';
+    else if(host) recMetricsSetStatus(host,'No hay datos para este periodo.',true);
   }catch(e){
     if(seq!==st.metricsReqSeq) return;
-    if(host) host.innerHTML='<p class="rec-metrics-err">'+(tcEsc((e&&e.message)||'No se pudieron cargar las métricas.'))+'</p>';
+    st.metricsData=null;
+    if(host) recMetricsSetStatus(host,(e&&e.message)||'No se pudieron cargar las métricas.',true);
   }finally{
-    if(seq===st.metricsReqSeq) st.metricsLoading=false;
+    if(seq===st.metricsReqSeq){
+      st.metricsLoading=false;
+      if(host&&!st.metricsData&&reqYear&&reqMonth){
+        const date=new Date(Date.UTC(reqYear,reqMonth-1,1));
+        host.querySelector('#rec-metrics-month-label').textContent=date.toLocaleDateString('es-MX',{month:'long',year:'numeric',timeZone:'UTC'});
+      }
+    }
   }
 }
 function recCandInitials(name){
@@ -18930,9 +18999,32 @@ function recCandHasActiveFilters(f){
   f=recCandNormalizeFilters(f);
   return !!(f.q||f.profiles.length||f.sources.length||f.tagIds.length||f.stageIds.length||f.recruiterIds.length||f.vacancyIds.length||f.archivedOnly);
 }
+function recCandSetFilterPanel(open){
+  const button=document.getElementById('rec-cand-filter-toggle');
+  const panel=document.getElementById('rec-cand-filter-panel');
+  if(!button||!panel) return;
+  if(!open&&recEnsureState().candMsOpen) recCandMsCancel(false);
+  button.setAttribute('aria-expanded',String(open));
+  panel.classList.toggle('hidden',!open);
+}
+function recCandFilterPanelKey(event){
+  const button=document.getElementById('rec-cand-filter-toggle');
+  if(event.key!=='Escape'||button.getAttribute('aria-expanded')!=='true') return;
+  recCandSetFilterPanel(false);
+  button.focus();
+  event.stopPropagation();
+}
 function recCandUpdateFiltersUi(){
+  const filters=recEnsureState().candFilters;
   const clearEl=document.getElementById('rec-cand-clear-filters');
-  if(clearEl) clearEl.disabled=!recCandHasActiveFilters(recEnsureState().candFilters);
+  if(clearEl) clearEl.disabled=!recCandHasActiveFilters(filters);
+  const badge=document.getElementById('rec-cand-filter-count');
+  if(badge){
+    const f=recCandNormalizeFilters(filters);
+    const count=REC_CAND_FILTERS.filter(function(def){ return f[def.key].length>0; }).length+Number(f.archivedOnly);
+    badge.textContent=count;
+    badge.classList.toggle('hidden',count===0);
+  }
   recCandPaintFilterButtons();
   recCandPaintArchiveButton();
 }
