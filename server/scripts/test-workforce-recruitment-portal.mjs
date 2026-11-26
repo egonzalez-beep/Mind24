@@ -96,7 +96,7 @@ check(/recCandRegisteredByMetaHtml/.test(indexHtml), 'metadata registrado por en
 check(/\/api\/timeclock\/public\/recruitment\/candidates\/resume\/parse/.test(indexHtml), 'CV parse URL portal');
 check(/apiContext:'workforce'/.test(indexHtml), 'upload CV fuerza contexto workforce');
 check(/\/api\/timeclock\/public\/recruitment\/candidates\/.*\/resume/.test(indexHtml), 'upload CV URL portal');
-check(/Mis candidatos/.test(indexHtml) && /tcEmpLoadMyCandidates/.test(indexHtml), 'sección Mis candidatos');
+check(/id="tc-ws-panel-candidates"[^>]*aria-labelledby="tc-ws-tab-candidates"/.test(indexHtml) && /tcEmpLoadMyCandidates/.test(indexHtml), 'panel Candidatos identificado por su pestaña');
 check(/previewFilter/.test(indexHtml.match(/function tcEmpLoadMyCandidates[\s\S]*?^function /m)?.[0] || ''), 'filtros Mis candidatos en query');
 check(/\/recruitment\/my-candidates/.test(publicRoutes), 'GET my-candidates portal');
 check(/listMyCandidatesForWorkforcePortal/.test(portalSvc), 'servicio Mis candidatos');

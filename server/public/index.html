@@ -27,8 +27,6 @@
   --nov-hired-accent-read:#7dd3fc;
   --nov-hired-border:rgba(8,145,178,.34);
   --nov-hired-border-read:rgba(8,145,178,.16);
-  --nov-hired-icon:#0e7490;
-  --nov-hired-icon-read:#0f766e;
   --nov-hired-icon-bg:rgba(34,211,238,.24);
   --nov-hired-icon-bg-read:rgba(34,211,238,.12);
   --nov-hired-pip:#0891b2;
@@ -2555,9 +2553,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-emp-recruitment-cv-partial-err{margin:4px 0 0;font-size:12px;color:#B45309;}
 .tc-emp-recruitment-cv-partial-retry{margin-top:8px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid rgba(245,158,11,.4);background:#fff;color:#B45309;cursor:pointer;}
 .tc-emp-my-cand{margin-top:20px;padding-top:16px;border-top:1px solid var(--slate-100);}
-.tc-emp-my-cand-title{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-500);}
-.tc-emp-my-cand-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
 .tc-emp-my-cand-filter{font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);cursor:pointer;}
+.tc-emp-my-cand-filter[aria-pressed=false]:hover{border-color:var(--purple-border);background:var(--purple-light);color:var(--purple-dark);}
 .tc-emp-my-cand-filter--on{border-color:rgba(124,58,237,.35);background:rgba(245,243,255,.85);color:var(--purple-dark);}
 .tc-emp-my-cand-list{display:flex;flex-direction:column;gap:10px;}
 .tc-emp-my-cand-card{width:100%;text-align:left;border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.04);cursor:default;}
@@ -2761,9 +2758,18 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;margin:0;padding:18px 8px;color:var(--purple-deep);font-size:13px;font-weight:700;text-align:center;}
 .tc-ws-empty-state .admin-nav-art{width:46px;height:46px;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-.tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
-.tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
-.tc-ws-cand-register{min-height:42px;padding:8px 14px;font-size:12px;font-weight:700;width:auto!important;max-width:none!important;}
+.tc-ws-cand-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;}
+.tc-ws-cand-toolbar button{min-height:32px;white-space:nowrap;}
+.tc-ws-cand-toolbar .tc-ws-cand-register{display:inline-flex;align-items:center;gap:5px;width:auto;padding:5px 9px;border-radius:8px;background:var(--purple-light);font-size:11px;font-weight:750;}
+.tc-ws-cand-toolbar .tc-ws-cand-register:hover{background:var(--purple-mid);}
+.tc-ws-cand-register:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-ws-cand-register .admin-nav-icon{width:14px;height:14px;flex:none;}
+@media(pointer:coarse){.tc-ws-cand-toolbar button{min-height:40px;}}
+@media(max-width:360px){
+  .tc-ws-cand-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:5px;}
+  .tc-ws-cand-toolbar button{padding-inline:4px;}
+  .tc-ws-cand-toolbar .tc-ws-cand-register{width:100%;padding-inline:4px;white-space:normal;line-height:1.15;}
+}
 .tc-emp-tasks{margin-top:0;padding-top:0;border-top:none;}
 .tc-emp-recruitment{margin-top:0;padding-top:0;border-top:none;}
 .tc-emp-my-cand{margin-top:0;padding-top:0;border-top:none;}
@@ -2961,9 +2967,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-novedades-item--hired:hover{background:var(--nov-hired-bg);}
 .tc-ws-novedades-item--hired.tc-ws-novedades-item--unread::after{display:none;}
 .tc-ws-novedades-item--hired:focus-visible{outline-color:var(--nov-hired-accent);}
-.tc-ws-novedades-item-trophy{position:relative;background:var(--nov-hired-icon-bg-read);color:var(--nov-hired-icon-read);}
-.tc-ws-novedades-item--unread .tc-ws-novedades-item-trophy{background:var(--nov-hired-icon-bg);color:var(--nov-hired-icon);}
-.tc-ws-novedades-item-trophy svg{width:17px;height:17px;display:block;}
+.tc-ws-novedades-hired-mark{position:relative;background:var(--nov-hired-icon-bg-read);}
+.tc-ws-novedades-item--unread .tc-ws-novedades-hired-mark{background:var(--nov-hired-icon-bg);}
 .tc-ws-novedades-hired-pip{position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--nov-hired-pip);box-shadow:0 0 0 2px #fff;}
 .tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .mind24-notif-item-msg,.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread .mind24-notif-item-msg{font-weight:700;}
 .tc-ws-novedades-item--noshow{background:#fffbeb;border-color:#fef3c7;box-shadow:inset 3px 0 #fcd48a;}
@@ -6321,17 +6326,14 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <p class="tc-emp-recruitment-cv-partial-err hidden" id="tc-emp-recruitment-cv-partial-err"></p>
             <button type="button" class="tc-emp-recruitment-cv-partial-retry" id="tc-emp-recruitment-cv-partial-retry" onclick="tcEmpRetryPendingCvUpload()">Reintentar CV</button>
           </div>
-          <div class="tc-emp-my-cand tc-emp-my-cand--in-stage" id="tc-emp-my-candidates" aria-labelledby="tc-emp-my-cand-title">
-            <div class="tc-ws-cand-head">
-              <h3 class="tc-emp-my-cand-title" id="tc-emp-my-cand-title">Mis candidatos</h3>
-              <button type="button" class="rec-btn-new tc-ws-cand-register" onclick="tcEmpOpenRegisterCandidate()">+ Registrar candidato</button>
-            </div>
-            <div class="tc-emp-my-cand-filters" role="group" aria-label="Filtrar mis candidatos">
-              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="all" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
-              <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="in_process" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
-              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
-              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="rejected" onclick="tcEmpMyCandSetFilter('rejected')">Rechazados</button>
-              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="declined" onclick="tcEmpMyCandSetFilter('declined')">Declinados</button>
+          <div class="tc-emp-my-cand tc-emp-my-cand--in-stage" id="tc-emp-my-candidates">
+            <div class="tc-ws-cand-toolbar" role="group" aria-label="Acciones de candidatos">
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="all" aria-pressed="false" onclick="tcEmpMyCandSetFilter('all')">Todos</button>
+              <button type="button" class="tc-emp-my-cand-filter tc-emp-my-cand-filter--on" data-tc-my-cand-filter="in_process" aria-pressed="true" onclick="tcEmpMyCandSetFilter('in_process')">En proceso</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="hired" aria-pressed="false" onclick="tcEmpMyCandSetFilter('hired')">Contratados</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="rejected" aria-pressed="false" onclick="tcEmpMyCandSetFilter('rejected')">Rechazados</button>
+              <button type="button" class="tc-emp-my-cand-filter" data-tc-my-cand-filter="declined" aria-pressed="false" onclick="tcEmpMyCandSetFilter('declined')">Declinados</button>
+              <button type="button" class="rec-btn-new tc-ws-cand-register" onclick="tcEmpOpenRegisterCandidate()"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg>Registrar candidato</button>
             </div>
             <div class="tc-ws-panel-scroll" id="tc-ws-cand-list-scroll">
               <div class="tc-emp-my-cand-list" id="tc-emp-my-cand-list" role="list"></div>
@@ -21630,9 +21632,6 @@ function tcEmpMyCandEmptyHtml(filter){
 function tcWsSvgTarget(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
 }
-function tcWsSvgTrophy(){
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
-}
 function tcSvgPlusOutline(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
 }
@@ -22095,7 +22094,8 @@ function tcEmpNovedadesRenderList(){
       ? '<span class="mind24-notif-item-msg tc-ws-novedades-item-title">'+tcEsc(title)+'</span><span class="mind24-notif-item-msg tc-ws-novedades-item-msg--soft">'+tcEsc(bodyText)+'</span>'
       : '<span class="mind24-notif-item-msg tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</span>';
     const mark=hired
-      ? '<span class="mind24-notif-item-mark tc-ws-novedades-item-trophy" aria-hidden="true">'+tcWsSvgTrophy()+(n.read?'':'<span class="tc-ws-novedades-hired-pip"></span>')+'</span>'
+      ? '<span class="mind24-notif-item-mark tc-ws-novedades-hired-mark" aria-hidden="true"><svg class="admin-nav-art"><use href="#tc-ws-art-hired"/></svg>'+
+        (n.read?'':'<span class="tc-ws-novedades-hired-pip"></span>')+'</span>'
       : reminder||n.eventType==='GOAL_ASSIGNED'
       ? '<span class="mind24-notif-item-mark tc-ws-novedades-item-mark" aria-hidden="true"><svg class="admin-nav-art"><use href="#tc-ws-art-goals"/></svg></span>'
       : mind24NotifMarkHtml(n.eventType);
@@ -22683,8 +22683,9 @@ function tcEmpMyCandRenderList(){
 }
 function tcEmpMyCandSyncFilterUi(){
   document.querySelectorAll('.tc-emp-my-cand-filter').forEach(function(btn){
-    const f=btn.getAttribute('data-tc-my-cand-filter');
-    btn.classList.toggle('tc-emp-my-cand-filter--on',f===tcEmpMyCandFilter);
+    const active=btn.dataset.tcMyCandFilter===tcEmpMyCandFilter;
+    btn.classList.toggle('tc-emp-my-cand-filter--on',active);
+    btn.setAttribute('aria-pressed',String(active));
   });
 }
 function tcEmpMyCandSetFilter(filter){

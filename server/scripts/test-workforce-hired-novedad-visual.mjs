@@ -40,13 +40,13 @@ console.log('\n=== Novedad de contratación ===\n');
 check(indexHtml === publicHtml, 'index.html y server/public/index.html son idénticos');
 check(/const hired=n\.eventType==='HIRED'/.test(renderFn), 'la variante se decide por eventType HIRED');
 check(!/llegó a contratación|message\.includes|metadata\.toStageKey/.test(renderFn), 'no identifica la contratación por el texto ni por otro metadato');
-check(/tc-ws-novedades-item--hired/.test(renderFn) && /tcWsSvgTrophy\(\)/.test(renderFn), 'solo esa rama agrega la clase y el trofeo');
+check(/tc-ws-novedades-item--hired/.test(renderFn) && /href="#tc-ws-art-hired"/.test(renderFn), 'la novedad HIRED usa el icono de Contratados');
 check(/href="#tc-ws-art-goals"/.test(renderFn), 'el recordatorio usa la diana de Metas del portal');
-check(!/tc-ws-novedades-item--hired|tcWsSvgTrophy/.test(adminRender), 'la campana administrativa no usa la variante');
+check(!/tc-ws-novedades-item--hired|tc-ws-art-hired/.test(adminRender), 'la campana administrativa no usa la variante');
 check(/tcEmpQuickGoCandidates\(filter, item\.candidateId/.test(openFn), 'el clic conserva el destino actual');
 check(/tcEmpNovedadesEnsureItemRead\(item\)/.test(openFn), 'abrir la novedad marca lectura individual');
 check(/novedades\/recruitment\//.test(indexHtml.match(/function tcEmpNovedadesEnsureItemRead[\s\S]*?\n\}/)?.[0] || ''), 'lectura individual usa ruta recruitment');
-check(/--nov-hired-bg:/.test(indexHtml) && /--nov-hired-accent:/.test(indexHtml) && /--nov-hired-icon:/.test(indexHtml), 'los colores viven en variables');
+check(/--nov-hired-bg:/.test(indexHtml) && /--nov-hired-accent:/.test(indexHtml) && /--nov-hired-icon-bg:/.test(indexHtml), 'los colores viven en variables');
 check(!/Ver anteriores|mind24NotifLoadMore/.test(indexHtml.match(/function tcEmpNovedadesFetchList\([\s\S]*?\n\}/)?.[0] || ''), 'el panel del colaborador no pagina con ver más');
 
 const hostile = 'Ana <img src=x onerror=alert(1)> & "O\'Brien"';
@@ -132,7 +132,7 @@ if (!executablePath) {
   page.on('pageerror', (err) => pageErrors.push(String(err && err.message || err)));
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-  const ready = await page.evaluate(() => typeof tcEmpNovedadesRenderList === 'function' && typeof tcWsSvgTrophy === 'function');
+  const ready = await page.evaluate(() => typeof tcEmpNovedadesRenderList === 'function' && !!document.getElementById('tc-ws-art-hired'));
   check(ready, 'el HTML real expone el panel de novedades');
 
   if (ready) {
@@ -167,9 +167,9 @@ if (!executablePath) {
         stageClass: stage.className,
         rejectedClass: rejected.className,
         goalClass: goal.className,
-        hiredTrophies: hired.querySelectorAll('.tc-ws-novedades-item-trophy svg').length,
-        secondTrophies: second.querySelectorAll('.tc-ws-novedades-item-trophy svg').length,
-        otherTrophies: [fake, stage, rejected, goal].reduce((n, el) => n + el.querySelectorAll('.tc-ws-novedades-item-trophy').length, 0),
+        hiredIcon: hired.querySelector('.tc-ws-novedades-hired-mark use')?.getAttribute('href'),
+        secondIcon: second.querySelector('.tc-ws-novedades-hired-mark use')?.getAttribute('href'),
+        otherHiredIcons: [fake, stage, rejected, goal].reduce((n, el) => n + el.querySelectorAll('use[href="#tc-ws-art-hired"]').length, 0),
         hiredPip: hired.querySelectorAll('.tc-ws-novedades-hired-pip').length,
         secondPip: second.querySelectorAll('.tc-ws-novedades-hired-pip').length,
         hiredWeight: style(hiredMsg).fontWeight,
@@ -189,11 +189,11 @@ if (!executablePath) {
         longKept: stage.textContent.includes(rows[1].message),
         clamp: style(hiredMsg).webkitLineClamp,
         nestedButtons: hired.querySelectorAll('button,a').length,
-        trophyHidden: hired.querySelector('.tc-ws-novedades-item-trophy').getAttribute('aria-hidden'),
+        iconHidden: hired.querySelector('.tc-ws-novedades-hired-mark').getAttribute('aria-hidden'),
         focused: document.activeElement === hired,
         badge: document.getElementById('tc-ws-quick-badge-novedades').textContent,
         closeOverlap: (() => {
-          const a = hired.querySelector('.tc-ws-novedades-item-trophy').getBoundingClientRect();
+          const a = hired.querySelector('.tc-ws-novedades-hired-mark').getBoundingClientRect();
           const b = document.querySelector('#tc-ws-novedades-popover .tc-icon-btn--close').getBoundingClientRect();
           return !(a.right < b.left || b.right < a.left || a.bottom < b.top || b.bottom < a.top);
         })(),
@@ -205,13 +205,13 @@ if (!executablePath) {
     check(painted.hiredClass.includes('tc-ws-novedades-item--hired') && painted.hiredClass.includes('tc-ws-novedades-item--unread'), 'la contratación no leída usa la variante especial');
     check(painted.secondClass.includes('tc-ws-novedades-item--hired') && painted.secondClass.includes('tc-ws-novedades-item--read') && !painted.secondClass.includes('unread'), 'la contratación leída conserva la variante');
     check(!painted.fakeClass.includes('hired') && !painted.stageClass.includes('hired') && !painted.rejectedClass.includes('hired') && !painted.goalClass.includes('hired'), 'el resto no recibe la variante, aunque el texto diga contratación');
-    check(painted.hiredTrophies === 1 && painted.secondTrophies === 1 && painted.otherTrophies === 0, 'el trofeo aparece una vez y solo en contrataciones');
-    check(painted.hiredPip === 1 && painted.secondPip === 0, 'el indicador de no leída desaparece al leerla y el trofeo permanece');
+    check(painted.hiredIcon === '#tc-ws-art-hired' && painted.secondIcon === '#tc-ws-art-hired' && painted.otherHiredIcons === 0, 'solo las contrataciones usan el icono de Contratados');
+    check(painted.hiredPip === 1 && painted.secondPip === 0, 'el indicador de no leída desaparece al leerla y el icono permanece');
     check(painted.hiredWeight === '700' && painted.secondWeight === '600' && painted.hiredBg !== painted.secondBg && painted.hiredAccent !== painted.secondAccent, 'leída y no leída se distinguen por peso, fondo y acento');
     check(painted.hiredText === 'rgb(30, 41, 59)' && painted.timeColor === 'rgb(100, 116, 139)', 'el texto usa el color principal y el secundario');
     check(painted.stageBg !== painted.hiredBg && painted.fakeMark === '#admin-art-candidate' && painted.goalMark === 1, 'las demás novedades usan los iconos del producto');
     check(painted.tags === 0 && painted.text.includes('<img') && painted.text.includes('<b>') && painted.nameKept && painted.longKept, 'nombres, vacantes y caracteres especiales quedan como texto');
-    check(painted.clamp === 'none' && painted.nestedButtons === 0 && painted.trophyHidden === 'true' && painted.focused, 'el nombre no se recorta, no hay controles anidados y el trofeo es decorativo');
+    check(painted.clamp === 'none' && painted.nestedButtons === 0 && painted.iconHidden === 'true' && painted.focused, 'el nombre no se recorta, no hay controles anidados y el icono es decorativo');
     check(painted.badge === '3' && !painted.closeOverlap && painted.itemH < painted.stageH + 18, 'el contador, el cierre y la altura de la fila se mantienen');
 
     const widths = {};
@@ -226,13 +226,13 @@ if (!executablePath) {
           pop: pop.scrollWidth - pop.clientWidth,
           item: item.scrollWidth - item.clientWidth,
           inside: popBox.right <= viewport + 1 && popBox.left >= -1,
-          trophy: !!item.querySelector('.tc-ws-novedades-item-trophy'),
+          icon: !!item.querySelector('.tc-ws-novedades-hired-mark'),
           message: !!item.querySelector('.tc-ws-novedades-item-msg'),
         };
       }, width);
     }
     check([1280, 900, 390].every((w) => widths[w].page <= 1 && widths[w].pop <= 1 && widths[w].item <= 1 && widths[w].inside), '1280, 900 y 390 no desbordan');
-    check([1280, 900, 390].every((w) => widths[w].trophy && widths[w].message), 'en las tres medidas siguen el trofeo y el mensaje');
+    check([1280, 900, 390].every((w) => widths[w].icon && widths[w].message), 'en las tres medidas siguen el icono y el mensaje');
 
     const afterRead = await page.evaluate(async () => {
       window.tcPublicJson = async () => ({ ok: true });
@@ -245,7 +245,7 @@ if (!executablePath) {
         before,
         badge: document.getElementById('tc-ws-quick-badge-novedades').textContent,
         hiredClass: hired.className,
-        trophy: hired.querySelectorAll('.tc-ws-novedades-item-trophy svg').length,
+        icon: hired.querySelector('.tc-ws-novedades-hired-mark use')?.getAttribute('href'),
         pip: hired.querySelectorAll('.tc-ws-novedades-hired-pip').length,
         stageClass: stage.className,
         stageMark: stage.querySelector('.mind24-notif-item-mark use')?.getAttribute('href'),
@@ -253,7 +253,7 @@ if (!executablePath) {
       };
     });
     check(afterRead.before === '3' && afterRead.badge === '', 'marcar todas como leídas deja el contador en cero');
-    check(afterRead.hiredClass.includes('tc-ws-novedades-item--hired') && afterRead.hiredClass.includes('--read') && afterRead.trophy === 1 && afterRead.pip === 0, 'al leerla sigue siendo una contratación, no una fila genérica');
+    check(afterRead.hiredClass.includes('tc-ws-novedades-item--hired') && afterRead.hiredClass.includes('--read') && afterRead.icon === '#tc-ws-art-hired' && afterRead.pip === 0, 'al leerla se conserva el icono de contratación');
     check(afterRead.stageClass.includes('--read') && !afterRead.stageClass.includes('hired') && afterRead.stageMark === '#admin-art-candidate', 'la novedad genérica leída conserva su icono');
 
     const navigated = await page.evaluate(async () => {
@@ -310,11 +310,11 @@ if (!executablePath) {
       const item = document.querySelector('[data-nov-id="recruitment:hired-page-2"]');
       return {
         hired: item.classList.contains('tc-ws-novedades-item--hired'),
-        trophy: item.querySelectorAll('.tc-ws-novedades-item-trophy svg').length,
+        icon: item.querySelector('.tc-ws-novedades-hired-mark use')?.getAttribute('href'),
         more: document.querySelectorAll('#tc-ws-novedades-body .mind24-notif-more, #tc-ws-novedades-body .tc-ws-novedades-more').length,
       };
     });
-    check(secondPage.hired && secondPage.trophy === 1 && secondPage.more === 0, 'un lote posterior conserva la variante; el panel no tiene ver más');
+    check(secondPage.hired && secondPage.icon === '#tc-ws-art-hired' && secondPage.more === 0, 'un lote posterior conserva la variante de contratación');
 
     const admin = await page.evaluate(() => {
       mind24NotifItems = [{
@@ -328,7 +328,7 @@ if (!executablePath) {
       mind24NotifRenderList(false);
       const body = document.getElementById('mind24-notif-body');
       return {
-        hired: body.querySelectorAll('.tc-ws-novedades-item--hired, .tc-ws-novedades-item-trophy').length,
+        hired: body.querySelectorAll('.tc-ws-novedades-item--hired, .tc-ws-novedades-hired-mark').length,
         item: body.querySelectorAll('.mind24-notif-item').length,
         mark: body.querySelectorAll('.mind24-notif-item-mark--candidate').length,
       };
