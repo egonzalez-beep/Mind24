@@ -746,9 +746,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-cand-detail-title h2{font-size:22px;font-weight:800;color:var(--primary);margin:0;letter-spacing:-.35px;line-height:1.25;}
 .rec-cand-detail-sub{font-size:13px;color:var(--slate-600);margin:0;line-height:1.4;}
 .rec-cand-badge-arch{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);flex-shrink:0;}
-.rec-cand-pipeline-hero{margin:0 0 16px;padding:18px 20px 16px 22px;border:1px solid rgba(124,58,237,.16);border-radius:16px;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04);position:relative;overflow:hidden;}
-.rec-cand-pipeline-hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:16px 0 0 16px;background:linear-gradient(180deg,rgba(124,58,237,.65),rgba(139,92,246,.35));}
-.rec-cand-hero-kicker{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);margin:0 0 10px;opacity:.85;}
+.rec-cand-pipeline-hero>.rec-exec-section-head-main{margin-bottom:10px;}
 .rec-cand-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
 .rec-cand-hero-head-main{min-width:0;flex:1;}
 .rec-cand-hero-title{font-size:19px;font-weight:800;color:var(--primary);letter-spacing:-.4px;line-height:1.2;margin:0 0 4px;}
@@ -1021,9 +1019,9 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-cand-form--workforce .rec-cand-form-fold[open] .rec-cand-form-fold-caret{transform:rotate(180deg);}
 .rec-cand-form--workforce .rec-cand-form-fold-content{padding:2px 12px 12px;}
 .rec-cand-form--workforce .rec-cand-form-fold-content>.rec-cand-form-grid-row+.rec-cand-form-grid-row{margin-top:10px;}
-.rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-native{display:none;}
+.rec-cand-form--pickers .rec-cand-form-native{display:none;}
 .rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-interview-custom{display:block;}
-.rec-cand-form--workforce.rec-cand-form--pickers .rec-cand-form-picker-trigger{
+.rec-cand-form--pickers .rec-cand-form-picker-trigger{
   display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;text-align:left;cursor:pointer;background:#fff;
 }
 .rec-cand-form-picker-trigger:disabled{cursor:default;color:var(--slate-500);}
@@ -1455,6 +1453,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-process-rail-step:not(:last-child)::after{content:'';position:absolute;top:9px;left:calc(50% + 10px);width:calc(100% - 20px);height:2px;background:var(--slate-200);z-index:0;}
 .rec-process-rail-dot{width:10px;height:10px;border-radius:999px;border:2px solid var(--slate-300);background:#fff;position:relative;z-index:1;flex-shrink:0;}
 .rec-process-rail-label{font-size:10px;font-weight:600;color:var(--slate-600);margin-top:8px;text-align:center;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-exec-stage-track{min-width:0;border:1px solid var(--slate-200);border-radius:10px;background:var(--slate-50);}
+.rec-cand-pipeline-hero .rec-cand-labeled-rail{padding:8px 4px;}
+.rec-cand-pipeline-hero .rec-exec-stage-track{margin-bottom:10px;}
+.rec-cand-pipeline-hero .rec-exec-stage-track:empty{display:none;}
 .rec-exec-body-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px 16px;align-items:start;}
 .rec-exec-panel-card{border:1px solid var(--slate-200);border-radius:14px;padding:14px 16px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.03);}
 .rec-exec-panel-card+.rec-exec-panel-card{margin-top:14px;}
@@ -1519,9 +1521,13 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-detail-acc-trigger[aria-expanded="true"]{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent;background:rgba(245,243,255,.55);color:var(--purple-dark);}
 .rec-detail-acc-chevron{width:16px;height:16px;flex-shrink:0;transition:transform .2s ease;color:var(--slate-400);}
 .rec-detail-acc-trigger[aria-expanded="true"] .rec-detail-acc-chevron{transform:rotate(180deg);}
-.rec-detail-acc-body{font-size:13px;line-height:1.65;color:var(--slate-700);white-space:pre-wrap;padding:10px 12px 12px;margin:0;border:1px solid var(--slate-200);border-top:none;border-radius:0 0 10px 10px;background:rgba(241,245,249,.4);}
+.rec-detail-acc-body{font-size:13px;line-height:1.65;color:var(--slate-700);padding:10px 12px 12px;margin:0;border:1px solid var(--slate-200);border-top:none;border-radius:0 0 10px 10px;background:rgba(241,245,249,.4);}
 .rec-detail-acc-body.empty{color:var(--slate-400);}
 .rec-detail-acc-body.hidden{display:none!important;border:none;padding:0;margin:0;background:transparent;}
+.rec-detail-jd-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}
+.rec-detail-jd-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:0 0 10px;}
+.rec-detail-jd-actions button{display:inline-flex;align-items:center;gap:6px;}
+.rec-detail-jd-actions svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.75;}
 .rec-detail-notes-static{font-size:13px;line-height:1.55;color:var(--slate-700);white-space:pre-wrap;margin:0;}
 .rec-detail-notes-static.empty{color:var(--slate-400);}
 .rec-doc-file-mark{font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--purple-dark);}
@@ -3895,12 +3901,14 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <p id="rec-form-capacity" class="rec-form-capacity hidden"></p>
           </div>
           <div>
-            <label class="form-label">Fecha de apertura *</label>
-            <input type="date" id="rec-form-opened" class="form-input">
+            <label class="form-label" for="rec-form-opened" id="rec-form-opened-label">Fecha de apertura *</label>
+            <input type="date" id="rec-form-opened" class="form-input rec-cand-form-native" required>
+            <button type="button" id="rec-form-opened-trigger" class="form-input rec-cand-form-picker-trigger" data-rec-form-date aria-labelledby="rec-form-opened-label rec-form-opened-trigger" aria-controls="rec-cand-form-date-picker" aria-expanded="false" aria-haspopup="dialog"><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4m8-4v4M3 10h18"/></svg></button>
           </div>
           <div>
-            <label class="form-label">Fecha objetivo de cobertura</label>
-            <input type="date" id="rec-form-target-coverage" class="form-input">
+            <label class="form-label" for="rec-form-target-coverage" id="rec-form-target-coverage-label">Fecha objetivo de cobertura</label>
+            <input type="date" id="rec-form-target-coverage" class="form-input rec-cand-form-native">
+            <button type="button" id="rec-form-target-coverage-trigger" class="form-input rec-cand-form-picker-trigger" data-rec-form-date aria-labelledby="rec-form-target-coverage-label rec-form-target-coverage-trigger" aria-controls="rec-cand-form-date-picker" aria-expanded="false" aria-haspopup="dialog"><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4m8-4v4M3 10h18"/></svg></button>
             <p class="rec-cand-form-hint">Opcional.</p>
           </div>
         </div>
@@ -3911,7 +3919,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       </div>
       <div class="rec-cand-form-grid-row">
         <div>
-          <label class="form-label">Estado *</label>
+          <label class="form-label" for="rec-form-status">Estado *</label>
           <select id="rec-form-status" class="form-input">
             <option value="ACTIVE">Activa</option>
             <option value="PAUSED">En pausa</option>
@@ -3920,7 +3928,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </select>
         </div>
         <div>
-          <label class="form-label">Responsable</label>
+          <label class="form-label" for="rec-form-responsible">Responsable</label>
           <select id="rec-form-responsible" class="form-input">
             <option value="">Seleccionar responsable</option>
           </select>
@@ -4007,7 +4015,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
         <button type="button" class="rec-stages-config-btn" id="rec-stages-configure-btn" onclick="recStagesOpenEditor()"><span id="rec-stages-config-icon" aria-hidden="true"></span> Configurar etapas</button>
       </div>
-      <div id="rec-stages-rail-wrap" class="rec-process-rail-wrap">
+      <div id="rec-stages-rail-wrap" class="rec-process-rail-wrap rec-exec-stage-track">
         <div id="rec-stages-rail" class="rec-process-rail" role="list" aria-label="Etapas del proceso"></div>
       </div>
       <p class="rec-stages-summary hidden" id="rec-stages-summary" aria-hidden="true">—</p>
@@ -4060,10 +4068,16 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         </div>
         <div class="rec-exec-panel-card rec-detail-block--acc" style="margin-top:14px;padding:0;border:none;background:transparent;box-shadow:none;">
           <button type="button" class="rec-detail-acc-trigger rec-detail-acc-trigger--premium" id="rec-detail-jd-trigger" aria-expanded="false" aria-controls="rec-detail-jd-body" onclick="recDetailToggleAcc('jd')">
-            <span class="rec-detail-acc-trigger-main"><span class="rec-exec-section-icon" id="rec-detail-jd-icon" aria-hidden="true"></span><span>Job description</span></span>
+            <span class="rec-detail-acc-trigger-main"><span class="rec-exec-section-icon" id="rec-detail-jd-icon" aria-hidden="true"></span><span>Descripción de la vacante</span></span>
             <svg class="rec-detail-acc-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
           </button>
-          <p id="rec-detail-jd-body" class="rec-detail-acc-body hidden empty" role="region" aria-labelledby="rec-detail-jd-trigger">Sin descripción registrada.</p>
+          <div id="rec-detail-jd-body" class="rec-detail-acc-body hidden empty" role="region" aria-labelledby="rec-detail-jd-trigger">
+            <div class="rec-detail-jd-actions hidden" id="rec-detail-jd-actions">
+              <button type="button" class="rec-stages-ghost-btn" onclick="recCopyVacancyDescription(this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>Copiar descripción</button>
+              <span id="rec-detail-jd-copy-feedback" role="status"></span>
+            </div>
+            <p class="rec-detail-jd-text" id="rec-detail-jd-text">Sin descripción registrada.</p>
+          </div>
         </div>
       </div>
       <div class="rec-exec-aside">
@@ -4286,7 +4300,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <div>
               <label class="form-label" for="rec-cand-form-interview-date" id="rec-cand-form-date-label">Fecha de entrevista <span class="rec-cand-form-optional">Opcional</span></label>
               <input type="date" id="rec-cand-form-interview-date" class="form-input rec-cand-form-native">
-              <button type="button" id="rec-cand-form-date-trigger" class="form-input rec-cand-form-picker-trigger is-placeholder" aria-labelledby="rec-cand-form-date-label rec-cand-form-date-trigger" aria-controls="rec-cand-form-date-picker" aria-expanded="false" aria-haspopup="dialog">
+              <button type="button" id="rec-cand-form-date-trigger" class="form-input rec-cand-form-picker-trigger is-placeholder" data-rec-form-date aria-labelledby="rec-cand-form-date-label rec-cand-form-date-trigger" aria-controls="rec-cand-form-date-picker" aria-expanded="false" aria-haspopup="dialog">
                 <span>Seleccionar fecha</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4m8-4v4M3 10h18"/></svg>
               </button>
@@ -8800,7 +8814,10 @@ function closeModal(id){
   if(id==='modal-rec-candidate-detail'&&typeof recCandTryCloseDetailModal==='function'){
     if(!recCandTryCloseDetailModal()) return;
   }
-  if(id==='modal-rec-vacancy'&&typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
+  if(id==='modal-rec-vacancy'){
+    recCandFormClosePickers(false);
+    if(typeof recVacExtractOnModalClose==='function') recVacExtractOnModalClose();
+  }
   if(id==='modal-rec-candidate-form'){
     recCandFormClosePickers(false);
     if(typeof recCandCvExtractOnModalClose==='function') recCandCvExtractOnModalClose();
@@ -13133,19 +13150,21 @@ function recDetailResetAccordions(){
   const body=document.getElementById('rec-detail-jd-body');
   if(trigger){ trigger.setAttribute('aria-expanded','false'); }
   if(body){ body.classList.add('hidden'); }
+  const feedback=document.getElementById('rec-detail-jd-copy-feedback');
+  if(feedback) feedback.textContent='';
 }
 function recVacDetailIconSvg(kind){
   if(kind==='kpi-coverage'){
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20v-2a4.5 4.5 0 0 1 4.5-4.5h4a4.5 4.5 0 0 1 3 1.15M15.5 18l2 2 4-4"/></svg>';
   }
   if(kind==='kpi-process'){
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/><path d="M12 3a9 9 0 0 1 9 9m-9-5v5l3 2"/></svg>';
   }
   if(kind==='kpi-rejection'){
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg>';
   }
   if(kind==='kpi-target'){
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 1c4-3 7 3 11 0l3-2v11l-3 2c-4 3-7-3-11 0"/></svg>';
   }
   if(kind==='kpi-days'){
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
@@ -13198,6 +13217,26 @@ function recDetailToggleAcc(which){
   const open=trigger.getAttribute('aria-expanded')!=='true';
   trigger.setAttribute('aria-expanded',open?'true':'false');
   body.classList.toggle('hidden',!open);
+}
+async function recCopyVacancyDescription(button){
+  const vacancyId=recEnsureState().detailVacancyId;
+  const description=recFindVacancy(vacancyId)?.jobDescription;
+  if(!description?.trim()||button.getAttribute('aria-busy')==='true') return;
+  const feedback=document.getElementById('rec-detail-jd-copy-feedback');
+  feedback.textContent='';
+  button.setAttribute('aria-busy','true');
+  let message;
+  try{
+    await navigator.clipboard.writeText(description);
+    message='Descripción copiada';
+  }catch(_error){
+    message='No se pudo copiar';
+  }finally{
+    button.removeAttribute('aria-busy');
+  }
+  if(recEnsureState().detailVacancyId===vacancyId&&!document.getElementById('modal-rec-vacancy-detail').classList.contains('hidden')){
+    feedback.textContent=message;
+  }
 }
 async function recFetchAndRenderVacancyDetail(vacancyId){
   const st=recEnsureState();
@@ -13925,9 +13964,11 @@ function recRenderVacancyDetail(){
   }
   const jdBody=document.getElementById('rec-detail-jd-body');
   if(jdBody){
-    const jd=(v.jobDescription||'').trim();
-    jdBody.textContent=jd||'Sin descripción registrada.';
-    jdBody.classList.toggle('empty',!jd);
+    const jd=v.jobDescription||'';
+    const hasDescription=Boolean(jd.trim());
+    document.getElementById('rec-detail-jd-text').textContent=hasDescription?jd:'Sin descripción registrada.';
+    document.getElementById('rec-detail-jd-actions').classList.toggle('hidden',!hasDescription);
+    jdBody.classList.toggle('empty',!hasDescription);
   }
 }
 function recVacDocsFillCategorySelect(){
@@ -15954,6 +15995,11 @@ async function recOpenVacancyModal(mode,vacancyIdOverride){
   recVacExtractOnModalOpen(mode);
   recVacCoverageBindOnce();
   recVacSyncCoverageHint();
+  const modal=document.getElementById('modal-rec-vacancy');
+  const usePickers=mode==='edit'&&typeof HTMLElement.prototype.showPopover==='function';
+  recCandFormConfigurePickers(modal,usePickers);
+  modal.querySelectorAll('select').forEach(recCandFormSyncSelectPicker);
+  modal.querySelectorAll('[data-rec-form-date]').forEach(trigger=>recCandFormSyncDateLabel(trigger.previousElementSibling));
   openModal('modal-rec-vacancy');
 }
 async function recSyncPrimaryAssignee(vacancyId, employeeId, prevAssigneeId){
@@ -17893,8 +17939,8 @@ function recCandHeroHtml(app){
   const dt=recCandFmtDetailDate(app.updatedAt||app.appliedAt);
   const pillCls=recCandStagePillClass(stage);
   const ivRow=recCandInterviewsBlockHtml(app);
-  return '<article class="rec-cand-pipeline-hero">'+
-    '<p class="rec-cand-hero-kicker">Proceso principal</p>'+
+  return '<article class="rec-cand-pipeline-hero rec-exec-process-card">'+
+    '<div class="rec-exec-section-head-main"><span class="rec-exec-section-icon" aria-hidden="true">'+recVacDetailIconSvg('process')+'</span><p class="rec-exec-section-title">Proceso principal</p></div>'+
     '<div class="rec-cand-hero-head">'+
     '<div class="rec-cand-hero-head-main">'+
     '<h3 class="rec-cand-hero-title">'+tcEsc(vac.title||'—')+'</h3>'+
@@ -17906,7 +17952,7 @@ function recCandHeroHtml(app){
     recCandDeclineButtonHtml(app)+
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
-    '<div id="rec-cand-hero-rail"></div>'+ivRow+
+    '<div id="rec-cand-hero-rail" class="rec-exec-stage-track"></div>'+ivRow+
     (stage.key==='APPROVED'?recScheduledHireControlsHtml(app,{ surface:'detail', stopPropagation:false }):'')+
     '<p class="rec-cand-hero-updated">Actualizado '+tcEsc(dt)+'</p></article>';
 }
@@ -20659,13 +20705,14 @@ async function recCandDeleteCv(){
   }catch(e){ recCandSetCvErr((e&&e.message)||'No se pudo eliminar.'); }
 }
 let recCandFormPickerSelect=null;
+let recCandFormPickerDate=null;
 let recCandFormCalendarMonth=null;
 let recCandFormStageLoad=0;
 
 function recCandFormUsePickers(){
   return recCandFormIsWorkforce()&&typeof HTMLElement.prototype.showPopover==='function';
 }
-function recCandFormApplyWorkspaceLayout(){
+function recCandFormApplyWorkspaceLayout(editing){
   const modal=document.getElementById('modal-rec-candidate-form');
   const body=modal.querySelector('.rec-cand-form-body');
   const workforce=recCandFormIsWorkforce();
@@ -20675,7 +20722,8 @@ function recCandFormApplyWorkspaceLayout(){
   const phone=document.getElementById('rec-cand-form-phone').closest('.rec-cand-form-field-icon-wrap').parentElement;
   const email=document.getElementById('rec-cand-form-email').closest('.rec-cand-form-field-icon-wrap').parentElement;
   modal.classList.toggle('rec-cand-form--workforce',workforce);
-  modal.classList.toggle('rec-cand-form--pickers',recCandFormUsePickers());
+  const usePickers=recCandFormUsePickers()||(editing&&typeof HTMLElement.prototype.showPopover==='function');
+  recCandFormConfigurePickers(modal,usePickers);
   if(workforce){
     body.prepend(identity,process);
     body.insertBefore(cv,body.querySelector('.rec-cand-form-fold'));
@@ -20691,12 +20739,16 @@ function recCandFormApplyWorkspaceLayout(){
     summary.tabIndex=workforce?0:-1;
     summary.onclick=workforce?null:function(event){ event.preventDefault(); };
   });
-  if(recCandFormUsePickers()) recCandFormBindPickers();
   document.getElementById('rec-cand-form-date-label').htmlFor=recCandFormUsePickers()?'rec-cand-form-date-trigger':'rec-cand-form-interview-date';
   document.getElementById('rec-cand-form-time-label').htmlFor=recCandFormUsePickers()?'rec-cand-form-time-input':'rec-cand-form-interview-time';
-  body.querySelectorAll('select').forEach(function(select){
-    const label=document.getElementById(select.id+'-label');
-    if(label) label.htmlFor=recCandFormUsePickers()?select.id+'-trigger':select.id;
+}
+function recCandFormConfigurePickers(modal,usePickers){
+  if(usePickers) recCandFormBindPickers();
+  modal.classList.toggle('rec-cand-form--pickers',usePickers);
+  modal.querySelectorAll('select,[data-rec-form-date]').forEach(function(field){
+    const input=field.matches('select')?field:field.previousElementSibling;
+    const label=document.getElementById(input.id+'-label')||input.labels[0];
+    if(label) label.htmlFor=usePickers?input.nextElementSibling.id:input.id;
   });
 }
 function recCandFormSyncSelectPicker(select){
@@ -20725,21 +20777,20 @@ function m24PositionAnchoredPicker(picker,trigger){
 }
 function recCandFormPickerTrigger(picker){
   return picker.id==='rec-cand-form-date-picker'
-    ? document.getElementById('rec-cand-form-date-trigger')
+    ? recCandFormPickerDate?.nextElementSibling
     : recCandFormPickerSelect?.nextElementSibling;
 }
 function recCandFormClosePickers(returnFocus){
   if(typeof HTMLElement.prototype.hidePopover!=='function') return false;
-  const openPickers=document.querySelectorAll('#modal-rec-candidate-form .rec-cand-form-picker:popover-open');
-  openPickers.forEach(function(picker){
-    const trigger=recCandFormPickerTrigger(picker);
-    picker.hidePopover();
-    if(returnFocus&&trigger) trigger.focus({preventScroll:true});
-  });
-  return openPickers.length>0;
+  const picker=document.querySelector('#rec-cand-form-select-picker:popover-open,#rec-cand-form-date-picker:popover-open');
+  if(!picker) return false;
+  const trigger=recCandFormPickerTrigger(picker);
+  picker.hidePopover();
+  if(returnFocus&&trigger) trigger.focus({preventScroll:true});
+  return true;
 }
 function recCandFormTrackPicker(){
-  const picker=document.querySelector('#modal-rec-candidate-form .rec-cand-form-picker:popover-open');
+  const picker=document.querySelector('#rec-cand-form-select-picker:popover-open,#rec-cand-form-date-picker:popover-open');
   if(!picker) return;
   const trigger=recCandFormPickerTrigger(picker);
   if(!trigger) return;
@@ -20769,11 +20820,12 @@ function recCandFormOpenSelectPicker(select,trigger){
   recCandFormClosePickers(false);
   if(same) return;
   recCandFormPickerSelect=select;
+  trigger.closest('.rec-cand-form-modal').append(picker);
   const search=document.getElementById('rec-cand-form-picker-search');
   const title=document.getElementById('rec-cand-form-picker-title');
   title.textContent=document.getElementById(select.id+'-label').textContent.trim();
   search.value='';
-  search.hidden=select.id==='rec-cand-form-stage';
+  search.hidden=select.id==='rec-cand-form-stage'||select.id==='rec-form-status';
   recCandFormRenderSelectOptions();
   m24PositionAnchoredPicker(picker,trigger);
   picker.showPopover({source:trigger});
@@ -20788,15 +20840,16 @@ function recCandFormOpenSelectPicker(select,trigger){
 }
 function recCandFormCalendarRender(){
   const view=recCandFormCalendarMonth;
-  const value=document.getElementById('rec-cand-form-interview-date').value;
+  const dateInput=recCandFormPickerDate;
+  const value=dateInput.value;
   const today=recCandInterviewLocalPartsFromIso(new Date().toISOString(),false).date;
   document.getElementById('rec-cand-form-date-month').textContent=TC_NOSHOW_MONTHS[view.getMonth()]+' '+view.getFullYear();
   document.getElementById('rec-cand-form-date-grid').innerHTML=recInterviewCalendarDaysHtml(view.getFullYear(),view.getMonth(),value,today);
-  document.querySelector('#rec-cand-form-date-picker .rec-cand-form-date-clear').hidden=!value;
+  document.querySelector('#rec-cand-form-date-picker .rec-cand-form-date-clear').hidden=dateInput.required||!value;
 }
-function recCandFormSyncDateLabel(){
-  const value=document.getElementById('rec-cand-form-interview-date').value;
-  const button=document.getElementById('rec-cand-form-date-trigger');
+function recCandFormSyncDateLabel(dateInput=document.getElementById('rec-cand-form-interview-date')){
+  const value=dateInput.value;
+  const button=dateInput.nextElementSibling;
   button.querySelector('span').textContent=tcEmpNoshowDateDisplayLabel(value)||'Seleccionar fecha';
   button.classList.toggle('is-placeholder',!value);
 }
@@ -20823,8 +20876,8 @@ function recCandFormBindPickers(){
   if(picker.dataset.bound) return;
   picker.dataset.bound='true';
   picker.setAttribute('aria-labelledby','rec-cand-form-picker-title');
-  const modal=document.getElementById('modal-rec-candidate-form');
-  modal.querySelectorAll('.rec-cand-form-body select').forEach(function(select){
+  const forms=document.querySelectorAll('#modal-rec-candidate-form .rec-cand-form-body,#modal-rec-vacancy .rec-cand-form-body');
+  document.querySelectorAll('#modal-rec-candidate-form select,#modal-rec-vacancy select').forEach(function(select){
     select.classList.add('rec-cand-form-native');
     const trigger=document.createElement('button');
     trigger.type='button';
@@ -20872,37 +20925,49 @@ function recCandFormBindPickers(){
   });
 
   const datePicker=document.getElementById('rec-cand-form-date-picker');
-  const dateTrigger=document.getElementById('rec-cand-form-date-trigger');
-  const dateInput=document.getElementById('rec-cand-form-interview-date');
-  dateTrigger.addEventListener('click',function(){
-    const same=datePicker.matches(':popover-open');
-    recCandFormClosePickers(false);
-    if(same) return;
-    const today=recCandInterviewLocalPartsFromIso(new Date().toISOString(),false).date;
-    const month=tcEmpNoshowParseYmd(dateInput.value||today);
-    const now=new Date();
-    recCandFormCalendarMonth=month?new Date(month.y,month.m,1):new Date(now.getFullYear(),now.getMonth(),1);
-    recCandFormCalendarRender();
-    m24PositionAnchoredPicker(datePicker,dateTrigger);
-    datePicker.showPopover({source:dateTrigger});
-    dateTrigger.setAttribute('aria-expanded','true');
-    const firstDay=datePicker.querySelector('.is-selected')||datePicker.querySelector('.is-today');
-    (firstDay||datePicker.querySelector('[data-month]')).focus({preventScroll:true});
+  document.querySelectorAll('[data-rec-form-date]').forEach(function(dateTrigger){
+    const dateInput=dateTrigger.previousElementSibling;
+    dateTrigger.addEventListener('click',function(){
+      const same=datePicker.matches(':popover-open')&&recCandFormPickerDate===dateInput;
+      recCandFormClosePickers(false);
+      if(same) return;
+      recCandFormPickerDate=dateInput;
+      dateTrigger.closest('.rec-cand-form-modal').append(datePicker);
+      datePicker.setAttribute('aria-labelledby',dateTrigger.getAttribute('aria-labelledby').split(' ')[0]);
+      const now=new Date();
+      const today=recCandInterviewLocalPartsFromIso(now.toISOString(),false).date;
+      const month=tcEmpNoshowParseYmd(dateInput.value||today);
+      recCandFormCalendarMonth=month?new Date(month.y,month.m,1):new Date(now.getFullYear(),now.getMonth(),1);
+      recCandFormCalendarRender();
+      m24PositionAnchoredPicker(datePicker,dateTrigger);
+      datePicker.showPopover({source:dateTrigger});
+      dateTrigger.setAttribute('aria-expanded','true');
+      const firstDay=datePicker.querySelector('.is-selected')||datePicker.querySelector('.is-today');
+      (firstDay||datePicker.querySelector('[data-month]')).focus({preventScroll:true});
+    });
   });
   datePicker.addEventListener('beforetoggle',function(event){
-    if(event.newState==='closed') dateTrigger.setAttribute('aria-expanded','false');
+    if(event.newState!=='closed'||!recCandFormPickerDate) return;
+    recCandFormPickerDate.nextElementSibling.setAttribute('aria-expanded','false');
+    recCandFormPickerDate=null;
   });
   datePicker.addEventListener('click',function(event){
     const control=event.target.closest('button');
-    if(!control) return;
+    const dateInput=recCandFormPickerDate;
+    if(!control||!dateInput) return;
     if(control.dataset.month){
       recCandFormCalendarMonth.setMonth(recCandFormCalendarMonth.getMonth()+Number(control.dataset.month));
       recCandFormCalendarRender();
       return;
     }
-    dateInput.value=control.dataset.ymd||'';
-    recCandFormSyncDateLabel();
-    recCandFormSetFieldError(dateTrigger,'');
+    const value=control.dataset.ymd||'';
+    if(value!==dateInput.value){
+      dateInput.value=value;
+      dateInput.dispatchEvent(new Event('input',{bubbles:true}));
+      dateInput.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    recCandFormSyncDateLabel(dateInput);
+    recCandFormSetFieldError(dateInput.nextElementSibling,'');
     recCandFormClosePickers(true);
   });
   datePicker.addEventListener('keydown',function(event){
@@ -20923,7 +20988,7 @@ function recCandFormBindPickers(){
     period.setAttribute('aria-pressed',String(period.getAttribute('aria-pressed')!=='true'));
     recCandFormSyncManualTime();
   });
-  modal.querySelector('.rec-cand-form-body').addEventListener('scroll',recCandFormTrackPicker,{passive:true});
+  forms.forEach(body=>body.addEventListener('scroll',recCandFormTrackPicker,{passive:true}));
   window.addEventListener('resize',recCandFormTrackPicker);
 }
 function recCandFormSetFieldError(field,message){
@@ -20971,7 +21036,7 @@ function recCandOpenForm(mode,candidate,opts){
   recCandFormApiMode=opts.context==='workforce'?'workforce':'admin';
   recEnsureRecruitmentOrgTimeZone();
   recCandCatalogInits();
-  recCandFormApplyWorkspaceLayout();
+  recCandFormApplyWorkspaceLayout(mode==='edit');
   recCandFormApplyDecorIcons();
   recCandFormBindFieldTouchOnce();
   recCandCvExtractBindOnce();
