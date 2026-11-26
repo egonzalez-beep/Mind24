@@ -494,7 +494,8 @@ const wrongRoleRes = await fetch(`http://127.0.0.1:${wrongRole.address().port}/a
 check(wrongRoleRes.status === 403, 'rol incorrecto responde 403');
 await closeServer(wrongRole);
 
-check(indexHtml.includes('id="tc-sched-export-toggle"') && indexHtml.includes('Descargar registro de horarios') && indexHtml.includes('id="tc-pulse-toggle"'), 'acción de descarga en topbar junto a Pulso de hoy');
+const directoryTools = indexHtml.match(/<div class="tc-directory-tools">[\s\S]*?<\/div>/)?.[0] || '';
+check(directoryTools.includes('id="tc-sched-export-toggle"') && directoryTools.includes('Descargar registro de horarios') && directoryTools.includes('id="tc-pulse-toggle"'), 'acción de descarga en el directorio junto a Pulso de hoy');
 check(indexHtml.includes('id="tc-sched-export-dialog"') && indexHtml.includes('Registro semanal de horarios') && indexHtml.includes('Todo el equipo con horario asignado') && indexHtml.includes('Descargar PDF'), 'diálogo compacto con alcance de equipo y CTA');
 check(!indexHtml.includes('tc-punct-pdf') && !indexHtml.includes('tcDownloadPunctualityPdf') && !indexHtml.includes('tcPunctPdfAbort'), 'sin icono de descarga ni estado en Puntualidad semanal');
 check(indexHtml.includes('if(tcSchedExportBusy) return') && indexHtml.includes("e.name==='AbortError'") && indexHtml.includes('tcSchedExportSetErr') && indexHtml.includes('tcSchedExportLooksLikePdf'), 'evita doble clic, valida PDF y no avisa un abort');
@@ -768,7 +769,7 @@ if (!chromePath) {
         // keep cached zone
       }
       const toggle = document.getElementById('tc-sched-export-toggle');
-      const tools = document.querySelector('.tc-topbar-tools');
+      const tools = document.querySelector('.tc-directory-tools');
       await tcOpenSchedExportDialog();
       const dlg = document.getElementById('tc-sched-export-dialog');
       const download = document.getElementById('tc-sched-export-download');

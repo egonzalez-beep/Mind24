@@ -462,14 +462,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--primary);li
   .kiosk-avatar{width:33px;height:33px;}
   .kiosk-share-art{width:88px;}
 }
-.tc-dash-topbar .topbar-subtitle{display:none;}
-.tc-topbar-tools{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:8px;flex-wrap:wrap;}
 .tc-dir-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
 .tc-dir-count{font-size:12px;font-weight:600;color:var(--slate-500);}
 .rec-dash-topbar .topbar-subtitle{display:none;}
 .rec-dash-topbar{height:auto;min-height:56px;padding:8px 28px;flex-wrap:wrap;gap:8px 12px;}
-.rec-topbar-cluster{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;min-width:0;}
-.rec-topbar-cluster .topbar-title{margin:0;line-height:1.2;}
 .rec-global-search{width:min(280px,42vw);min-width:160px;margin:0;font-size:13px;padding:7px 11px;border-radius:10px;}
 
 #view-dash-recruitment #rec-pane-agenda{flex:1;min-height:0;min-width:0;overflow:auto;padding:18px 2px 24px;}
@@ -574,7 +570,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 
 .rec-page-content{padding-top:0;}
 .rec-vac-band{margin:8px 0 4px;}
-.rec-section-art{position:absolute;z-index:-1;inset:auto 0 0 auto;width:min(53%,470px);height:100%;pointer-events:none;}
+.admin-section-art{position:absolute;z-index:-1;inset:auto 0 0 auto;width:min(53%,470px);height:100%;pointer-events:none;}
 .rec-headcount{display:inline-flex;align-items:center;gap:4px;margin:0;padding:5px 8px;border:1px solid var(--purple-border);border-radius:8px;background:var(--purple-light);color:var(--purple-deep);font-size:11px;font-weight:600;white-space:nowrap;}
 .rec-headcount strong{color:var(--purple-dark);font-variant-numeric:tabular-nums;font-weight:750;}
 .rec-vac-band-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
@@ -1716,8 +1712,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #tc-sched-export-download:hover:not([disabled]){filter:brightness(1.05);}
 #tc-sched-export-download.tc-sched-export-download--busy svg{animation:m24SpinAnim .7s linear infinite;}
 @media(max-width:720px){
-  .tc-topbar-tools{width:100%;margin-right:0;justify-content:flex-start;}
-  .tc-sched-export-btn{flex:1 1 auto;}
   .tc-sched-export-dialog{top:auto;bottom:16px;transform:translate(-50%,0);width:calc(100vw - 24px);border-radius:18px 18px 14px 14px;}
 }
 .tc-pulse-popover{position:fixed;z-index:1180;width:min(300px,calc(100vw - 24px));padding:0;border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
@@ -2392,6 +2386,19 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 @media(max-width:900px){#tc-jornada-body{display:flex;flex-direction:column;gap:14px;}.tc-jornada-left-col,.tc-jornada-right-col{grid-column:auto;max-width:none;width:100%;min-height:0;}.tc-jornada-op-head{flex-wrap:wrap;}.tc-kanban-board{max-height:280px;}.tc-goals-kanban{max-height:280px;}}
 /* Directorio y panel del colaborador */
 .tc-directory-head{scroll-margin-top:var(--tc-directory-scroll-offset,90px);display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;}
+.tc-directory-tools{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-inline-start:auto;min-width:0;}
+.tc-directory-tools :is(.tc-pulse-btn,.tc-sched-export-btn,.rec-btn-new){min-height:36px;padding:7px 10px;font-size:12px;font-weight:700;}
+.tc-directory-tools .rec-btn-new{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--purple);border-color:transparent;color:#fff;}
+.tc-directory-tools .rec-btn-new:hover{background:var(--purple-dark);}
+.tc-directory-tools button:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-directory-tools .admin-nav-icon{width:15px;height:15px;flex:none;}
+.tc-directory-add{margin:0 18px 14px;border:1px solid var(--purple-border);border-radius:12px;background:#faf8ff;}
+.tc-directory-add .card-header{padding-top:12px;margin-bottom:10px;}
+.tc-directory-add-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.tc-directory-add-fields input,.tc-directory-add-fields select{min-width:0;}
+.tc-directory-card .tc-link-banner,.tc-directory-error{margin-inline:18px;}
+.tc-directory-card .tc-link-banner code{overflow-wrap:anywhere;}
+.tc-directory-error{font-size:13px;color:#dc2626;margin-bottom:10px;}
 .tc-directory-toggle{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;font-weight:700;color:var(--purple-dark);background:var(--purple-light);border:1px solid #e9dfff;border-radius:9px;padding:8px 10px;cursor:pointer;}
 .tc-directory-toggle svg{width:14px;height:14px;transform:rotate(90deg);}
 .tc-directory-toggle[aria-expanded=true] svg{transform:rotate(-90deg);}
@@ -2477,14 +2484,19 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   #tc-jornada-card .tc-goals-kanban-col-body{overflow:visible;}
   .tc-metrics-panel--goals{max-height:none;}
   .tc-metrics-goal-list{overflow:visible;padding-right:2px;}
-  #view-dash-timeclock{--tc-directory-scroll-offset:148px;}
-  #view-dash-timeclock .topbar{height:auto;min-height:64px;flex-wrap:wrap;}
+  #view-dash-timeclock{--tc-directory-scroll-offset:90px;}
 }
 @media(max-width:640px){
   .tc-jornada-op-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;flex-basis:100%;gap:2px;}
   .tc-jornada-op-tab{justify-content:center;padding:5px 3px;font-size:10px;letter-spacing:0;}
   .tc-jornada-op-tab--indicators svg{display:none;}
   #view-dash-timeclock .page-content{padding-inline:14px;}
+  .tc-directory-head{padding-inline:12px;}
+  .tc-directory-tools{display:grid;grid-template-columns:auto minmax(0,1fr);margin-inline-start:0;width:100%;}
+  .tc-directory-tools .tc-sched-export-btn{justify-content:center;}
+  .tc-directory-tools .rec-btn-new{grid-column:1/-1;}
+  .tc-directory-add,.tc-directory-card .tc-link-banner,.tc-directory-error{margin-inline:12px;}
+  .tc-directory-add-fields{grid-template-columns:minmax(0,1fr);}
   #tc-jornada-card .card-body{padding-inline:12px;}
   .tc-metrics-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));}
   .tc-metrics-kpi-row>.tc-metrics-kpi:first-child{grid-column:1/-1;}
@@ -2867,10 +2879,23 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .cev-panel.hidden{display:none!important;}
 .cev-shell .main-content{min-width:0;}
 .cev-panel-table-card{margin:0;}
+.cev-mis-head{flex-wrap:wrap;gap:8px 12px;}
+.cev-mis-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;margin-inline-start:auto;}
+.cev-mis-tools .mind24-credits-chip{min-width:0;flex-direction:row;align-items:center;gap:8px;padding:6px 9px;border:1px solid var(--purple-border);border-radius:9px;background:var(--purple-light);color:var(--purple-deep);box-shadow:none;}
+.cev-mis-tools .m24-cc-lbl{font-size:11px;letter-spacing:0;text-transform:none;opacity:1;}
+.cev-mis-tools .m24-cc-val{font-size:15px;line-height:1.25;font-variant-numeric:tabular-nums;}
+.cev-mis-tools .card-action{display:inline-flex;align-items:center;gap:6px;}
+.cev-mis-tools .card-action .admin-nav-icon{width:14px;height:14px;}
+.cev-mis-tools .card-action:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .cev-table-scroll{container-type:inline-size;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--slate-300) transparent;}
 .cev-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
-.cev-table th{padding:10px 8px;background:var(--slate-50);color:var(--slate-600);font-size:11px;font-weight:750;white-space:nowrap;}
+.cev-table th{padding:10px 8px;background:#f7f4ff;color:var(--purple-deep);font-size:11px;font-weight:750;white-space:nowrap;}
 .cev-table td{padding:11px 8px;vertical-align:middle;border-bottom:1px solid var(--slate-100);overflow-wrap:anywhere;}
+.cev-table td.cev-td-key{white-space:nowrap;overflow-wrap:normal;}
+.cev-key-value{display:inline-block;padding:4px 6px;border:1px solid var(--purple-border);border-radius:7px;background:var(--purple-light);color:var(--purple-dark);letter-spacing:.07em;line-height:1.2;}
+.cev-td-date time{display:grid;gap:2px;font-size:12px;white-space:nowrap;}
+.cev-td-date small{color:var(--slate-500);font-size:11px;}
+.cev-td-email{max-width:190px;font-size:12px;line-height:1.35;}
 .cev-table tr:last-child td{border-bottom:0;}
 .cev-table tbody tr:hover,.cev-table tbody tr:focus-within{background:#faf8ff;}
 .cev-table .cev-td-empty{text-align:center;padding:28px 12px;color:var(--slate-500);}
@@ -2896,11 +2921,12 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 }
 @media(max-width:720px){
   .cev-shell .topbar{padding-inline:14px;gap:8px;}
-  .cev-shell .topbar-title{font-size:16px;}
+  .cev-shell .topbar .topbar-title{font-size:16px;}
   .cev-shell .topbar-right{gap:6px;}
   .cev-shell .page-content{padding:14px;}
   .cev-shell .card-header{padding-inline:14px;}
   .cev-shell .card-body{padding-inline:14px;}
+  .cev-mis-tools{margin-inline-start:0;}
 }
 @media (max-width:720px){
   .mind24-credits-chip{min-width:96px;padding:7px 12px;}
@@ -3493,9 +3519,22 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   .admin-sidebar .sidebar-item{transition:none;}
 }
 
+/* Encabezados de módulos */
+.admin-section-header{position:relative;isolation:isolate;overflow:hidden;min-height:88px;display:flex;align-items:center;flex-shrink:0;padding:8px clamp(12px,2.2vw,28px);border-bottom:1px solid var(--purple-mid);background:#f7f4ff;}
+.admin-section-header h1{margin:0;font-size:clamp(27px,3vw,40px);font-weight:800;letter-spacing:-.045em;line-height:1.12;color:var(--purple-deep);}
+#view-dash-timeclock .admin-section-header,#cev-topbar.admin-section-header{position:sticky;top:0;z-index:50;}
+#view-dash-timeclock .page-content,#cev-topbar.admin-section-header + .page-content{padding-top:12px;}
+@media(max-width:720px){
+  .admin-section-header{min-height:66px;}
+  .admin-section-art{opacity:.8;}
+}
+@media(max-width:420px){
+  .admin-section-header:not(.rec-section-header) h1{font-size:clamp(19px,5.4vw,24px);}
+  .admin-section-header:not(.rec-section-header) .admin-section-art{width:39%;}
+}
+@media(max-width:360px){.admin-section-art{opacity:.65;}}
+
 /* Reclutamiento */
-.rec-section-header{position:relative;isolation:isolate;overflow:hidden;min-height:88px;display:flex;align-items:center;flex-shrink:0;padding:8px clamp(12px,2.2vw,28px);border-bottom:1px solid var(--purple-mid);background:#f7f4ff;}
-.rec-section-header h1{margin:0;font-size:clamp(27px,3vw,40px);font-weight:800;letter-spacing:-.045em;line-height:1.12;color:var(--purple-deep);}
 #view-dash-recruitment .rec-page-content{padding-top:0;}
 #view-dash-recruitment :is(#rec-pane-candidates,#rec-pane-metrics){padding-top:12px;}
 #rec-topbar-vac-tools{display:flex;align-items:center;flex:0 1 auto;gap:8px;min-width:0;margin-inline-start:auto;}
@@ -3509,13 +3548,11 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 #rec-pane-vacancies .rec-pipeline-count-pill{background:var(--purple-light);color:var(--purple-dark);}
 .rec-pipeline-heading-icon{color:var(--purple-dark);width:16px;height:16px;}
 @media(max-width:720px){
-  .rec-section-header{min-height:66px;}
   #rec-topbar-vac-tools{flex-basis:100%;gap:6px;}
   #rec-topbar-vac-tools .rec-vac-search{flex:1;width:auto;}
   #rec-topbar-vac-tools .rec-btn-new{padding-inline:8px;font-size:12px;}
   #view-dash-recruitment .rec-page-content{padding-inline:12px;}
   .rec-vac-band{margin-top:8px;}
-  .rec-section-art{opacity:.8;}
   .rec-vac-band-head{gap:6px;margin-bottom:4px;}
   .rec-vac-overview{flex-basis:100%;}
   .rec-filter-bar{flex:1 1 auto;}
@@ -3528,7 +3565,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   #view-dash-recruitment #rec-selected-panel.rec-workspace--pipeline{min-height:min(390px,68dvh);padding:10px;}
 }
 @media(max-width:360px){
-  .rec-section-art{opacity:.65;}
   #rec-pane-vacancies .rec-pipeline-header-sep{display:none;}
   #rec-pane-vacancies .rec-pipeline-header-vac{flex-basis:100%;}
 }
@@ -4813,6 +4849,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <symbol id="admin-icon-logout" viewBox="0 0 24 24"><path d="M12 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h6m4-11 4 4-4 4m4-4H9"/></symbol>
   <symbol id="admin-icon-search" viewBox="0 0 24 24"><circle cx="10.75" cy="10.75" r="6.25"/><path d="m16 16 4 4"/></symbol>
   <symbol id="admin-icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="admin-art-section-wave" viewBox="0 0 380 96">
+    <path d="M0 96C99 89 119 50 179 58c55 8 111 39 201-16v54Z" fill="#ede9fe"/>
+    <path d="M94 88c53-8 68-38 106-34 42 4 70 33 109 19 19-7 34-23 59-26" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
+  </symbol>
   <symbol id="admin-art-bell" viewBox="0 0 40 40">
     <g transform="rotate(-9 20 20)" stroke="#6830b4" stroke-width="1.4" stroke-linejoin="round">
       <rect x="17.8" y="4" width="5" height="8" rx="2.5" fill="#d8c2fc"/>
@@ -4947,11 +4987,25 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 </aside>
 <div id="view-dash-crear-eval" class="app-shell admin-module cev-shell hidden">
   <main class="main-content">
-    <div class="topbar">
-      <div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div>
-      <h1 class="topbar-title" id="cev-topbar-title" tabindex="-1">Nueva evaluación</h1>
-      <div class="topbar-right"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div></div>
-    </div>
+    <header class="topbar" id="cev-topbar">
+      <div class="admin-nav-title">
+        <div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div>
+        <h1 class="topbar-title" id="cev-topbar-title" tabindex="-1">Nueva evaluación</h1>
+      </div>
+      <svg class="admin-section-art hidden" id="cev-mis-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
+        <use href="#admin-art-section-wave" width="380" height="96"/>
+        <g transform="translate(232 17) rotate(-8)" stroke="#6d28d9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="3" width="58" height="66" rx="8" fill="#c4b5fd"/>
+          <rect width="58" height="66" rx="8" fill="#fcfaff"/>
+          <rect x="16" y="-5" width="26" height="12" rx="5" fill="#ffd9bf"/>
+          <path d="m12 20 4 4 7-8m6 6h16M12 37l4 4 7-8m6 6h16M12 53l4 4 7-8m6 6h16" fill="none"/>
+        </g>
+        <circle cx="303" cy="63" r="18" fill="#e0d2ff" stroke="#8b5cf6" stroke-width="1.6"/>
+        <path d="m296 63 5 5 10-11m13-38v11m-5-5h10" fill="none" stroke="#6d28d9" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="202" cy="52" r="3" fill="#c4b5fd"/>
+      </svg>
+      <div class="topbar-right" id="cev-topbar-credits"><div id="crear-eval-credits-chip" class="mind24-credits-chip" style="display:none;" title="Créditos Aspen vinculados a tu correo"><span class="m24-cc-lbl">Créditos disponibles</span><span class="m24-cc-val" id="crear-eval-credits-value">0</span></div></div>
+    </header>
     <div class="page-content">
       <div id="cev-panel-nueva" class="cev-panel">
       <div id="cev-api-banner" class="cev-api-banner hidden" role="status"></div>
@@ -4985,12 +5039,18 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       </div>
       <div id="cev-panel-mis" class="cev-panel hidden">
         <div class="card cev-panel-table-card">
-          <div class="card-header"><h2 class="card-title">Registros</h2><button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()">↻ Actualizar</button></div>
+          <div class="card-header cev-mis-head">
+            <h2 class="card-title">Registros</h2>
+            <div class="cev-mis-tools">
+              <div id="cev-mis-credits-slot"></div>
+              <button type="button" class="card-action" onclick="refreshCrearEvalAssignmentsTables()"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5 10a7.5 7.5 0 0 1 12.8-4L20 9M4 15l2.2 3A7.5 7.5 0 0 0 19 14"/></svg>Actualizar</button>
+            </div>
+          </div>
           <div class="card-body">
             <p id="cev-mis-err" class="cev-table-message hidden" role="status"></p>
             <div class="cev-table-scroll">
               <table class="cev-table" role="table" aria-label="Evaluaciones asignadas">
-                <thead role="rowgroup"><tr role="row"><th scope="col">Candidato</th><th scope="col">Estado</th><th scope="col">Creada</th><th scope="col">Correo</th><th scope="col">CURP</th><th scope="col">Módulos</th><th scope="col">Clave</th><th scope="col">Reportes</th><th scope="col">Acciones</th></tr></thead>
+                <thead role="rowgroup"><tr role="row"><th scope="col">Candidato</th><th scope="col">Estado</th><th scope="col">Clave</th><th scope="col">Creada</th><th scope="col">Correo</th><th scope="col">CURP</th><th scope="col">Módulos</th><th scope="col">Reportes</th><th scope="col">Acciones</th></tr></thead>
                 <tbody id="cev-mis-assign-tbody" role="rowgroup"></tbody>
               </table>
             </div>
@@ -5014,11 +5074,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <!-- ════════════════════ DASH RECLUTAMIENTO ════════════════════ -->
 <div id="view-dash-recruitment" class="app-shell admin-module hidden">
   <main class="main-content">
-    <header class="rec-section-header">
+    <header class="admin-section-header rec-section-header">
       <div class="admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><h1 id="rec-section-title" tabindex="-1">Vacantes</h1></div>
-      <svg class="rec-section-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
-        <path d="M0 96C99 89 119 50 179 58c55 8 111 39 201-16v54Z" fill="#ede9fe"/>
-        <path d="M94 88c53-8 68-38 106-34 42 4 70 33 109 19 19-7 34-23 59-26" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
+      <svg class="admin-section-art rec-section-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
+        <use href="#admin-art-section-wave" width="380" height="96"/>
         <g data-rec-section-art="vacancies">
           <g transform="translate(285 52) rotate(10)" stroke="#8b5cf6" stroke-width="1.8" stroke-linejoin="round">
             <rect x="-4" y="-33" width="40" height="55" rx="7" fill="#ddd6fe"/>
@@ -5494,17 +5553,23 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <!-- ════════════════════ DASH GESTIÓN DE EQUIPO ════════════════════ -->
 <div id="view-dash-timeclock" class="app-shell admin-module hidden">
   <main class="main-content">
-    <div class="topbar rec-dash-topbar tc-dash-topbar">
-      <div class="rec-topbar-cluster admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><div class="topbar-title">Gestión de equipos</div></div>
-      <div class="tc-topbar-tools">
-        <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()">Pulso de hoy</button>
-        <button type="button" class="tc-sched-export-btn" id="tc-sched-export-toggle" aria-expanded="false" aria-controls="tc-sched-export-dialog" aria-haspopup="dialog" onclick="tcOpenSchedExportDialog()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span>Descargar registro de horarios</span>
-        </button>
-        <button type="button" class="rec-btn-new" onclick="tcToggleAddForm()">+ Agregar colaborador</button>
-      </div>
-    </div>
+    <header class="admin-section-header">
+      <div class="admin-nav-title"><div class="admin-mobile-controls" data-admin-notif-slot><button type="button" class="admin-menu-toggle" aria-label="Menú principal" aria-expanded="false" aria-controls="admin-sidebar" onclick="mind24AdminSetMenuOpen(true)"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-menu"/></svg></button></div><h1>Gestión de equipos</h1></div>
+      <svg class="admin-section-art" viewBox="0 0 380 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" focusable="false">
+        <use href="#admin-art-section-wave" width="380" height="96"/>
+        <g stroke="#7b45c6" stroke-width="1.8" stroke-linejoin="round">
+          <path d="M273 75V62a21 21 0 0 1 42 0v13Z" fill="#c4b5fd"/>
+          <circle cx="294" cy="32" r="11" fill="#ffd9bf"/>
+          <path d="M218 78V65a22 22 0 0 1 44 0v13Z" fill="#e7dafe"/>
+          <circle cx="240" cy="34" r="12" fill="#fff1e8"/>
+          <path d="M244 82V70a23 23 0 0 1 46 0v12Z" fill="#ac87f0"/>
+          <path d="M253 70a14 14 0 0 1 8-12" fill="none" stroke="#e9d5ff" stroke-linecap="round"/>
+          <circle cx="267" cy="42" r="12" fill="#ffd9bf"/>
+        </g>
+        <path d="M205 23v12m-6-6h12m112 9v10m-5-5h10" fill="none" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="322" cy="65" r="3" fill="#c4b5fd"/>
+      </svg>
+    </header>
     <div class="page-content">
       <div id="tc-pulse-popover" class="tc-pulse-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-pulse-popover-title" aria-hidden="true">
         <div class="tc-pulse-popover-head">
@@ -5531,70 +5596,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
             <span>Descargar PDF</span>
           </button>
-        </div>
-      </div>
-      <div id="tc-add-card" class="card hidden" style="margin-bottom:18px;">
-        <div class="card-header"><div><div class="card-title">Nuevo colaborador</div><div class="card-subtitle">Timezone IANA obligatorio</div></div></div>
-        <div class="card-body">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="form-label">Nombre completo</label><input type="text" id="tc-add-name" class="form-input" maxlength="200" placeholder="Nombre y apellido"></div>
-            <div><label class="form-label">Puesto</label><input type="text" id="tc-add-position" class="form-input" maxlength="200" placeholder="Opcional"></div>
-            <div><label class="form-label">Departamento</label><input type="text" id="tc-add-dept" class="form-input" maxlength="200" placeholder="Opcional"></div>
-            <div><label class="form-label">Código interno</label><input type="text" id="tc-add-code" class="form-input" maxlength="64" placeholder="Opcional"></div>
-            <div style="grid-column:1/-1;"><label class="form-label">Zona horaria</label>
-              <select id="tc-add-tz" class="form-input">
-                <option value="">Selecciona una zona IANA</option>
-                <option value="America/Tijuana">America/Tijuana</option>
-                <option value="America/Hermosillo">America/Hermosillo</option>
-                <option value="America/Mazatlan">America/Mazatlan</option>
-                <option value="America/Mexico_City">America/Mexico_City</option>
-                <option value="America/Merida">America/Merida</option>
-                <option value="America/Cancun">America/Cancun</option>
-                <option value="America/Monterrey">America/Monterrey</option>
-                <option value="America/Chihuahua">America/Chihuahua</option>
-                <option value="UTC">UTC</option>
-              </select>
-            </div>
-            <div class="tc-expected-work-field">
-              <label class="form-label">Jornada esperada</label>
-              <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ew-none" onchange="tcExpectedWorkToggle('add')"> Sin jornada esperada</label>
-              <div id="tc-add-ew-fields" class="tc-expected-work-duration">
-                <select id="tc-add-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
-                  <option value="4">4 h</option><option value="6">6 h</option><option value="8" selected>8 h</option><option value="9">9 h</option><option value="10">10 h</option>
-                </select>
-                <select id="tc-add-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
-                  <option value="0" selected>00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
-                </select>
-              </div>
-            </div>
-            <div class="tc-work-schedule-field">
-              <label class="form-label">Horario laboral</label>
-              <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ws-on" onchange="tcWorkScheduleToggle('add')"> Asignar horario fijo</label>
-              <div id="tc-add-ws-fields" class="tc-work-schedule-fields hidden">
-                <div class="tc-work-schedule-days-wrap">
-                  <span class="tc-work-schedule-days-label">Días laborales</span>
-                  <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
-                    <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
-                  </div>
-                </div>
-                <label>Entrada<input type="time" id="tc-add-ws-start" class="form-input" value="08:00" step="60"></label>
-                <label>Salida<input type="time" id="tc-add-ws-end" class="form-input" value="15:00" step="60"></label>
-                <label>Tolerancia<span class="tc-work-schedule-tol"><input type="number" id="tc-add-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span></label>
-                <p class="tc-work-schedule-hint">Elige los días laborales. Los demás quedan como descanso, en la zona horaria del colaborador.</p>
-              </div>
-            </div>
-          </div>
-          <p id="tc-add-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:10px;"></p>
-          <div style="display:flex;gap:10px;margin-top:14px;">
-            <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcCreateEmployee()">Crear y generar enlace</button>
-            <button type="button" class="card-action" onclick="tcToggleAddForm(false)">Cancelar</button>
-          </div>
         </div>
       </div>
       <div id="tc-docs-backdrop" class="tc-task-modal-backdrop hidden" aria-hidden="true" onclick="if(event.target===this)tcCloseEmpDocs()">
@@ -5755,12 +5756,87 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </form>
         </div>
       </div>
-      <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
-      <p id="tc-list-err" class="hidden" style="font-size:13px;color:#DC2626;margin-bottom:10px;"></p>
       <div class="card tc-directory-card">
         <div class="card-header tc-directory-head">
-          <div class="tc-dir-head"><div class="card-title">Directorio</div><span class="tc-dir-count" id="tc-list-count">0 colaboradores</span></div>
-          <button type="button" class="tc-directory-toggle hidden" id="tc-directory-toggle" aria-controls="tc-directory-body" aria-expanded="true" onclick="tcDirectorySetExpanded(this.getAttribute('aria-expanded')==='false')"><span>Ocultar directorio</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg></button>
+          <div class="tc-dir-head">
+            <h2 class="card-title">Directorio</h2>
+            <span class="tc-dir-count" id="tc-list-count">0 colaboradores</span>
+            <button type="button" class="tc-directory-toggle hidden" id="tc-directory-toggle" aria-controls="tc-directory-body" aria-expanded="true" onclick="tcDirectorySetExpanded(this.getAttribute('aria-expanded')==='false')"><span>Ocultar directorio</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg></button>
+          </div>
+          <div class="tc-directory-tools">
+            <button type="button" class="tc-pulse-btn" id="tc-pulse-toggle" aria-expanded="false" aria-controls="tc-pulse-popover" aria-haspopup="dialog" onclick="tcToggleTeamPulse()"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h5l3-6 4 12 3-6h3"/></svg>Pulso de hoy</button>
+            <button type="button" class="tc-sched-export-btn" id="tc-sched-export-toggle" aria-expanded="false" aria-controls="tc-sched-export-dialog" aria-haspopup="dialog" onclick="tcOpenSchedExportDialog()">
+              <svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>
+              <span>Descargar registro de horarios</span>
+            </button>
+            <button type="button" class="rec-btn-new" id="tc-add-toggle" aria-expanded="false" aria-controls="tc-add-card" onclick="tcToggleAddForm()"><svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg>Agregar colaborador</button>
+          </div>
+        </div>
+        <div id="tc-secret-banner" class="tc-link-banner hidden" role="status" aria-live="polite"></div>
+        <p id="tc-list-err" class="tc-directory-error hidden"></p>
+        <div id="tc-add-card" class="tc-directory-add hidden">
+          <div class="card-header"><div><div class="card-title">Nuevo colaborador</div><div class="card-subtitle">Timezone IANA obligatorio</div></div></div>
+          <div class="card-body">
+            <div class="tc-directory-add-fields">
+              <div><label class="form-label">Nombre completo</label><input type="text" id="tc-add-name" class="form-input" maxlength="200" placeholder="Nombre y apellido"></div>
+              <div><label class="form-label">Puesto</label><input type="text" id="tc-add-position" class="form-input" maxlength="200" placeholder="Opcional"></div>
+              <div><label class="form-label">Departamento</label><input type="text" id="tc-add-dept" class="form-input" maxlength="200" placeholder="Opcional"></div>
+              <div><label class="form-label">Código interno</label><input type="text" id="tc-add-code" class="form-input" maxlength="64" placeholder="Opcional"></div>
+              <div style="grid-column:1/-1;"><label class="form-label">Zona horaria</label>
+                <select id="tc-add-tz" class="form-input">
+                  <option value="">Selecciona una zona IANA</option>
+                  <option value="America/Tijuana">America/Tijuana</option>
+                  <option value="America/Hermosillo">America/Hermosillo</option>
+                  <option value="America/Mazatlan">America/Mazatlan</option>
+                  <option value="America/Mexico_City">America/Mexico_City</option>
+                  <option value="America/Merida">America/Merida</option>
+                  <option value="America/Cancun">America/Cancun</option>
+                  <option value="America/Monterrey">America/Monterrey</option>
+                  <option value="America/Chihuahua">America/Chihuahua</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div class="tc-expected-work-field">
+                <label class="form-label">Jornada esperada</label>
+                <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ew-none" onchange="tcExpectedWorkToggle('add')"> Sin jornada esperada</label>
+                <div id="tc-add-ew-fields" class="tc-expected-work-duration">
+                  <select id="tc-add-ew-hours" class="form-input" aria-label="Horas de jornada esperada">
+                    <option value="4">4 h</option><option value="6">6 h</option><option value="8" selected>8 h</option><option value="9">9 h</option><option value="10">10 h</option>
+                  </select>
+                  <select id="tc-add-ew-minutes" class="form-input" aria-label="Minutos de jornada esperada">
+                    <option value="0" selected>00 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
+                  </select>
+                </div>
+              </div>
+              <div class="tc-work-schedule-field">
+                <label class="form-label">Horario laboral</label>
+                <label class="tc-expected-work-none"><input type="checkbox" id="tc-add-ws-on" onchange="tcWorkScheduleToggle('add')"> Asignar horario fijo</label>
+                <div id="tc-add-ws-fields" class="tc-work-schedule-fields hidden">
+                  <div class="tc-work-schedule-days-wrap">
+                    <span class="tc-work-schedule-days-label">Días laborales</span>
+                    <div class="tc-work-schedule-days" role="group" aria-label="Días laborales">
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-1" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Lun</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-2" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mar</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-3" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Mié</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-4" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Jue</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-5" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Vie</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-6" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Sáb</button>
+                      <button type="button" class="tc-work-schedule-day" id="tc-add-ws-day-7" aria-pressed="false" onclick="tcWorkScheduleDayToggle(this)">Dom</button>
+                    </div>
+                  </div>
+                  <label>Entrada<input type="time" id="tc-add-ws-start" class="form-input" value="08:00" step="60"></label>
+                  <label>Salida<input type="time" id="tc-add-ws-end" class="form-input" value="15:00" step="60"></label>
+                  <label>Tolerancia<span class="tc-work-schedule-tol"><input type="number" id="tc-add-ws-tol" class="form-input" min="0" max="120" step="1" value="10" inputmode="numeric" aria-label="Tolerancia en minutos"><span class="tc-work-schedule-suffix">min</span></span></label>
+                  <p class="tc-work-schedule-hint">Elige los días laborales. Los demás quedan como descanso, en la zona horaria del colaborador.</p>
+                </div>
+              </div>
+            </div>
+            <p id="tc-add-err" class="hidden" style="font-size:13px;color:#DC2626;margin-top:10px;"></p>
+            <div style="display:flex;gap:10px;margin-top:14px;">
+              <button type="button" class="form-submit form-submit-purple" style="width:auto;padding:10px 16px;" onclick="tcCreateEmployee()">Crear y generar enlace</button>
+              <button type="button" class="card-action" onclick="tcToggleAddForm(false)">Cancelar</button>
+            </div>
+          </div>
         </div>
         <div class="card-body tc-directory-body tc-workforce-scroll" id="tc-directory-body">
           <table class="tc-emp-table">
@@ -6787,10 +6863,16 @@ function crearEvalMapStatusPill(status){
   if(String(status)==='archived') return { label:'Archivada', cls:'cev-status-pill cev-st-archivada' };
   return { label:'Pendiente', cls:'cev-status-pill cev-st-pendiente' };
 }
-function crearEvalFmtDate(iso){
-  if(!iso)return '—';
-  try{ return new Date(iso).toLocaleString('es-MX',{ dateStyle:'short', timeStyle:'short' }); }
-  catch(_){ return '—'; }
+function crearEvalCreatedCell(cell, iso){
+  const date=iso?new Date(iso):null;
+  if(!date||Number.isNaN(date.getTime())) return;
+  const time=document.createElement('time');
+  time.dateTime=date.toISOString();
+  time.textContent=date.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  const hour=document.createElement('small');
+  hour.textContent=date.toLocaleTimeString('es-MX',{timeStyle:'short'});
+  time.appendChild(hour);
+  cell.replaceChildren(time);
 }
 function crearEvalCandidateLabel(a){
   const c=a.candidate;
@@ -7124,12 +7206,15 @@ async function refreshCrearEvalAssignmentsTables(){
       badge.className=pill.cls;
       badge.textContent=pill.label;
       addCell().replaceChildren(badge);
-      addCell(crearEvalFmtDate(a.createdAt),'Creada');
-      addCell(crearEvalCandidateEmail(a),'Correo');
+      const key=document.createElement('span');
+      key.className='cev-key-value';
+      key.textContent=mind24ShortAssignmentCode(a.id);
+      addCell('','Clave','cev-td-mono cev-td-key').replaceChildren(key);
+      crearEvalCreatedCell(addCell('','Creada','cev-td-date'),a.createdAt);
+      addCell(crearEvalCandidateEmail(a),'Correo','cev-td-email');
       addCell(crearEvalCandidateCurp(a),'CURP','cev-td-mono');
       const mods=crearEvalModulesDisplayList(a);
       addCell(mods.text,'Módulos','cev-td-mods').title=mods.full;
-      addCell(mind24ShortAssignmentCode(a.id),'Clave','cev-td-mono');
       crearEvalReportesCell(row,a);
       crearEvalAccionesCell(row,a);
     });
@@ -7152,10 +7237,20 @@ function crearEvalSidebarNav(which){
     if(window.__CEV_FORM_LOCKED) crearEvalResetNuevaFlow();
   }
   window.__cevLastNav=which;
-  document.getElementById('cev-panel-nueva').classList.toggle('hidden',which!=='nueva');
-  document.getElementById('cev-panel-mis').classList.toggle('hidden',which!=='mis');
+  const mis=which==='mis';
+  document.getElementById('cev-panel-nueva').classList.toggle('hidden',mis);
+  document.getElementById('cev-panel-mis').classList.toggle('hidden',!mis);
+  const header=document.getElementById('cev-topbar');
+  header.classList.toggle('topbar',!mis);
+  header.classList.toggle('admin-section-header',mis);
+  document.getElementById('cev-mis-art').classList.toggle('hidden',!mis);
+  const topbarCredits=document.getElementById('cev-topbar-credits');
+  const creditsHost=mis?document.getElementById('cev-mis-credits-slot'):topbarCredits;
+  const credits=document.getElementById('crear-eval-credits-chip');
+  if(credits.parentElement!==creditsHost) creditsHost.appendChild(credits);
+  topbarCredits.classList.toggle('hidden',mis);
   const title=document.getElementById('cev-topbar-title');
-  title.textContent=which==='mis'?'Mis evaluaciones':'Nueva evaluación';
+  title.textContent=mis?'Mis evaluaciones':'Nueva evaluación';
   if(mobileMenuWasOpen) title.focus();
   mind24AdminSidebarActive('dash-crear-eval');
   refreshCrearEvalAssignmentsTables();
@@ -12307,6 +12402,11 @@ function tcPositionTeamPulsePopover(){
   const pop=document.getElementById('tc-pulse-popover');
   if(!btn||!pop||pop.classList.contains('hidden')) return;
   const r=btn.getBoundingClientRect();
+  const header=btn.closest('.main-content')?.querySelector('.admin-section-header');
+  if(r.bottom<=header?.getBoundingClientRect().bottom||r.top>=window.innerHeight){
+    tcCloseTeamPulse(false);
+    return;
+  }
   const w=pop.offsetWidth||300;
   let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
   let top=r.bottom+8;
@@ -12363,6 +12463,7 @@ function tcEnsureTeamPulseListeners(){
   window.addEventListener('resize',function(){
     if(tcTeamPulseOpen) tcPositionTeamPulsePopover();
   });
+  document.querySelector('#view-dash-timeclock .main-content')?.addEventListener('scroll',tcPositionTeamPulsePopover,{passive:true});
 }
 const REC_VACANCY_STATUS_LABELS={ACTIVE:'Activa',PAUSED:'En pausa',COVERED:'Cubierta',CLOSED:'Cerrada'};
 const REC_VAC_DOC_CATEGORY_LABELS={
@@ -23265,10 +23366,16 @@ function tcToggleAddForm(force){
   const card=document.getElementById('tc-add-card');
   if(!card) return;
   const show = force===false ? false : force===true ? true : card.classList.contains('hidden');
+  const restoreFocus=!show&&card.contains(document.activeElement);
+  const toggle=document.getElementById('tc-add-toggle');
   card.classList.toggle('hidden', !show);
+  toggle?.setAttribute('aria-expanded',String(show));
   const err=document.getElementById('tc-add-err');
   if(err){ err.classList.add('hidden'); err.textContent=''; }
-  if(show) tcExpectedWorkSet('add', 480);
+  if(show){
+    tcExpectedWorkSet('add', 480);
+    document.getElementById('tc-add-name')?.focus();
+  }else if(restoreFocus) toggle?.focus();
 }
 function tcShowSecretLink(accessLink){
   tcSecretLinkTemp=String(accessLink||'');
@@ -23480,7 +23587,7 @@ async function tcViewJornada(id){
     if(card){
       card.classList.remove('hidden');
       card.focus({preventScroll:true});
-      document.getElementById('tc-directory-toggle').parentElement.scrollIntoView({block:'start'});
+      document.getElementById('tc-directory-toggle').closest('.tc-directory-head').scrollIntoView({block:'start'});
     }
     tcJornadaStartLivePoll();
   }catch(e){ if(request===tcJornadaRequest) alert(e.message||'No se pudo consultar la jornada.'); }
