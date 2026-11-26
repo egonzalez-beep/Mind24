@@ -5,7 +5,6 @@ import { createRecruitmentCandidateNote } from './recruitmentCandidateNote.servi
 import { createRecruitmentCandidateAndNotify } from './recruitmentCandidateCreate.service.js';
 import { assertRecruitmentVacancyInOrg } from './recruitmentVacancy.service.js';
 import { getVacancyStageConfiguration } from './recruitmentVacancyStage.service.js';
-import { listRecruitmentVacancies } from './recruitmentVacancy.service.js';
 
 const candidateContactRefine = (data, ctx) => {
   const wa = data.whatsapp != null ? String(data.whatsapp).trim() : '';
@@ -65,8 +64,11 @@ export const workforceCandidateCreateSchema = z
   .superRefine(candidateContactRefine);
 
 export async function listActiveVacanciesForWorkforcePortal(organizationId) {
-  const rows = await listRecruitmentVacancies(organizationId, { status: 'ACTIVE' });
-  return rows.map((v) => ({ id: v.id, title: v.title, status: v.status }));
+  return prisma.recruitmentVacancy.findMany({
+    where: { organizationId, status: 'ACTIVE' },
+    select: { id: true, title: true, status: true, location: true },
+    orderBy: [{ openedAt: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+  });
 }
 
 export async function getEnabledVacancyStagesForWorkforcePortal(organizationId, vacancyId) {

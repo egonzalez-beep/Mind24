@@ -124,7 +124,7 @@ check(
 );
 
 console.log('\n=== Workspace UX V2 — estático ===\n');
-check(/max-width:1140px/.test(indexHtml), 'workspace ancho desktop');
+check(/\.tc-emp-card--portal\{max-width:1440px/.test(indexHtml), 'workspace ancho desktop');
 check(/tc-ws-hero/.test(indexHtml) && /tc-ws-jornada-mini/.test(indexHtml), 'header hero unificado + jornada');
 check(/tc-ws-quick-actions/.test(indexHtml) && /tc-ws-quick-novedades/.test(indexHtml), 'barra accesos rápidos + novedades');
 check(/tcEmpQuickGoActivities/.test(indexHtml) && /tcEmpQuickRegisterCandidate/.test(indexHtml) && /tcEmpQuickGoCandidates/.test(indexHtml), 'atajos conectados a tabs/modal');
@@ -215,9 +215,10 @@ check(/onclick="tcEmpPrimaryAction\(\)"/.test(indexHtml), 'CTA entrada/salida in
 console.log('\n=== Workspace UX V2.3 — shell estable + duración ===\n');
 check(/#tc-emp-app\{width:100%;min-width:0/.test(indexHtml), 'shell workspace ancho estable');
 check(/\.tc-ws-panel-scroll/.test(indexHtml) && /tc-ws-panel-activities-scroll/.test(indexHtml) && /tc-ws-cand-list-scroll/.test(indexHtml), 'paneles operativos con scroll');
-check(/tc-ws-stage/.test(indexHtml) && /height:clamp\(400px,52vh,580px\)/.test(indexHtml), 'stage tabs altura fija desktop');
+check(/\.tc-ws-stage\{position:relative;height:clamp\(300px,calc\(100dvh - \d+px\),640px\)/.test(indexHtml), 'stage estable según el espacio disponible');
 check(/tc-ws-stage \.tc-ws-panel:not\(\[hidden\]\)\{position:absolute/.test(indexHtml), 'paneles mismo viewport al cambiar tab');
-check(/tc-emp-shell--portal/.test(indexHtml) && /max-height:100vh/.test(indexHtml.match(/\.tc-emp-shell--portal[\s\S]*?\}/)?.[0] || ''), 'sin scroll exterior laptop');
+check(/\.tc-emp-shell--portal\{min-height:100dvh/.test(indexHtml), 'portal puede desplazarse en ventanas de poca altura');
+check(/id="tc-ws-vacancies-toggle"[^>]*aria-expanded="false"/.test(indexHtml) && /tcEmpSetVacanciesOpen\(tcEmpVacanciesWide.matches\)/.test(indexHtml), 'vacantes visibles en escritorio y plegadas en móvil por defecto');
 check(/@media\(max-width:899px\)[\s\S]*?\.tc-ws-panel-scroll\{[^}]*overflow:visible/.test(indexHtml), 'mobile sin scroll interno');
 check(/function tcEmpWorkspaceResetPanelScroll/.test(indexHtml), 'reset scroll panel');
 const resetScrollFn = indexHtml.match(/function tcEmpWorkspaceResetPanelScroll[\s\S]*?^function /m)?.[0] || '';
@@ -606,9 +607,13 @@ if (dbOk) {
     const vac = await jsonFetch(base, '/api/org/recruitment/vacancies', {
       method: 'POST',
       cookie: adminCookie,
-      body: { title: 'Vac WF', clientName: 'C', positionsTotal: 1 },
+      body: { title: 'Vac WF', clientName: 'C', location: 'Querétaro', positionsTotal: 1 },
     });
     const vacId = vac.data.vacancy?.id;
+    const vacancies = await jsonFetch(base, '/api/timeclock/public/recruitment/vacancies', { cookie: tcA });
+    const vacancyRow = vacancies.data.vacancies?.find((row) => row.id === vacId);
+    check(vacancies.res.status === 200 && vacancyRow?.location === 'Querétaro' &&
+      vacancyRow.status === 'ACTIVE' && !('clientName' in vacancyRow), 'vacante activa del portal expone la ubicación');
     await jsonFetch(base, `/api/org/recruitment/vacancies/${vacId}/applications`, {
       method: 'POST',
       cookie: adminCookie,

@@ -60,7 +60,7 @@ check(/Solicita un nuevo enlace a tu administrador/.test(indexHtml), 'ask admin 
 check(/Gestión de equipo/.test(indexHtml), 'admin module title Gestión de equipo');
 check(!/Asistencia y seguimiento de tareas/.test(indexHtml), 'admin menu omits redundant team subtitle');
 check(/tc-emp-title/.test(indexHtml) && /Mi espacio de trabajo/.test(indexHtml), 'employee title Mi espacio de trabajo');
-check(/Asistencia, actividades y reclutamiento/.test(indexHtml), 'employee subtitle');
+check(/tc-ws-brand-art/.test(indexHtml) && /id="tc-ws-quick-actions"/.test(indexHtml), 'encabezado del portal con ilustración y accesos');
 check(!/Reloj checador remoto/.test(indexHtml), 'no legacy reloj checador subtitle');
 check(/aria-label="Pendientes"/.test(indexHtml) && /aria-label="Completadas"/.test(indexHtml), 'directorio columnas resumen actividades');
 check(/Zona horaria/.test(indexHtml) && !/<th>Zona horaria<\/th>/.test(indexHtml), 'timezone solo en alta, no en directorio');
@@ -100,7 +100,7 @@ check(
   ),
   'privacy copy',
 );
-check(/Para una mejor experiencia, utiliza este módulo desde una computadora/.test(indexHtml), 'laptop-first notice');
+check(/id="tc-ws-vacancies-toggle"[^>]*aria-expanded="false"/.test(indexHtml), 'vacantes plegables en móvil');
 check(/function tcClearSecretLink/.test(indexHtml), 'secret link cleanup');
 check(/tcSecretLinkTemp=null/.test(indexHtml), 'clears JS secret on close');
 check(!/window\.__TC_ACCESS_LINKS/.test(indexHtml), 'no persistent access-link map');

@@ -2513,12 +2513,13 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-link-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .tc-emp-shell{min-height:100vh;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 32px;}
 @media(min-width:768px){.tc-emp-shell{padding:28px 24px 40px;align-items:center;}}
-@media(min-width:900px){.tc-emp-shell--portal{height:100vh;max-height:100vh;overflow:hidden;align-items:center;padding:20px 24px;}}
+.tc-emp-shell--portal{background:#f7f5fb;padding:14px 12px;}
+@media(min-width:900px){.tc-emp-shell--portal{min-height:100dvh;align-items:flex-start;padding:22px 24px;}}
 .tc-emp-card{width:100%;max-width:1140px;min-width:0;box-sizing:border-box;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:24px 18px 22px;box-shadow:0 18px 50px rgba(15,23,42,.08);}
 @media(min-width:768px){.tc-emp-card{padding:32px 36px 28px;border-radius:22px;}}
-@media(min-width:900px){.tc-emp-card--portal{max-height:calc(100vh - 40px);overflow:hidden;display:flex;flex-direction:column;}}
+.tc-emp-card--portal{max-width:1440px;padding:0;border:0;background:transparent;box-shadow:none;}
+.tc-emp-card--portal:has(#tc-emp-gate:not(.hidden),#tc-emp-app.hidden){max-width:560px;padding:24px;background:#fff;border:1px solid var(--purple-border);}
 .tc-emp-brand{font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--purple);margin-bottom:6px;}
-.tc-emp-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:18px;}
 .tc-emp-hello{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary);line-height:1.2;margin-bottom:6px;}
 .tc-emp-meta{font-size:14px;color:var(--slate-500);margin-bottom:18px;}
 .tc-emp-clock{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--slate-100);margin-bottom:22px;font-size:13px;color:var(--slate-600);}
@@ -2580,29 +2581,33 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 @media(min-width:768px){.tc-emp-my-cand-card-right .tc-emp-my-cand-interview{justify-content:flex-end;}.tc-emp-my-cand-card-right .rec-cand-process-head{justify-content:flex-end;}}
 .tc-emp-my-cand-card-right .tc-emp-my-cand-reg{margin-top:4px;}
 .tc-ws-hero{margin:0 0 16px;}
-.tc-ws-hero-inner{display:grid;gap:14px;padding:16px 16px 14px;border-radius:16px;border:1px solid rgba(148,163,184,.28);background:linear-gradient(128deg,#fafbff 0%,#f8fafc 42%,#ffffff 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 2px rgba(15,23,42,.04);}
+.tc-ws-hero-inner{display:grid;gap:0;border-radius:20px;border:1px solid var(--purple-border);background:#fff;box-shadow:0 3px 14px #4c1d950b;}
 @media(min-width:900px){.tc-ws-hero-inner{grid-template-columns:minmax(0,1.05fr) minmax(0,1.15fr) minmax(260px,0.95fr);align-items:stretch;gap:0;padding:0;overflow:visible;}}
-.tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{min-width:0;}
-@media(min-width:900px){.tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{padding:18px 20px;}.tc-ws-hero-brand{border-right:1px solid rgba(148,163,184,.2);}.tc-ws-hero-user{border-right:1px solid rgba(148,163,184,.2);display:flex;align-items:flex-start;}.tc-ws-hero-jornada{display:flex;align-items:center;overflow:visible;}}
-.tc-ws-hero-brand .tc-emp-brand{margin-bottom:4px;}
-.tc-ws-hero-brand .tc-ws-title{margin:0;font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);line-height:1.2;}
-@media(min-width:768px){.tc-ws-hero-brand .tc-ws-title{font-size:22px;}}
-@media(min-width:900px){.tc-ws-hero-brand .tc-ws-title{font-size:20px;letter-spacing:.03em;}}
-.tc-ws-hero-brand .tc-emp-kicker{margin:4px 0 0;font-size:11px;line-height:1.35;}
-.tc-ws-quick-actions{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-top:12px;max-width:100%;}
+.tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{min-width:0;padding:14px 16px;}
+.tc-ws-hero-brand{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;border-radius:19px 19px 0 0;background:var(--purple-deep);}
+.tc-ws-hero-brand .s-logo{display:flex;align-items:center;gap:7px;margin:0 0 8px;color:#fff;}
+.tc-ws-hero-brand .sidebar-logo-icon{width:27px;height:27px;flex:none;}
+.tc-ws-hero-brand .sidebar-logo-text{font-size:14px;color:#fff;}
+.tc-ws-hero-brand .sidebar-logo-text span{color:#ddd6fe;}
+.tc-ws-brand-art{position:absolute;z-index:-1;inset:auto 0 0 auto;width:min(100%,408px);height:100%;border-radius:inherit;pointer-events:none;}
+.tc-ws-hero-brand .tc-ws-title{max-width:350px;margin:0;font-size:clamp(23px,3vw,36px);font-weight:800;letter-spacing:-.04em;text-transform:none;color:#fff;line-height:1.05;}
+.tc-ws-hero-user{align-self:center;}
+.tc-ws-hero-jornada{padding-top:0;}
+@media(min-width:900px){
+  .tc-ws-hero-brand,.tc-ws-hero-user,.tc-ws-hero-jornada{padding:16px 18px;}
+  .tc-ws-hero-brand{border-radius:19px 0 0 19px;}
+  .tc-ws-hero-user{align-items:center;}
+  .tc-ws-hero-jornada{display:flex;align-items:center;}
+}
+.tc-ws-quick-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;max-width:100%;}
 @media(max-width:420px){.tc-ws-quick-actions{gap:4px;}}
-.tc-ws-quick-btn{position:relative;flex:0 0 auto;width:36px;height:36px;padding:0;border:none;border-radius:10px;background:transparent;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:color 160ms ease,background 160ms ease,box-shadow 160ms ease;}
-@media(max-width:420px){.tc-ws-quick-btn{width:32px;height:32px;border-radius:9px;}}
-.tc-ws-quick-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-@media(max-width:420px){.tc-ws-quick-btn svg{width:18px;height:18px;}}
-.tc-ws-quick-btn:hover,.tc-ws-quick-btn:focus-visible{color:var(--purple-dark);background:rgba(124,58,237,.08);outline:none;}
-.tc-ws-quick-btn:focus-visible{box-shadow:0 0 0 2px rgba(124,58,237,.35);}
-.tc-ws-quick-btn--active{color:var(--purple-dark);background:rgba(124,58,237,.1);}
-.tc-ws-quick-btn--soon{opacity:.52;cursor:default;}
-.tc-ws-quick-btn--soon:hover,.tc-ws-quick-btn--soon:focus-visible{color:var(--slate-500);background:transparent;box-shadow:none;}
+.tc-ws-quick-btn{position:relative;flex:none;width:37px;height:37px;padding:0;border:1px solid #ffffff38;border-radius:10px;background:#ffffff12;color:#fff;cursor:pointer;display:inline-grid;place-items:center;transition:background 160ms ease;}
+.tc-ws-quick-btn .admin-nav-art{width:28px;height:28px;pointer-events:none;}
+.tc-ws-quick-btn:hover,.tc-ws-quick-btn--active{background:#ffffff32;}
+.tc-ws-quick-btn:focus-visible{outline:2px solid #ddd6fe;outline-offset:2px;}
 .tc-ws-quick-badge{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;font-size:9px;font-weight:800;line-height:15px;text-align:center;pointer-events:none;box-sizing:border-box;display:none;}
 .tc-ws-quick-badge:not(:empty){display:block;}
-.tc-ws-quick-badge--violet{background:rgba(124,58,237,.14);color:var(--purple-dark);}
+.tc-ws-quick-badge--violet{background:#ede9fe;color:var(--purple-deep);}
 .tc-ws-quick-badge--red{background:#ef4444;color:#fff;border:1.5px solid #fff;}
 .tc-ws-quick-tip{position:fixed;left:0;top:0;z-index:5010;padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.12);font-size:11px;font-weight:600;color:var(--slate-700);white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 120ms ease,visibility 120ms ease;}
 .tc-ws-quick-tip--open{opacity:1;visibility:visible;}
@@ -2712,17 +2717,16 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-hero-user{display:flex;align-items:flex-start;gap:14px;}
 @media(max-width:899px){.tc-ws-hero-user{flex-wrap:wrap;}}
 .tc-ws-hero-user .tc-emp-greet-text{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start;}
-.tc-ws-hero-user .tc-emp-hello{font-size:17px;margin:0;line-height:1.25;font-weight:800;color:var(--primary);}
-@media(min-width:768px){.tc-ws-hero-user .tc-emp-hello{font-size:18px;}}
+.tc-ws-hero-user .tc-emp-hello{font-size:clamp(17px,2vw,25px);margin:0;line-height:1.15;font-weight:800;letter-spacing:-.035em;color:var(--purple-deep);overflow-wrap:anywhere;}
 .tc-ws-hero-user .tc-emp-meta{margin:3px 0 0;font-size:12px;color:var(--slate-500);}
 .tc-ws-hero-jornada{width:100%;}
 @media(min-width:900px){.tc-ws-hero-jornada .tc-ws-jornada-mini{width:100%;}}
 .tc-ws-jornada-mini{border:1px solid var(--slate-200);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);box-shadow:0 1px 2px rgba(15,23,42,.04);box-sizing:border-box;display:flex;flex-direction:column;min-height:152px;overflow:visible;position:relative;z-index:2;}
 @media(min-width:900px){.tc-ws-jornada-mini{height:152px;max-height:152px;}}
 @media(min-width:900px){.tc-emp-card--portal{overflow:visible;}}
-.tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:rgba(148,163,184,.22);background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);}
+.tc-ws-hero-jornada .tc-ws-jornada-mini{border-color:var(--purple-border);background:#faf8ff;box-shadow:none;}
 .tc-ws-jornada-mini-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-shrink:0;}
-.tc-ws-jornada-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);}
+.tc-ws-jornada-label{font-size:13px;font-weight:800;color:var(--purple-deep);}
 .tc-ws-jornada-top-actions{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;}
 .tc-ws-jornada-work-log-btn{width:36px;height:36px;border:1px solid var(--slate-200);border-radius:8px;background:#fff;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;position:relative;transition:var(--tr-fast);}
 .tc-ws-jornada-work-log-btn:hover{border-color:var(--slate-300);background:var(--slate-50);}
@@ -2769,33 +2773,33 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-jornada-signal .tc-signal-line{display:inline-flex;align-items:center;gap:6px;max-width:100%;}
 .tc-ws-jornada-signal-muted{font-size:11px;color:var(--slate-400);}
 .tc-ws-jornada-mini .tc-emp-err{margin:6px 0 0;font-size:12px;flex-shrink:0;}
-.tc-ws-tabs-wrap{margin-bottom:14px;border-bottom:1px solid var(--slate-200);}
-.tc-ws-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tc-ws-layout{display:grid;gap:14px;align-items:start;}
+@media(min-width:900px){.tc-ws-layout{grid-template-columns:minmax(0,1fr) minmax(235px,25%);}.tc-ws-work{grid-column:1;grid-row:1;}.tc-ws-vacancies{grid-column:2;grid-row:1;}}
+.tc-ws-work{min-width:0;padding:10px 12px 12px;border:1px solid var(--purple-border);border-radius:16px;background:#fff;}
+.tc-ws-tabs-wrap{margin-bottom:12px;}
+.tc-ws-tabs{display:flex;gap:4px;padding:4px;border-radius:11px;background:#f7f4ff;}
 .tc-ws-tabs::-webkit-scrollbar{display:none;}
-.tc-ws-tab{flex:1 0 auto;min-height:44px;padding:10px 16px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-500);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 160ms ease,border-color 160ms ease;}
+.tc-ws-tab{flex:1 1 0;min-width:0;min-height:39px;padding:6px 4px;border:1px solid transparent;border-radius:8px;background:transparent;font:inherit;font-size:12px;font-weight:700;color:var(--slate-600);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
 @media(min-width:768px){.tc-ws-tab{flex:0 1 auto;padding:10px 20px;}}
-.tc-ws-tab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
-.tc-ws-tab--on{color:var(--purple-dark);border-bottom-color:var(--purple);}
+.tc-ws-tab svg{display:block;width:22px;height:22px;flex-shrink:0;}
+.tc-ws-tab--on{color:var(--purple-dark);border-color:var(--purple-border);background:#fff;box-shadow:0 1px 3px #4c1d9514;}
+@media(max-width:425px){.tc-ws-tab{font-size:11px;gap:3px;}.tc-ws-tab svg{width:17px;height:17px;}.tc-ws-tab-badge:not(:empty){padding-inline:3px;}}
 .tc-ws-tab:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-ws-tab-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(124,58,237,.12);color:var(--purple-dark);}
 .tc-ws-tab-badge:empty{display:none;}
 .tc-ws-panel[hidden]{display:none!important;}
 #tc-emp-app{width:100%;min-width:0;box-sizing:border-box;}
-@media(min-width:900px){#tc-emp-app.tc-emp-app--ready{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}}
 .tc-ws-tabs-wrap{flex-shrink:0;}
 .tc-ws-stage{width:100%;min-width:0;box-sizing:border-box;}
 @media(min-width:900px){
-.tc-ws-stage{position:relative;flex:1;min-height:clamp(400px,52vh,580px);height:clamp(400px,52vh,580px);max-height:clamp(400px,52vh,580px);}
+.tc-ws-stage{position:relative;height:clamp(300px,calc(100dvh - 340px),640px);}
 .tc-ws-stage .tc-ws-panel:not([hidden]){position:absolute;inset:0;display:flex!important;flex-direction:column;min-height:0;overflow:hidden;}
 }
 .tc-ws-panel{width:100%;min-width:0;box-sizing:border-box;}
 .tc-ws-panel-scroll{width:100%;min-width:0;box-sizing:border-box;flex:1;min-height:0;}
 .tc-emp-my-cand--in-stage{flex:1;min-height:0;display:flex;flex-direction:column;}
 @media(min-width:900px){
-.tc-ws-panel-scroll{overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.42) transparent;}
-.tc-ws-panel-scroll::-webkit-scrollbar{width:8px;}
-.tc-ws-panel-scroll::-webkit-scrollbar-track{background:transparent;}
-.tc-ws-panel-scroll::-webkit-scrollbar-thumb{background:rgba(100,116,139,.36);border-radius:999px;}
+.tc-ws-panel-scroll{overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--purple-border) transparent;}
 }
 @media(max-width:899px){
 .tc-ws-stage .tc-ws-panel:not([hidden]){display:flex;flex-direction:column;}
@@ -2803,6 +2807,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 }
 .tc-ws-panel-scroll:has(.tc-emp-tasks-empty),.tc-ws-panel-scroll:has(.tc-emp-my-cand-empty){display:flex;flex-direction:column;}
 .tc-emp-tasks-empty,.tc-emp-my-cand-empty{min-height:120px;flex:1;display:flex;align-items:center;justify-content:center;text-align:center;}
+.tc-ws-activities-empty{flex-direction:column;gap:8px;padding:18px 8px;color:var(--purple-deep);font-weight:700;}
+.tc-ws-activities-empty .admin-nav-art{width:46px;height:46px;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
@@ -2810,6 +2816,34 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-emp-tasks{margin-top:0;padding-top:0;border-top:none;}
 .tc-emp-recruitment{margin-top:0;padding-top:0;border-top:none;}
 .tc-emp-my-cand{margin-top:0;padding-top:0;border-top:none;}
+.tc-ws-vacancies{min-width:0;border:1px solid var(--purple-border);border-radius:16px;background:#fff;overflow:hidden;}
+.tc-ws-vacancy-toggle{display:flex;align-items:center;width:100%;gap:8px;min-height:57px;padding:8px 12px;border:0;background:#f3eeff;color:var(--purple-deep);font:inherit;text-align:left;cursor:pointer;}
+.tc-ws-vacancy-toggle .admin-nav-art{width:34px;height:34px;}
+.tc-ws-vacancies h2{margin:0;}
+.tc-ws-vacancy-toggle-label{font-size:15px;font-weight:800;letter-spacing:-.02em;}
+.tc-ws-vacancy-count{margin-inline-start:auto;padding:2px 7px;border-radius:8px;background:#fff;color:var(--purple-dark);font-size:12px;font-weight:800;}
+.tc-ws-vacancy-count:empty{display:none;}
+.tc-ws-vacancy-toggle .admin-nav-icon{width:15px;height:15px;margin-inline-start:auto;flex:none;}
+.tc-ws-vacancy-count:not(:empty)+.admin-nav-icon{margin-inline-start:0;}
+.tc-ws-vacancy-toggle[aria-expanded=true] .admin-nav-icon{transform:rotate(180deg);}
+.tc-ws-vacancy-body{padding:10px;}
+.tc-ws-vacancy-list{display:grid;gap:7px;max-height:clamp(160px,42dvh,510px);overflow:auto;}
+@media(min-width:900px){.tc-ws-vacancy-list{max-height:clamp(220px,calc(100dvh - 345px),650px);}}
+.tc-ws-vacancy-list:empty{display:none;}
+.tc-ws-vacancy{min-width:0;display:grid;justify-items:start;gap:4px;padding:9px 10px;border:1px solid var(--purple-border);border-radius:11px;background:#fcfaff;}
+.tc-ws-vacancy h3{margin:0;font-size:13px;line-height:1.25;color:var(--purple-deep);overflow-wrap:anywhere;}
+.tc-ws-vacancy-location{display:flex;align-items:flex-start;gap:4px;color:var(--slate-600);font-size:12px;overflow-wrap:anywhere;}
+.tc-ws-vacancy-location svg{width:13px;height:13px;flex:none;margin-top:1px;}
+.tc-ws-vacancy .rec-btn-new{display:inline-flex;align-items:center;gap:5px;margin-top:4px;min-height:32px;padding:5px 8px;font-size:11px;font-weight:700;text-align:left;}
+.tc-ws-vacancy .rec-btn-new[aria-busy=true]{opacity:.65;cursor:wait;}
+.tc-ws-vacancy .rec-btn-new svg{width:14px;height:14px;flex:none;}
+.tc-ws-vacancies :is(button,.tc-ws-vacancy-list):focus-visible{outline:2px solid var(--purple);outline-offset:-2px;}
+.tc-ws-vacancy-status{margin:0;color:var(--slate-600);font-size:12px;line-height:1.4;}
+.tc-ws-vacancy-status:empty{display:none;}
+.tc-ws-vacancy-status:not(:empty)+.tc-ws-vacancy-list:not(:empty){margin-top:8px;}
+.tc-ws-vacancy-retry{margin-top:6px;}
+.tc-ws-novedades-popover-head{border-color:var(--purple-border);background:var(--purple-light);}
+.tc-ws-novedades-popover-head h3{font-size:14px;letter-spacing:0;text-transform:none;}
 .rec-cand-exp-registrar{display:inline-flex;align-items:center;gap:6px;}
 .rec-cand-exp-registrar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
 .rec-cand-row-line--registrar .rec-cand-row-line-text{font-size:12px;color:var(--slate-500);}
@@ -2837,8 +2871,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-work-schedule-hint{flex-basis:100%;margin:0;font-size:12px;line-height:1.45;color:var(--slate-500);overflow-wrap:anywhere;}
 .tc-jornada-schedule{display:flex;align-items:flex-start;gap:6px;max-width:100%;font-size:12px;line-height:1.45;color:var(--slate-600);overflow-wrap:anywhere;}
 .tc-jornada-schedule svg{width:14px;height:14px;flex-shrink:0;margin-top:1px;}
-.tc-emp-laptop{display:none;margin-bottom:12px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;}
-@media(max-width:768px){.tc-emp-laptop{display:block;}}
 .sidebar-item.active .si-icon{background:var(--assess-gradient);color:var(--white);}
 .si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--slate-100);transition:var(--tr-fast);}
 .sidebar-item:hover .si-icon{background:rgba(124,58,237,.12);}
@@ -4867,6 +4899,24 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     <path d="M0 96C99 89 119 50 179 58c55 8 111 39 201-16v54Z" fill="#ede9fe"/>
     <path d="M94 88c53-8 68-38 106-34 42 4 70 33 109 19 19-7 34-23 59-26" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
   </symbol>
+  <symbol id="tc-ws-art-goals" viewBox="0 0 40 40">
+    <g stroke="#6830b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18.5" cy="21" r="14" fill="#ceaff8"/>
+      <circle cx="18.5" cy="21" r="10" fill="#faf4ff"/>
+      <circle cx="18.5" cy="21" r="5.1" fill="#ceaff8"/>
+      <path d="m18.5 21 12-12" fill="none"/>
+      <path d="m27.5 12 1-6 5.5-3.5-.5 6 5.2.5-4.7 4Z" fill="#ffd1b4"/>
+    </g>
+  </symbol>
+  <symbol id="tc-ws-art-hired" viewBox="0 0 40 40">
+    <g stroke="#6830b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 32v-3.5a10 10 0 0 1 20 0V32Z" fill="#ceaff8"/>
+      <circle cx="17" cy="13" r="7" fill="#f7ebff"/>
+      <circle cx="29" cy="27.5" r="8" fill="#ffd1b4"/>
+      <path d="m25.5 27.5 2.5 2.5 4.5-5" fill="none"/>
+      <path d="M32 7v6m-3-3h6" stroke="#ffd1b4"/>
+    </g>
+  </symbol>
   <symbol id="cev-art-honestidad" viewBox="0 0 40 40">
     <g stroke="#6d28d9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 5c4 3 9 4 13 5v9c0 7-5 13-13 16C12 32 7 26 7 19v-9c4-1 9-2 13-5Z" fill="#c9b0fa"/>
@@ -6081,7 +6131,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 <div id="view-timeclock" class="hidden">
   <div class="tc-emp-shell tc-emp-shell--portal">
     <div class="tc-emp-card tc-emp-card--portal">
-      <div class="tc-emp-laptop">Para una mejor experiencia, utiliza este módulo desde una computadora.</div>
       <div id="tc-emp-gate" class="hidden">
         <div class="tc-emp-brand">MIND24</div>
         <p class="tc-emp-err" id="tc-emp-gate-msg">Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.</p>
@@ -6090,9 +6139,16 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <header class="tc-ws-hero">
           <div class="tc-ws-hero-inner">
           <div class="tc-ws-hero-brand">
-            <div class="tc-emp-brand">MIND24</div>
+            <div class="s-logo"><span class="sidebar-logo-icon" aria-hidden="true"></span><span class="sidebar-logo-text">MIND<span>24</span></span></div>
             <h1 class="tc-ws-title tc-emp-title">Mi espacio de trabajo</h1>
-            <div class="tc-emp-kicker">Asistencia, actividades y reclutamiento</div>
+            <svg class="tc-ws-brand-art" viewBox="0 0 360 168" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+              <path d="M0 168c83-5 113-57 173-52s108 19 187-40v92Z" fill="#ffffff14"/>
+              <path d="M99 168c62-2 104-25 144-38 46-15 74-5 117-27v65Z" fill="#c4b5fd2e"/>
+              <path d="M185 127c46-27 66 2 111-22 20-11 35-24 52-29" fill="none" stroke="#d8b4fe72" stroke-width="1.5" stroke-dasharray="3 6" stroke-linecap="round"/>
+              <use href="#admin-art-recruiting" x="279" y="19" width="64" height="64" opacity=".68"/>
+              <path d="M269 38v10m-5-5h10m68 43v8m-4-4h8" fill="none" stroke="#ffd6c0" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="301" cy="105" r="3" fill="#c4b5fd"/>
+            </svg>
             <nav class="tc-ws-quick-actions" id="tc-ws-quick-actions" aria-label="Accesos rápidos">
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-activities" data-tc-ws-quick="activities" aria-label="Actividades" onclick="tcEmpQuickGoActivities()"><span class="tc-ws-quick-icon" aria-hidden="true"></span><span class="tc-ws-quick-badge tc-ws-quick-badge--violet" id="tc-ws-quick-badge-activities" aria-hidden="true"></span></button>
               <button type="button" class="tc-ws-quick-btn" id="tc-ws-quick-register" data-tc-ws-quick="register" aria-label="Registrar candidato" onclick="tcEmpQuickRegisterCandidate()"><span class="tc-ws-quick-icon" aria-hidden="true"></span></button>
@@ -6201,6 +6257,20 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
           </div>
         </div>
         <div class="tc-emp-rows hidden" id="tc-emp-rows" aria-hidden="true"></div>
+        <div class="tc-ws-layout">
+          <aside class="tc-ws-vacancies" aria-labelledby="tc-ws-vacancies-title">
+            <h2 id="tc-ws-vacancies-title"><button type="button" class="tc-ws-vacancy-toggle" id="tc-ws-vacancies-toggle" aria-controls="tc-ws-vacancies-body" aria-expanded="false" onclick="tcEmpSetVacanciesOpen(this.getAttribute('aria-expanded')==='false')">
+              <svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-recruiting"/></svg>
+              <span class="tc-ws-vacancy-toggle-label">Vacantes activas</span><span class="tc-ws-vacancy-count" id="tc-ws-vacancies-count"></span>
+              <svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button></h2>
+            <div class="tc-ws-vacancy-body hidden" id="tc-ws-vacancies-body">
+              <p class="tc-ws-vacancy-status" id="tc-ws-vacancies-status" role="status"></p>
+              <div class="tc-ws-vacancy-list tc-workforce-scroll" id="tc-ws-vacancies-list" role="region" tabindex="0" aria-label="Listado de vacantes activas"></div>
+              <button type="button" class="rec-btn-new tc-ws-vacancy-retry hidden" id="tc-ws-vacancies-retry" onclick="tcEmpLoadActiveVacancies().catch(() => {})">Reintentar</button>
+            </div>
+          </aside>
+          <div class="tc-ws-work">
         <div class="tc-ws-tabs-wrap">
           <div class="tc-ws-tabs" role="tablist" aria-label="Módulos del espacio de trabajo">
             <button type="button" role="tab" class="tc-ws-tab tc-ws-tab--on" id="tc-ws-tab-activities" aria-selected="true" aria-controls="tc-ws-panel-activities" onclick="tcEmpWorkspaceSetTab('activities')"><span class="tc-ws-tab-icon" aria-hidden="true"></span><span>Actividades</span><span class="tc-ws-tab-badge" id="tc-ws-tab-badge-activities"></span></button>
@@ -6255,6 +6325,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             </div>
           </div>
         </section>
+        </div>
+          </div>
         </div>
       </div>
     </div>
@@ -18767,22 +18839,23 @@ async function recCandFormRecApiJson(path,opts){
   if(recCandFormIsWorkforce()) return tcPublicJson(recCandFormRecApiBase()+path,opts||{});
   return apiJson('/api/org/recruitment'+path,opts||{});
 }
-async function recCandEnsureVacancyPickerOptions(selectEl){
+async function recCandEnsureVacancyPickerOptions(selectEl, opts={}){
   if(!selectEl) return;
   const st=recEnsureState();
-  const cacheKey=recCandFormIsWorkforce()?'workforceActiveVacancies':'adminActiveVacancies';
-  if(!st[cacheKey]||!st[cacheKey].length){
-    try{
-      if(recCandFormIsWorkforce()){
-        const j=await tcPublicJson('/api/timeclock/public/recruitment/vacancies');
-        st[cacheKey]=j.vacancies||[];
-      }else{
+  let vacancies=opts.vacancies;
+  if(recCandFormIsWorkforce()){
+    if(!vacancies) vacancies=await tcEmpLoadActiveVacancies().catch(function(){return [];});
+  }else{
+    if(!st.adminActiveVacancies?.length){
+      try{
         const j=await apiJson('/api/org/recruitment/vacancies?status=ACTIVE');
-        st[cacheKey]=(j.vacancies||[]).filter(function(v){ return v.status==='ACTIVE'; });
-      }
-    }catch(_e){ st[cacheKey]=[]; }
+        st.adminActiveVacancies=(j.vacancies||[]).filter(function(v){ return v.status==='ACTIVE'; });
+      }catch(_e){ st.adminActiveVacancies=[]; }
+    }
+    vacancies=st.adminActiveVacancies;
   }
-  const list=(st[cacheKey]||[]).slice().sort(function(a,b){
+  if(opts.isCurrent&&!opts.isCurrent()) return;
+  const list=vacancies.slice().sort(function(a,b){
     return String(a.title||'').localeCompare(String(b.title||''),'es');
   });
   const prev=selectEl.value;
@@ -18792,8 +18865,10 @@ async function recCandEnsureVacancyPickerOptions(selectEl){
       const label=(v.title||'—');
       return '<option value="'+tcEsc(v.id)+'">'+tcEsc(label)+'</option>';
     }).join('');
-  if(prev) selectEl.value=prev;
+  const preferred=opts.vacancyId||prev;
+  if(preferred&&list.some(function(v){return v.id===preferred;})) selectEl.value=preferred;
   if(isForm) recCandFormSyncSelectPicker(selectEl);
+  if(opts.vacancyId&&selectEl.value===opts.vacancyId) void recCandFormVacancyChanged(opts.vacancyId);
 }
 async function recCandLoadEnabledStagesForVacancy(vacancyId){
   if(!vacancyId) return [];
@@ -20874,13 +20949,14 @@ function recCandOpenForm(mode,candidate,opts){
   const cvSection=document.getElementById('rec-cand-form-cv-section');
   const notesSection=document.getElementById('rec-cand-form-notes-section');
   const stageWrap=document.getElementById('rec-cand-form-stage-wrap');
-  recCandFormStageLoad+=1;
+  const vacancySelect=document.getElementById('rec-cand-form-vacancy');
+  const formRequest=++recCandFormStageLoad;
+  vacancySelect.replaceChildren(new Option('Seleccionar vacante',''));
   const isEdit=mode==='edit'&&candidate;
   if(procBlock) procBlock.classList.toggle('hidden',!!isEdit);
   if(cvSection) cvSection.classList.toggle('hidden',!!isEdit);
   if(notesSection) notesSection.classList.toggle('hidden',!!isEdit);
   if(stageWrap&&(isEdit||!document.getElementById('rec-cand-form-vacancy')?.value)) stageWrap.classList.add('hidden');
-  recCandEnsureVacancyPickerOptions(document.getElementById('rec-cand-form-vacancy'));
   if(isEdit){
     if(idEl) idEl.value=candidate.id;
     set('rec-cand-form-name',candidate.fullName);
@@ -20945,6 +21021,11 @@ function recCandOpenForm(mode,candidate,opts){
   formModal.querySelectorAll('.form-input[aria-invalid=true]').forEach(function(field){ recCandFormSetFieldError(field,''); });
   formModal.querySelectorAll('select').forEach(recCandFormSyncSelectPicker);
   openModal('modal-rec-candidate-form');
+  void recCandEnsureVacancyPickerOptions(vacancySelect,{
+    vacancies:opts.vacancies,
+    vacancyId:isEdit?null:opts.vacancyId,
+    isCurrent:function(){return formRequest===recCandFormStageLoad&&!formModal.classList.contains('hidden');}
+  });
   if(!isEdit){
     requestAnimationFrame(function(){
       recCandFormResetModalScroll();
@@ -21270,11 +21351,93 @@ function tcEmpRecruitmentShowCvPartial(extraErr){
     else{ err.classList.add('hidden'); err.textContent=''; }
   }
 }
-function tcEmpOpenRegisterCandidate(){
+function tcEmpOpenRegisterCandidate(vacancyId, vacancies){
+  tcEmpNovedadesClose(false);
   tcEmpRecruitmentHideToast();
   tcEmpRecruitmentHideCvPartial();
   recCandWorkforceClearPartialCvState();
-  recCandOpenForm('create',null,{ context:'workforce' });
+  recCandOpenForm('create',null,{ context:'workforce', vacancyId, vacancies });
+}
+let tcEmpVacanciesRequest=null;
+let tcEmpVacancyOpening=null;
+const tcEmpVacanciesWide=window.matchMedia('(min-width:900px)');
+tcEmpVacanciesWide.addEventListener('change',function(event){tcEmpSetVacanciesOpen(event.matches);});
+function tcEmpSetVacanciesOpen(open){
+  document.getElementById('tc-ws-vacancies-toggle').setAttribute('aria-expanded',String(open));
+  document.getElementById('tc-ws-vacancies-body').classList.toggle('hidden',!open);
+}
+function tcEmpRenderActiveVacancies(vacancies){
+  const list=document.getElementById('tc-ws-vacancies-list');
+  const html=vacancies.map(function(v){
+    return '<article class="tc-ws-vacancy"><h3>'+tcEsc(v.title)+'</h3>'+
+      (v.location?'<span class="tc-ws-vacancy-location"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>'+tcEsc(v.location)+'</span>':'')+
+      '<button type="button" class="rec-btn-new" data-vacancy-id="'+tcEsc(v.id)+'" aria-label="'+tcEsc('Registrar candidato para '+v.title)+'" onclick="tcEmpRegisterForVacancy(this)">'+
+      '<svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg>Registrar candidato</button></article>';
+  }).join('');
+  if(list.innerHTML!==html) list.innerHTML=html;
+  const count=document.getElementById('tc-ws-vacancies-count');
+  count.textContent=vacancies.length;
+  document.getElementById('tc-ws-vacancies-status').textContent=vacancies.length?'':'No hay vacantes activas.';
+}
+function tcEmpResetActiveVacancies(){
+  tcEmpVacanciesRequest?.controller.abort();
+  tcEmpVacanciesRequest=null;
+  tcEmpVacancyOpening=null;
+  document.getElementById('tc-ws-vacancies-list').replaceChildren();
+  document.getElementById('tc-ws-vacancies-count').textContent='';
+  document.getElementById('tc-ws-vacancies-status').textContent='';
+  document.getElementById('tc-ws-vacancies-retry').classList.add('hidden');
+  tcEmpSetVacanciesOpen(tcEmpVacanciesWide.matches);
+}
+function tcEmpLoadActiveVacancies(){
+  if(tcEmpVacanciesRequest) return tcEmpVacanciesRequest.promise;
+  const controller=new AbortController();
+  const status=document.getElementById('tc-ws-vacancies-status');
+  const retry=document.getElementById('tc-ws-vacancies-retry');
+  retry.classList.add('hidden');
+  if(!document.getElementById('tc-ws-vacancies-count').textContent) status.textContent='Cargando vacantes…';
+  const promise=tcPublicJson('/api/timeclock/public/recruitment/vacancies',{signal:controller.signal})
+    .then(function(data){
+      if(controller.signal.aborted) return [];
+      const rows=(Array.isArray(data?.vacancies)?data.vacancies:[]).filter(function(v){return v.status==='ACTIVE';});
+      tcEmpRenderActiveVacancies(rows);
+      return rows;
+    })
+    .catch(function(error){
+      if(!controller.signal.aborted){
+        status.textContent='No se pudieron cargar las vacantes.';
+        retry.classList.remove('hidden');
+      }
+      throw error;
+    })
+    .finally(function(){
+      if(tcEmpVacanciesRequest?.controller===controller) tcEmpVacanciesRequest=null;
+    });
+  tcEmpVacanciesRequest={controller,promise};
+  return promise;
+}
+async function tcEmpRegisterForVacancy(button){
+  if(tcEmpVacancyOpening) return;
+  tcEmpVacancyOpening=button;
+  button.setAttribute('aria-busy','true');
+  try{
+    const rows=await tcEmpLoadActiveVacancies();
+    if(tcEmpVacancyOpening!==button||!tcEmpWsIsEmployeePortalActive()) return;
+    const vacancyId=button.dataset.vacancyId;
+    if(!rows.some(function(v){return v.id===vacancyId;})){
+      document.getElementById('tc-ws-vacancies-status').textContent='Esta vacante ya no está disponible.';
+      document.getElementById('tc-ws-vacancies-toggle').focus();
+      return;
+    }
+    if(!document.getElementById('modal-rec-candidate-form').classList.contains('hidden')) return;
+    tcEmpOpenRegisterCandidate(vacancyId,rows);
+    document.getElementById('rec-cand-form-name').focus({preventScroll:true});
+  }catch(_error){
+    // El panel conserva el aviso y la opción de reintentar.
+  }finally{
+    button.removeAttribute('aria-busy');
+    if(tcEmpVacancyOpening===button) tcEmpVacancyOpening=null;
+  }
 }
 async function tcEmpRetryPendingCvUpload(){
   const st=recEnsureState();
@@ -21371,21 +21534,6 @@ function tcEmpMyCandEmptyHtml(filter){
   html+='</div>';
   return html;
 }
-function tcWsSvgClipboard(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="10" width="8" height="12" rx="1"/></svg>';
-}
-function tcWsSvgClipboardList(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>';
-}
-function tcWsSvgUsers(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
-}
-function tcWsSvgUserPlus(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>';
-}
-function tcWsSvgUserCheck(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>';
-}
 function tcWsSvgTarget(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
 }
@@ -21400,9 +21548,6 @@ function tcSvgChartBars(){
 }
 function tcSvgPlus(){
   return tcSvgPlusOutline();
-}
-function tcWsSvgBell(){
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 }
 let tcEmpQuickTipBtn=null;
 function tcEmpOpenQuickTip(btn, label){
@@ -21559,27 +21704,23 @@ function tcEmpWorkspaceUpdateTabBadges(){
 }
 function tcEmpWorkspaceInitQuickIcons(){
   const pairs=[
-    ['tc-ws-quick-activities',tcWsSvgClipboardList],
-    ['tc-ws-quick-register',tcWsSvgUserPlus],
-    ['tc-ws-quick-candidates',tcWsSvgUsers],
-    ['tc-ws-quick-hired',tcWsSvgUserCheck],
-    ['tc-ws-quick-goals',tcWsSvgTarget],
-    ['tc-ws-quick-novedades',tcWsSvgBell],
+    ['tc-ws-quick-activities','.tc-ws-quick-icon','admin-art-list'],
+    ['tc-ws-quick-register','.tc-ws-quick-icon','admin-art-candidate'],
+    ['tc-ws-quick-candidates','.tc-ws-quick-icon','admin-art-team'],
+    ['tc-ws-quick-hired','.tc-ws-quick-icon','tc-ws-art-hired'],
+    ['tc-ws-quick-goals','.tc-ws-quick-icon','tc-ws-art-goals'],
+    ['tc-ws-quick-novedades','.tc-ws-quick-icon','admin-art-bell'],
+    ['tc-ws-tab-activities','.tc-ws-tab-icon','admin-art-list'],
+    ['tc-ws-tab-goals','.tc-ws-tab-icon','tc-ws-art-goals'],
+    ['tc-ws-tab-candidates','.tc-ws-tab-icon','admin-art-team'],
   ];
-  pairs.forEach(function(p){
-    const btn=document.getElementById(p[0]);
-    const ic=btn&&btn.querySelector('.tc-ws-quick-icon');
-    if(ic) ic.innerHTML=p[1]();
+  pairs.forEach(function([id, selector, art]){
+    const icon=document.getElementById(id)?.querySelector(selector);
+    if(icon&&!icon.firstElementChild) icon.innerHTML='<svg class="admin-nav-art" aria-hidden="true"><use href="#'+art+'"/></svg>';
   });
   tcEmpQuickEnsureTooltips();
 }
 function tcEmpWorkspaceInitChrome(){
-  const icAct=document.querySelector('#tc-ws-tab-activities .tc-ws-tab-icon');
-  const icGoals=document.querySelector('#tc-ws-tab-goals .tc-ws-tab-icon');
-  const icCand=document.querySelector('#tc-ws-tab-candidates .tc-ws-tab-icon');
-  if(icAct) icAct.innerHTML=tcWsSvgClipboard();
-  if(icGoals) icGoals.innerHTML=tcWsSvgTarget();
-  if(icCand) icCand.innerHTML=tcWsSvgUsers();
   tcEmpWorkspaceInitQuickIcons();
   tcEmpNovedadesEnsureListeners();
   tcEmpWorkspaceSyncTabs();
@@ -26404,10 +26545,11 @@ function tcEmpSetError(msg){
 }
 function tcEmpShowGate(msg){
   tcEmpStopTimers();
+  tcEmpResetActiveVacancies();
   const gate=document.getElementById('tc-emp-gate');
   const app=document.getElementById('tc-emp-app');
   const gm=document.getElementById('tc-emp-gate-msg');
-  if(app){ app.classList.add('hidden'); app.classList.remove('tc-emp-app--ready'); }
+  if(app) app.classList.add('hidden');
   if(gate) gate.classList.remove('hidden');
   if(gm) gm.textContent=msg||'Este enlace no es válido o la sesión ha expirado. Solicita un nuevo enlace a tu administrador.';
 }
@@ -26415,7 +26557,7 @@ function tcEmpShowApp(){
   const gate=document.getElementById('tc-emp-gate');
   const app=document.getElementById('tc-emp-app');
   if(gate) gate.classList.add('hidden');
-  if(app){ app.classList.remove('hidden'); app.classList.add('tc-emp-app--ready'); }
+  if(app) app.classList.remove('hidden');
   tcEmpWorkspaceInitChrome();
   tcEmpSyncJornadaInfoTip('wait');
 }
@@ -26551,7 +26693,7 @@ function tcEmpRenderTasks(){
   const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; });
   const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; });
   if(!pending.length&&!prog.length){
-    body.innerHTML='<p class="tc-emp-tasks-empty">No tienes actividades pendientes.</p>';
+    body.innerHTML='<p class="tc-emp-tasks-empty tc-ws-activities-empty"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-list"/></svg>No tienes actividades pendientes.</p>';
     return;
   }
   function cardHtml(task, primaryLabel, primaryStatus, secondary){
@@ -26621,6 +26763,7 @@ async function tcEmpLoadMe(){
   else tcEmpStartHeartbeat();
   tcEmpShowApp();
   tcEmpRender();
+  void tcEmpLoadActiveVacancies().catch(function(){});
   tcEmpNovedadesStartPolling();
   tcEmpStartWsPolling();
   await tcEmpLoadTasks();
@@ -26634,6 +26777,7 @@ function tcEmpHashToken(){
 async function tcEmployeeBoot(){
   showView('timeclock');
   tcEmpStopTimers();
+  tcEmpResetActiveVacancies();
   tcEmpCompleted=null;
   tcEmpNovedadesResetSessionState();
   tcEmpMyCandFilter='in_process';
