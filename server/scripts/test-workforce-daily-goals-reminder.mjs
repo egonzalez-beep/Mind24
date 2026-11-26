@@ -544,7 +544,7 @@ check(/seq!==tcEmpGoalsLoadSeq/.test(loadFn), 'una respuesta vieja no pinta la v
 check(/tcEmpFocusGoalCard/.test(loadFn), 'una sola meta puede enfocarse después de cargar');
 check(/data-goal-id/.test(indexHtml), 'la tarjeta de meta se puede localizar');
 check(/tc-ws-novedades-item--goal-reminder/.test(indexHtml), 'el aviso tiene estilo propio');
-check(/tcWsSvgTarget\(\)/.test(indexHtml.match(/function tcEmpNovedadesRenderList\([\s\S]*?\n\}/)?.[0] || ''), 'el icono reutiliza la diana de Metas');
+check(/href="#tc-ws-art-goals"/.test(indexHtml.match(/function tcEmpNovedadesRenderList\([\s\S]*?\n\}/)?.[0] || ''), 'el icono reutiliza la diana de Metas');
 check(!/WORKFORCE_DAILY_GOALS_REMINDER/.test(adminOpen), 'la campana administrativa no abre este aviso');
 const readRoute = publicRoutes.split("'/novedades/workplace/:id/read'")[1]?.split('router.post')[0] || '';
 check(readRoute.includes('emp.organizationId') && readRoute.includes('emp.id'), 'marcar leída usa la sesión');

@@ -32,9 +32,6 @@
   --nov-hired-icon-bg:rgba(34,211,238,.24);
   --nov-hired-icon-bg-read:rgba(34,211,238,.12);
   --nov-hired-pip:#0891b2;
-  --nov-scroll-thumb:rgba(124,58,237,.28);
-  --nov-scroll-thumb-hover:rgba(124,58,237,.42);
-  --nov-scroll-thumb-active:rgba(124,58,237,.56);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -2627,59 +2624,12 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-quick-badge--red{background:#ef4444;color:#fff;border:1.5px solid #fff;}
 .tc-ws-quick-tip{position:fixed;left:0;top:0;z-index:5010;padding:6px 10px;border-radius:8px;border:1px solid var(--slate-200);background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.12);font-size:11px;font-weight:600;color:var(--slate-700);white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 120ms ease,visibility 120ms ease;}
 .tc-ws-quick-tip--open{opacity:1;visibility:visible;}
-.tc-ws-novedades-popover{position:fixed;z-index:5020;width:min(340px,calc(100vw - 24px));max-height:min(70vh,480px);display:flex;flex-direction:column;border-radius:14px;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border:1px solid var(--slate-200);box-shadow:0 20px 48px rgba(15,23,42,.14),0 4px 14px rgba(124,58,237,.08);overflow:hidden;}
-.tc-ws-novedades-popover.hidden{display:none!important;}
-.tc-ws-novedades-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--slate-100);}
-.tc-ws-novedades-popover-head h3{margin:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-dark);}
 .mind24-mark-all-read-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid rgba(124,58,237,.16);border-radius:8px;background:#fff;color:var(--slate-600);cursor:pointer;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;flex-shrink:0;font-family:inherit;}
 .mind24-mark-all-read-btn svg{width:18px;height:18px;display:block;pointer-events:none;}
 .mind24-mark-all-read-btn:hover:not(:disabled){background:var(--purple-light);border-color:rgba(124,58,237,.32);color:var(--purple-dark);}
 .mind24-mark-all-read-btn:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .mind24-mark-all-read-btn:disabled{opacity:.45;cursor:not-allowed;background:transparent;border-color:var(--slate-200);color:var(--slate-400);}
 .mind24-mark-all-read-btn--done{background:var(--purple-light);border-color:rgba(124,58,237,.4);color:var(--purple-dark);}
-.tc-ws-novedades-popover-body{padding:8px 10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:72px;max-height:min(calc(70vh - 52px),428px);}
-@media (forced-colors: none){
-  .tc-ws-novedades-popover-body{scrollbar-width:thin;scrollbar-color:var(--nov-scroll-thumb) transparent;}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar{width:5px;height:5px;}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-track{background:transparent;}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb{background:var(--nov-scroll-thumb);border-radius:999px;}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb:hover{background:var(--nov-scroll-thumb-hover);}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-thumb:active{background:var(--nov-scroll-thumb-active);}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-button{display:none;width:0;height:0;}
-  .tc-ws-novedades-popover-body::-webkit-scrollbar-corner{background:transparent;}
-}
-@media (forced-colors: active){
-  .tc-ws-novedades-popover-body{scrollbar-width:auto;scrollbar-color:auto;}
-}
-.tc-ws-novedades-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
-.tc-ws-novedades-item:hover{background:var(--slate-50);}
-.tc-ws-novedades-item--unread{background:rgba(254,242,242,.45);border-color:rgba(239,68,68,.12);}
-.tc-ws-novedades-item-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#fca5a5;box-shadow:0 0 0 3px rgba(252,165,165,.35);}
-.tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#cbd5e1;box-shadow:0 0 0 3px rgba(203,213,225,.4);}
-.tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--unread{background:color-mix(in srgb, var(--purple) 7%, transparent);border-color:color-mix(in srgb, var(--purple) 16%, transparent);}
-.tc-ws-novedades-item--goal-reminder.tc-ws-novedades-item--read{background:transparent;border-color:transparent;}
-.tc-ws-novedades-item--hired{background:var(--nov-hired-bg-read);border-color:var(--nov-hired-border-read);box-shadow:inset 3px 0 0 var(--nov-hired-accent-read);}
-.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread{background:var(--nov-hired-bg);border-color:var(--nov-hired-border);box-shadow:inset 3px 0 0 var(--nov-hired-accent);}
-.tc-ws-novedades-item--hired:hover{background:var(--nov-hired-bg);}
-.tc-ws-novedades-item--hired.tc-ws-novedades-item--read:hover{background:var(--nov-hired-bg-read);}
-.tc-ws-novedades-item--hired:focus-visible{outline:2px solid var(--nov-hired-accent);outline-offset:2px;}
-.tc-ws-novedades-item-trophy{position:relative;width:28px;height:28px;margin-top:1px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;background:var(--nov-hired-icon-bg-read);color:var(--nov-hired-icon-read);}
-.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .tc-ws-novedades-item-trophy{background:var(--nov-hired-icon-bg);color:var(--nov-hired-icon);}
-.tc-ws-novedades-item-trophy svg{width:15px;height:15px;display:block;}
-.tc-ws-novedades-hired-pip{position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--nov-hired-pip);box-shadow:0 0 0 2px #fff;}
-.tc-ws-novedades-item--hired .tc-ws-novedades-item-msg{color:var(--primary);font-weight:600;}
-.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
-.tc-ws-novedades-item--hired .tc-ws-novedades-item-time{color:var(--slate-500);}
-.tc-ws-novedades-item--noshow{background:rgba(255,251,235,.55);border-color:rgba(245,158,11,.14);box-shadow:inset 3px 0 0 rgba(245,158,11,.45);}
-.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread{background:rgba(255,247,237,.75);border-color:rgba(245,158,11,.22);box-shadow:inset 3px 0 0 #f59e0b;}
-.tc-ws-novedades-item--noshow:hover{background:rgba(255,247,237,.9);}
-.tc-ws-novedades-item--noshow.tc-ws-novedades-item--read{background:rgba(255,251,235,.35);border-color:rgba(245,158,11,.1);box-shadow:inset 3px 0 0 rgba(245,158,11,.28);}
-.tc-ws-novedades-item--noshow .tc-ws-novedades-item-dot{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.35);}
-.tc-ws-novedades-item--noshow.tc-ws-novedades-item--read .tc-ws-novedades-item-dot{background:#d6d3d1;box-shadow:0 0 0 3px rgba(214,211,209,.4);}
-.tc-ws-novedades-item--noshow .tc-ws-novedades-item-msg{color:var(--primary);font-weight:600;}
-.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread .tc-ws-novedades-item-msg{font-weight:700;}
-.tc-ws-novedades-item-cta{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;}
-.tc-ws-novedades-item-cta-arrow{display:inline-block;font-size:11px;line-height:1;opacity:.7;}
 .modal-card.tc-noshow-reschedule-card{max-width:440px;padding:32px 28px 24px;max-height:min(92vh,760px);overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(124,58,237,.28) transparent;}
 .modal-card.tc-noshow-reschedule-card::-webkit-scrollbar{width:5px;height:5px;}
 .modal-card.tc-noshow-reschedule-card::-webkit-scrollbar-track{background:transparent;}
@@ -2722,14 +2672,6 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-noshow-reschedule-actions .card-action{padding:10px 12px;border-radius:8px;}
 .tc-noshow-reschedule-actions .tc-kanban-assign-btn{padding:10px 16px;font-size:13px;}
 .tc-noshow-reschedule-actions .tc-kanban-assign-btn:disabled{opacity:.65;cursor:wait;transform:none;filter:none;}
-.tc-ws-novedades-item-mark{width:18px;height:18px;margin-top:1px;flex-shrink:0;color:var(--purple-dark);display:inline-flex;}
-.tc-ws-novedades-item-mark svg{width:18px;height:18px;display:block;}
-.tc-ws-novedades-item-body{flex:1;min-width:0;}
-.tc-ws-novedades-item-title{margin:0;font-size:13px;line-height:1.35;color:var(--primary);font-weight:700;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.tc-ws-novedades-item-msg{margin:0;font-size:13px;line-height:1.45;color:var(--primary);font-weight:600;overflow-wrap:anywhere;}
-.tc-ws-novedades-item-msg--soft{margin-top:2px;font-weight:500;color:var(--slate-600);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.tc-ws-novedades-item-time{margin:3px 0 0;font-size:11px;color:var(--slate-500);font-weight:500;}
-.tc-ws-novedades-empty{font-size:12px;color:var(--slate-400);padding:16px 8px;text-align:center;margin:0;}
 .tc-ws-hero-user{display:flex;align-items:flex-start;gap:14px;}
 @media(max-width:899px){.tc-ws-hero-user{flex-wrap:wrap;}}
 .tc-ws-hero-user .tc-emp-greet-text{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start;}
@@ -2816,8 +2758,8 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 }
 .tc-ws-panel-scroll:has(.tc-emp-tasks-empty),.tc-ws-panel-scroll:has(.tc-emp-my-cand-empty){display:flex;flex-direction:column;}
 .tc-emp-tasks-empty,.tc-emp-my-cand-empty{min-height:120px;flex:1;display:flex;align-items:center;justify-content:center;text-align:center;}
-.tc-ws-activities-empty{flex-direction:column;gap:8px;padding:18px 8px;color:var(--purple-deep);font-weight:700;}
-.tc-ws-activities-empty .admin-nav-art{width:46px;height:46px;}
+.tc-ws-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;margin:0;padding:18px 8px;color:var(--purple-deep);font-size:13px;font-weight:700;text-align:center;}
+.tc-ws-empty-state .admin-nav-art{width:46px;height:46px;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .tc-ws-cand-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .tc-ws-cand-head .tc-emp-my-cand-title{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-700);}
@@ -2840,7 +2782,15 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 @media(min-width:900px){.tc-ws-vacancy-list{max-height:clamp(220px,calc(100dvh - 345px),650px);}}
 .tc-ws-vacancy-list:empty{display:none;}
 .tc-ws-vacancy{min-width:0;display:grid;justify-items:start;gap:4px;padding:9px 10px;border:1px solid var(--purple-border);border-radius:11px;background:#fcfaff;}
+.tc-ws-vacancy--pinned{background:#f6f0ff;border-color:#d5bff9;}
+.tc-ws-vacancy-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px;width:100%;}
 .tc-ws-vacancy h3{margin:0;font-size:13px;line-height:1.25;color:var(--purple-deep);overflow-wrap:anywhere;}
+.tc-ws-vacancy-pin{display:grid;place-items:center;width:32px;height:32px;margin:-3px -3px -3px 0;padding:0;border:1px solid var(--purple-border);border-radius:8px;background:#fff;color:var(--purple-dark);cursor:pointer;}
+.tc-ws-vacancy-pin:hover{background:var(--purple-light);border-color:#a78bfa;}
+.tc-ws-vacancy-pin[aria-pressed=true]{background:var(--purple-dark);border-color:var(--purple-dark);color:#fff;}
+.tc-ws-vacancy-pin .admin-nav-icon{width:16px;height:16px;}
+.tc-ws-vacancy-pin[aria-pressed=true] .admin-nav-icon{transform:rotate(-24deg);}
+@media(pointer:coarse){.tc-ws-vacancy-pin{width:40px;height:40px;}}
 .tc-ws-vacancy-location{display:flex;align-items:flex-start;gap:4px;color:var(--slate-600);font-size:12px;overflow-wrap:anywhere;}
 .tc-ws-vacancy-location svg{width:13px;height:13px;flex:none;margin-top:1px;}
 .tc-ws-vacancy .rec-btn-new{display:inline-flex;align-items:center;gap:5px;margin-top:4px;min-height:32px;padding:5px 8px;font-size:11px;font-weight:700;text-align:left;}
@@ -2849,10 +2799,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-ws-vacancies :is(button,.tc-ws-vacancy-list):focus-visible{outline:2px solid var(--purple);outline-offset:-2px;}
 .tc-ws-vacancy-status{margin:0;color:var(--slate-600);font-size:12px;line-height:1.4;}
 .tc-ws-vacancy-status:empty{display:none;}
-.tc-ws-vacancy-status:not(:empty)+.tc-ws-vacancy-list:not(:empty){margin-top:8px;}
+.tc-ws-vacancy-status:not(:empty){margin-bottom:8px;}
+.tc-ws-vacancy-pin-status:empty{display:block;}
+.tc-ws-vacancy-pin-status:not(:empty){padding:7px 8px;border-radius:8px;background:var(--purple-light);color:var(--purple-deep);}
 .tc-ws-vacancy-retry{margin-top:6px;}
-.tc-ws-novedades-popover-head{border-color:var(--purple-border);background:var(--purple-light);}
-.tc-ws-novedades-popover-head h3{font-size:14px;letter-spacing:0;text-transform:none;}
 .rec-cand-exp-registrar{display:inline-flex;align-items:center;gap:6px;}
 .rec-cand-exp-registrar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;}
 .rec-cand-row-line--registrar .rec-cand-row-line-text{font-size:12px;color:var(--slate-500);}
@@ -3002,6 +2952,29 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .mind24-notif-empty,.mind24-notif-loading{font-size:13px;color:var(--slate-600);padding:17px 8px;text-align:center;margin:0;}
 .mind24-notif-more{flex-shrink:0;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;padding:8px;border-radius:8px;margin:2px auto 0;}
 .mind24-notif-more:hover{background:var(--purple-light);}
+.tc-ws-novedades-popover{z-index:5020;}
+.tc-ws-novedades-popover:focus{outline:none;}
+.tc-ws-novedades-empty{min-height:104px;padding:13px 8px;}
+.tc-ws-novedades-empty .admin-nav-art{width:36px;height:36px;}
+.tc-ws-novedades-item--hired{background:var(--nov-hired-bg-read);border-color:var(--nov-hired-border-read);box-shadow:inset 3px 0 0 var(--nov-hired-accent-read);}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread{background:var(--nov-hired-bg);border-color:var(--nov-hired-border);box-shadow:inset 3px 0 0 var(--nov-hired-accent);padding-inline-end:10px;}
+.tc-ws-novedades-item--hired:hover{background:var(--nov-hired-bg);}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread::after{display:none;}
+.tc-ws-novedades-item--hired:focus-visible{outline-color:var(--nov-hired-accent);}
+.tc-ws-novedades-item-trophy{position:relative;background:var(--nov-hired-icon-bg-read);color:var(--nov-hired-icon-read);}
+.tc-ws-novedades-item--unread .tc-ws-novedades-item-trophy{background:var(--nov-hired-icon-bg);color:var(--nov-hired-icon);}
+.tc-ws-novedades-item-trophy svg{width:17px;height:17px;display:block;}
+.tc-ws-novedades-hired-pip{position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--nov-hired-pip);box-shadow:0 0 0 2px #fff;}
+.tc-ws-novedades-item--hired.tc-ws-novedades-item--unread .mind24-notif-item-msg,.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread .mind24-notif-item-msg{font-weight:700;}
+.tc-ws-novedades-item--noshow{background:#fffbeb;border-color:#fef3c7;box-shadow:inset 3px 0 #fcd48a;}
+.tc-ws-novedades-item--noshow .mind24-notif-item-mark{background:#fef3c7;}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread,.tc-ws-novedades-item--noshow:hover{background:#fff7e7;border-color:#fbd898;}
+.tc-ws-novedades-item--noshow.tc-ws-novedades-item--unread{box-shadow:inset 3px 0 #f59e0b;}
+.tc-ws-novedades-item--noshow.mind24-notif-item--unread::after{background:#b45309;}
+.tc-ws-novedades-item-title{font-weight:750;}
+.tc-ws-novedades-item-msg--soft{margin-top:2px;font-weight:500;color:var(--slate-600);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.tc-ws-novedades-item-cta{display:inline-flex;align-items:center;gap:4px;margin-top:6px;color:#92400e;font-size:12px;font-weight:700;text-decoration:none;}
+.tc-ws-novedades-item-cta-arrow{font-size:11px;line-height:1;}
 .page-content{padding:28px;flex:1;}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
 .stat-card{background:var(--white);border:1px solid var(--slate-200);border-radius:var(--r-lg);padding:22px 20px;transition:var(--tr);}
@@ -4904,6 +4877,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   <symbol id="admin-icon-logout" viewBox="0 0 24 24"><path d="M12 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h6m4-11 4 4-4 4m4-4H9"/></symbol>
   <symbol id="admin-icon-search" viewBox="0 0 24 24"><circle cx="10.75" cy="10.75" r="6.25"/><path d="m16 16 4 4"/></symbol>
   <symbol id="admin-icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="tc-ws-icon-pin" viewBox="0 0 24 24"><path d="M8 4h8M9 4v6l-3 4v2h12v-2l-3-4V4m-3 12v5"/></symbol>
   <symbol id="admin-art-section-wave" viewBox="0 0 380 96">
     <path d="M0 96C99 89 119 50 179 58c55 8 111 39 201-16v54Z" fill="#ede9fe"/>
     <path d="M94 88c53-8 68-38 106-34 42 4 70 33 109 19 19-7 34-23 59-26" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
@@ -6307,6 +6281,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
             </button></h2>
             <div class="tc-ws-vacancy-body hidden" id="tc-ws-vacancies-body">
               <p class="tc-ws-vacancy-status" id="tc-ws-vacancies-status" role="status"></p>
+              <p class="tc-ws-vacancy-status tc-ws-vacancy-pin-status" id="tc-ws-vacancies-pin-status" role="status"></p>
               <div class="tc-ws-vacancy-list tc-workforce-scroll" id="tc-ws-vacancies-list" role="region" tabindex="0" aria-label="Listado de vacantes activas"></div>
               <button type="button" class="rec-btn-new tc-ws-vacancy-retry hidden" id="tc-ws-vacancies-retry" onclick="tcEmpLoadActiveVacancies().catch(() => {})">Reintentar</button>
             </div>
@@ -6692,15 +6667,18 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
     </div>
   </div>
 </div>
-<div id="tc-ws-novedades-popover" class="tc-ws-novedades-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-ws-novedades-popover-title" aria-hidden="true">
-  <div class="tc-ws-novedades-popover-head">
-    <h3 id="tc-ws-novedades-popover-title">Novedades</h3>
-    <div style="display:flex;align-items:center;gap:4px;">
+<div id="tc-ws-novedades-popover" class="mind24-notif-popover tc-ws-novedades-popover hidden" role="dialog" aria-modal="false" aria-labelledby="tc-ws-novedades-popover-title" aria-hidden="true" tabindex="-1">
+  <div class="mind24-notif-popover-head">
+    <div class="mind24-notif-popover-title">
+      <svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-bell"/></svg>
+      <h3 id="tc-ws-novedades-popover-title">Novedades</h3>
+    </div>
+    <div class="mind24-notif-popover-actions">
       <button type="button" id="tc-ws-novedades-mark-all" class="mind24-mark-all-read-btn" aria-label="Marcar todas como leídas" title="Marcar todas como leídas" onclick="tcEmpNovedadesMarkAllRead()" disabled><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="m9 11 2 2 4-4"/></svg></button>
       <button type="button" class="tc-icon-btn tc-icon-btn--close" aria-label="Cerrar novedades" onclick="tcEmpNovedadesClose(true)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
   </div>
-  <div class="tc-ws-novedades-popover-body" id="tc-ws-novedades-body"></div>
+  <div class="mind24-notif-popover-body" id="tc-ws-novedades-body"></div>
 </div>
 <div id="modal-tc-noshow-reschedule" class="modal-overlay hidden" onclick="tcEmpNoshowRescheduleOverlayClick(event)">
   <div class="modal-card tc-noshow-reschedule-card" onclick="event.stopPropagation()">
@@ -21419,16 +21397,69 @@ function tcEmpOpenRegisterCandidate(vacancyId, vacancies){
 }
 let tcEmpVacanciesRequest=null;
 let tcEmpVacancyOpening=null;
+let tcEmpActiveVacancies=[];
+let tcEmpPinnedVacancies=null;
+const TC_EMP_VACANCY_PIN_LIMIT=3;
 const tcEmpVacanciesWide=window.matchMedia('(min-width:900px)');
 tcEmpVacanciesWide.addEventListener('change',function(event){tcEmpSetVacanciesOpen(event.matches);});
 function tcEmpSetVacanciesOpen(open){
   document.getElementById('tc-ws-vacancies-toggle').setAttribute('aria-expanded',String(open));
   document.getElementById('tc-ws-vacancies-body').classList.toggle('hidden',!open);
 }
+function tcEmpVacancyPinsKey(){
+  const identity=tcEmpPortalStorageIdentity();
+  return identity?'tc_ws_vacancy_pins_v1:'+JSON.stringify([identity.orgId,identity.employeeId]):null;
+}
+function tcEmpReadVacancyPins(){
+  const key=tcEmpVacancyPinsKey();
+  if(!key) return [];
+  try{
+    const ids=JSON.parse(localStorage.getItem(key));
+    if(Array.isArray(ids)) return [...new Set(ids.filter(id=>typeof id==='string'&&id))].slice(0,TC_EMP_VACANCY_PIN_LIMIT);
+  }catch(_){}
+  return [];
+}
+function tcEmpSetVacancyPins(ids){
+  tcEmpPinnedVacancies=ids;
+  const key=tcEmpVacancyPinsKey();
+  if(!key) return;
+  try{
+    if(ids.length) localStorage.setItem(key,JSON.stringify(ids));
+    else localStorage.removeItem(key);
+  }catch(_){}
+}
+function tcEmpToggleVacancyPin(button){
+  const id=button.dataset.vacancyPin;
+  if(!tcEmpActiveVacancies.some(v=>v.id===id)) return;
+  const status=document.getElementById('tc-ws-vacancies-pin-status');
+  const pinned=tcEmpPinnedVacancies.includes(id);
+  if(!pinned&&tcEmpPinnedVacancies.length>=TC_EMP_VACANCY_PIN_LIMIT){
+    status.textContent='Puedes fijar hasta '+TC_EMP_VACANCY_PIN_LIMIT+' vacantes. Quita una para fijar otra.';
+    return;
+  }
+  status.textContent='';
+  tcEmpSetVacancyPins(pinned?tcEmpPinnedVacancies.filter(pin=>pin!==id):[...tcEmpPinnedVacancies,id]);
+  tcEmpRenderActiveVacancies(tcEmpActiveVacancies);
+  const moved=document.querySelector('#tc-ws-vacancies-list [data-vacancy-pin="'+CSS.escape(id)+'"]');
+  moved?.focus();
+}
 function tcEmpRenderActiveVacancies(vacancies){
+  tcEmpActiveVacancies=vacancies;
+  tcEmpPinnedVacancies??=tcEmpReadVacancyPins();
+  const vacanciesById=new Map(vacancies.map(v=>[v.id,v]));
+  const activePins=tcEmpPinnedVacancies.filter(id=>vacanciesById.has(id));
+  if(activePins.length!==tcEmpPinnedVacancies.length){
+    tcEmpSetVacancyPins(activePins);
+    document.getElementById('tc-ws-vacancies-pin-status').textContent='';
+  }
+  const pinnedIds=new Set(activePins);
+  const ordered=[...activePins.map(id=>vacanciesById.get(id)),...vacancies.filter(v=>!pinnedIds.has(v.id))];
   const list=document.getElementById('tc-ws-vacancies-list');
-  const html=vacancies.map(function(v){
-    return '<article class="tc-ws-vacancy"><h3>'+tcEsc(v.title)+'</h3>'+
+  const html=ordered.map(function(v){
+    const pinned=pinnedIds.has(v.id);
+    return '<article class="tc-ws-vacancy'+(pinned?' tc-ws-vacancy--pinned':'')+'"><div class="tc-ws-vacancy-head"><h3>'+tcEsc(v.title)+'</h3>'+
+      '<button type="button" class="tc-ws-vacancy-pin" data-vacancy-pin="'+tcEsc(v.id)+'" aria-pressed="'+pinned+'" aria-label="'+tcEsc('Fijar vacante: '+v.title)+'" title="'+(pinned?'Desfijar vacante':'Fijar vacante')+'" onclick="tcEmpToggleVacancyPin(this)">'+
+      '<svg class="admin-nav-icon" aria-hidden="true"><use href="#tc-ws-icon-pin"/></svg></button></div>'+
       (v.location?'<span class="tc-ws-vacancy-location"><svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>'+tcEsc(v.location)+'</span>':'')+
       '<button type="button" class="rec-btn-new" data-vacancy-id="'+tcEsc(v.id)+'" aria-label="'+tcEsc('Registrar candidato para '+v.title)+'" onclick="tcEmpRegisterForVacancy(this)">'+
       '<svg class="admin-nav-icon" aria-hidden="true"><use href="#admin-icon-plus"/></svg>Registrar candidato</button></article>';
@@ -21442,9 +21473,12 @@ function tcEmpResetActiveVacancies(){
   tcEmpVacanciesRequest?.controller.abort();
   tcEmpVacanciesRequest=null;
   tcEmpVacancyOpening=null;
+  tcEmpActiveVacancies=[];
+  tcEmpPinnedVacancies=null;
   document.getElementById('tc-ws-vacancies-list').replaceChildren();
   document.getElementById('tc-ws-vacancies-count').textContent='';
   document.getElementById('tc-ws-vacancies-status').textContent='';
+  document.getElementById('tc-ws-vacancies-pin-status').textContent='';
   document.getElementById('tc-ws-vacancies-retry').classList.add('hidden');
   tcEmpSetVacanciesOpen(tcEmpVacanciesWide.matches);
 }
@@ -21992,9 +22026,15 @@ async function tcEmpNovedadesFetchList(){
     tcEmpNovedadesRenderList();
     tcEmpNovedadesSyncMarkAllBtn();
   }catch(_){
-    /* polling / popover: errores temporales sin alertas invasivas */
+    const body=document.getElementById('tc-ws-novedades-body');
+    const loading=body?.querySelector('.mind24-notif-loading');
+    if(loading){
+      loading.className='mind24-notif-empty';
+      loading.textContent='No se pudieron cargar las novedades.';
+    }
   }finally{
     tcEmpNovedadesListInFlight=false;
+    if(tcEmpNovedadesOpen) tcEmpNovedadesPosition();
   }
 }
 async function tcEmpNovedadesPollUnreadCount(){
@@ -22039,7 +22079,7 @@ function tcEmpNovedadesRenderList(){
   const body=document.getElementById('tc-ws-novedades-body');
   if(!body) return;
   if(!tcEmpNovedadesItems.length){
-    body.innerHTML='<p class="tc-ws-novedades-empty">No tienes novedades pendientes</p>';
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('admin-art-bell','No tienes novedades pendientes','tc-ws-novedades-empty');
     tcEmpNovedadesSyncMarkAllBtn();
     return;
   }
@@ -22047,26 +22087,26 @@ function tcEmpNovedadesRenderList(){
     const reminder=n.eventType==='WORKFORCE_DAILY_GOALS_REMINDER';
     const hired=n.eventType==='HIRED';
     const noshow=n.eventType==='INTERVIEW_NO_SHOW';
-    const cls='tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'')+(hired?' tc-ws-novedades-item--hired':'')+(noshow?' tc-ws-novedades-item--noshow':'');
+    const cls='mind24-notif-item tc-ws-novedades-item'+(n.read?' tc-ws-novedades-item--read':' mind24-notif-item--unread tc-ws-novedades-item--unread')+(reminder?' tc-ws-novedades-item--goal-reminder':'')+(hired?' tc-ws-novedades-item--hired':'')+(noshow?' tc-ws-novedades-item--noshow':'');
     const meta=n.metadata||{};
     const title=reminder&&typeof meta.title==='string'?meta.title:'';
     const bodyText=reminder&&typeof meta.body==='string'?meta.body:'';
     const copy=title&&bodyText
-      ? '<p class="tc-ws-novedades-item-title">'+tcEsc(title)+'</p><p class="tc-ws-novedades-item-msg tc-ws-novedades-item-msg--soft">'+tcEsc(bodyText)+'</p>'
-      : '<p class="tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</p>';
+      ? '<span class="mind24-notif-item-msg tc-ws-novedades-item-title">'+tcEsc(title)+'</span><span class="mind24-notif-item-msg tc-ws-novedades-item-msg--soft">'+tcEsc(bodyText)+'</span>'
+      : '<span class="mind24-notif-item-msg tc-ws-novedades-item-msg">'+tcEsc(n.message)+'</span>';
     const mark=hired
-      ? '<span class="tc-ws-novedades-item-trophy" aria-hidden="true">'+tcWsSvgTrophy()+(n.read?'':'<span class="tc-ws-novedades-hired-pip"></span>')+'</span>'
-      : reminder
-      ? '<span class="tc-ws-novedades-item-mark" aria-hidden="true">'+tcWsSvgTarget()+'</span>'
-      : '<span class="tc-ws-novedades-item-dot" aria-hidden="true"></span>';
+      ? '<span class="mind24-notif-item-mark tc-ws-novedades-item-trophy" aria-hidden="true">'+tcWsSvgTrophy()+(n.read?'':'<span class="tc-ws-novedades-hired-pip"></span>')+'</span>'
+      : reminder||n.eventType==='GOAL_ASSIGNED'
+      ? '<span class="mind24-notif-item-mark tc-ws-novedades-item-mark" aria-hidden="true"><svg class="admin-nav-art"><use href="#tc-ws-art-goals"/></svg></span>'
+      : mind24NotifMarkHtml(n.eventType);
     const cta=noshow&&n.canRescheduleInterviewNoShow
       ? '<span class="tc-ws-novedades-item-cta">¿Reagendamos la entrevista?<span class="tc-ws-novedades-item-cta-arrow" aria-hidden="true"> →</span></span>'
       : '';
     const timeLabel=tcEmpNovedadesFmtTime(n.createdAt);
-    const timeHtml=timeLabel?'<p class="tc-ws-novedades-item-time">'+tcEsc(timeLabel)+'</p>':'';
+    const timeHtml=timeLabel?'<span class="mind24-notif-item-time tc-ws-novedades-item-time">'+tcEsc(timeLabel)+'</span>':'';
     return '<button type="button" class="'+cls+'" data-nov-id="'+tcEsc(n.id)+'" onclick="tcEmpNovedadesOpenItem(this.getAttribute(\'data-nov-id\'))">'+
       mark+
-      '<span class="tc-ws-novedades-item-body">'+copy+cta+timeHtml+'</span></button>';
+      '<span class="mind24-notif-item-body">'+(n.read?'':'<span class="visually-hidden">Sin leer. </span>')+copy+cta+timeHtml+'</span></button>';
   }).join('');
 }
 async function tcEmpNovedadesMarkAllRead(){
@@ -22091,10 +22131,10 @@ function tcEmpNovedadesPosition(){
   const btn=tcEmpNovedadesAnchorBtn||document.getElementById('tc-ws-quick-novedades');
   if(!pop||!btn||pop.classList.contains('hidden')) return;
   const r=btn.getBoundingClientRect();
-  const w=pop.offsetWidth||340;
-  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
-  let top=r.bottom+8;
-  if(top+pop.offsetHeight>window.innerHeight-12) top=Math.max(12,r.top-pop.offsetHeight-8);
+  const w=pop.offsetWidth;
+  const left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  const roomBelow=window.innerHeight-r.bottom-20;
+  const top=pop.offsetHeight<=roomBelow?r.bottom+8:Math.max(12,r.top-pop.offsetHeight-8);
   pop.style.left=left+'px';
   pop.style.top=top+'px';
 }
@@ -22117,9 +22157,10 @@ async function tcEmpNovedadesOpenPopover(btn){
   pop.classList.remove('hidden');
   pop.setAttribute('aria-hidden','false');
   if(tcEmpNovedadesAnchorBtn) tcEmpNovedadesAnchorBtn.setAttribute('aria-expanded','true');
-  body.innerHTML='<p class="tc-ws-novedades-empty">Cargando…</p>';
-  await tcEmpNovedadesFetchList();
+  body.innerHTML='<p class="mind24-notif-loading">Cargando…</p>';
   tcEmpNovedadesPosition();
+  if(document.activeElement===tcEmpNovedadesAnchorBtn) pop.focus({preventScroll:true});
+  await tcEmpNovedadesFetchList();
 }
 function tcEmpNovedadesToggle(ev){
   const btn=ev&&ev.currentTarget?ev.currentTarget:document.getElementById('tc-ws-quick-novedades');
@@ -23404,9 +23445,15 @@ const MIND24_NOTIF_MARKS=new Map([
   ['SHIFT_CHECK_OUT',['clock','']],
   ['TASK_COMPLETED',['list','done']],
   ['TASK_OVERDUE',['clock','overdue']],
+  ['TASK_ASSIGNED',['list','']],
   ['GOAL_PERIOD_REPORTED',['list','done']],
   ['RECRUITMENT_CANDIDATE_CREATED',['candidate','candidate']],
   ['RECRUITMENT_SCHEDULED_HIRE',['calendar','candidate']],
+  ['STAGE_CHANGED',['candidate','candidate']],
+  ['REJECTED',['candidate','candidate']],
+  ['DECLINED',['candidate','candidate']],
+  ['INTERVIEW_NO_SHOW',['calendar','']],
+  ['EMPLOYMENT_EXIT',['candidate','candidate']],
 ]);
 function mind24NotifMarkHtml(type){
   const [icon,tone]=MIND24_NOTIF_MARKS.get(type)||['bell',''];
@@ -26428,11 +26475,14 @@ function tcEmpBuildGoalCardHtml(g,p,tz,showForm){
     form+
     '</article>';
 }
+function tcEmpWorkspaceEmptyHtml(icon,message,extraClass=''){
+  return '<p class="tc-ws-empty-state'+(extraClass?' '+extraClass:'')+'"><svg class="admin-nav-art" aria-hidden="true"><use href="#'+icon+'"/></svg>'+tcEsc(message)+'</p>';
+}
 function tcEmpRenderGoals(){
   const body=document.getElementById('tc-emp-goals-body');
   if(!body) return;
   if(!tcEmpGoalsCache.length){
-    body.innerHTML='<p class="tc-goal-empty">No tienes metas activas asignadas.</p>';
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas activas asignadas.':'Aún no tienes metas completadas.');
     return;
   }
   const tz=(tcEmpMe&&tcEmpMe.timezone)||'America/Mexico_City';
@@ -26461,7 +26511,7 @@ function tcEmpRenderGoals(){
     filtered=filtered.slice(0,40);
   }
   if(!filtered.length){
-    body.innerHTML='<p class="tc-goal-empty">'+(tcEmpGoalsView==='todo'?'No tienes metas pendientes por cumplir.':'Sin registros en esta vista.')+'</p>';
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas pendientes por cumplir.':'Aún no tienes metas completadas.');
     return;
   }
   body.innerHTML=filtered.map(function(row){
@@ -26752,7 +26802,7 @@ function tcEmpRenderTasks(){
   const pending=tcEmpTasks.filter(function(t){ return t.status==='PENDING'; });
   const prog=tcEmpTasks.filter(function(t){ return t.status==='IN_PROGRESS'; });
   if(!pending.length&&!prog.length){
-    body.innerHTML='<p class="tc-emp-tasks-empty tc-ws-activities-empty"><svg class="admin-nav-art" aria-hidden="true"><use href="#admin-art-list"/></svg>No tienes actividades pendientes.</p>';
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('admin-art-list','No tienes actividades pendientes.','tc-emp-tasks-empty');
     return;
   }
   function cardHtml(task, primaryLabel, primaryStatus, secondary){
@@ -26817,6 +26867,7 @@ async function tcEmpTaskAction(taskId, status){
 }
 async function tcEmpLoadMe(){
   const me=await tcPublicJson('/api/timeclock/public/me');
+  if(tcEmpMe&&(tcEmpMe.employeeId!==me?.employeeId||tcEmpMe.organizationId!==me?.organizationId)) tcEmpResetActiveVacancies();
   tcEmpMe=me;
   if(!(me&&me.openSession)) tcEmpStopHeartbeat();
   else tcEmpStartHeartbeat();

@@ -41,7 +41,7 @@ check(indexHtml === publicHtml, 'index.html y server/public/index.html son idén
 check(/const hired=n\.eventType==='HIRED'/.test(renderFn), 'la variante se decide por eventType HIRED');
 check(!/llegó a contratación|message\.includes|metadata\.toStageKey/.test(renderFn), 'no identifica la contratación por el texto ni por otro metadato');
 check(/tc-ws-novedades-item--hired/.test(renderFn) && /tcWsSvgTrophy\(\)/.test(renderFn), 'solo esa rama agrega la clase y el trofeo');
-check(/tcWsSvgTarget\(\)/.test(renderFn), 'el recordatorio de metas conserva su icono');
+check(/href="#tc-ws-art-goals"/.test(renderFn), 'el recordatorio usa la diana de Metas del portal');
 check(!/tc-ws-novedades-item--hired|tcWsSvgTrophy/.test(adminRender), 'la campana administrativa no usa la variante');
 check(/tcEmpQuickGoCandidates\(filter, item\.candidateId/.test(openFn), 'el clic conserva el destino actual');
 check(/tcEmpNovedadesEnsureItemRead\(item\)/.test(openFn), 'abrir la novedad marca lectura individual');
@@ -181,7 +181,7 @@ if (!executablePath) {
         hiredText: style(hiredMsg).color,
         timeColor: style(hired.querySelector('.tc-ws-novedades-item-time')).color,
         stageBg: style(stage).backgroundColor,
-        fakeDot: fake.querySelectorAll('.tc-ws-novedades-item-dot').length,
+        fakeMark: fake.querySelector('.mind24-notif-item-mark use')?.getAttribute('href'),
         goalMark: goal.querySelectorAll('.tc-ws-novedades-item-mark').length,
         tags: hired.querySelectorAll('img,b,script').length,
         text: hired.textContent,
@@ -209,7 +209,7 @@ if (!executablePath) {
     check(painted.hiredPip === 1 && painted.secondPip === 0, 'el indicador de no leída desaparece al leerla y el trofeo permanece');
     check(painted.hiredWeight === '700' && painted.secondWeight === '600' && painted.hiredBg !== painted.secondBg && painted.hiredAccent !== painted.secondAccent, 'leída y no leída se distinguen por peso, fondo y acento');
     check(painted.hiredText === 'rgb(30, 41, 59)' && painted.timeColor === 'rgb(100, 116, 139)', 'el texto usa el color principal y el secundario');
-    check(painted.stageBg !== painted.hiredBg && painted.fakeDot === 1 && painted.goalMark === 1, 'las demás novedades conservan punto o icono anterior');
+    check(painted.stageBg !== painted.hiredBg && painted.fakeMark === '#admin-art-candidate' && painted.goalMark === 1, 'las demás novedades usan los iconos del producto');
     check(painted.tags === 0 && painted.text.includes('<img') && painted.text.includes('<b>') && painted.nameKept && painted.longKept, 'nombres, vacantes y caracteres especiales quedan como texto');
     check(painted.clamp === 'none' && painted.nestedButtons === 0 && painted.trophyHidden === 'true' && painted.focused, 'el nombre no se recorta, no hay controles anidados y el trofeo es decorativo');
     check(painted.badge === '3' && !painted.closeOverlap && painted.itemH < painted.stageH + 18, 'el contador, el cierre y la altura de la fila se mantienen');
@@ -248,13 +248,13 @@ if (!executablePath) {
         trophy: hired.querySelectorAll('.tc-ws-novedades-item-trophy svg').length,
         pip: hired.querySelectorAll('.tc-ws-novedades-hired-pip').length,
         stageClass: stage.className,
-        stageDot: stage.querySelectorAll('.tc-ws-novedades-item-dot').length,
+        stageMark: stage.querySelector('.mind24-notif-item-mark use')?.getAttribute('href'),
         opened: window.__hiredOpened || null,
       };
     });
     check(afterRead.before === '3' && afterRead.badge === '', 'marcar todas como leídas deja el contador en cero');
     check(afterRead.hiredClass.includes('tc-ws-novedades-item--hired') && afterRead.hiredClass.includes('--read') && afterRead.trophy === 1 && afterRead.pip === 0, 'al leerla sigue siendo una contratación, no una fila genérica');
-    check(afterRead.stageClass.includes('--read') && !afterRead.stageClass.includes('hired') && afterRead.stageDot === 1, 'la novedad genérica leída conserva su punto');
+    check(afterRead.stageClass.includes('--read') && !afterRead.stageClass.includes('hired') && afterRead.stageMark === '#admin-art-candidate', 'la novedad genérica leída conserva su icono');
 
     const navigated = await page.evaluate(async () => {
       const nav = [];
