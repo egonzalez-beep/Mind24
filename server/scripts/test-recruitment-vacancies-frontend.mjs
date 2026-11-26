@@ -33,7 +33,7 @@ const modalCssBlock = indexHtml.match(/\/\* ══════ MODALS ═══�
 console.log('\n=== Recruitment 1B.1 — base ===\n');
 
 check(/view-dash-recruitment/.test(indexHtml), 'vista dash-recruitment');
-check(/rec-topbar-cluster/.test(indexHtml) && /rec-module-nav--inline/.test(indexHtml) && !/rec-page-head/.test(indexHtml), 'tabs Vacantes/Candidatos en topbar');
+check(/id="admin-rec-sections"[\s\S]*?data-rec-tab="vacancies"[\s\S]*?data-rec-tab="candidates"/.test(indexHtml) && !/rec-module-nav--inline/.test(indexHtml), 'Vacantes y Candidatos en el menú lateral');
 check(/rec-tab-metrics/.test(indexHtml) && /rec-pane-metrics/.test(indexHtml), 'pestaña Métricas en reclutamiento');
 check(/type="date" id="rec-form-opened"/.test(indexHtml), 'fecha apertura solo día');
 check(/modal-rec-vacancy/.test(indexHtml) && /recSubmitVacancy/.test(indexHtml), 'modal crear/editar vacante');
@@ -122,7 +122,7 @@ check(/Información general/.test(detailModalBlock), 'bloque información genera
 
 console.log('\n=== Recruitment 1D.2 — cartera candidatos ===\n');
 
-check(/rec-module-nav/.test(indexHtml), 'nav Vacantes/Candidatos');
+check(/data-admin-rec-toggle[^>]*aria-controls="admin-rec-sections"/.test(indexHtml), 'Reclutamiento despliega sus secciones');
 check(/recSwitchModuleTab/.test(indexHtml), 'switch módulo recruitment');
 check(/rec-topbar-cand-tools/.test(indexHtml), 'CTA candidatos en topbar');
 check(/id="rec-cand-archived"/.test(indexHtml) && /Ver archivados/.test(indexHtml) && /aria-pressed/.test(indexHtml), 'botón archivados');
@@ -153,7 +153,7 @@ check(/id="rec-cand-profile"/.test(indexHtml) && /rec-cand-ms-btn/.test(indexHtm
 
 console.log('\n=== Recruitment 1G.1 — dashboard Vacantes + Pipeline ===\n');
 
-check(/rec-global-q/.test(indexHtml) && !/rec-vac-local-q/.test(indexHtml) && /Buscar vacantes/.test(indexHtml), 'un solo buscador de vacantes en topbar');
+check(/id="rec-pane-vacancies"[\s\S]*?rec-vac-band-head[\s\S]*?id="rec-global-q"/.test(indexHtml) && !/rec-vac-local-q/.test(indexHtml), 'un solo buscador de vacantes junto a filtros');
 check(/recVacCardIconSvg/.test(indexHtml) && /rec-vac-card-chip/.test(indexHtml), 'cards vacante compactas con iconos SVG');
 check(/recCarouselScroll/.test(indexHtml) && /rec-carousel-range/.test(indexHtml), 'carrusel con rango y flechas');
 check(/recKanbanToggleCol/.test(indexHtml) && /rec-kanban-col--collapsed/.test(indexHtml), 'columnas Kanban compactables');
