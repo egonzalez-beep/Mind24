@@ -99,7 +99,9 @@ check(/id="tc-emp-status-btn"[^>]*aria-label="Escribe un estado"/.test(indexHtml
 check(/Editar estado:/.test(indexHtml), 'nombre accesible para editar estado');
 check(!/Leer estado completo:/.test(indexHtml), 'el directorio ya no ofrece lectura expandida del estado');
 check(!/tc-dir-status-read/.test(indexHtml) && !/tcDirStatusReadOpen|tcDirStatusBind|tcDirStatusReturn/.test(indexHtml), 'sin pop-up ni listeners de lectura en Directorio');
-check(/return '<span class="tc-dir-status">'\+tcEsc\(value\)\+'<\/span>'/.test(indexHtml), 'el estado del Directorio es un span no interactivo');
+const directoryStatusHtml = indexHtml.match(/^function tcDirStatusBubbleHtml\(text\)\{[\s\S]*?^}/m)?.[0] || '';
+check(/return '<span class="tc-dir-status">/.test(directoryStatusHtml) && !/<button\b|tabindex=|onclick=/.test(directoryStatusHtml), 'el estado del Directorio es un span no interactivo');
+check(/<svg[^>]*aria-hidden="true"/.test(directoryStatusHtml) && /tcStatusIconForMessage\(value\)/.test(directoryStatusHtml), 'el Directorio usa los iconos del estado personal');
 check(!/button\.tc-dir-status|type="button" class="tc-dir-status"/.test(indexHtml), 'el estado del Directorio no es un botón');
 check(/id="tc-status-pop"/.test(indexHtml) && /tcPersonalStatusOpen|tcPersonalStatusSave/.test(indexHtml), 'el editor de Mi espacio de trabajo se conserva');
 check(/Agregar foto/.test(indexHtml) && /Cambiar foto/.test(indexHtml) && /Quitar foto/.test(indexHtml), 'nombres accesibles de fotografía');
