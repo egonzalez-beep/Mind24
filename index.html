@@ -1573,9 +1573,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-ws-notes-body.empty{color:var(--slate-400);}
 .rec-pipeline-slot{min-height:0;margin-top:0;}
 .rec-kanban-err{font-size:12px;color:#DC2626;margin:0 0 8px;}
-.rec-kanban-board{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin;align-items:stretch;}
-.rec-kanban-board::-webkit-scrollbar{height:7px;}
-.rec-kanban-board::-webkit-scrollbar-thumb{background:rgba(124,58,237,.22);border-radius:999px;}
+.rec-kanban-board{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;align-items:stretch;}
 .rec-kanban-col{flex:0 0 min(252px,82vw);background:rgba(248,250,252,.92);border:1px solid var(--slate-200);border-radius:12px;padding:8px 8px 6px;max-height:none;height:auto;align-self:stretch;display:flex;flex-direction:column;min-height:0;transition:width .2s ease,flex-basis .2s ease,padding .2s ease;}
 .rec-kanban-col--collapsed{flex:0 0 52px;min-width:52px;max-width:52px;padding:8px 4px;align-items:center;}
 .rec-kanban-col--collapsed .rec-kanban-col-body{display:none;}
@@ -2456,12 +2454,13 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-jornada-op-head :is(button,summary):focus-visible,.tc-directory-toggle:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
 .tc-workforce-scroll{overscroll-behavior:contain;}
 @media(forced-colors:none){
-  .tc-workforce-scroll{scrollbar-width:thin;scrollbar-color:rgba(124,58,237,.31) transparent;}
-  .tc-workforce-scroll::-webkit-scrollbar{width:5px;height:5px;}
-  .tc-workforce-scroll::-webkit-scrollbar-track,.tc-workforce-scroll::-webkit-scrollbar-corner{background:transparent;}
-  .tc-workforce-scroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,.31);border-radius:999px;}
-  .tc-workforce-scroll::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,.49);}
-  .tc-workforce-scroll::-webkit-scrollbar-button{display:none;}
+  :is(.tc-workforce-scroll,.rec-kanban-board){scrollbar-width:thin;scrollbar-color:rgba(124,58,237,.31) transparent;}
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar{width:5px;height:5px;}
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-track,
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-corner{background:transparent;}
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-thumb{background:rgba(124,58,237,.31);border-radius:999px;}
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,.49);}
+  :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-button{display:none;}
 }
 .tc-metrics-summary-head{display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;margin-bottom:-4px;}
 .tc-metrics-summary-head h3,.tc-metrics-panel-title{margin:0;font-size:15px;letter-spacing:-.015em;font-weight:750;color:var(--primary);}
