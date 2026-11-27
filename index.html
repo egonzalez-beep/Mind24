@@ -769,6 +769,7 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-cand-hero-ctrls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;}
 .rec-cand-stage-change-select{font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-700);border:1px solid var(--slate-200);background:#fff;border-radius:8px;padding:6px 28px 6px 10px;cursor:pointer;max-width:180px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
 .rec-cand-stage-change-select:hover{border-color:rgba(124,58,237,.35);}
+.rec-cand-hero-ctrls.rec-cand-form--pickers .rec-cand-form-picker-trigger{width:auto;max-width:min(180px,100%);min-height:32px;padding:6px 8px;font-size:12px;font-weight:650;}
 .rec-cand-hero-updated{font-size:11px;color:var(--slate-500);margin:12px 0 0;}
 .rec-cand-pipeline-link{font-size:12px;padding:6px 10px;}
 .rec-cand-labeled-rail{display:flex;align-items:flex-start;gap:0;padding:4px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;scrollbar-width:thin;}
@@ -888,6 +889,22 @@ button.rec-agenda-row-title{min-width:0;background:none;border:0;padding:0;color
 .rec-iv-field{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--slate-200);border-radius:12px;background:#fff;padding:8px 10px;}
 .rec-iv-field .form-input{border:0;padding:0;min-width:0;width:100%;background:transparent;}
 .rec-iv-label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--slate-700);}
+.rec-iv-when>div{min-width:0;}
+.rec-iv-when .rec-iv-label{margin-top:0;}
+.rec-iv-form-icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--purple-dark);}
+.rec-iv-time-editor{display:none;}
+.rec-cand-form--pickers .rec-iv-time-editor{display:flex;align-items:center;gap:6px;min-height:44px;}
+.rec-iv-time-editor .tc-noshow-ampm-btn{flex:none;}
+.rec-iv-name-tools{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:6px;}
+.rec-iv-name-tools>div{flex:1 1 180px;min-width:0;}
+.rec-iv-presets{margin-top:8px;padding:8px 10px;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-light);}
+.rec-iv-presets ul{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px;max-height:145px;overflow:auto;}
+.rec-iv-presets li,.rec-iv-preset-edit{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
+.rec-iv-presets li>span,.rec-iv-preset-edit input{flex:1 1 135px;min-width:0;overflow-wrap:anywhere;}
+.rec-iv-presets button{font-size:12px;}
+.rec-iv-presets-message{font-size:12px;color:var(--slate-700);margin-top:5px;}
+.rec-iv-presets-message:empty{display:none;}
+@media(max-width:410px){.rec-iv-when.rec-iv-when--inputs{grid-template-columns:1fr;}}
 .rec-iv-comment-box{border:1px solid var(--slate-200);border-radius:12px;background:#fafafa;padding:10px 12px;font-size:14px;line-height:1.4;color:var(--slate-700);white-space:pre-wrap;overflow-wrap:anywhere;}
 textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .rec-iv-edit{display:inline-flex;align-items:center;gap:6px;margin-top:12px;border:0;background:transparent;padding:0;color:#7c3aed;font-family:inherit;font-size:14px;font-weight:650;cursor:pointer;}
@@ -2461,6 +2478,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
   :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-thumb{background:rgba(124,58,237,.31);border-radius:999px;}
   :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,.49);}
   :is(.tc-workforce-scroll,.rec-kanban-board)::-webkit-scrollbar-button{display:none;}
+  @supports selector(::-webkit-scrollbar){
+    .rec-kanban-board{scrollbar-width:auto;scrollbar-color:auto;}
+    .rec-kanban-board::-webkit-scrollbar{height:3px;}
+  }
 }
 .tc-metrics-summary-head{display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;margin-bottom:-4px;}
 .tc-metrics-summary-head h3,.tc-metrics-panel-title{margin:0;font-size:15px;letter-spacing:-.015em;font-weight:750;color:var(--primary);}
@@ -8965,6 +8986,11 @@ window.addEventListener('scroll',()=>{ const nav=document.getElementById('mainNa
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
   if(recCandFormClosePickers(true)){ e.preventDefault(); return; }
+  if(document.querySelector('#modal-rec-hire-confirm:not(.hidden)')){
+    e.preventDefault();
+    if(!document.getElementById('rec-hire-confirm-submit').disabled) recHireConfirmCancel();
+    return;
+  }
   closeAllModals();
 });
 document.addEventListener('DOMContentLoaded',function(){
@@ -17396,6 +17422,8 @@ function recCandFillHeroStageSelect(selectEl,stageRows,currentStageId){
     selectEl.value=currentStageId;
     selectEl.setAttribute('data-prev',currentStageId);
   }
+  selectEl.disabled=!stageRows.length;
+  recCandFormSyncSelectPicker(selectEl);
 }
 async function recCandChangePrimaryStage(selectEl){
   if(!selectEl) return;
@@ -17406,12 +17434,14 @@ async function recCandChangePrimaryStage(selectEl){
   const app=st.detailPrimaryApplication;
   if(!app){
     selectEl.value=prev;
+    recCandFormSyncSelectPicker(selectEl);
     return;
   }
   const opt=selectEl.options[selectEl.selectedIndex];
   const newKey=opt?(opt.getAttribute('data-stage-key')||''):'';
   if(newKey==='HIRED'){
     selectEl.value=prev;
+    recCandFormSyncSelectPicker(selectEl);
     const cand=st.detailCandidate||{};
     const vac=app.vacancy||{};
     recHireConfirmOpen({
@@ -17427,7 +17457,7 @@ async function recCandChangePrimaryStage(selectEl){
     });
     return;
   }
-  await recCandCommitPrimaryStage(selectEl, newStageId, prev, null);
+  try{ await recCandCommitPrimaryStage(selectEl, newStageId, prev, null); }catch(_error){}
 }
 async function recCandCommitPrimaryStage(selectEl, newStageId, prev, extraBody){
   const st=recEnsureState();
@@ -17437,6 +17467,7 @@ async function recCandCommitPrimaryStage(selectEl, newStageId, prev, extraBody){
   const vacId=app.vacancy&&app.vacancy.id;
   const candidateId=st.detailCandidateId;
   selectEl.disabled=true;
+  recCandFormSyncSelectPicker(selectEl);
   recCandSetOpErr('');
   try{
     const payload=Object.assign({ stageId:newStageId }, extraBody||{});
@@ -17479,6 +17510,7 @@ async function recCandCommitPrimaryStage(selectEl, newStageId, prev, extraBody){
     throw e;
   }finally{
     selectEl.disabled=false;
+    recCandFormSyncSelectPicker(selectEl);
   }
 }
 function recCandDeclineButtonHtml(app){
@@ -17701,6 +17733,7 @@ function recCandEnsureInterviewDialog(){
   overlay.className='modal-overlay rec-modal-glass rec-iv-overlay rec-cand-interview-detail hidden';
   overlay.onclick=function(ev){ if(ev.target===overlay) recCandCloseInterviewDetail(); };
   overlay.innerHTML='<div class="rec-iv-dialog" role="dialog" aria-modal="true" aria-labelledby="rec-iv-title" onclick="event.stopPropagation()"></div>';
+  overlay.querySelector('.rec-iv-dialog').addEventListener('scroll',recCandFormTrackPicker,{passive:true});
   document.body.appendChild(overlay);
   return overlay;
 }
@@ -17716,6 +17749,7 @@ function recCandInterviewSetBusy(busy){
   document.querySelectorAll('#rec-iv-overlay [data-iv-submit]').forEach(function(btn){ btn.disabled=!!busy; });
 }
 function recCandCloseInterviewDetail(){
+  if(recCandFormPickerSelect?.closest('#rec-iv-overlay')||recCandFormPickerDate?.closest('#rec-iv-overlay')) recCandFormClosePickers(false);
   const st=recEnsureState();
   recCandInterviewEpoch+=1;
   if(recCandInterviewAbort){ try{ recCandInterviewAbort.abort(); }catch(_e){} recCandInterviewAbort=null; }
@@ -17742,7 +17776,7 @@ function recCandBindInterviewEscape(){
     if(!open) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
-    recCandCloseInterviewDetail();
+    if(!recCandFormClosePickers(true)) recCandCloseInterviewDetail();
   },true);
 }
 function recCandInterviewMode(mode){
@@ -17751,15 +17785,199 @@ function recCandInterviewMode(mode){
   recCandPaintInterviewDialog();
   recCandFocusInterviewDialog();
 }
+const REC_IV_DEFAULT_NAMES=['Entrevista','Segunda entrevista','Entrevista por gerencia'];
+function recCandInterviewNamesStorageKey(){
+  const user=window.__MIND24_USER||{};
+  return 'mind24:interview-names:'+encodeURIComponent(user.organizationId||'')+':'+encodeURIComponent(user.id||user.email||'');
+}
+function recCandInterviewSavedNames(){
+  try{
+    const names=JSON.parse(localStorage.getItem(recCandInterviewNamesStorageKey()));
+    if(Array.isArray(names)) return names.filter(name=>typeof name==='string'&&name.trim()&&name.length<=80);
+  }catch(_error){}
+  return REC_IV_DEFAULT_NAMES.slice();
+}
+function recCandInterviewSyncSavedName(form){
+  const select=form.querySelector('#rec-iv-preset');
+  select.value=form.elements.label.value;
+  if(select.selectedIndex<0) select.selectedIndex=0;
+  recCandFormSyncSelectPicker(select);
+}
+function recCandInterviewRenderSavedNames(form){
+  const names=recCandInterviewSavedNames();
+  const select=form.querySelector('#rec-iv-preset');
+  select.replaceChildren(new Option('Elegir nombre guardado',''),...names.map(name=>new Option(name,name)));
+  recCandInterviewSyncSavedName(form);
+  const list=form.querySelector('#rec-iv-preset-list');
+  list.innerHTML=names.map(function(name,index){
+    const safe=tcEsc(name);
+    return '<li data-preset-name="'+safe+'"><span>'+safe+'</span><button type="button" class="rec-stages-ghost-btn" data-preset-edit="'+index+'" aria-label="Editar '+safe+'">Editar</button>'+
+      '<button type="button" class="rec-stages-ghost-btn" data-preset-delete="'+index+'" aria-label="Eliminar '+safe+'">Eliminar</button></li>';
+  }).join('')||'<li>Aún no tienes nombres guardados.</li>';
+}
+function recCandInterviewBindSavedNames(form){
+  const select=form.querySelector('#rec-iv-preset');
+  const field=form.elements.label;
+  const manager=form.querySelector('#rec-iv-presets');
+  const toggle=form.querySelector('#rec-iv-preset-toggle');
+  const input=form.querySelector('#rec-iv-preset-name');
+  const save=form.querySelector('#rec-iv-preset-save');
+  const message=form.querySelector('#rec-iv-preset-message');
+  let editing=null;
+  const reset=function(){
+    editing=null;
+    input.value='';
+    save.textContent='Agregar';
+  };
+  const persist=function(names){
+    try{
+      localStorage.setItem(recCandInterviewNamesStorageKey(),JSON.stringify(names));
+      return true;
+    }catch(_error){
+      message.textContent='El navegador no pudo guardar los nombres.';
+      return false;
+    }
+  };
+  select.addEventListener('change',function(){
+    if(select.value) field.value=select.value;
+    recCandInterviewSyncSavedName(form);
+  });
+  field.addEventListener('input',function(){ recCandInterviewSyncSavedName(form); });
+  toggle.addEventListener('click',function(){
+    manager.hidden=!manager.hidden;
+    toggle.setAttribute('aria-expanded',String(!manager.hidden));
+    if(!manager.hidden){ message.textContent=''; input.focus(); }
+    else reset();
+  });
+  manager.addEventListener('click',function(event){
+    const button=event.target.closest('[data-preset-edit],[data-preset-delete]');
+    if(!button) return;
+    const names=recCandInterviewSavedNames();
+    const name=button.closest('[data-preset-name]').dataset.presetName;
+    if(!names.includes(name)){
+      recCandInterviewRenderSavedNames(form);
+      message.textContent='La lista de nombres cambió. Selecciona un nombre de nuevo.';
+      input.focus();
+      return;
+    }
+    if(button.hasAttribute('data-preset-edit')){
+      editing=name;
+      input.value=name;
+      save.textContent='Guardar nombre';
+      message.textContent='';
+      input.select();
+    }else if(persist(names.filter(item=>item!==name))){
+      if(editing===name) reset();
+      recCandInterviewRenderSavedNames(form);
+      message.textContent='Nombre eliminado de la lista.';
+      input.focus();
+    }
+  });
+  save.addEventListener('click',function(){
+    const name=input.value.trim();
+    const names=recCandInterviewSavedNames();
+    if(!name||name.length>80){
+      message.textContent='Escribe un nombre de hasta 80 caracteres.';
+      input.focus();
+      return;
+    }
+    if(editing&&!names.includes(editing)){
+      reset();
+      recCandInterviewRenderSavedNames(form);
+      message.textContent='El nombre ya no está en la lista.';
+      input.focus();
+      return;
+    }
+    if(names.some(item=>item!==editing&&item.localeCompare(name,'es',{sensitivity:'base'})===0)){
+      message.textContent='Ese nombre ya está guardado.';
+      input.focus();
+      return;
+    }
+    const updated=editing?names.map(item=>item===editing?name:item):[...names,name];
+    if(!persist(updated)) return;
+    if(editing&&field.value===editing) field.value=name;
+    reset();
+    recCandInterviewRenderSavedNames(form);
+    message.textContent='Nombre guardado.';
+    input.focus();
+  });
+  input.addEventListener('keydown',function(event){
+    if(event.key==='Enter'){ event.preventDefault(); save.click(); }
+  });
+  recCandInterviewRenderSavedNames(form);
+}
+function recCandInterviewValidateWhen(form){
+  if(!form.elements.date.value){
+    recCandInterviewSetError('Selecciona la fecha de la entrevista.');
+    (form.querySelector('.rec-iv-date-trigger')?.getClientRects().length?form.querySelector('.rec-iv-date-trigger'):form.elements.date).focus();
+    return false;
+  }
+  const time=form.querySelector('#rec-iv-time-text');
+  if(time?.getClientRects().length&&time.value.trim()&&!form.elements.time.value){
+    recCandInterviewSetError('Escribe una hora válida, por ejemplo 8:30, o déjala vacía.');
+    time.focus();
+    return false;
+  }
+  return true;
+}
+function recCandInterviewBindControls(dialog){
+  const form=dialog.querySelector('#rec-iv-date')?.form;
+  if(!form) return;
+  recCandInterviewBindSavedNames(form);
+  if(typeof HTMLElement.prototype.showPopover!=='function') return;
+  recCandFormBindPickers();
+  dialog.classList.add('rec-cand-form--pickers');
+  form.noValidate=true;
+  recCandBindSelectPicker(form.querySelector('#rec-iv-preset'));
+  const date=form.elements.date;
+  const dateTrigger=date.nextElementSibling;
+  form.querySelector('#rec-iv-date-label').htmlFor=dateTrigger.id;
+  dateTrigger.addEventListener('click',function(){ recCandOpenDatePicker(dateTrigger); });
+  recCandFormSyncDateLabel(date);
+  const time=form.elements.time;
+  const input=form.querySelector('#rec-iv-time-text');
+  form.querySelector('label[for="rec-iv-time"]').htmlFor=input.id;
+  const period=form.querySelector('#rec-iv-time-period');
+  const [hour,minute]=(time.value||'').split(':').map(Number);
+  const syncTime=function(){
+    const pm=period.getAttribute('aria-pressed')==='true';
+    const parsed=tcEmpNoshowParseTypedTime(input.value.replace(/^(\d{1,2})(\d{2})$/,'$1:$2'));
+    period.textContent=pm?'p. m.':'a. m.';
+    time.value=parsed.hour==null?'':tcEmpNoshowTimeToHHmm(parsed.hour,parsed.minute,pm?'pm':'am');
+  };
+  if(time.value) input.value=(hour%12||12)+':'+String(minute).padStart(2,'0');
+  period.setAttribute('aria-pressed',String(hour>=12));
+  input.addEventListener('input',syncTime);
+  input.addEventListener('blur',function(){
+    if(/^\d{3,4}$/.test(input.value)) input.value=input.value.replace(/^(\d{1,2})(\d{2})$/,'$1:$2');
+  });
+  period.addEventListener('click',function(){
+    period.setAttribute('aria-pressed',String(period.getAttribute('aria-pressed')!=='true'));
+    syncTime();
+  });
+  syncTime();
+}
 function recCandInterviewFormFields(row, focusDate, defaultDate){
   const parts=row?recCandInterviewLocalPartsFromIso(row.scheduledAt,row.scheduledTimeSpecified!==false):{date:defaultDate||'',time:''};
   const label=row&&row.label?String(row.label):'';
   const comment=row&&row.comment?String(row.comment):'';
-  return '<label class="rec-iv-label" for="rec-iv-label">Nombre</label>'+
-    '<input id="rec-iv-label" class="form-input" name="label" maxlength="80" value="'+tcEsc(label)+'"'+(focusDate?'':' data-iv-focus')+'>'+
-    '<div class="rec-iv-when">'+
-    '<label class="rec-iv-field"><span aria-hidden="true">📅</span><input class="form-input" type="date" name="date" required aria-label="Fecha" value="'+tcEsc(parts.date)+'"'+(focusDate?' data-iv-focus':'')+'></label>'+
-    '<label class="rec-iv-field"><span aria-hidden="true">🕒</span><input class="form-input" type="time" name="time" step="60" aria-label="Hora" value="'+tcEsc(parts.time)+'"></label>'+
+  const calendar='<svg class="rec-iv-form-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#admin-icon-calendar"/></svg>';
+  const clock='<svg class="rec-iv-form-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  return '<label class="rec-iv-label" for="rec-iv-label">Nombre de entrevista</label>'+
+    '<input id="rec-iv-label" class="form-input" name="label" maxlength="80" placeholder="Ej. Entrevista por gerencia" value="'+tcEsc(label)+'"'+(focusDate?'':' data-iv-focus')+'>'+
+    '<div class="rec-iv-name-tools"><div><select id="rec-iv-preset" class="form-input" aria-label="Nombres guardados"></select></div>'+
+    '<button type="button" id="rec-iv-preset-toggle" class="rec-stages-ghost-btn" aria-controls="rec-iv-presets" aria-expanded="false">Administrar nombres</button></div>'+
+    '<div id="rec-iv-presets" class="rec-iv-presets" hidden><ul id="rec-iv-preset-list" aria-label="Nombres guardados"></ul>'+
+    '<div class="rec-iv-preset-edit"><input id="rec-iv-preset-name" class="form-input" maxlength="80" placeholder="Nombre para guardar" aria-label="Nombre para guardar">'+
+    '<button type="button" class="rec-stages-ghost-btn" id="rec-iv-preset-save">Agregar</button></div><p class="rec-iv-presets-message" id="rec-iv-preset-message" role="status"></p></div>'+
+    '<div class="rec-iv-when rec-iv-when--inputs">'+
+    '<div><label class="rec-iv-label" id="rec-iv-date-label" for="rec-iv-date">Fecha</label>'+
+    '<input id="rec-iv-date" class="form-input rec-cand-form-native" type="date" name="date" required value="'+tcEsc(parts.date)+'"'+(focusDate?' data-iv-focus':'')+'>'+
+    '<button id="rec-iv-date-trigger" class="form-input rec-cand-form-picker-trigger rec-iv-date-trigger" type="button" aria-labelledby="rec-iv-date-label rec-iv-date-trigger" aria-haspopup="dialog" aria-controls="rec-cand-form-date-picker" aria-expanded="false"'+(focusDate?' data-iv-focus':'')+'><span></span>'+calendar+'</button></div>'+
+    '<div><label class="rec-iv-label" for="rec-iv-time">Hora <span class="rec-cand-form-optional">Opcional</span></label>'+
+    '<input id="rec-iv-time" class="form-input rec-cand-form-native" type="time" name="time" step="60" value="'+tcEsc(parts.time)+'">'+
+    '<div class="rec-iv-time-editor">'+clock+'<input id="rec-iv-time-text" class="form-input" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="Sin hora" aria-label="Hora de entrevista (opcional)">'+
+    '<button type="button" id="rec-iv-time-period" class="tc-noshow-ampm-btn" aria-label="Cambiar entre a. m. y p. m." aria-pressed="false">a. m.</button></div></div>'+
     '</div>'+
     '<label class="rec-iv-label" for="rec-iv-comment">Comentario</label>'+
     '<textarea id="rec-iv-comment" class="form-input rec-iv-comment" name="comment" maxlength="500" rows="3">'+tcEsc(comment)+'</textarea>';
@@ -17767,6 +17985,8 @@ function recCandInterviewFormFields(row, focusDate, defaultDate){
 function recCandPaintInterviewDialog(){
   const overlay=recCandEnsureInterviewDialog();
   const dialog=overlay.querySelector('.rec-iv-dialog');
+  if(recCandFormPickerSelect?.closest('#rec-iv-overlay')||recCandFormPickerDate?.closest('#rec-iv-overlay')) recCandFormClosePickers(false);
+  dialog.classList.remove('rec-cand-form--pickers');
   const st=recEnsureState();
   const appId=st.interviewDetailAppId;
   const eventId=st.interviewDetailEventId;
@@ -17812,8 +18032,8 @@ function recCandPaintInterviewDialog(){
     const comment=row.comment?String(row.comment):'';
     body+='<span class="rec-iv-kicker rec-cand-interview-status rec-cand-interview-status--'+statusCls+'">'+tcEsc(recCandInterviewStatusLabel(row.eventType))+'</span>'+
       '<div class="rec-iv-name-row"><p class="rec-iv-name">'+tcEsc(recCandInterviewTitle(row))+'</p>'+copy+'</div>'+
-      '<div class="rec-iv-when'+(!timeLabel?' rec-iv-when--date-only':'')+'"><div class="rec-iv-field"><span aria-hidden="true">📅</span><span>'+tcEsc(dateLabel)+'</span></div>'+
-      (timeLabel?'<div class="rec-iv-field"><span aria-hidden="true">🕒</span><span>'+tcEsc(timeLabel)+'</span></div>':'')+'</div>'+
+      '<div class="rec-iv-when'+(!timeLabel?' rec-iv-when--date-only':'')+'"><div class="rec-iv-field"><svg class="rec-iv-form-icon" aria-hidden="true"><use href="#admin-icon-calendar"/></svg><span>'+tcEsc(dateLabel)+'</span></div>'+
+      (timeLabel?'<div class="rec-iv-field"><svg class="rec-iv-form-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>'+tcEsc(timeLabel)+'</span></div>':'')+'</div>'+
       '<p class="rec-iv-label">Comentario</p><div class="rec-iv-comment-box">'+(comment?tcEsc(comment):'Sin comentario')+'</div>';
     if(!readonly&&row.eventType==='SCHEDULED'){
       body+='<button type="button" class="rec-iv-edit" onclick="recCandInterviewMode(\'edit\')">✎ Editar entrevista</button>'+
@@ -17828,6 +18048,7 @@ function recCandPaintInterviewDialog(){
     }
   }
   dialog.innerHTML=body;
+  recCandInterviewBindControls(dialog);
 }
 function recCandOpenInterviewDetail(btn, appId, eventId, opts){
   opts=opts||{};
@@ -17877,7 +18098,7 @@ function recCandFocusInterviewDialog(){
   if(!overlay||overlay.classList.contains('hidden')) return;
   setTimeout(function(){
     if(!overlay||overlay.classList.contains('hidden')) return;
-    const focus=overlay.querySelector('[data-iv-focus]')||overlay.querySelector('button, input, textarea');
+    const focus=Array.from(overlay.querySelectorAll('[data-iv-focus]')).find(el=>el.getClientRects().length)||overlay.querySelector('button, input, textarea');
     if(focus) focus.focus();
   },0);
 }
@@ -17913,6 +18134,7 @@ async function recCandScheduleInterview(ev, appId){
   if(ev&&ev.preventDefault) ev.preventDefault();
   const form=ev&&ev.target;
   if(form&&form.dataset&&form.dataset.pending==='1') return false;
+  if(!recCandInterviewValidateWhen(form)) return false;
   const req=recCandBeginInterviewRequest();
   try{
     await apiJson('/api/org/recruitment/applications/'+encodeURIComponent(appId)+'/interviews',{
@@ -17974,6 +18196,7 @@ function recCandSubmitInterviewEdit(ev, appId, eventId){
   if(ev&&ev.preventDefault) ev.preventDefault();
   const form=ev&&ev.target;
   if(form&&form.dataset&&form.dataset.pending==='1') return false;
+  if(!recCandInterviewValidateWhen(form)) return false;
   recCandInterviewAction(appId,eventId,'EDIT',{
     label:form.label?form.label.value:null,
     comment:form.comment?form.comment.value:null,
@@ -18006,7 +18229,7 @@ function recCandHeroHtml(app){
     '<div class="rec-cand-hero-head-right">'+
     '<span class="rec-cand-stage-pill '+pillCls+'">'+tcEsc(stage.name||'—')+'</span>'+
     '<div class="rec-cand-hero-ctrls">'+
-    '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa"><option value="">—</option></select>'+
+    '<select class="rec-cand-stage-change-select" id="rec-cand-hero-stage-select" data-picker-no-search aria-label="Cambiar etapa" onchange="recCandChangePrimaryStage(this)" title="Cambiar etapa" disabled><option value="">Cargando etapas…</option></select>'+
     recCandDeclineButtonHtml(app)+
     '<button type="button" class="rec-stages-ghost-btn rec-cand-pipeline-link" onclick="recCandGoToPipeline(\''+tcEsc(vacId)+'\')">Ver en pipeline</button>'+
     '</div></div></div>'+
@@ -18923,6 +19146,7 @@ function recCandRenderAside(others,closedApps,sumLine){
 async function recCandRenderPipelineSection(c){
   const host=document.getElementById('rec-cand-pipeline-host');
   if(!host||!c) return;
+  if(host.contains(recCandFormPickerSelect)) recCandFormClosePickers(false);
   const st=recEnsureState();
   const parts=recCandPartitionApplications(c.applications||[]);
   const primary=recCandPickPrimaryApplication(st,parts.active);
@@ -18940,14 +19164,23 @@ async function recCandRenderPipelineSection(c){
   const vacId=primary.vacancy&&primary.vacancy.id;
   const stageId=primary.stage&&primary.stage.id;
   host.innerHTML=recCandHeroHtml(primary);
+  const sel=host.querySelector('#rec-cand-hero-stage-select');
+  if(typeof HTMLElement.prototype.showPopover==='function'){
+    recCandFormBindPickers();
+    sel.closest('.rec-cand-hero-ctrls').classList.add('rec-cand-form--pickers');
+    recCandBindSelectPicker(sel);
+  }
   try{
     const rows=await recCandGetStagesCached(vacId);
+    if(!sel.isConnected) return;
     const rail=recCandBuildLabeledStageRailHtml(rows,stageId);
     const railEl=document.getElementById('rec-cand-hero-rail');
     if(railEl) railEl.innerHTML=rail;
-    const sel=document.getElementById('rec-cand-hero-stage-select');
     recCandFillHeroStageSelect(sel,rows,stageId);
-  }catch(_e){}
+  }catch(_error){
+    sel.replaceChildren(new Option('Etapas no disponibles',''));
+    recCandFormSyncSelectPicker(sel);
+  }
 }
 function recCandSetOpErr(msg){
   const el=document.getElementById('rec-cand-detail-op-err');
@@ -19912,6 +20145,7 @@ function recCandTryCloseDetailModal(){
   return true;
 }
 function recCandOnDetailModalClosed(){
+  if(recCandFormPickerSelect?.closest('#modal-rec-candidate-detail')) recCandFormClosePickers(false);
   recCandDetailAbortPending();
   const st=recEnsureState();
   if(st.agendaFileReturn){
@@ -20855,8 +21089,9 @@ function recCandFormTrackPicker(){
   const trigger=recCandFormPickerTrigger(picker);
   if(!trigger) return;
   const anchor=trigger.getBoundingClientRect();
-  const visible=trigger.closest('.rec-cand-form-body,.tc-emp-edit-body,.main-content').getBoundingClientRect();
-  if(anchor.bottom<=visible.top||anchor.top>=visible.bottom) picker.hidePopover();
+  const surface=trigger.closest('.rec-cand-form-body,.tc-emp-edit-body,.rec-iv-dialog,.rec-cand-detail-modal,.main-content');
+  const visible=surface?.getBoundingClientRect();
+  if(!trigger.isConnected||!trigger.getClientRects().length||(visible&&(anchor.bottom<=visible.top||anchor.top>=visible.bottom))) picker.hidePopover();
   else m24PositionAnchoredPicker(picker,trigger);
 }
 function recCandFormRenderSelectOptions(){
@@ -20880,12 +21115,12 @@ function recCandFormOpenSelectPicker(select,trigger){
   recCandFormClosePickers(false);
   if(same) return;
   recCandFormPickerSelect=select;
-  trigger.closest('.rec-cand-form-modal,.tc-emp-edit-dialog,#tc-add-card').append(picker);
+  trigger.closest('.rec-cand-form-modal,.tc-emp-edit-dialog,#tc-add-card,.rec-cand-detail-modal,#rec-iv-overlay').append(picker);
   const search=document.getElementById('rec-cand-form-picker-search');
   const title=document.getElementById('rec-cand-form-picker-title');
   title.textContent=document.getElementById(select.id+'-label')?.textContent.trim()||select.getAttribute('aria-label');
   search.value='';
-  search.hidden=select.id==='rec-cand-form-stage'||select.id==='rec-form-status'||(select.hasAttribute('data-tc-team-picker')&&select.options.length<=6);
+  search.hidden=select.id==='rec-cand-form-stage'||select.id==='rec-form-status'||select.hasAttribute('data-picker-no-search')||(select.hasAttribute('data-tc-team-picker')&&select.options.length<=6);
   recCandFormRenderSelectOptions();
   m24PositionAnchoredPicker(picker,trigger);
   picker.showPopover({source:trigger});
@@ -20931,32 +21166,54 @@ function recCandFormResetInterviewPicker(){
   recCandFormSyncDateLabel();
   recCandFormSyncManualTime();
 }
+function recCandBindSelectPicker(select){
+  const picker=document.getElementById('rec-cand-form-select-picker');
+  select.classList.add('rec-cand-form-native');
+  const trigger=document.createElement('button');
+  trigger.type='button';
+  trigger.id=select.id+'-trigger';
+  trigger.className='form-input rec-cand-form-picker-trigger';
+  const label=select.labels[0];
+  if(label){
+    label.id=select.id+'-label';
+    trigger.setAttribute('aria-labelledby',label.id+' '+trigger.id);
+  }
+  trigger.setAttribute('aria-controls',picker.id);
+  trigger.setAttribute('aria-expanded','false');
+  trigger.setAttribute('aria-haspopup','dialog');
+  trigger.innerHTML='<span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>';
+  trigger.addEventListener('click',function(){ recCandFormOpenSelectPicker(select,trigger); });
+  select.after(trigger);
+  select.addEventListener('change',function(){ recCandFormSyncSelectPicker(select); });
+  recCandFormSyncSelectPicker(select);
+}
+function recCandOpenDatePicker(dateTrigger){
+  const datePicker=document.getElementById('rec-cand-form-date-picker');
+  const dateInput=dateTrigger.previousElementSibling;
+  const same=datePicker.matches(':popover-open')&&recCandFormPickerDate===dateInput;
+  recCandFormClosePickers(false);
+  if(same) return;
+  recCandFormPickerDate=dateInput;
+  dateTrigger.closest('.rec-cand-form-modal,#rec-iv-overlay').append(datePicker);
+  datePicker.setAttribute('aria-labelledby',dateTrigger.getAttribute('aria-labelledby').split(' ')[0]);
+  const now=new Date();
+  const today=recCandInterviewLocalPartsFromIso(now.toISOString(),false).date;
+  const month=tcEmpNoshowParseYmd(dateInput.value||today);
+  recCandFormCalendarMonth=month?new Date(month.y,month.m,1):new Date(now.getFullYear(),now.getMonth(),1);
+  recCandFormCalendarRender();
+  m24PositionAnchoredPicker(datePicker,dateTrigger);
+  datePicker.showPopover({source:dateTrigger});
+  dateTrigger.setAttribute('aria-expanded','true');
+  const firstDay=datePicker.querySelector('.is-selected')||datePicker.querySelector('.is-today');
+  (firstDay||datePicker.querySelector('[data-month]')).focus({preventScroll:true});
+}
 function recCandFormBindPickers(){
   const picker=document.getElementById('rec-cand-form-select-picker');
   if(picker.dataset.bound) return;
   picker.dataset.bound='true';
   picker.setAttribute('aria-labelledby','rec-cand-form-picker-title');
-  const scrollAreas=document.querySelectorAll('#modal-rec-candidate-form .rec-cand-form-body,#modal-rec-vacancy .rec-cand-form-body,.tc-emp-edit-body,#view-dash-timeclock .main-content');
-  document.querySelectorAll('#modal-rec-candidate-form select,#modal-rec-vacancy select,[data-tc-team-picker]').forEach(function(select){
-    select.classList.add('rec-cand-form-native');
-    const trigger=document.createElement('button');
-    trigger.type='button';
-    trigger.id=select.id+'-trigger';
-    trigger.className='form-input rec-cand-form-picker-trigger';
-    const label=select.labels[0];
-    if(label){
-      label.id=select.id+'-label';
-      trigger.setAttribute('aria-labelledby',label.id+' '+trigger.id);
-    }
-    trigger.setAttribute('aria-controls',picker.id);
-    trigger.setAttribute('aria-expanded','false');
-    trigger.setAttribute('aria-haspopup','dialog');
-    trigger.innerHTML='<span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>';
-    trigger.addEventListener('click',function(){ recCandFormOpenSelectPicker(select,trigger); });
-    select.after(trigger);
-    select.addEventListener('change',function(){ recCandFormSyncSelectPicker(select); });
-    recCandFormSyncSelectPicker(select);
-  });
+  const scrollAreas=document.querySelectorAll('#modal-rec-candidate-form .rec-cand-form-body,#modal-rec-vacancy .rec-cand-form-body,.tc-emp-edit-body,#view-dash-timeclock .main-content,.rec-cand-detail-modal');
+  document.querySelectorAll('#modal-rec-candidate-form select,#modal-rec-vacancy select,[data-tc-team-picker]').forEach(recCandBindSelectPicker);
   const search=document.getElementById('rec-cand-form-picker-search');
   search.addEventListener('input',recCandFormRenderSelectOptions);
   picker.addEventListener('click',function(event){
@@ -20988,25 +21245,7 @@ function recCandFormBindPickers(){
 
   const datePicker=document.getElementById('rec-cand-form-date-picker');
   document.querySelectorAll('[data-rec-form-date]').forEach(function(dateTrigger){
-    const dateInput=dateTrigger.previousElementSibling;
-    dateTrigger.addEventListener('click',function(){
-      const same=datePicker.matches(':popover-open')&&recCandFormPickerDate===dateInput;
-      recCandFormClosePickers(false);
-      if(same) return;
-      recCandFormPickerDate=dateInput;
-      dateTrigger.closest('.rec-cand-form-modal').append(datePicker);
-      datePicker.setAttribute('aria-labelledby',dateTrigger.getAttribute('aria-labelledby').split(' ')[0]);
-      const now=new Date();
-      const today=recCandInterviewLocalPartsFromIso(now.toISOString(),false).date;
-      const month=tcEmpNoshowParseYmd(dateInput.value||today);
-      recCandFormCalendarMonth=month?new Date(month.y,month.m,1):new Date(now.getFullYear(),now.getMonth(),1);
-      recCandFormCalendarRender();
-      m24PositionAnchoredPicker(datePicker,dateTrigger);
-      datePicker.showPopover({source:dateTrigger});
-      dateTrigger.setAttribute('aria-expanded','true');
-      const firstDay=datePicker.querySelector('.is-selected')||datePicker.querySelector('.is-today');
-      (firstDay||datePicker.querySelector('[data-month]')).focus({preventScroll:true});
-    });
+    dateTrigger.addEventListener('click',function(){ recCandOpenDatePicker(dateTrigger); });
   });
   datePicker.addEventListener('beforetoggle',function(event){
     if(event.newState!=='closed'||!recCandFormPickerDate) return;
@@ -23296,6 +23535,9 @@ function recHireConfirmCancel(){
   if(pending&&pending.source==='detail'&&pending.selectEl){
     const prev=pending.fromStageId||'';
     if(prev) pending.selectEl.value=prev;
+    recCandFormSyncSelectPicker(pending.selectEl);
+    const trigger=document.getElementById(pending.selectEl.id+'-trigger')||pending.selectEl;
+    trigger.focus({preventScroll:true});
   }
 }
 async function recHireConfirmOpen(opts){
@@ -23316,7 +23558,14 @@ async function recHireConfirmOpen(opts){
     dateEl.max=recOrgTodayYmd();
   }
   if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
-  openModal('modal-rec-hire-confirm');
+  if(opts?.source==='detail'){
+    const overlay=document.getElementById('modal-rec-hire-confirm');
+    overlay.style.visibility='';
+    overlay.style.pointerEvents='';
+    overlay.style.opacity='';
+    overlay.style.transition='';
+    overlay.classList.remove('hidden');
+  }else openModal('modal-rec-hire-confirm');
   if(dateEl) dateEl.focus();
 }
 async function recHireConfirmSubmit(){

@@ -1432,12 +1432,9 @@ if (!executablePath) {
       error.name = 'AbortError';
       return Promise.reject(error);
     };
-    const target = {
-      date: { value: '2026-11-12' },
-      time: { value: '10:30' },
-      label: { value: '' },
-      comment: { value: '' },
-    };
+    const target = document.createElement('form');
+    target.innerHTML = '<input name="date" value="2026-11-12"><input name="time" value="10:30">' +
+      '<input name="label"><input name="comment">';
     await recCandScheduleInterview({ preventDefault() {}, target }, 'app-visual');
     const abortText = err.textContent;
     let release;
