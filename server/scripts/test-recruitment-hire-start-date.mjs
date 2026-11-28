@@ -264,6 +264,41 @@ try {
     const hiredAt = ok.data.application.hiredStageEnteredAt;
     check(edit.data.application?.hiredStageEnteredAt === hiredAt, 'no altera hiredStageEnteredAt');
 
+    const runners = await Promise.all([1, 2, 3].map((number) => prisma.recruitmentCandidate.create({
+      data: { organizationId: org.id, fullName: `Cupo ${number}`, phone: `442199200${number}`, profile: 'Ventas' },
+    })));
+    const vacancyUrl = `/api/org/recruitment/vacancies/${vac.id}`;
+    const applicationUrl = `${vacancyUrl}/applications`;
+    const hireBody = { stageId: byKey.HIRED.id, employmentStartDate: today };
+    const apply = (candidateId, body = {}) => jsonFetch(applicationUrl, {
+      method: 'POST', cookie, body: { candidateId, ...body },
+    });
+    const moveToHired = (id) => jsonFetch(`/api/org/recruitment/applications/${id}`, {
+      method: 'PATCH', cookie, body: hireBody,
+    });
+    const isCapacityConflict = ({ res, data }) => res.status === 409 && data?.error === 'VACANCY_HIRE_CAPACITY';
+    const [firstApplicant, secondApplicant] = await Promise.all(runners.slice(0, 2).map((candidate) => apply(candidate.id)));
+    const firstId = firstApplicant.data.application?.id;
+    const secondId = secondApplicant.data.application?.id;
+    const blocked = await moveToHired(firstId);
+    check(isCapacityConflict(blocked), 'el contratado reciente ya ocupa el último lugar');
+    const direct = await apply(runners[2].id, hireBody);
+    check(isCapacityConflict(direct), 'alta directa a Contratado también bloqueada');
+    const directRows = await prisma.recruitmentApplication.count({ where: { candidateId: runners[2].id } });
+    check(directRows === 0, 'el alta rechazada revierte la postulación inicial');
+    const blockedRow = await prisma.recruitmentApplication.findUnique({ where: { id: firstId } });
+    check(blockedRow?.stageId === byKey.NEW.id && !blockedRow.hiredStageEnteredAt, 'el movimiento bloqueado conserva etapa y fecha');
+
+    const covered = await jsonFetch(vacancyUrl, { method: 'PATCH', cookie, body: { status: 'COVERED' } });
+    check(covered.res.status === 200 && isCapacityConflict(await moveToHired(firstId)), 'Cubierta y sin posiciones impide contratar');
+    const expanded = await jsonFetch(vacancyUrl, {
+      method: 'PATCH', cookie, body: { positionsTotal: 2, status: 'ACTIVE' },
+    });
+    check(expanded.res.status === 200, 'ampliar posiciones permite reabrir');
+    const outcomes = await Promise.all([moveToHired(firstId), moveToHired(secondId)]);
+    check(outcomes.filter(({ res }) => res.status === 200).length === 1 && outcomes.filter(isCapacityConflict).length === 1,
+      'dos contrataciones simultáneas por una posición producen un éxito y un bloqueo');
+
     const otherOrg = await prisma.organization.create({
       data: { name: `Other ${suffix}`, slug: `o-${suffix}`, credits: 1 },
     });
@@ -300,7 +335,8 @@ try {
     await prisma.organization.delete({ where: { id: org.id } });
   }
 } catch (e) {
-  console.log('  SKIP integration:', e.message || e);
+  if (dbOk) check(false, `integración: ${e.message || e}`);
+  else console.log('  SKIP integration:', e.message || e);
 }
 
 if (failed) {

@@ -31,6 +31,7 @@ import {
 } from './recruitmentProcessClosure.service.js';
 import {
   HIRED_STAGE_KEY,
+  assertRecruitmentHireCapacity,
   nextHiredStageEnteredAt,
   reconcileVacancyCoverage,
   shouldRecordStageEvent,
@@ -262,6 +263,7 @@ export async function createRecruitmentApplication({
           organizationId,
           employmentStartDate,
         );
+        await assertRecruitmentHireCapacity(tx, organizationId, vacancyId);
       }
       const closurePatch = closurePatchForStageMove({
         stageChanged: true,
@@ -453,15 +455,15 @@ export async function updateRecruitmentApplication({
     let fromHiredStageEnteredAt = existing.hiredStageEnteredAt ?? null;
     let candidateArchivedAt = existing.candidate?.archivedAt ?? null;
 
-    if (editingHireDateOnly || leavingApproved) {
+    if (editingHireDateOnly || leavingApproved || movingToHired) {
       const {
         lockRecruitmentApplicationRow,
         assertEmploymentStartCompatibleWithExit,
       } = await import('./recruitmentApplicationEmploymentExit.service.js');
       await lockRecruitmentApplicationRow(tx, organizationId, applicationId);
-      if (leavingApproved) {
-        // Tras el candado: relee etapa/cierre. Si otro move ya cambió stageId, conflicto
-        // antes de escribir. Si Declinó ganó, conservar cierre y rechazar el move.
+      if (movingToHired) await lockRecruitmentCandidateForProcessChange(tx, existing.candidateId);
+      if (leavingApproved || movingToHired) {
+        // Releer etapa y cierre bajo el candado antes de mover o confirmar.
         const locked = await tx.recruitmentApplication.findFirst({
           where: { id: applicationId, organizationId },
           include: {
@@ -528,7 +530,7 @@ export async function updateRecruitmentApplication({
       err.message = 'Este candidato está archivado. Reactívalo para iniciar un nuevo proceso.';
       throw err;
     }
-    if (!leavingApproved) {
+    if (!leavingApproved && !movingToHired) {
       assertRecruitmentProcessStageChangeAllowed({
         stageKey: fromStageKey,
         closureOutcome: fromClosureOutcome,
@@ -542,6 +544,9 @@ export async function updateRecruitmentApplication({
         select: { key: true },
       });
       toStageKey = nextStage?.key ?? null;
+      if (toStageKey === HIRED_STAGE_KEY) {
+        await assertRecruitmentHireCapacity(tx, organizationId, existing.vacancyId);
+      }
       data.stageId = stageId;
       data.hiredStageEnteredAt = nextHiredStageEnteredAt({
         fromKey: fromStageKey,

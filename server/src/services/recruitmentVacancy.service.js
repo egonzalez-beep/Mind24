@@ -13,6 +13,7 @@ import {
   planVacancyCoverageUpdate,
   isHireConfirmedAt,
   listCurrentHiresForVacancy,
+  lockRecruitmentVacancyForCoverage,
   officialCoveragePercent,
   pendingPositions,
   reconcileVacancyCoverage,
@@ -672,7 +673,6 @@ export async function getRecruitmentVacancy(organizationId, vacancyId) {
 }
 
 export async function updateRecruitmentVacancy(organizationId, vacancyId, patch) {
-  const current = await assertRecruitmentVacancyInOrg(vacancyId, organizationId);
   const data = {};
   if (patch.title != null) data.title = patch.title.trim();
   if (patch.clientName != null) data.clientName = patch.clientName.trim();
@@ -703,30 +703,23 @@ export async function updateRecruitmentVacancy(organizationId, vacancyId, patch)
     data.targetCoverageDate = parseTargetCoverageDate(patch.targetCoverageDate);
   }
 
-  const nextPositions = data.positionsTotal ?? current.positionsTotal;
-  const nextStatus = data.status ?? current.status;
-  const currentHired = await countDistinctHiredCandidates(organizationId, vacancyId);
-  const coverageMeta = planVacancyCoverageUpdate({
-    currentStatus: current.status,
-    nextStatus,
-    positionsTotal: nextPositions,
-    currentHired,
-    now: new Date(),
+  const nextStatus = await prisma.$transaction(async (tx) => {
+    const current = await lockRecruitmentVacancyForCoverage(tx, organizationId, vacancyId);
+    const status = data.status ?? current.status;
+    const currentHired = await countDistinctHiredCandidates(organizationId, vacancyId, tx);
+    const coverageMeta = planVacancyCoverageUpdate({
+      currentStatus: current.status,
+      nextStatus: status,
+      positionsTotal: data.positionsTotal ?? current.positionsTotal,
+      currentHired,
+      now: new Date(),
+    });
+    await tx.recruitmentVacancy.update({
+      where: { id: vacancyId },
+      data: { ...data, ...coverageMeta },
+    });
+    return status;
   });
-  if (coverageMeta.coverageSource === 'MANUAL') data.status = 'COVERED';
-  if (current.status === 'COVERED' && nextStatus === 'ACTIVE') data.status = 'ACTIVE';
-  Object.assign(data, coverageMeta);
-
-  const written = await prisma.recruitmentVacancy.updateMany({
-    where: { id: vacancyId, organizationId, status: current.status },
-    data,
-  });
-  if (written.count !== 1) {
-    const err = new Error('CONFLICT');
-    err.code = 'CONFLICT';
-    err.message = 'La vacante cambió en otra operación. Vuelve a abrirla antes de guardar.';
-    throw err;
-  }
   if (nextStatus === 'ACTIVE') {
     await reconcileVacancyCoverage(organizationId, vacancyId);
   }

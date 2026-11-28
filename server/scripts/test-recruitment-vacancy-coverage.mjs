@@ -32,6 +32,7 @@ const {
   HIRED_STAGE_KEY,
   POSITIONS_BELOW_HIRED_MESSAGE,
   REOPEN_BLOCKED_MESSAGE,
+  assertRecruitmentHireCapacity,
   assertVacancyPositionsAndReopen,
   automaticCoverageWrite,
   isHireConfirmedAt,
@@ -144,6 +145,29 @@ check(shouldAutoCover({ status: 'ACTIVE', positionsTotal: 3, confirmedCount: 3 }
 check(shouldAutoCover({ status: 'COVERED', positionsTotal: 1, confirmedCount: 1 }) === false, 'la cubierta manual no se vuelve a cerrar');
 check(shouldAutoCover({ status: 'PAUSED', positionsTotal: 1, confirmedCount: 1 }) === false, 'en pausa no cambia');
 check(shouldAutoCover({ status: 'CLOSED', positionsTotal: 1, confirmedCount: 1 }) === false, 'cerrada no cambia');
+
+const occupied = [...Array(4)].map((_, i) => ({ candidateId: `hired-${i}` }));
+let requested = 5;
+let locked = false;
+const capacityTx = {
+  async $queryRaw(sql, vacancyId, organizationId) {
+    locked = sql.join('').includes('FOR NO KEY UPDATE') && vacancyId === 'vacancy' && organizationId === 'org';
+    return [{ positionsTotal: requested }];
+  },
+  recruitmentApplication: {
+    async findMany({ where }) {
+      check(locked && where.vacancyId === 'vacancy' && where.organizationId === 'org', 'lea cupo bajo el candado de la vacante');
+      check(where.stage.key === HIRED_STAGE_KEY && !where.hiredStageEnteredAt, 'cupo inmediato de Contratado, sin filtro de 24 h');
+      return occupied;
+    },
+  },
+};
+await assertRecruitmentHireCapacity(capacityTx, 'org', 'vacancy');
+occupied.push({ candidateId: 'hired-new' });
+const capacityError = await assertRecruitmentHireCapacity(capacityTx, 'org', 'vacancy').catch((err) => err);
+check(capacityError?.code === 'VACANCY_HIRE_CAPACITY', '5 de 5 bloquea la sexta contratación');
+requested = 6;
+await assertRecruitmentHireCapacity(capacityTx, 'org', 'vacancy');
 
 let state = { status: 'ACTIVE' };
 let wins = 0;
@@ -284,7 +308,7 @@ const sweepSrc = coverageSrc.slice(
 );
 check(!sweepSrc.includes('recruitmentApplication.update') && !sweepSrc.includes('StageEvent'), 'el barrido no inicializa timestamps ni lee eventos');
 check(sweepSrc.includes('lte: cutoff'), 'el barrido solo toma timestamps ya vencidos');
-check(vacancySrc.includes('status: current.status'), 'la reapertura escribe condicionada al estado leído');
+check(vacancySrc.includes('lockRecruitmentVacancyForCoverage(tx, organizationId, vacancyId)'), 'editar posiciones usa el mismo candado que contratar');
 check(coverageSrc.includes("status: 'ACTIVE'") && coverageSrc.includes('updateMany'), 'el cierre es condicional a Activa');
 check(applicationSrc.includes('nextHiredStageEnteredAt') && applicationSrc.includes('updateMany'), 'movimiento y timestamp van juntos');
 check(vacancySrc.includes('listCurrentHiresForVacancy') && vacancySrc.includes('candidate: { select: { fullName: true } }') === false, 'la ficha no selecciona contacto');

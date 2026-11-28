@@ -4494,14 +4494,17 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
       <button type="button" class="rec-iv-close modal-close" onclick="recHireConfirmCancel()" aria-label="Cerrar">×</button>
     </div>
     <p id="rec-hire-confirm-copy" class="rec-iv-confirm" style="margin-top:12px;"></p>
-    <label class="rec-iv-label form-label" for="rec-hire-confirm-date">Fecha de ingreso</label>
-    <label class="rec-iv-field" style="margin-top:0;">
-      <span aria-hidden="true">📅</span>
-      <input type="date" id="rec-hire-confirm-date" class="form-input" required aria-label="Fecha de ingreso">
-    </label>
+    <div id="rec-hire-confirm-date-field">
+      <label class="rec-iv-label form-label" for="rec-hire-confirm-date">Fecha de ingreso</label>
+      <label class="rec-iv-field" style="margin-top:0;">
+        <span aria-hidden="true">📅</span>
+        <input type="date" id="rec-hire-confirm-date" class="form-input" required aria-label="Fecha de ingreso">
+      </label>
+    </div>
     <p id="rec-hire-confirm-err" class="rec-iv-error" role="alert" tabindex="-1"></p>
     <div class="rec-iv-form-actions rec-process-actions">
       <button type="button" class="rec-iv-btn rec-stages-ghost-btn" id="rec-hire-confirm-cancel" onclick="recHireConfirmCancel()">Cancelar</button>
+      <button type="button" class="form-submit form-submit-purple" id="rec-hire-confirm-edit-positions" onclick="recHireConfirmEditPositions()" hidden>Editar posiciones</button>
       <button type="button" class="form-submit form-submit-purple" id="rec-hire-confirm-submit" onclick="recHireConfirmSubmit()">Confirmar contratación</button>
     </div>
   </div>
@@ -21698,6 +21701,7 @@ async function recCandSubmitForm(){
       recHireConfirmOpen({
         source:'create',
         body:body,
+        vacancyId:body._vacancyId,
         candidateName:body.fullName||'el candidato',
         vacancyTitle:(vacOpt&&vacOpt.textContent)||'la vacante',
         targetStageId:body._stageId,
@@ -23595,24 +23599,67 @@ function recHireConfirmCancel(){
     trigger.focus({preventScroll:true});
   }
 }
+function recHireConfirmShowCapacity(message){
+  const pending=recEnsureState().hireConfirmPending;
+  const blocked=!!message;
+  const field=document.getElementById('rec-hire-confirm-date-field');
+  const submit=document.getElementById('rec-hire-confirm-submit');
+  const edit=document.getElementById('rec-hire-confirm-edit-positions');
+  const error=document.getElementById('rec-hire-confirm-err');
+  field.hidden=blocked;
+  submit.classList.toggle('hidden',blocked);
+  submit.disabled=blocked;
+  submit.dataset.recBusy='0';
+  edit.classList.toggle('hidden',!blocked||!pending?.vacancyId);
+  edit.hidden=!blocked||!pending?.vacancyId;
+  edit.disabled=false;
+  error.textContent=message||'';
+  if(blocked) error.focus();
+}
+async function recHireConfirmEditPositions(){
+  const st=recEnsureState();
+  const pending=st.hireConfirmPending;
+  if(!pending?.vacancyId) return;
+  const button=document.getElementById('rec-hire-confirm-edit-positions');
+  if(button.disabled) return;
+  button.disabled=true;
+  try{
+    const out=await apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(pending.vacancyId));
+    if(st.hireConfirmPending!==pending) return;
+    if(!out?.vacancy) throw new Error('No se pudo cargar la vacante.');
+    recMergeVacancyInState(out.vacancy);
+    await recOpenVacancyModal('edit',pending.vacancyId);
+    if(st.hireConfirmPending===pending) recHireConfirmCancel();
+    document.getElementById('rec-form-positions')?.focus();
+  }catch(e){
+    if(st.hireConfirmPending===pending){
+      document.getElementById('rec-hire-confirm-err').textContent=e?.message||'No se pudo cargar la vacante.';
+      button.disabled=false;
+    }
+  }
+}
 async function recHireConfirmOpen(opts){
   const st=recEnsureState();
-  await recEnsureRecruitmentOrgTimeZone();
-  const draft=st.hireConfirmDateDraft;
-  st.hireConfirmPending=opts||null;
+  if(!opts||st.hireConfirmPending) return;
+  st.hireConfirmPending=opts;
+  const vacancyRequest=opts.vacancyId
+    ? apiJson('/api/org/recruitment/vacancies/'+encodeURIComponent(opts.vacancyId)).catch(function(){ return null; })
+    : null;
+  const [,out]=await Promise.all([recEnsureRecruitmentOrgTimeZone(),vacancyRequest]);
+  if(st.hireConfirmPending!==opts) return;
+  const vacancy=out?.vacancy;
+  const positions=Number(vacancy?.positionsTotal);
+  const hired=Number(vacancy?.hiredCandidates?.length??vacancy?.applicationSummary?.hired);
+  const blocked=positions>0&&hired>=positions;
   const copy=document.getElementById('rec-hire-confirm-copy');
   const dateEl=document.getElementById('rec-hire-confirm-date');
-  const errEl=document.getElementById('rec-hire-confirm-err');
-  const submit=document.getElementById('rec-hire-confirm-submit');
   const name=(opts&&opts.candidateName)||'el candidato';
   const vac=(opts&&opts.vacancyTitle)||'la vacante';
-  if(copy) copy.textContent='¿Confirmas que '+name+' fue contratado para '+vac+'?';
-  if(errEl) errEl.textContent='';
+  if(copy) copy.textContent=blocked?vac+' · '+hired+' de '+positions+' posiciones ocupadas':'¿Confirmas que '+name+' fue contratado para '+vac+'?';
   if(dateEl){
-    dateEl.value=draft||recOrgTodayYmd();
+    dateEl.value=st.hireConfirmDateDraft||recOrgTodayYmd();
     dateEl.max=recOrgTodayYmd();
   }
-  if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
   if(opts?.source==='detail'){
     const overlay=document.getElementById('modal-rec-hire-confirm');
     overlay.style.visibility='';
@@ -23621,7 +23668,8 @@ async function recHireConfirmOpen(opts){
     overlay.style.transition='';
     overlay.classList.remove('hidden');
   }else openModal('modal-rec-hire-confirm');
-  if(dateEl) dateEl.focus();
+  recHireConfirmShowCapacity(blocked?'Todas las posiciones del requerimiento están ocupadas. Aumenta las posiciones requeridas antes de confirmar esta contratación.':'');
+  if(!blocked&&dateEl) dateEl.focus();
 }
 async function recHireConfirmSubmit(){
   const st=recEnsureState();
@@ -23630,7 +23678,7 @@ async function recHireConfirmSubmit(){
   const dateEl=document.getElementById('rec-hire-confirm-date');
   const errEl=document.getElementById('rec-hire-confirm-err');
   if(!pending) return;
-  if(submit&&submit.dataset.recBusy==='1') return;
+  if(submit&&(submit.disabled||submit.dataset.recBusy==='1')) return;
   const date=(dateEl&&dateEl.value||'').trim();
   st.hireConfirmDateDraft=date||null;
   if(errEl) errEl.textContent='';
@@ -23671,12 +23719,18 @@ async function recHireConfirmSubmit(){
       if(recCandFormIsWorkforce()) await recCandWorkforceCreateAndConfirm(body);
       else await recCandCreateAndOpen(body);
     }
+    if(st.hireConfirmPending!==pending) return;
     st.hireConfirmPending=null;
     st.hireConfirmDateDraft=null;
     closeModal('modal-rec-hire-confirm');
   }catch(e){
-    if(errEl) errEl.textContent=(e&&e.message)||'No se pudo confirmar la contratación.';
-    if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
+    if(st.hireConfirmPending!==pending) return;
+    if(e?.code==='VACANCY_HIRE_CAPACITY'){
+      recHireConfirmShowCapacity(e.message);
+    }else{
+      if(errEl) errEl.textContent=(e&&e.message)||'No se pudo confirmar la contratación.';
+      if(submit){ submit.disabled=false; submit.dataset.recBusy='0'; }
+    }
   }
 }
 function recCandCloseDecline(){

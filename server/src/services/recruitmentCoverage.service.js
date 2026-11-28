@@ -14,6 +14,9 @@ export const REOPEN_BLOCKED_MESSAGE =
 export const POSITIONS_BELOW_HIRED_MESSAGE =
   'No puedes reducir las posiciones por debajo de los candidatos que están en Contratado.';
 
+export const VACANCY_HIRE_CAPACITY_MESSAGE =
+  'Todas las posiciones del requerimiento están ocupadas. Aumenta las posiciones requeridas antes de confirmar esta contratación.';
+
 /**
  * Duplicados de la misma persona en una vacante no deberían existir
  * (único candidateId + vacancyId). Si aparecen, cuentan una sola vez y
@@ -161,6 +164,32 @@ export async function countDistinctHiredCandidates(organizationId, vacancyId, db
   return new Set(rows.map((row) => row.candidateId)).size;
 }
 
+export async function lockRecruitmentVacancyForCoverage(tx, organizationId, vacancyId) {
+  // Permite las referencias por FK mientras serializa los cambios de cupo.
+  const [vacancy] = await tx.$queryRaw`
+    SELECT "positionsTotal", "status"
+    FROM "RecruitmentVacancy"
+    WHERE "id" = ${vacancyId} AND "organizationId" = ${organizationId}
+    FOR NO KEY UPDATE
+  `;
+  if (!vacancy) {
+    const err = new Error('Vacante no encontrada.');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  return vacancy;
+}
+
+export async function assertRecruitmentHireCapacity(tx, organizationId, vacancyId) {
+  const { positionsTotal } = await lockRecruitmentVacancyForCoverage(tx, organizationId, vacancyId);
+  const currentHired = await countDistinctHiredCandidates(organizationId, vacancyId, tx);
+  if (currentHired >= positionsTotal) {
+    const err = new Error(VACANCY_HIRE_CAPACITY_MESSAGE);
+    err.code = 'VACANCY_HIRE_CAPACITY';
+    throw err;
+  }
+}
+
 export async function listCurrentHiresForVacancy(organizationId, vacancyId, now = new Date()) {
   const rows = await prisma.recruitmentApplication.findMany({
     where: { organizationId, vacancyId, stage: { key: HIRED_STAGE_KEY } },
@@ -212,7 +241,7 @@ export async function reconcileVacancyCoverage(organizationId, vacancyId, now = 
     return { updated: 0 };
   }
   const result = await prisma.recruitmentVacancy.updateMany({
-    where: { id: vacancyId, organizationId, status: 'ACTIVE' },
+    where: { id: vacancyId, organizationId, status: 'ACTIVE', positionsTotal: vacancy.positionsTotal },
     data: automaticCoverageWrite(now),
   });
   return { updated: result.count };
@@ -254,7 +283,7 @@ export async function reconcileDueVacancyCoverage(now = new Date()) {
   for (const [vacancyId, group] of groups) {
     if (group.candidates.size < group.positionsTotal) continue;
     const result = await prisma.recruitmentVacancy.updateMany({
-      where: { id: vacancyId, organizationId: group.organizationId, status: 'ACTIVE' },
+      where: { id: vacancyId, organizationId: group.organizationId, status: 'ACTIVE', positionsTotal: group.positionsTotal },
       data: automaticCoverageWrite(now),
     });
     updated += result.count;
