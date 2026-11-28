@@ -260,10 +260,11 @@ function classifyMetricsRow(goal, period, now) {
 }
 
 /** Promedio del mes actual por colaborador, con las reglas de Indicadores y sin escrituras. */
-export async function getWorkforceDirectoryGoalCompliance({ organizationId, now = new Date() }) {
+export async function getWorkforceDirectoryGoalCompliance({ organizationId, employeeId, now = new Date() }) {
+  const scope = { organizationId, ...(employeeId ? { employeeId } : {}) };
   const snapshot = await prisma.$transaction(async (tx) => {
     const goals = await tx.workforceGoal.findMany({
-      where: { organizationId, archivedAt: null },
+      where: { ...scope, archivedAt: null },
       select: {
         id: true,
         organizationId: true,
@@ -297,7 +298,7 @@ export async function getWorkforceDirectoryGoalCompliance({ organizationId, now 
       employees.get(goal.employeeId).goalCount += 1;
     }
 
-    const where = { organizationId, goal: { organizationId, archivedAt: null } };
+    const where = { ...scope, goal: { ...scope, archivedAt: null } };
     const latest = await tx.workforceGoalPeriod.groupBy({
       by: ['goalId'],
       where,

@@ -75,6 +75,11 @@ import {
   WORKFORCE_GOAL_BINARY_RESULTS,
 } from '../services/workforceGoal.service.js';
 import {
+  currentMonthYmInTimeZone,
+  getWorkforceDirectoryGoalCompliance,
+  monthBoundsInTimeZone,
+} from '../services/workforceGoalMetrics.service.js';
+import {
   RECRUITMENT_CANDIDATE_RESUME_MAX_BYTES,
   isAllowedRecruitmentCandidateResumeFile,
   uploadRecruitmentCandidateResume,
@@ -661,8 +666,15 @@ router.post(
 
 router.get('/goals', requireTimeclockSession, async (req, res, next) => {
   try {
-    const items = await listWorkforceGoalsForEmployee(req.timeclockEmployee);
-    res.json({ goals: items });
+    const employee = req.timeclockEmployee;
+    const now = new Date();
+    const month = currentMonthYmInTimeZone(now, employee.timezone);
+    const { start: monthStart } = monthBoundsInTimeZone(month, employee.timezone);
+    const goals = await listWorkforceGoalsForEmployee(employee, { now, monthStart });
+    const compliance = await getWorkforceDirectoryGoalCompliance({
+      organizationId: employee.organizationId, employeeId: employee.id, now,
+    });
+    res.json({ goals, goalCompliance: compliance.get(employee.id) ?? null });
   } catch (e) {
     next(e);
   }

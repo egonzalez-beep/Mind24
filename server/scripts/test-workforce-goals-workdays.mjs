@@ -97,23 +97,26 @@ const otherZoneGoal = {
 };
 const goalsForDirectory = [goal, zeroGoal, pendingGoal, otherZoneGoal];
 let reads = 0;
+let scope = { organizationId: 'org-1' };
 const insertsBefore = periods.length;
 db.workforceGoal.findMany = async ({ where }) => {
   reads += 1;
-  assert.deepEqual(where, { organizationId: 'org-1', archivedAt: null });
-  return goalsForDirectory;
+  assert.deepEqual(where, { ...scope, archivedAt: null });
+  return scope.employeeId ? [goal] : goalsForDirectory;
 };
 db.workforceGoalPeriod.groupBy = async ({ where, by }) => {
   reads += 1;
   assert.deepEqual(by, ['goalId']);
-  assert.deepEqual(where, { organizationId: 'org-1', goal: { organizationId: 'org-1', archivedAt: null } });
+  assert.deepEqual(where, { ...scope, goal: { ...scope, archivedAt: null } });
   return [{ goalId: goal.id, _max: { periodStart: settled.periodStart } }];
 };
 db.workforceGoalPeriod.findMany = async ({ where }) => {
   reads += 1;
-  assert.equal(where.organizationId, 'org-1');
+  assert.deepEqual(where.goal, { ...scope, archivedAt: null });
+  assert.equal(where.organizationId, scope.organizationId);
+  assert.equal(where.employeeId, scope.employeeId);
   assert.equal(where.periodStart.gte.toISOString(), '2026-11-01T06:00:00.000Z');
-  assert.equal(where.periodStart.lt.toISOString(), '2026-12-31T11:00:00.000Z');
+  assert.equal(where.periodStart.lt.toISOString(), scope.employeeId ? '2026-12-01T06:00:00.000Z' : '2026-12-31T11:00:00.000Z');
   return [settled];
 };
 const directory = await getWorkforceDirectoryGoalCompliance({ organizationId: 'org-1', now: snapshotNow });
@@ -123,4 +126,8 @@ assert.deepEqual(directory.get(employee.id), { month: '2026-11', averageComplian
 assert.deepEqual(directory.get(zeroGoal.employeeId), { month: '2026-11', averageCompliance: 0 });
 assert.equal(directory.has(pendingGoal.employeeId), false);
 assert.equal(directory.has(otherZoneGoal.employeeId), false);
+scope = { ...scope, employeeId: employee.id };
+const workspace = await getWorkforceDirectoryGoalCompliance({ ...scope, now: snapshotNow });
+assert.deepEqual(workspace, new Map([[employee.id, directory.get(employee.id)]]));
+assert.equal(reads, 6);
 console.log('Directorio: promedio con las reglas de Indicadores, descanso, mes civil, cero real y consultas por lote OK.');

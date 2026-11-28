@@ -2149,6 +2149,28 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
 .tc-emp-goals-subtab{border:1px solid var(--slate-200);background:#fff;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--slate-500);padding:7px 12px;border-radius:8px;cursor:pointer;}
 .tc-emp-goals-subtab--on{background:var(--purple-light);border-color:rgba(124,58,237,.28);color:var(--purple-dark);}
 .tc-emp-goals-subtab:focus-visible{outline:2px solid var(--purple);outline-offset:2px;}
+.tc-emp-goals-summary{display:flex;align-items:center;gap:8px 12px;justify-content:space-between;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;border:1px solid var(--purple-border);border-radius:10px;background:#faf8ff;color:var(--primary);font-size:12px;font-weight:700;}
+.tc-emp-goals-summary[hidden]{display:none;}
+.tc-emp-goals-summary-empty{color:var(--slate-500);font-weight:500;}
+#tc-emp-goals-body{display:grid;gap:8px;}
+.tc-emp-goals .tc-goal-card-v2{padding:10px 12px;gap:6px;}
+.tc-emp-goals .tc-goal-card-v2-head{align-items:flex-start;gap:6px;flex-wrap:wrap;}
+.tc-emp-goals .tc-goal-card-v2-head-left{align-items:center;gap:8px;flex:1 1 170px;}
+.tc-emp-goals .tc-goal-card-v2-icon{width:30px;height:30px;background:var(--purple-light);}
+.tc-emp-goals .tc-goal-card-v2-icon svg{width:16px;height:16px;}
+.tc-emp-goals .tc-goal-card-v2-titles{display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 8px;}
+.tc-emp-goals .tc-goal-card-v2-title{margin:0;min-width:0;overflow-wrap:anywhere;}
+.tc-emp-goals .tc-goal-period-pill{border:1px solid var(--slate-200);border-radius:5px;background:var(--slate-50);color:var(--slate-600);white-space:nowrap;font-size:11px;text-transform:none;letter-spacing:0;padding:2px 6px;}
+.tc-emp-goals .tc-goal-card-v2-status{margin-top:3px;}
+.tc-emp-goals .tc-goal-card-desc,.tc-emp-goals .tc-goal-card-meta{margin:0;overflow-wrap:anywhere;}
+.tc-emp-goal-result{font-size:12px;margin:0;color:var(--slate-600);}
+.tc-emp-goal-result strong{margin-left:5px;color:var(--primary);}
+.tc-emp-goals .tc-goal-report-row{margin-top:2px;padding-top:8px;border-top:1px solid var(--slate-100);gap:6px;}
+.tc-emp-goals .tc-goal-report-input{min-width:min(105px,100%);max-width:none;}
+.tc-emp-goals .tc-goal-report-input[type=number]{flex:0 1 110px;}
+.tc-emp-goals .tc-goal-report-input:focus-visible,.tc-emp-goals .tc-goal-report-btn:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
+.tc-emp-goals .tc-goal-report-btn:not(.tc-goal-report-btn--ghost){background:var(--purple-light);}
+.tc-emp-goals .tc-goal-report-btn:not(.tc-goal-report-btn--ghost):hover{border-color:var(--purple);}
 .tc-goal-assign-section{margin:0 0 14px;padding:0;border:none;}
 .tc-goal-assign-section legend{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--purple-dark);margin-bottom:8px;padding:0;}
 .tc-goal-assign-hint{font-size:12px;color:var(--slate-500);margin:6px 0 0;line-height:1.45;}
@@ -6388,6 +6410,10 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <section class="tc-ws-panel tc-emp-goals hidden" id="tc-ws-panel-goals" role="tabpanel" aria-labelledby="tc-ws-tab-goals" hidden>
           <h2 class="visually-hidden">Mis metas</h2>
           <div class="tc-ws-panel-scroll" id="tc-ws-panel-goals-scroll">
+            <div class="tc-emp-goals-summary" id="tc-emp-goals-summary" hidden>
+              <span>Cumplimiento promedio del mes</span>
+              <span id="tc-emp-goals-compliance"></span>
+            </div>
             <div class="tc-emp-goals-subnav" role="tablist" aria-label="Vista de metas">
               <button type="button" role="tab" class="tc-emp-goals-subtab tc-emp-goals-subtab--on" id="tc-emp-goals-tab-todo" aria-selected="true" onclick="tcEmpGoalsSetView('todo')">Por cumplir</button>
               <button type="button" role="tab" class="tc-emp-goals-subtab" id="tc-emp-goals-tab-done" aria-selected="false" onclick="tcEmpGoalsSetView('done')">Completadas</button>
@@ -26810,24 +26836,38 @@ async function tcEmpOpenDailyGoalsReminder(item){
 async function tcEmpLoadGoals(showLoading,force){
   const body=document.getElementById('tc-emp-goals-body');
   if(!body) return;
+  const summary=document.getElementById('tc-emp-goals-summary');
   if(!force&&tcEmpWorkspaceHasBlockingInteraction()) return;
   if(tcEmpGoalsLoadInFlight&&!force) return;
   const seq=++tcEmpGoalsLoadSeq;
   const focusId=tcEmpGoalsPendingFocusId;
-  if(showLoading!==false&&!force) body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
+  if(showLoading!==false&&!force){
+    if(summary) summary.hidden=true;
+    body.innerHTML='<p class="tc-goal-empty">Cargando…</p>';
+  }
   tcEmpGoalsLoadInFlight=true;
   try{
     const out=await tcPublicFetchGoals();
     if(seq!==tcEmpGoalsLoadSeq) return;
     tcEmpGoalsCache=(out&&out.goals)||[];
     tcEmpRenderGoals();
+    const value=document.getElementById('tc-emp-goals-compliance');
+    if(summary&&value){
+      value.innerHTML=out?.goalCompliance?.averageCompliance==null
+        ? '<span class="tc-emp-goals-summary-empty">Sin datos este mes</span>'
+        : tcDirectoryGoalComplianceHtml(out.goalCompliance);
+      summary.hidden=false;
+    }
     if(focusId&&focusId===tcEmpGoalsPendingFocusId){
       tcEmpGoalsPendingFocusId='';
       tcEmpFocusGoalCard(focusId);
     }
   }catch(e){
     if(seq!==tcEmpGoalsLoadSeq) return;
-    if(!force||showLoading!==false) body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
+    if(!force||showLoading!==false){
+      if(summary) summary.hidden=true;
+      body.innerHTML='<p class="tc-goal-empty">'+tcEsc(e.message||'No se pudieron cargar tus metas.')+'</p>';
+    }
   }finally{
     if(seq===tcEmpGoalsLoadSeq) tcEmpGoalsLoadInFlight=false;
   }
@@ -26850,9 +26890,6 @@ function tcEmpGoalsSetView(view){
   });
   tcEmpRenderGoals();
 }
-function tcEmpGoalObjectiveLabel(g){
-  return g.goalType==='QUANTITATIVE'?(String(g.targetValue)+(g.unit?(' '+g.unit):'')):'Cumplimiento binario';
-}
 function tcEmpGoalDescHtml(g){
   const raw=g&&g.description;
   if(raw==null||typeof raw!=='string') return '';
@@ -26860,9 +26897,32 @@ function tcEmpGoalDescHtml(g){
   if(!t) return '';
   return '<p class="tc-goal-card-desc" title="'+tcEsc(t)+'">'+tcEsc(t)+'</p>';
 }
+function tcEmpGoalDateHtml(g,p,tz){
+  const iso=g.periodicity==='DAILY'?(p.submittedAt||p.periodStart):p.periodStart;
+  const start=new Date(iso);
+  if(!Number.isFinite(start.getTime())) return '';
+  const date=(d,options)=>new Intl.DateTimeFormat('es-MX',{timeZone:tz,...options}).format(d);
+  const short={day:'numeric',month:'short'};
+  if(g.periodicity==='MONTHLY'){
+    return '<time class="tc-goal-period-pill" datetime="'+tcYmdInTimeZone(iso,tz).slice(0,7)+'">'+
+      tcEsc(date(start,{month:'long',year:'numeric'}))+'</time>';
+  }
+  if(g.periodicity==='DAILY'){
+    return '<time class="tc-goal-period-pill" datetime="'+tcYmdInTimeZone(iso,tz)+'">'+tcEsc(date(start,short))+'</time>';
+  }
+  const end=new Date(p.periodEnd);
+  if(!Number.isFinite(end.getTime())) return '';
+  const a=tcYmdInTimeZone(iso,tz);
+  const b=tcYmdInTimeZone(p.periodEnd,tz);
+  const opts=a.slice(0,4)===b.slice(0,4)?short:{...short,year:'numeric'};
+  const label=a.slice(0,7)===b.slice(0,7)
+    ? date(start,{day:'numeric'})+'–'+date(end,short)
+    : date(start,opts)+' – '+date(end,opts);
+  return '<span class="tc-goal-period-pill">'+tcEsc(label)+'</span>';
+}
 function tcEmpBuildGoalCardHtml(g,p,tz,showForm){
   const st=p.displayStatus||'PENDING';
-  const pct=p.completionPercent;
+  const unit=g.unit?' '+g.unit:'';
   let form='';
   if(showForm){
     if(g.goalType==='COMPLIANCE'){
@@ -26875,25 +26935,26 @@ function tcEmpBuildGoalCardHtml(g,p,tz,showForm){
       form='<div class="tc-goal-report-row" data-period-id="'+p.id+'">'+
         '<label class="visually-hidden" for="tc-emp-goal-val-'+p.id+'">Resultado alcanzado</label>'+
         '<input type="number" min="0" step="any" class="tc-goal-report-input" id="tc-emp-goal-val-'+p.id+'" data-target-snapshot="'+String(p.targetSnapshot)+'" placeholder="Resultado" aria-label="Resultado alcanzado" oninput="tcEmpGoalUpdatePreview(this);tcEmpWorkspaceMarkFormDirty()" />'+
-        '<span class="tc-goal-card-meta" id="tc-emp-goal-preview-'+p.id+'">Objetivo: '+tcEsc(String(p.targetSnapshot))+(g.unit?(' '+g.unit):'')+'</span>'+
+        '<span class="tc-goal-card-meta" id="tc-emp-goal-preview-'+p.id+'">Objetivo: '+tcEsc(String(p.targetSnapshot)+unit)+'</span>'+
         '<input type="text" class="tc-goal-report-input" id="tc-emp-goal-comment-'+p.id+'" maxlength="2000" placeholder="Comentario (opcional)" aria-label="Comentario" oninput="tcEmpWorkspaceMarkFormDirty()" />'+
         '<button type="button" class="tc-goal-report-btn" onclick="tcEmpGoalReportQuantitative(\''+p.id+'\')">Registrar resultado</button>'+
         '</div>';
     }
   }
   const comment=p.employeeComment?('<p class="tc-goal-card-meta">Comentario: '+tcEsc(p.employeeComment)+'</p>'):'';
+  const result=g.goalType==='QUANTITATIVE'&&p.achievedValue!=null
+    ? '<p class="tc-emp-goal-result">Resultado<strong>'+tcEsc(p.achievedValue+' / '+p.targetSnapshot+unit)+'</strong></p>'
+    : '';
   return '<article class="tc-goal-card-v2" data-goal-id="'+tcEsc(g.id)+'">'+
     '<div class="tc-goal-card-v2-head">'+
     '<div class="tc-goal-card-v2-head-left">'+
     '<span class="tc-goal-card-v2-icon">'+tcWsSvgTarget()+'</span>'+
     '<div class="tc-goal-card-v2-titles"><h4 class="tc-goal-card-v2-title">'+tcEsc(g.title)+'</h4>'+
-    '<span class="tc-goal-period-pill">'+tcEsc(TC_GOAL_PERIOD_LABELS[g.periodicity]||g.periodicity)+'</span></div></div>'+
+    tcEmpGoalDateHtml(g,p,tz)+'</div></div>'+
     '<span class="tc-goal-status tc-goal-card-v2-status '+tcGoalStatusClass(st)+'">'+tcEsc(TC_GOAL_STATUS_UI[st]||st)+'</span></div>'+
     tcEmpGoalDescHtml(g)+
-    '<p class="tc-goal-card-meta">Objetivo: '+tcEsc(tcEmpGoalObjectiveLabel(g))+' · Resultado: '+tcEsc(tcGoalResultSummary(g,p))+'</p>'+
-    '<p class="tc-goal-card-meta">Periodo: '+tcEsc(tcGoalFmtPeriodRange(p,tz))+'</p>'+
+    result+
     comment+
-    tcGoalProgressHtml(st,pct)+
     form+
     '</article>';
 }
@@ -26904,7 +26965,7 @@ function tcEmpRenderGoals(){
   const body=document.getElementById('tc-emp-goals-body');
   if(!body) return;
   if(!tcEmpGoalsCache.length){
-    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas activas asignadas.':'Aún no tienes metas completadas.');
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas activas asignadas.':'Aún no tienes metas completadas este mes.');
     return;
   }
   const tz=(tcEmpMe&&tcEmpMe.timezone)||'America/Mexico_City';
@@ -26916,7 +26977,7 @@ function tcEmpRenderGoals(){
       const st=p.displayStatus||'PENDING';
       if(st==='INACTIVE') return;
       if(new Date(p.periodStart).getTime()>now) return;
-      rows.push({ goal:goal, period:p, st:st, sortKey:p.periodStart, submitted:p.submittedAt||'' });
+      rows.push({ goal:goal, period:p, st:st, sortKey:p.periodStart, submitted:p.submittedAt||p.periodStart });
     });
   });
   let filtered=[];
@@ -26930,10 +26991,9 @@ function tcEmpRenderGoals(){
   }else{
     filtered=rows.filter(function(r){ return tcGoalPeriodHasReport(r.period); });
     filtered.sort(function(a,b){ return String(b.submitted).localeCompare(String(a.submitted)); });
-    filtered=filtered.slice(0,40);
   }
   if(!filtered.length){
-    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas pendientes por cumplir.':'Aún no tienes metas completadas.');
+    body.innerHTML=tcEmpWorkspaceEmptyHtml('tc-ws-art-goals',tcEmpGoalsView==='todo'?'No tienes metas pendientes por cumplir.':'Aún no tienes metas completadas este mes.');
     return;
   }
   body.innerHTML=filtered.map(function(row){

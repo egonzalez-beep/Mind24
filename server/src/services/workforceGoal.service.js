@@ -393,34 +393,52 @@ function sortPeriodsForEmployeeView(periods, goal, now) {
   return decorated.map((d) => d.period);
 }
 
-export async function listWorkforceGoalsForEmployee(employee) {
+export async function listWorkforceGoalsForEmployee(employee, { now, monthStart }) {
   const organizationId = employee.organizationId;
   const employeeId = employee.id;
+  const active = { organizationId, employeeId, archivedAt: null };
   const goals = await prisma.workforceGoal.findMany({
-    where: { organizationId, employeeId, archivedAt: null },
+    where: active,
     orderBy: { createdAt: 'desc' },
   });
-  const now = new Date();
-  const items = [];
+  if (!goals.length) return [];
   for (const goal of goals) {
     await ensureWorkforceGoalPeriodsUpToDate(goal, employee, now);
-    let periods = await prisma.workforceGoalPeriod.findMany({
+  }
+  const scope = { organizationId, employeeId, goal: active, periodStart: { lte: now } };
+  // El corte del historial visible incluye reportes tardíos, fuera de los periodos recientes.
+  const [completed, ...recentByGoal] = await prisma.$transaction([
+    prisma.workforceGoalPeriod.findMany({
       where: {
-        goalId: goal.id,
-        organizationId,
-        employeeId,
-        periodStart: { lte: now },
+        ...scope,
+        goalId: { in: goals.map((goal) => goal.id) },
+        OR: [
+          { submittedAt: { gte: monthStart, lte: now } },
+          {
+            submittedAt: null,
+            periodStart: { gte: monthStart, lte: now },
+            OR: [{ binaryResult: { not: null } }, { achievedValue: { not: null } }],
+          },
+        ],
       },
+    }),
+    ...goals.map((goal) => prisma.workforceGoalPeriod.findMany({
+      where: { ...scope, goalId: goal.id },
       orderBy: { periodStart: 'desc' },
       take: MAX_GOAL_PERIOD_HISTORY_ROWS,
-    });
-    periods = sortPeriodsForEmployeeView(periods, goal, now);
-    items.push({
+    })),
+  ], { isolationLevel: 'RepeatableRead' });
+  const completedByGoal = new Map(goals.map((goal) => [goal.id, []]));
+  for (const period of completed) completedByGoal.get(period.goalId).push(period);
+
+  return goals.map((goal, i) => {
+    const pending = recentByGoal[i].filter((p) => p.submittedAt == null && p.binaryResult == null && p.achievedValue == null);
+    const periods = sortPeriodsForEmployeeView(pending.concat(completedByGoal.get(goal.id)), goal, now);
+    return {
       goal: serializeGoal(goal),
       periods: periods.map((p) => serializePeriod(p, goal, now)),
-    });
-  }
-  return items;
+    };
+  });
 }
 
 export async function listWorkforceGoalPeriodsForEmployee({ employee, goalId }) {

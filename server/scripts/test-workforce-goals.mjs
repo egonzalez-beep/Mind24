@@ -146,8 +146,9 @@ check(
 check(!/tcSvgTargetPlusOutline/.test(indexHtml), 'sin icono diana en metas');
 check(/tcGoalsRenderAdminKanbanCard[\s\S]*focusPeriod/.test(indexHtml), 'una card por meta con focusPeriod');
 check(
-  /function tcEmpRenderGoals[\s\S]*slice\(0,40\)/.test(indexHtml),
-  'Completadas hasta 40 periodos reportados',
+  /Aún no tienes metas completadas este mes/.test(indexHtml) &&
+    /submittedAt: \{ gte: monthStart, lte: now \}/.test(goalServiceSrc),
+  'Completadas usa el mes del reporte en lugar de un tope global de tarjetas',
 );
 check(/tc-goal-card-v2/.test(indexHtml), 'cards metas unificadas colaborador');
 check(/tcGoalSyncAssignPeriodHint/.test(indexHtml), 'formulario recurrencia dinámica');
@@ -399,6 +400,7 @@ if (dbOk) {
 
     const listB = await jsonFetch(base, '/api/timeclock/public/goals', { cookie: tcCookieB });
     check(listB.res.status === 200 && listB.data.goals?.length === 0, 'colaborador ajeno sin metas');
+    check(listB.data.goalCompliance === null, 'colaborador ajeno sin cumplimiento de otro equipo');
 
     const listA = await jsonFetch(base, '/api/timeclock/public/goals', { cookie: tcCookie });
     check(listA.res.status === 200 && listA.data.goals?.length === 2, 'colaborador ve sus metas');
@@ -457,6 +459,16 @@ if (dbOk) {
     );
     check(reportQ.data.period?.completionPercent === 140, 'cuantitativa 7/5 en servidor');
 
+    const workspace = await jsonFetch(base, '/api/timeclock/public/goals', { cookie: tcCookie });
+    const directory = await jsonFetch(base, '/api/org/timeclock/employees?includeGoalCompliance=1', { cookie: adminCookie });
+    const directoryCompliance = directory.data.employees?.find((e) => e.id === empA.id)?.goalCompliance;
+    check(
+      workspace.data.goalCompliance?.averageCompliance != null &&
+        workspace.data.goalCompliance.averageCompliance === directoryCompliance?.averageCompliance &&
+        workspace.data.goalCompliance.month === directoryCompliance?.month,
+      'panel y directorio devuelven el mismo cumplimiento del mes para el colaborador',
+    );
+
     const otherOrgAdmin = await jsonFetch(base, `/api/org/timeclock/employees/${empB.id}/goals`, {
       cookie: adminCookie,
     });
@@ -484,6 +496,7 @@ if (dbOk) {
     const goalBinAfterReport = await prisma.workforceGoal.findUnique({ where: { id: goalBinId } });
     check(!goalBinAfterReport?.archivedAt, 'reportar periodo no archiva definición de meta');
 
+    const previousMonth = previousPeriodAnchorYmd('MONTHLY', monthStartYmd(todayYmd));
     const endedGoal = await jsonFetch(base, `/api/org/timeclock/employees/${empA.id}/goals`, {
       method: 'POST',
       cookie: adminCookie,
@@ -491,15 +504,29 @@ if (dbOk) {
         title: 'Meta corta',
         goalType: 'COMPLIANCE',
         periodicity: 'DAILY',
-        startDate: '2026-09-01',
-        endDate: '2026-09-02',
+        startDate: previousMonth,
+        endDate: previousMonth.slice(0, 7) + '-03',
       },
     });
     const endedId = endedGoal.data.goal?.id;
-    const before = await prisma.workforceGoalPeriod.count({ where: { goalId: endedId } });
-    await jsonFetch(base, '/api/timeclock/public/goals', { cookie: tcCookie });
+    const previousPeriods = await prisma.workforceGoalPeriod.findMany({
+      where: { goalId: endedId }, orderBy: { periodStart: 'asc' },
+    });
+    const [reportedLastMonth, reportedThisMonth, stillPending] = previousPeriods;
+    await prisma.workforceGoalPeriod.update({
+      where: { id: reportedLastMonth.id },
+      data: { binaryResult: 'MET', submittedAt: reportedLastMonth.periodStart, completionPercent: 100 },
+    });
+    const late = await jsonFetch(base, `/api/timeclock/public/goals/periods/${reportedThisMonth.id}/report`, {
+      method: 'POST', cookie: tcCookie, headers: { Origin: base }, body: { binaryResult: 'MET' },
+    });
+    const current = await jsonFetch(base, '/api/timeclock/public/goals', { cookie: tcCookie });
+    const visibleIds = current.data.goals?.find(({ goal }) => goal.id === endedId)?.periods.map((p) => p.id) ?? [];
+    check(!visibleIds.includes(reportedLastMonth.id), 'Completadas excluye el reporte del mes anterior');
+    check(late.res.status === 200 && visibleIds.includes(reportedThisMonth.id), 'Completadas incluye un periodo anterior reportado este mes');
+    check(visibleIds.includes(stillPending.id), 'Por cumplir conserva el pendiente del mes anterior');
     const after = await prisma.workforceGoalPeriod.count({ where: { goalId: endedId } });
-    check(after === before, 'meta finalizada no genera periodos nuevos');
+    check(after === previousPeriods.length, 'el recorte del panel conserva periodos de la meta finalizada');
   } finally {
     server.close();
     const goalIds = (
