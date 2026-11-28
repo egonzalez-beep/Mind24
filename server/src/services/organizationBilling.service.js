@@ -3,6 +3,7 @@
  */
 
 import { prisma } from '../db/client.js';
+import { resolveModuleKey } from '../utils/moduleCatalog.js';
 
 export async function assertOrganizationHasAssignmentCredits(tx, organizationId) {
   const org = await tx.organization.findUnique({
@@ -22,115 +23,55 @@ export async function assertOrganizationHasAssignmentCredits(tx, organizationId)
   return org;
 }
 
-/**
- * Paso 1 (dentro de la tx principal): marca la asignación como completada y reserva el crédito
- * de forma atómica usando el candado `creditDeducted`.
- *
- * @returns {{ allDone: boolean, claimed: boolean }} — `claimed: true` si hay que descontar crédito.
- */
-export async function applyAssignmentCompletionUpdate(
-  tx,
-  {
-    assignmentId,
-    organizationId,
-    nextCompleted,
-    allDone,
-  },
-) {
-  console.log('[BILLING] applyAssignmentCompletionUpdate →', {
-    assignmentId,
-    organizationId,
-    allDone,
-    nextCompleted,
-    totalCompleted: nextCompleted.length,
-  });
+/** Consolida envíos simultáneos de una batería y confirma el crédito junto con su cierre. */
+export async function completeAssignmentAttempt({ assignmentId, attemptId, organizationId, moduleKey, attemptData }) {
+  return prisma.$transaction(async (tx) => {
+    const [assignment] = await tx.$queryRaw`
+      SELECT "selectedModules", "completedModules", "creditDeducted", "status"::text AS "status"
+      FROM "Assignment" WHERE "id" = ${assignmentId} FOR UPDATE
+    `;
+    if (!assignment || assignment.status === 'archived') {
+      const err = new Error('Esta evaluación ya no está disponible.');
+      err.code = assignment ? 'ASSIGNMENT_ARCHIVED' : 'NOT_FOUND';
+      throw err;
+    }
 
-  if (!allDone) {
+    const submitted = await tx.assessmentAttempt.updateMany({
+      where: { id: attemptId, assignmentId, status: 'in_progress' },
+      data: { ...attemptData, status: 'submitted' },
+    });
+    if (submitted.count !== 1) {
+      const err = new Error('INVALID_STATE');
+      err.code = 'INVALID_STATE';
+      throw err;
+    }
+
+    const selected = Array.isArray(assignment.selectedModules)
+      ? assignment.selectedModules.map(resolveModuleKey).filter(Boolean)
+      : [];
+    const completed = new Set(Array.isArray(assignment.completedModules)
+      ? assignment.completedModules.map(resolveModuleKey).filter(Boolean)
+      : []);
+    if (moduleKey) completed.add(moduleKey);
+    if (!selected.length && moduleKey) selected.push(moduleKey);
+    const wasCompleted = assignment.status === 'completed';
+    const allDone = wasCompleted || (selected.length > 0 && selected.every((key) => completed.has(key)));
+
+    let creditDeducted = assignment.creditDeducted;
+    if (allDone && !wasCompleted && !creditDeducted && organizationId) {
+      const debit = await tx.organization.updateMany({
+        where: { id: organizationId, credits: { gte: 1 } },
+        data: { credits: { decrement: 1 } },
+      });
+      // Una evaluación ya asignada puede terminar aunque la empresa haya agotado el saldo.
+      creditDeducted = debit.count === 1;
+      if (!creditDeducted) console.warn('[billing] Evaluación completada sin saldo para el descuento:', assignmentId);
+    }
+
     await tx.assignment.update({
       where: { id: assignmentId },
-      data: {
-        completedModules: nextCompleted,
-        status: 'in_progress',
-      },
+      data: { completedModules: [...completed], status: allDone ? 'completed' : 'in_progress', creditDeducted },
     });
-    console.log('[BILLING] allDone=false — asignación marcada in_progress, sin cobro.');
-    return { allDone: false, claimed: false };
-  }
-
-  // Claim atómico: solo el primer hilo que llegue aquí con creditDeducted=false gana el descuento.
-  const claimed = await tx.assignment.updateMany({
-    where: {
-      id: assignmentId,
-      creditDeducted: false,
-    },
-    data: {
-      completedModules: nextCompleted,
-      status: 'completed',
-      creditDeducted: true,
-    },
+    return { allDone };
   });
-
-  console.log('[BILLING] Credit claim updateMany result:', claimed, '(claimed.count>0 → cobrar)');
-
-  if (claimed.count === 0) {
-    // Ya fue cobrado en un intento anterior (idempotencia).
-    // Aún actualizamos completedModules para no perder el progreso si el status ya era completed.
-    await tx.assignment.update({
-      where: { id: assignmentId },
-      data: { completedModules: nextCompleted, status: 'completed' },
-    });
-    console.log('[BILLING] Claim ya tomado (creditDeducted ya era true). Sin cobro adicional.');
-    return { allDone: true, claimed: false };
-  }
-
-  console.log('[BILLING] Claim exitoso — se descargará 1 crédito de org', organizationId, 'post-tx.');
-  return { allDone: true, claimed: true };
-}
-
-/**
- * Paso 2 (FUERA de la tx principal): descuenta 1 crédito de la organización.
- * Se llama sólo cuando `applyAssignmentCompletionUpdate` devuelve `claimed: true`.
- *
- * Usar `prisma` (cliente raíz), no `tx`, para que no revierta el intento completado.
- */
-export async function chargeOrganizationCreditPostTx(organizationId) {
-  console.log('[BILLING] chargeOrganizationCreditPostTx → org', organizationId);
-
-  if (!organizationId) {
-    console.warn('[BILLING] organizationId es null/undefined — sin cobro.');
-    return { charged: false, reason: 'NO_ORG_ID' };
-  }
-
-  const result = await prisma.organization.updateMany({
-    where: { id: organizationId, credits: { gte: 1 } },
-    data: { credits: { decrement: 1 } },
-  });
-
-  if (result.count === 0) {
-    console.warn('[BILLING] org', organizationId, 'ya tenía 0 créditos al momento del cobro — inconsistencia de saldo.');
-    return { charged: false, reason: 'CREDITS_ALREADY_ZERO' };
-  }
-
-  console.log('[BILLING] ✅ Crédito descontado exitosamente de org', organizationId);
-  return { charged: true };
-}
-
-/**
- * @deprecated Sustituida por applyAssignmentCompletionUpdate + chargeOrganizationCreditPostTx.
- */
-export async function chargeOrganizationOnBatteryCompleted(tx, organizationId) {
-  const result = await tx.organization.updateMany({
-    where: { id: organizationId, credits: { gte: 1 } },
-    data: { credits: { decrement: 1 } },
-  });
-
-  if (result.count === 0) {
-    const err = new Error(
-      'Créditos insuficientes para registrar el cierre de la batería de evaluación.',
-    );
-    err.code = 'NO_CREDITS';
-    throw err;
-  }
-
-  return { charged: true };
 }

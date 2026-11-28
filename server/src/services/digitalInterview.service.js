@@ -1,18 +1,6 @@
 import { prisma } from '../db/client.js';
 import { resolveModuleKey } from '../utils/moduleCatalog.js';
-import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
-
-function readCompletedModules(assignment) {
-  const raw = assignment.completedModules;
-  if (Array.isArray(raw) && raw.length) return raw.map((x) => String(x));
-  return [];
-}
-
-function selectedModuleKeys(assignment) {
-  const raw = assignment.selectedModules;
-  if (Array.isArray(raw) && raw.length) return raw.map((x) => String(x));
-  return [];
-}
+import { completeAssignmentAttempt } from './organizationBilling.service.js';
 
 export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
   const attempt = await prisma.assessmentAttempt.findFirst({
@@ -43,51 +31,21 @@ export async function submitDigitalInterviewAudios(userId, attemptId, audios) {
     throw err;
   }
 
-  const assignment = attempt.assignment;
-  const prevCompleted = readCompletedModules(assignment);
-  const nextCompleted =
-    mk && !prevCompleted.includes(mk) ? [...prevCompleted, mk] : prevCompleted;
-
-  let selected = selectedModuleKeys(assignment).map((k) => resolveModuleKey(k));
-  if (!selected.length && mk) selected = [mk];
-  const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
-
-  const organizationId = assignment.candidate.organizationId;
-  const submittedAt = new Date();
-
-  console.log('[BILLING:digitalInterview] módulo:', mk, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
-
-  const billingResult = await prisma.$transaction(async (tx) => {
-    await tx.assessmentAttempt.update({
-      where: { id: attempt.id },
-      data: {
-        status: 'submitted',
-        submittedAt,
-        results: { status: 'COMPLETED', audios },
-        interpretation: {
-          verdict: 'Entrevista digital completada',
-          badge: '◈',
-          description: 'Entrevista Digital Estructurada enviada correctamente.',
-        },
+  const { allDone } = await completeAssignmentAttempt({
+    assignmentId: attempt.assignmentId,
+    attemptId: attempt.id,
+    organizationId: attempt.assignment.candidate.organizationId,
+    moduleKey: mk,
+    attemptData: {
+      submittedAt: new Date(),
+      results: { status: 'COMPLETED', audios },
+      interpretation: {
+        verdict: 'Entrevista digital completada',
+        badge: '◈',
+        description: 'Entrevista Digital Estructurada enviada correctamente.',
       },
-    });
-
-    return applyAssignmentCompletionUpdate(tx, {
-      assignmentId: assignment.id,
-      organizationId,
-      nextCompleted,
-      allDone,
-    });
+    },
   });
-
-  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
-  if (billingResult.claimed) {
-    try {
-      await chargeOrganizationCreditPostTx(organizationId);
-    } catch (chargeErr) {
-      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
-    }
-  }
 
   return { ok: true, assignmentCompleted: allDone };
 }

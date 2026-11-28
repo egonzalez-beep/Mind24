@@ -27,18 +27,21 @@ export async function updateOrganization(id, { blocked, creditsDelta, name }) {
       throw err;
     }
     const data = {};
+    const where = { id };
     if (typeof blocked === 'boolean') data.blocked = blocked;
     if (name !== undefined) data.name = name.trim();
     if (typeof creditsDelta === 'number' && creditsDelta !== 0) {
-      const next = org.credits + creditsDelta;
-      if (next < 0) {
-        const err = new Error('INSUFFICIENT_CREDITS');
-        err.code = 'INSUFFICIENT_CREDITS';
-        throw err;
-      }
-      data.credits = next;
+      data.credits = { increment: creditsDelta };
+      if (creditsDelta < 0) where.credits = { gte: -creditsDelta };
     }
     if (Object.keys(data).length === 0) return org;
-    return tx.organization.update({ where: { id }, data });
+    const written = await tx.organization.updateMany({ where, data });
+    if (written.count !== 1) {
+      const code = where.credits ? 'INSUFFICIENT_CREDITS' : 'NOT_FOUND';
+      const err = new Error(code);
+      err.code = code;
+      throw err;
+    }
+    return tx.organization.findUnique({ where: { id } });
   });
 }

@@ -4697,7 +4697,7 @@ textarea.rec-iv-comment{min-height:72px;max-height:110px;resize:vertical;}
         <div class="card" style="border-color:rgba(16,185,129,.35);">
           <div class="card-body" style="padding:16px 18px;">
             <button type="button" class="form-submit" style="width:100%;max-width:440px;background:linear-gradient(135deg,#059669,#047857);border:none;border-radius:var(--r-sm);padding:12px 18px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit;" onclick="toggleAspenAdminPanel()">+ Administradores Aspen — altas para envío de pruebas</button>
-            <p style="font-size:12px;color:var(--slate-500);margin-top:10px;line-height:1.5;">Solo para la cuenta <strong>admin@demo.mind24.com</strong>. Cada administrador recibe contraseña aleatoria y un saldo de <strong>créditos vinculado a su correo</strong> (el consumo al crear pruebas se aplicará después).</p>
+            <p style="font-size:12px;color:var(--slate-500);margin-top:10px;line-height:1.5;">Solo para la cuenta <strong>admin@demo.mind24.com</strong>. Cada administrador recibe una contraseña aleatoria y su empresa recibe un saldo inicial. Se descuenta un crédito cuando el candidato termina todos los módulos de su evaluación.</p>
             <div id="aspen-panel-body" class="hidden" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--slate-200);">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                 <div><label class="form-label">Correo del nuevo administrador</label><input type="email" id="aspen-new-email" class="form-input" placeholder="nuevo.admin@empresa.com" autocomplete="off"></div>
@@ -7541,6 +7541,7 @@ function crearEvalSidebarNav(which){
   title.textContent=mis?'Mis evaluaciones':'Nueva evaluación';
   if(mobileMenuWasOpen) title.focus();
   mind24AdminSidebarActive('dash-crear-eval');
+  mind24RefreshEmpresaAdminSessionMeta();
   refreshCrearEvalAssignmentsTables();
 }
 function mind24RefreshEmpresaAdminDashboardChrome(){
@@ -7583,15 +7584,29 @@ function mind24RefreshEmpresaAdminDashboardChrome(){
   const dashCev=document.getElementById('dash-admin-nav-crear-eval');
   if(dashCev) dashCev.classList.toggle('hidden', !mind24IsPioneerAspenAdmin());
 }
+let mind24EmpresaSessionMetaRequest=0;
 async function mind24RefreshEmpresaAdminSessionMeta(){
   const u=window.__MIND24_USER;
   if(!u||u.role!=='empresa_admin')return;
+  const request=++mind24EmpresaSessionMetaRequest;
   try{
     const me=await apiJson('/api/auth/me');
-    if(me&&me.user){ window.__MIND24_USER=Object.assign({},u,me.user); }
+    if(request!==mind24EmpresaSessionMetaRequest||window.__MIND24_USER!==u)return;
+    if(me?.user?.id===u.id){ window.__MIND24_USER=Object.assign({},u,me.user); }
   }catch(e){ console.warn('[auth/me]',e); }
   mind24RefreshEmpresaAdminDashboardChrome();
 }
+let mind24AdminCreditsRefreshTimer=0;
+function mind24RefreshVisibleAdminCredits(){
+  clearTimeout(mind24AdminCreditsRefreshTimer);
+  mind24AdminCreditsRefreshTimer=setTimeout(function(){
+    if(document.visibilityState!=='visible'||!document.querySelector('#view-dash-crear-eval:not(.hidden),#view-dash-admin:not(.hidden)')) return;
+    mind24RefreshEmpresaAdminSessionMeta();
+    if(document.querySelector('#view-dash-admin:not(.hidden) #aspen-panel-body:not(.hidden)')) refreshAspenAdminsList();
+  },80);
+}
+window.addEventListener('focus',mind24RefreshVisibleAdminCredits);
+document.addEventListener('visibilitychange',mind24RefreshVisibleAdminCredits);
 function mind24IsMasterAdminRole(role){
   return Boolean(role && String(role).trim().toLowerCase() === 'master_admin');
 }
@@ -7612,7 +7627,7 @@ function mind24UpdateAspenPioneerVisibility(){
 }
 function toggleAspenAdminPanel(){
   const b=document.getElementById('aspen-panel-body');
-  if(b) b.classList.toggle('hidden');
+  if(b&&!b.classList.toggle('hidden')) refreshAspenAdminsList();
 }
 async function refreshAspenAdminsList(){
   if(!mind24IsPioneerAspenAdmin())return;
@@ -8855,7 +8870,6 @@ function showView(name) {
       if(adminModule){
         mind24SyncAdminSidebarIdentity();
         if(name==='dash-crear-eval'){
-          mind24RefreshEmpresaAdminSessionMeta();
           mind24InitCrearEvalModules();
           let tab='nueva';
           try{

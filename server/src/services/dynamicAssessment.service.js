@@ -36,7 +36,7 @@ import {
   resolvePersonalityAttemptForm,
   resolvePersonalityPresentationOrder,
 } from './personalityMind24Presentation.service.js';
-import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
+import { completeAssignmentAttempt } from './organizationBilling.service.js';
 
 const questionInclude = {
   options: { orderBy: { sortOrder: 'asc' } },
@@ -469,18 +469,6 @@ export async function saveCandidateResponse(userId, attemptId, payload) {
   return { ok: true, responseId: row.id, questionId: question.id };
 }
 
-function readCompletedModules(assignment) {
-  const raw = assignment.completedModules;
-  if (!Array.isArray(raw)) return [];
-  return raw.map((x) => String(x));
-}
-
-function selectedModuleKeys(assignment) {
-  const raw = assignment.selectedModules;
-  if (Array.isArray(raw) && raw.length) return raw.map((x) => String(x));
-  return [];
-}
-
 function diagComplete(attemptId, phase, extra = {}) {
   console.log('[DIAG:complete]', attemptId, phase, extra);
 }
@@ -563,20 +551,6 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     submittedAt,
     questionCount: questionCount || attempt.candidateResponses.length || 1,
   });
-  const assignment = attempt.assignment;
-  const prevCompleted = readCompletedModules(assignment);
-  const nextCompleted =
-    resolvedKey && !prevCompleted.includes(resolvedKey)
-      ? [...prevCompleted, resolvedKey]
-      : prevCompleted;
-  let selected = selectedModuleKeys(assignment).map((k) => resolveModuleKey(k));
-  if (!selected.length && resolvedKey) selected = [resolvedKey];
-  const allDone =
-    selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
-  const organizationId = assignment.candidate.organizationId;
-
-  console.log('[BILLING:completeDynamic] módulo:', resolvedKey, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
-
   let attemptScores = null;
   let interpretation = {
     verdict: 'Módulo completado',
@@ -772,46 +746,21 @@ export async function completeDynamicAttempt(userId, attemptId, options = {}) {
     persistedFlags = merged.flags;
   }
 
-  diagComplete(attemptId, 'tx:start', { allDone, hasPersistedScores: !!persistedScores });
-  let billingResult;
-  try {
-    billingResult = await prisma.$transaction(async (tx) => {
-      diagComplete(attemptId, 'tx:before-attempt-update');
-      await tx.assessmentAttempt.update({
-        where: { id: attempt.id },
-        data: {
-          status: 'submitted',
-          submittedAt,
-          scores: persistedScores ?? undefined,
-          interpretation,
-          flags: persistedFlags.length ? persistedFlags : undefined,
-        },
-      });
-      diagComplete(attemptId, 'tx:after-attempt-update');
-      const billing = await applyAssignmentCompletionUpdate(tx, {
-        assignmentId: assignment.id,
-        organizationId,
-        nextCompleted,
-        allDone,
-      });
-      diagComplete(attemptId, 'tx:after-applyAssignmentCompletionUpdate', billing);
-      return billing;
-    });
-  } catch (txErr) {
-    diagCompleteFail(attemptId, 'tx:failed', txErr);
-    throw txErr;
-  }
+  diagComplete(attemptId, 'tx:start', { hasPersistedScores: !!persistedScores });
+  const { allDone } = await completeAssignmentAttempt({
+    assignmentId: attempt.assignmentId,
+    attemptId: attempt.id,
+    organizationId: attempt.assignment.candidate.organizationId,
+    moduleKey: resolvedKey,
+    attemptData: {
+      submittedAt,
+      scores: persistedScores ?? undefined,
+      interpretation,
+      flags: persistedFlags.length ? persistedFlags : undefined,
+    },
+  });
 
-  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
-  if (billingResult.claimed) {
-    try {
-      await chargeOrganizationCreditPostTx(organizationId);
-    } catch (chargeErr) {
-      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
-    }
-  }
-
-  diagComplete(attemptId, 'done', { assignmentCompleted: allDone, claimed: billingResult?.claimed });
+  diagComplete(attemptId, 'done', { assignmentCompleted: allDone });
   return {
     ok: true,
     moduleKey: mk,

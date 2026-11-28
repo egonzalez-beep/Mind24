@@ -18,7 +18,7 @@ import {
 } from './attemptReliability.service.js';
 import { scoreAssessment, sanitizeConfigForClient, submitAnswersSchema } from './scoring.service.js';
 import { buildCandidateAttemptStatus } from '../utils/candidateAttemptResponse.js';
-import { applyAssignmentCompletionUpdate, chargeOrganizationCreditPostTx } from './organizationBilling.service.js';
+import { completeAssignmentAttempt } from './organizationBilling.service.js';
 
 function getTimeLimitSec(config) {
   const m = config?.meta?.timeLimitSec;
@@ -359,50 +359,19 @@ export async function submitAttempt(userId, attemptId, rawAnswers) {
     };
   }
 
-  const assignment = attempt.assignment;
-  const prevCompleted = readCompletedModules(assignment);
-  const nextCompleted =
-    resolvedMk && !prevCompleted.includes(resolvedMk)
-      ? [...prevCompleted, resolvedMk]
-      : prevCompleted;
-
-  let selected = selectedModuleKeys(assignment).map((k) => resolveModuleKey(k));
-  if (!selected.length && resolvedMk) {
-    selected = [resolvedMk];
-  }
-  const allDone = selected.length > 0 && selected.every((k) => nextCompleted.includes(k));
-  const organizationId = attempt.assignment.candidate.organizationId;
-
-  console.log('[BILLING:submitAttempt] módulo:', resolvedMk, '| selected:', selected, '| nextCompleted:', nextCompleted, '| allDone:', allDone, '| org:', organizationId);
-
-  const billingResult = await prisma.$transaction(async (tx) => {
-    await tx.assessmentAttempt.update({
-      where: { id: attempt.id },
-      data: {
-        status: 'submitted',
-        submittedAt,
-        responses: answers,
-        scores: persisted.scores,
-        interpretation: finalInterpretation,
-        flags: persisted.flags,
-      },
-    });
-    return applyAssignmentCompletionUpdate(tx, {
-      assignmentId: attempt.assignmentId,
-      organizationId,
-      nextCompleted,
-      allDone,
-    });
+  const { allDone } = await completeAssignmentAttempt({
+    assignmentId: attempt.assignmentId,
+    attemptId: attempt.id,
+    organizationId: attempt.assignment.candidate.organizationId,
+    moduleKey: resolvedMk,
+    attemptData: {
+      submittedAt,
+      responses: answers,
+      scores: persisted.scores,
+      interpretation: finalInterpretation,
+      flags: persisted.flags,
+    },
   });
-
-  // El cobro corre FUERA de la tx para que nunca revierta el intento completado.
-  if (billingResult.claimed) {
-    try {
-      await chargeOrganizationCreditPostTx(organizationId);
-    } catch (chargeErr) {
-      console.error('[BILLING] Error al descontar crédito post-tx (intento guardado):', chargeErr.message);
-    }
-  }
 
   return { ...scored, moduleKey: resolvedMk || null, assignmentCompleted: allDone };
 }
